@@ -152,3 +152,8 @@ The cream tip profile now begins at the exact terminal centerline and matching w
 ## Automated Blender visual review
 
 A dedicated GitHub Actions workflow now runs the hero generator with Blender 4.2.3 and publishes four PNG review angles (front, side, back, three-quarter), the .blend source, OBJ, rig metadata and mesh-quality report. CI verifies output completeness and the 17-part rig contract. This is a reproducible technical review package, not an artistic sign-off: a human must inspect the images for silhouette, intersections, shading and appeal.
+
+
+## Blender topology correction
+
+The first real Blender visual-review run exposed two zero-area faces in the FoxHead pole caps. The head generator now creates one vertex per pole and triangle fans to the first/last latitude rings, eliminating coincident pole vertices. Source tests protect this topology strategy. The fix is not considered visually accepted until the next Blender run completes and the four renders are inspected.
