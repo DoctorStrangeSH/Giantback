@@ -26,6 +26,7 @@ local palette = {
     moon = Color3.fromRGB(195, 222, 222),
     water = Color3.fromRGB(76, 157, 164),
     stone = Color3.fromRGB(93, 111, 106),
+    stoneLight = Color3.fromRGB(133, 148, 139),
 }
 
 local function makeFolder(parent, name)
