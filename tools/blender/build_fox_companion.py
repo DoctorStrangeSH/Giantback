@@ -376,6 +376,18 @@ def create_fox(p):
                  (0.108, 0.145, 0.055), p["dark"], 32, 20)
         ellipsoid("EyeShine" + suffix, (side*0.255-0.035, 1.825, -1.216),
                  (0.038, 0.048, 0.018), p["white"], 20, 12)
+        # Soft upper/lower eyelid rims frame the eyes and make expressions readable.
+        curved_plume("EyeLidUpper" + suffix,
+            [(side*0.255-0.145, 1.79, -1.145),
+             (side*0.255-0.105, 1.91, -1.158),
+             (side*0.255, 1.955, -1.165),
+             (side*0.255+0.105, 1.91, -1.158),
+             (side*0.255+0.145, 1.79, -1.145)],
+            [0.012, 0.020, 0.023, 0.020, 0.012],
+            p["expression"], sides=12, steps_per_segment=4)
+        ellipsoid("EyeShineSmall" + suffix,
+                 (side*0.255+0.018, 1.795, -1.218),
+                 (0.016, 0.020, 0.010), p["white"], 16, 10)
     ellipsoid("FoxNose", (0, 1.47, -1.365), (0.105, 0.075, 0.065), p["nose"], 24, 16)
 
     # Soft brows and a tiny curved smile add readable emotion without extra rig groups.
@@ -405,8 +417,8 @@ def create_fox(p):
         "FoxLegBackRight": ["FoxLegBackRight", "PawBackRight"],
         "FoxTail": ["FoxTail"],
         "FoxTailTip": ["FoxTailTip"],
-        "FoxEyes": ["EyeBaseLeft", "EyeBaseRight", "EyePupilLeft", "EyePupilRight"],
-        "FoxEyeSparkles": ["EyeShineLeft", "EyeShineRight"],
+        "FoxEyes": ["EyeBaseLeft", "EyeBaseRight", "EyePupilLeft", "EyePupilRight", "EyeLidUpperLeft", "EyeLidUpperRight"],
+        "FoxEyeSparkles": ["EyeShineLeft", "EyeShineRight", "EyeShineSmallLeft", "EyeShineSmallRight"],
         "FoxNose": ["FoxNose"],
     }
     for group_name, names in grouped.items():
