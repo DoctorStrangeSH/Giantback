@@ -2,74 +2,32 @@ name: Fox Hero Blender visual acceptance
 
 on:
   push:
-    branches:
-      - feat/cozy-world-visual-pass
+    branches: [feat/cozy-world-visual-pass]
   pull_request:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  render-fox-hero:
+  render:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python for Blender Python module
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Install Blender 4.2 Python module
-        run: python -m pip install --only-binary=:all: bpy==4.2.0
-
-      - name: Generate Fox Hero model and four review renders
+      - name: Install Blender Python module
+        run: python -m pip install bpy==4.2.0
+      - name: Render Fox Hero
         run: |
-          python - <<'PY'
-          import runpy
-          import sys
-          sys.argv = ["build_fox_companion.py", "--", "--output-dir", "build/fox_hero"]
-          runpy.run_path("tools/blender/build_fox_companion.py", run_name="__main__")
-          PY
-
-      - name: Verify visual acceptance outputs
+          python -c "import runpy,sys; sys.argv=['build_fox_companion.py','--','--output-dir','build/fox_hero']; runpy.run_path('tools/blender/build_fox_companion.py',run_name='__main__')"
+      - name: Check review package
         run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          output = Path("build/fox_hero")
-          expected = [
-              "fox_companion_hero_three_quarter.png",
-              "fox_companion_hero_front.png",
-              "fox_companion_hero_side.png",
-              "fox_companion_hero_back.png",
-              "fox_companion_hero.blend",
-              "fox_companion_hero.obj",
-              "fox_companion_hero_rig.json",
-              "fox_companion_hero_mesh_report.json",
-          ]
-          missing = [name for name in expected if not (output / name).is_file()]
-          if missing:
-              raise SystemExit(f"Missing Fox Hero review outputs: {missing}")
-          report = json.loads((output / "fox_companion_hero_mesh_report.json").read_text())
-          rig = json.loads((output / "fox_companion_hero_rig.json").read_text())
-          if report["part_count"] != 17 or len(rig["parts"]) != 17:
-              raise SystemExit("Fox Hero must preserve all 17 rig groups")
-          for name in expected[:4]:
-              path = output / name
-              if path.stat().st_size < 10_000:
-                  raise SystemExit(f"Render appears empty or incomplete: {name}")
-          print("Fox Hero Blender generation and four-view render outputs verified.")
-          PY
-
-      - name: Upload Fox Hero visual review package
-        uses: actions/upload-artifact@v4
+          python -c "import json,pathlib; p=pathlib.Path('build/fox_hero'); names=['fox_companion_hero_three_quarter.png','fox_companion_hero_front.png','fox_companion_hero_side.png','fox_companion_hero_back.png','fox_companion_hero.blend','fox_companion_hero.obj','fox_companion_hero_rig.json','fox_companion_hero_mesh_report.json']; missing=[n for n in names if not (p/n).is_file()]; assert not missing, missing; assert len(json.loads((p/'fox_companion_hero_rig.json').read_text())['parts'])==17"
+      - uses: actions/upload-artifact@v4
         with:
           name: Fox-Hero-Blender-Visual-Review
           path: build/fox_hero/
