@@ -1,0 +1,73 @@
+name: Validate Giantback place
+
+on:
+  push:
+    branches:
+      - main
+      - feat/cozy-world-visual-pass
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build Roblox place
+        run: python build.py
+
+      - name: Validate generated place and embedded scripts
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse("Giantback.rbxlx").getroot()
+          names = set()
+          for item in root.findall(".//Item"):
+              name = item.find("./Properties/string[@name='Name']")
+              if name is not None and name.text:
+                  names.add(name.text)
+
+          required = {
+              "Mossback",
+              "Grove",
+              "Dusk",
+              "ReplicatedStorage",
+              "World",
+              "WorldVisuals",
+              "Album",
+          }
+          missing = required - names
+          if missing:
+              raise SystemExit(f"Missing instances in generated place: {sorted(missing)}")
+
+          sources = [
+              node.text or ""
+              for node in root.findall(".//ProtectedString[@name='Source']")
+          ]
+          if len(sources) < 3:
+              raise SystemExit(f"Expected at least 3 embedded scripts, found {len(sources)}")
+
+          required_markers = [
+              "GiantbackAtmosphere",
+              "QuestCard",
+              "AlbumAction",
+          ]
+          combined = "\n".join(sources)
+          missing_markers = [marker for marker in required_markers if marker not in combined]
+          if missing_markers:
+              raise SystemExit(f"Missing expected script content: {missing_markers}")
+
+          print(f"Validated Giantback.rbxlx: {len(names)} named instances, {len(sources)} scripts.")
+          PY
