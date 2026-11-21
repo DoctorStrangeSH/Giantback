@@ -16,14 +16,14 @@ The current editable OBJ sources were measured in Git (not imported Roblox MeshP
 
 | Source | Vertices | Faces | Named object groups |
 |---|---:|---:|---:|
-| fox_companion.obj | 2,450 | 4,316 | 16 |
-| moth_companion.obj | 1,306 | 2,288 | 15 |
-| home_cottage.obj | 558 | 727 | 11 |
-| farm_bed.obj | 1,354 | 2,244 | 4 |
-| bridge_segment.obj | 328 | 422 | 4 |
-| home_island.obj | 274 | 440 | 3 |
+| fox_companion.obj | 2,450 | 3,744 | 16 |
+| moth_companion.obj | 1,306 | 1,980 | 15 |
+| home_cottage.obj | 558 | 615 | 11 |
+| farm_bed.obj | 1,354 | 1,884 | 4 |
+| bridge_segment.obj | 328 | 358 | 4 |
+| home_island.obj | 274 | 376 | 3 |
 
-These values are provisional source-mesh guardrails only. They do not prove mobile performance: imported MeshPart count, materials, collision fidelity, draw calls and real device frame time still require Roblox Studio profiling. CI now guards against accidental source geometry growth beyond the provisional per-model budgets.
+These values are provisional source-mesh guardrails only. They do not prove mobile performance: imported MeshPart count, materials, collision fidelity, draw calls and real device frame time still require Roblox Studio profiling. Zero-area source faces have been removed and CI now rejects their reintroduction, in addition to guarding against accidental geometry growth.
 
 ## Rig import notes
 
