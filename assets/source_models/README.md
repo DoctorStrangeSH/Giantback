@@ -176,7 +176,7 @@ The hero generator intentionally improves on the legacy source grouping: each in
 | FoxTail | Tail | Tail root |
 | FoxTailTip | Tail tip | Attach to tail |
 
-The complete pivot table for all 17 groups is generated beside the OBJ as `fox_companion_hero_rig.json`.
+The complete pivot table for all 17 groups is generated beside the OBJ as `fox_companion_hero_rig.json`. Before writing the sidecar, the generator checks that the live Blender object names exactly match the sidecar keys. The pure-Python validator in `tools/blender/fox_rig_contract.py` independently checks group coverage, finite 3D pivots, runtime names and attachment references; CI runs it without requiring Blender.
 
 ## Companion rig import mapping
 
