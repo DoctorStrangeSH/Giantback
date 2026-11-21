@@ -286,7 +286,7 @@ end
 
 local function renderPets()
     local pets = {
-        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Помогает находить спрятанные семена и ресурсы.", location = "Ищи его в Солнечной роще.", icon = "🦊"},
+        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Нюх следопыта открывает личные тайники с редкими находками.", location = "Ищи его в Солнечной роще.", icon = "🦊"},
         {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает волшебные цветы и освещает секреты.", location = "Ищи её в Лунной роще.", icon = "🦋"},
     }
     for _, pet in pets do
@@ -409,8 +409,15 @@ getObjective = function()
         end
         return "Материалы готовы! Подойди к деревянному мосту и восстанови его."
     end
+    local activeCacheId = player:GetAttribute("FoxCacheSpot")
+    if type(activeCacheId) == "string" and activeCacheId ~= "" then
+        if player:GetAttribute("Companion") ~= "Fox" then
+            return "Позови лисёнка, чтобы забрать найденный тайник."
+        end
+        return "Лисёнок нашёл тайник! Следуй за золотой меткой в Солнечной роще."
+    end
     if not player:GetAttribute("Fox") then return "Пройди по деревянному мосту в Солнечную рощу и найди лисёнка." end
-    if not player:GetAttribute("Seed") then return "Попроси лисёнка поискать следы на лесной тропе." end
+    if not player:GetAttribute("Seed") then return "Позови лисёнка у следов на тропе: он найдёт лунное семя." end
     if not player:GetAttribute("Moth") then return "Перейди через лесной мост в Лунную рощу и найди моль." end
     if not player:GetAttribute("Flower") then return "Позови лунную моль к клумбе возле дома." end
     if not player:GetAttribute("Timber") then return "Возьми лисёнка к коряге и найди крепкие ветви." end
