@@ -369,6 +369,38 @@ def write_rig_metadata(output, objects):
     return path
 
 
+
+def write_mesh_quality_report(output, objects):
+    """Write measurable mesh/UV/material facts for human art review."""
+    parts = {}
+    for obj in objects:
+        if obj.type != "MESH" or len(obj.data.vertices) == 0 or len(obj.data.polygons) == 0:
+            raise RuntimeError(f"{obj.name}: expected a non-empty mesh")
+        if not obj.data.uv_layers:
+            raise RuntimeError(f"{obj.name}: missing UV layer")
+        if not obj.data.materials or any(mat is None for mat in obj.data.materials):
+            raise RuntimeError(f"{obj.name}: missing material assignment")
+        bounds = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
+        minimum = [min(point[i] for point in bounds) for i in range(3)]
+        maximum = [max(point[i] for point in bounds) for i in range(3)]
+        parts[obj.name] = {
+            "vertices": len(obj.data.vertices),
+            "faces": len(obj.data.polygons),
+            "uv_layers": len(obj.data.uv_layers),
+            "materials": [mat.name for mat in obj.data.materials],
+            "bounds": {"min": minimum, "max": maximum},
+        }
+    payload = {
+        "asset": "fox_companion_hero",
+        "coordinate_system": "Y-up; character faces -Z",
+        "part_count": len(parts),
+        "parts": parts,
+    }
+    path = output / "fox_companion_hero_mesh_report.json"
+    path.write_text(json.dumps(payload, indent=2) + "\\n", encoding="utf-8")
+    return path
+
+
 def export_obj(objects, path):
     bpy.ops.object.select_all(action="DESELECT")
     for obj in objects:
@@ -407,12 +439,14 @@ def main():
     blend_path = output / "fox_companion_hero.blend"
     obj_path = output / "fox_companion_hero.obj"
     rig_path = write_rig_metadata(output, objects)
+    mesh_report_path = write_mesh_quality_report(output, objects)
     bpy.ops.wm.save_as_mainfile(filepath=str(blend_path))
     export_obj(objects, obj_path)
     render_review_views(camera, center, radius, output)
     print("Fox hero preview OBJ:", obj_path)
     print("Fox hero review blend:", blend_path)
     print("Fox hero rig metadata:", rig_path)
+    print("Fox hero mesh quality report:", mesh_report_path)
     print("Fox hero review renders: three_quarter, front, side, back")
     print("NOTE: stylized mesh blockout only; painted fur and Studio acceptance remain open.")
 
