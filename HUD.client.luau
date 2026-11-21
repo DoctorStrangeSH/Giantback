@@ -331,6 +331,8 @@ local panelTitles = {
 
 local activeTab = nil
 local navButtons = {}
+local showToast
+local getObjective
 
 local function openTab(tabName)
     if activeTab == tabName and panel.Visible then
@@ -372,10 +374,11 @@ closeButton.Activated:Connect(function()
     activeTab = nil
 end)
 
-function showToast(message)
+showToast = function(message)
     if type(message) ~= "string" or message == "" then return end
     toastText.Text = message
     toast.Visible = true
+    toast.Size = UDim2.fromOffset(math.min(380, gui.AbsoluteSize.X - 32), 48)
     toast.BackgroundTransparency = 0.08
     toast.Position = UDim2.new(0.5, 0, 1, -96)
     TweenService:Create(toast, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -390,7 +393,7 @@ function showToast(message)
     end)
 end
 
-function getObjective()
+getObjective = function()
     if not player:GetAttribute("Ready") then return "Загружаем твой остров…" end
     if not player:GetAttribute("Fox") then return "Найди лисёнка в Солнечной роще и подружись с ним." end
     if not player:GetAttribute("Seed") then return "Попроси лисёнка поискать следы на лесной тропе." end
@@ -422,10 +425,6 @@ end)
 player.AttributeChanged:Connect(refresh)
 task.spawn(function()
     while gui.Parent do
-        if panel.Visible and activeTab == "Farm" then
-            clearBody()
-            renderFarm()
-        end
         refresh()
         task.wait(1)
     end
