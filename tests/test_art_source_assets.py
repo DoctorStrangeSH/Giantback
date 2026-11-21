@@ -15,6 +15,26 @@ REQUIRED = (
 )
 
 
+
+class BlenderUVPipelineContractTests(unittest.TestCase):
+    def test_blender_uv_preview_script_is_valid_python(self):
+        script_path = ROOT / "tools" / "blender" / "prepare_source_uv.py"
+        self.assertTrue(script_path.is_file())
+        source = script_path.read_text(encoding="utf-8")
+        compile(source, str(script_path), "exec")
+
+    def test_blender_uv_preview_is_non_destructive_and_exports_uv_normals(self):
+        source = (ROOT / "tools" / "blender" / "prepare_source_uv.py").read_text(encoding="utf-8")
+        self.assertIn("bpy.ops.uv.smart_project(", source)
+        self.assertIn("bpy.ops.uv.pack_islands(", source)
+        self.assertIn("export_uv=True", source)
+        self.assertIn("export_normals=True", source)
+        self.assertIn("export_object_groups=True", source)
+        self.assertIn('"final_art_approved": False', source)
+        self.assertIn("destination = args.output / f\"{asset}.obj\"", source)
+        self.assertNotIn("args.input / f\"{asset}.obj\"", source.split("export_preview(objects, destination)")[0].split("def main()")[1])
+
+
 class OriginalMeshSourceTests(unittest.TestCase):
     def test_every_source_mesh_has_a_matching_material_file(self):
         for stem in REQUIRED:
