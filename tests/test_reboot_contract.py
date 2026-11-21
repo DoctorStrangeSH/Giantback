@@ -45,7 +45,7 @@ class RebootContractTests(unittest.TestCase):
         for label in ("ОСТРОВ", "ФЕРМА", "ПИТОМЦЫ", "КАРТА"):
             self.assertIn(label, HUD)
         self.assertIn('gui.Name = "GiantbackHUD"', HUD)
-        self.assertIn("local panel = Instance.new(\\"Frame\\")", HUD)
+        self.assertIn('local panel = Instance.new("Frame")', HUD)
 
     def test_farm_screen_explains_planting_and_harvesting(self):
         self.assertIn("Подойди к свободной грядке", HUD)
