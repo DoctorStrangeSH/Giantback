@@ -17,6 +17,7 @@ Giantback — уютная multiplayer adventure, в которой игрок �
 - docs/ART_DIRECTION.md — визуальный стиль и правила ассетов.
 - docs/ECONOMY_AND_MONETIZATION.md — экономика, донаты и Roblox-покупки.
 - docs/TECHNICAL_ARCHITECTURE.md — архитектура систем и сохранений.
+- docs/LAUNCH_AND_GROWTH.md — onboarding, удержание, продвижение и аналитика.
 
 PROJECT_SPEC.md — источник требований. Новые идеи не расширяют объём версии 1.0 автоматически.
 
