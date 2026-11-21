@@ -171,7 +171,7 @@ local names = {
 }
 local descriptions = {
     Fox = "Нюх следопыта: находит спрятанные тайники и редкие находки.",
-    Moth = "Пробуждает цветы и свет",
+    Moth = "Лунное сияние: раскрывает скрытые цветы и тайники в Лунной роще.",
 }
 local companionButtons = {}
 
@@ -513,19 +513,92 @@ local function updateFoxCacheMarkers()
     end
 end
 
+local mothBloomPrompt = nil
+local mothBloomHighlight = nil
+local lastMothEquipped = false
+
+local function updateMothBloomReveal()
+    local dusk = workspace:FindFirstChild("Dusk")
+    if not dusk then
+        if mothBloomPrompt then mothBloomPrompt.Enabled = false end
+        return
+    end
+
+    local anchor = dusk:FindFirstChild("MoonBloom")
+    local visualFolder = dusk:FindFirstChild("MoonBloomVisuals")
+    local visual = visualFolder and visualFolder:FindFirstChild("MoonBloomVisual")
+    local mothEquipped = player:GetAttribute("Companion") == "Moth"
+    local found = player:GetAttribute("MoonBloom") == true
+    local revealed = mothEquipped or found
+
+    if visual then
+        for _, descendant in visual:GetDescendants() do
+            if descendant:IsA("BasePart") then
+                descendant.LocalTransparencyModifier = revealed and 0 or 1
+            elseif descendant:IsA("PointLight") then
+                descendant.Enabled = revealed
+            end
+        end
+
+        if not mothBloomHighlight or mothBloomHighlight.Parent ~= visual then
+            mothBloomHighlight = Instance.new("Highlight")
+            mothBloomHighlight.Name = "MoonBloomHighlight"
+            mothBloomHighlight.Adornee = visual
+            mothBloomHighlight.FillColor = Color3.fromRGB(199, 174, 239)
+            mothBloomHighlight.OutlineColor = Color3.fromRGB(239, 224, 255)
+            mothBloomHighlight.FillTransparency = 0.62
+            mothBloomHighlight.OutlineTransparency = 0.08
+            mothBloomHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            mothBloomHighlight.Parent = visual
+        end
+        mothBloomHighlight.Enabled = mothEquipped and not found
+    end
+
+    if anchor and anchor:IsA("BasePart") then
+        if not mothBloomPrompt or mothBloomPrompt.Parent ~= anchor then
+            mothBloomPrompt = Instance.new("ProximityPrompt")
+            mothBloomPrompt.Name = "MoonBloomLocalPrompt"
+            mothBloomPrompt.ObjectText = "Скрытый лунный цветок"
+            mothBloomPrompt.ActionText = "Пробудить цветок"
+            mothBloomPrompt.HoldDuration = 0.35
+            mothBloomPrompt.MaxActivationDistance = 8
+            mothBloomPrompt.RequiresLineOfSight = false
+            mothBloomPrompt.Enabled = false
+            mothBloomPrompt.Parent = anchor
+            mothBloomPrompt.Triggered:Connect(function()
+                event:FireServer("CollectMoonBloom")
+            end)
+        end
+        mothBloomPrompt.Enabled = mothEquipped and not found
+    end
+
+    if mothEquipped and not lastMothEquipped and not found then
+        lastTip = os.clock() + 2.8
+        questText.Text = "Лунная моль озарила тайный цветок! Ищи сияние в Лунной роще."
+    end
+    lastMothEquipped = mothEquipped
+end
+
 player:GetAttributeChangedSignal("FoxCacheSpot"):Connect(updateFoxCacheMarkers)
 player:GetAttributeChangedSignal("Companion"):Connect(updateFoxCacheMarkers)
+player:GetAttributeChangedSignal("Companion"):Connect(updateMothBloomReveal)
+player:GetAttributeChangedSignal("MoonBloom"):Connect(updateMothBloomReveal)
 workspace.DescendantAdded:Connect(function(descendant)
     if descendant.Name == "FoxCache01" or descendant.Name == "FoxCache02" or descendant.Name == "FoxCache03" or descendant.Name == "FoxCacheVisuals" or descendant.Name == "FoxCacheVisual01" or descendant.Name == "FoxCacheVisual02" or descendant.Name == "FoxCacheVisual03" or descendant.Name == "Trail" or descendant.Name == "Bank" then
         task.defer(updateFoxCacheMarkers)
     end
+    if descendant.Name == "Dusk" or descendant.Name == "MoonBloom" or descendant.Name == "MoonBloomVisuals" or descendant.Name == "MoonBloomVisual" then
+        task.defer(updateMothBloomReveal)
+    end
 end)
 updateFoxCacheMarkers()
+updateMothBloomReveal()
 
 local route = {
     {flag = "Fox", area = "Grove", part = "Nest", label = "Лисёнок", hint = "Подружись с лисёнком у гнезда в Солнечной роще."},
     {flag = "Seed", area = "Grove", part = "Trail", label = "Следы на тропе", hint = "Позови лисёнка и попроси его обыскать тропу."},
     {flag = "Moth", area = "Dusk", part = "Nest", label = "Лунная моль", hint = "Подружись с молью у гнезда в Лунной роще."},
+    {flag = "MoonBloom", area = "Dusk", part = "MoonBloom", label = "Тайный лунный цветок", hint = "Позови лунную моль — её сияние раскроет скрытый цветок."},
     {flag = "Flower", area = "HomeIsland", part = "Planter", label = "Лунный цветок", hint = "Позови моль к клумбе возле дома."},
     {flag = "Timber", area = "Grove", part = "Driftwood", label = "Сухие ветви", hint = "Возьми лисёнка к коряге за ветвями для фонаря."},
     {flag = "Lantern", area = "HomeIsland", part = "LanternBase", label = "Садовый фонарь", hint = "Собери фонарь из ветвей на площадке рядом с домом."},
@@ -590,6 +663,9 @@ local function refresh()
         else
             entry.description.Text = descriptions[id]
         end
+        if id == "Moth" and owned then
+            entry.description.Text = player:GetAttribute("MoonBloom") and "Лунное сияние уже пробудило тайный цветок." or equipped and "Сияние готово. Ищи скрытый цветок в Лунной роще." or "Позови моль, чтобы увидеть скрытый цветок."
+        end
         entry.button.BackgroundColor3 = equipped and palette.surfaceLight or palette.surface
         entry.state.TextColor3 = equipped and palette.gold or owned and palette.mint or palette.muted
         entry.action.TextColor3 = owned and palette.mint or palette.gold
@@ -603,6 +679,7 @@ local function refresh()
     moonSeedCount.Text = tostring(player:GetAttribute("Resource_MoonSeed") or 0) .. " шт."
     resourceHeader.Text = "МАТЕРИАЛЫ И ФЕРМА • УР. " .. tostring(player:GetAttribute("Farm_Level") or 1)
     updateFoxCacheMarkers()
+    updateMothBloomReveal()
 end
 
 local function updateRoute()
