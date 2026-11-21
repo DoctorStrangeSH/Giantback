@@ -530,10 +530,10 @@ if bank and gateTracks and gateRune and relicAnchor then
         local side = index % 2 == 0 and 1 or -1
         local sideVector = Vector3.new(-direction.Z, 0, direction.X)
         local frame = CFrame.lookAt(position + sideVector * (0.28 * side), position + sideVector * (0.28 * side) + direction)
-        orb(tracks, "Fox paw pad", Vector3.new(0.34, 0.07, 0.28), frame * CFrame.new(0, 0.04, 0.08), palette.gold, Enum.Material.Neon, 0.18)
+        makePart(tracks, "Fox paw pad", Vector3.new(0.34, 0.07, 0.28), frame * CFrame.new(0, 0.04, 0.08), palette.gold, Enum.Material.Neon, Enum.PartType.Ball, 0.18)
         for toeIndex = 1, 3 do
             local toeX = (toeIndex - 2) * 0.14
-            orb(tracks, "Fox paw toe", Vector3.new(0.12, 0.06, 0.12), frame * CFrame.new(toeX, 0.045, -0.13), palette.gold, Enum.Material.Neon, 0.22)
+            makePart(tracks, "Fox paw toe", Vector3.new(0.12, 0.06, 0.12), frame * CFrame.new(toeX, 0.045, -0.13), palette.gold, Enum.Material.Neon, Enum.PartType.Ball, 0.22)
         end
     end
     for index = 1, 3 do
