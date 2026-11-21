@@ -76,8 +76,8 @@ class MoonGateExpeditionContractTests(unittest.TestCase):
         self.assertIn("local function updateMoonGatePuzzle()", ALBUM)
         self.assertIn("(foxEquipped and player:GetAttribute(\"MoonBloom\") == true) or traceFound", ALBUM)
         self.assertIn("gateOpen or (traceFound and mothEquipped)", ALBUM)
-        self.assertIn("setLocalModelVisibility(sealVisual, not gateOpen)", ALBUM)
-        self.assertIn("setLocalModelVisibility(clearingVisual, gateOpen)", ALBUM)
+        self.assertIn("setLocalModelVisibility(sealVisual, not gateOpen, gateJustOpened and 0.8 or nil)", ALBUM)
+        self.assertIn("setLocalModelVisibility(clearingVisual, gateOpen, gateJustOpened and 0.95 or nil)", ALBUM)
 
     def test_local_prompts_are_gated_by_the_correct_companion_and_progress(self):
         self.assertIn('"SearchMoonGate"', ALBUM)
@@ -91,7 +91,8 @@ class MoonGateExpeditionContractTests(unittest.TestCase):
     def test_locked_gate_uses_a_local_collision_barrier_that_opens_for_its_owner(self):
         self.assertIn('moonGateBarrier.Name = "MoonGateLocalBarrier"', ALBUM)
         self.assertIn("moonGateBarrier.CanCollide = true", ALBUM)
-        self.assertIn("if gateOpen or not runeAnchor", ALBUM)
+        self.assertIn("if gateOpen then", ALBUM)
+        self.assertIn("if not runeAnchor or not runeAnchor:IsA(\"BasePart\") then", ALBUM)
         self.assertIn("moonGateBarrier:Destroy()", ALBUM)
         self.assertIn("updateMoonGateBarrier(runeAnchor, gateOpen)", ALBUM)
 
