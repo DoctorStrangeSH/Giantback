@@ -15,6 +15,12 @@ end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "Flower", "Timber", "Lantern", "Lit"}
 local inventoryKeys = {"SunPetal", "MoonPetal"}
+local resourceNodeIds = {
+    GroveSunPetal01 = true,
+    GroveSunPetal02 = true,
+    DuskMoonPetal01 = true,
+    DuskMoonPetal02 = true,
+}
 local sessions = {}
 local atDusk, sailing = false, false
 giant:SetAttribute("Dock", "Grove")
@@ -34,13 +40,15 @@ end
 
 local function save(player)
     local session = sessions[player]
-    if not session or not session.online or not store then return end
+    if not session or not session.online or not store then return false end
     if session.saving then
         session.saveAgain = true
-        return
+        repeat task.wait() until not session.saving
+        return session.lastSaveOk == true
     end
 
     session.saving = true
+    local allOk = true
     repeat
         session.saveAgain = false
         local snapshot = {}
@@ -51,31 +59,67 @@ local function save(player)
             inventorySnapshot[key] = math.max(0, math.floor(tonumber(session.inventory[key]) or 0))
         end
 
+        local cooldownSnapshot = {}
+        for nodeId, readyAt in session.resourceCooldowns do
+            if resourceNodeIds[nodeId] then
+                cooldownSnapshot[nodeId] = math.max(0, math.floor(tonumber(readyAt) or 0))
+            end
+        end
+
+        local collectedSnapshot = {}
+        for nodeId, collected in session.collectedNodes do
+            if resourceNodeIds[nodeId] and collected == true then
+                collectedSnapshot[nodeId] = true
+            end
+        end
+
         local ok, err = pcall(function()
             store:UpdateAsync(tostring(player.UserId), function(old)
                 if type(old) ~= "table" then old = {} end
                 for _, key in progress do
                     old[key] = old[key] == true or snapshot[key]
                 end
-                old.schemaVersion = 2
+                old.schemaVersion = 3
+
                 local savedInventory = type(old.inventory) == "table" and old.inventory or {}
                 for _, key in inventoryKeys do
                     savedInventory[key] = inventorySnapshot[key]
                 end
                 old.inventory = savedInventory
+
+                local savedCooldowns = type(old.resourceCooldowns) == "table" and old.resourceCooldowns or {}
+                for nodeId, readyAt in cooldownSnapshot do
+                    savedCooldowns[nodeId] = math.max(tonumber(savedCooldowns[nodeId]) or 0, readyAt)
+                end
+                old.resourceCooldowns = savedCooldowns
+
+                local savedCollected = type(old.collectedNodes) == "table" and old.collectedNodes or {}
+                for nodeId, collected in collectedSnapshot do
+                    if collected then savedCollected[nodeId] = true end
+                end
+                old.collectedNodes = savedCollected
                 return old
             end)
         end)
         if not ok then
             warn("Album save:", err)
+            allOk = false
             break
         end
     until not session.saveAgain
+
     session.saving = false
+    session.lastSaveOk = allOk
+    return allOk
 end
 local function init(player)
     if sessions[player] then return end
-    local session = {inventory = {}, online = false}
+    local session = {
+        inventory = {},
+        resourceCooldowns = {},
+        collectedNodes = {},
+        online = false,
+    }
     for _, key in inventoryKeys do session.inventory[key] = 0 end
     sessions[player] = session
     player.RespawnLocation = giant.HomeSpawn
@@ -90,6 +134,20 @@ local function init(player)
             for _, key in inventoryKeys do
                 local amount = tonumber(savedInventory[key]) or 0
                 session.inventory[key] = math.clamp(math.floor(amount), 0, 1000000)
+            end
+
+            local savedCooldowns = type(data.resourceCooldowns) == "table" and data.resourceCooldowns or {}
+            for nodeId, readyAt in savedCooldowns do
+                if resourceNodeIds[nodeId] and type(readyAt) == "number" then
+                    session.resourceCooldowns[nodeId] = math.max(0, math.floor(readyAt))
+                end
+            end
+
+            local savedCollected = type(data.collectedNodes) == "table" and data.collectedNodes or {}
+            for nodeId, collected in savedCollected do
+                if resourceNodeIds[nodeId] and collected == true then
+                    session.collectedNodes[nodeId] = true
+                end
             end
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
@@ -127,7 +185,7 @@ local function prompt(part, title, verb, callback)
     p.Triggered:Connect(function(player)
         local character = player.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
-        if root and player:GetAttribute("Ready") and (root.Position-part.Position).Magnitude <= 12 then
+        if root and player:GetAttribute("Ready") and (root.Position-part.Position).Magnitude <= p.MaxActivationDistance + 1 then
             callback(player)
         end
     end)
@@ -156,8 +214,8 @@ encounter("Moth",workspace.Dusk,3.5)
 
 -- Server-authoritative gatherables. A node can be claimed once, is removed for
 -- everyone, and returns only after its explicit cooldown. Inventory is saved per player.
-local resourceStates = {}
-
+-- Resource nodes are shared in the world, but collection state is personal.
+-- Each player gets an independent cooldown; the client hides a collected node locally.
 local function createResourceFlower(def, position)
     local model = Instance.new("Model")
     model.Name = def.key
@@ -255,6 +313,7 @@ local resourceDefinitions = {
         offset = Vector3.new(-12, 0, 3),
         petalColor = Color3.fromRGB(244, 190, 111),
         heartColor = Color3.fromRGB(255, 226, 145),
+        kind = "renewable",
         respawnSeconds = 300,
     },
     {
@@ -265,6 +324,7 @@ local resourceDefinitions = {
         offset = Vector3.new(13, 0, -7),
         petalColor = Color3.fromRGB(244, 190, 111),
         heartColor = Color3.fromRGB(255, 226, 145),
+        kind = "renewable",
         respawnSeconds = 300,
     },
     {
@@ -275,6 +335,7 @@ local resourceDefinitions = {
         offset = Vector3.new(-11, 0, 5),
         petalColor = Color3.fromRGB(190, 164, 232),
         heartColor = Color3.fromRGB(218, 208, 255),
+        kind = "renewable",
         respawnSeconds = 300,
     },
     {
@@ -285,17 +346,16 @@ local resourceDefinitions = {
         offset = Vector3.new(12, 0, -8),
         petalColor = Color3.fromRGB(190, 164, 232),
         heartColor = Color3.fromRGB(218, 208, 255),
+        kind = "renewable",
         respawnSeconds = 300,
     },
 }
 
 local function spawnResource(def)
-    local state = resourceStates[def.key]
-    if not state then
-        state = {active = false, model = nil}
-        resourceStates[def.key] = state
+    if not resourceNodeIds[def.key] then
+        warn("Unknown resource node ID:", def.key)
+        return
     end
-    if state.active then return end
 
     local island = workspace:FindFirstChild(def.area)
     local bank = island and island:FindFirstChild("Bank")
@@ -307,39 +367,56 @@ local function spawnResource(def)
         folder.Name = "ResourceNodes"
         folder.Parent = island
     end
+    if folder:FindFirstChild(def.key) then return end
 
     local position = CFrame.new(
         bank.Position + Vector3.new(def.offset.X, bank.Size.Y / 2 + 0.18, def.offset.Z)
     )
     local model, anchor = createResourceFlower(def, position)
     model.Parent = folder
-    state.model = model
-    state.active = true
 
     prompt(anchor, def.displayName, "Собрать", function(player)
         local session = sessions[player]
-        if not state.active or not session or not player:GetAttribute("Ready") then return end
+        if not session or not player:GetAttribute("Ready") then return end
 
-        -- Claim before changing inventory: two players cannot receive the same node.
-        state.active = false
-        if state.model then
-            state.model:Destroy()
-            state.model = nil
+        local now = os.time()
+        local nextReadyAt
+        if def.kind == "unique" then
+            if session.collectedNodes[def.key] then
+                event:FireClient(player, "ResourcePicked", {
+                    nodeId = def.key,
+                    unique = true,
+                })
+                return tip(player, "Эта находка уже есть в твоей коллекции.")
+            end
+            session.collectedNodes[def.key] = true
+        else
+            local readyAt = session.resourceCooldowns[def.key] or 0
+            if readyAt > now then
+                event:FireClient(player, "ResourcePicked", {
+                    nodeId = def.key,
+                    readyAt = readyAt,
+                })
+                local remaining = readyAt - now
+                return tip(player, "Цветок снова расцветёт через " .. tostring(math.ceil(remaining / 60)) .. " мин.")
+            end
+            nextReadyAt = now + math.max(1, math.floor(def.respawnSeconds or 300))
+            session.resourceCooldowns[def.key] = nextReadyAt
         end
 
         session.inventory[def.itemId] = (session.inventory[def.itemId] or 0) + 1
         syncInventory(player)
+        event:FireClient(player, "ResourcePicked", {
+            nodeId = def.key,
+            unique = def.kind == "unique",
+            readyAt = nextReadyAt,
+        })
         tip(player, "Получено: " .. def.displayName .. " ×1")
 
-        if session.online then
-            task.spawn(save, player)
+        if session.online and not save(player) then
+            warn("Resource pickup save will be retried:", player.UserId, def.key)
+            tip(player, "Предмет получен. Сохранение временно задерживается и будет повторено автоматически.")
         end
-
-        task.delay(def.respawnSeconds, function()
-            if not state.active then
-                spawnResource(def)
-            end
-        end)
     end)
 end
 
@@ -349,7 +426,29 @@ end
 
 event.OnServerEvent:Connect(function(player, action)
     if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
-    if pets[action] and player:GetAttribute(action) then player:SetAttribute("Companion",action) end
+
+    if action == "RequestResourceState" then
+        local session = sessions[player]
+        if not session then return end
+        local state = {cooldowns = {}, collected = {}}
+        local now = os.time()
+        for nodeId, readyAt in session.resourceCooldowns do
+            if resourceNodeIds[nodeId] and readyAt > now then
+                state.cooldowns[nodeId] = readyAt
+            end
+        end
+        for nodeId, collected in session.collectedNodes do
+            if resourceNodeIds[nodeId] and collected == true then
+                state.collected[nodeId] = true
+            end
+        end
+        event:FireClient(player, "ResourceState", state)
+        return
+    end
+
+    if pets[action] and player:GetAttribute(action) then
+        player:SetAttribute("Companion",action)
+    end
 end)
 prompt(workspace.Grove.Trail,"Следы в траве","Попросить лисёнка искать",function(player)
     if player:GetAttribute("Companion") ~= "Fox" then return tip(player,"Позови лисёнка из альбома.") end
