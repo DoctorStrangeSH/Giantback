@@ -12,6 +12,16 @@ SPEC = (ROOT / "PROJECT_SPEC.md").read_text(encoding="utf-8")
 
 
 class RebootContractTests(unittest.TestCase):
+
+    def test_toast_lifetime_is_generation_safe_when_messages_arrive_quickly(self):
+        self.assertIn("local toastGeneration = 0", HUD)
+        self.assertIn("local currentGeneration = toastGeneration", HUD)
+        self.assertIn("currentGeneration ~= toastGeneration", HUD)
+        self.assertIn("toastTween:Cancel()", HUD)
+
+    def test_compact_panel_height_is_clamped_for_short_viewports(self):
+        self.assertIn("math.max(180, math.min(430, height - 150))", HUD)
+
     def test_product_spec_uses_fixed_archipelago(self):
         self.assertIn("Острова **не перемещаются**", SPEC)
         self.assertIn("строительство мостов", SPEC)
