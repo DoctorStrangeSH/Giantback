@@ -29,7 +29,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("for nodeId, collected in savedCollected do", WORLD)
 
     def test_profile_schema_and_migration_compatible_fields(self):
-        self.assertIn("old.schemaVersion = 3", WORLD)
+        self.assertIn("old.schemaVersion = 4", WORLD)
         self.assertIn("data.resourceCooldowns", WORLD)
         self.assertIn("data.collectedNodes", WORLD)
 
