@@ -41,7 +41,8 @@ class BridgeRepairContractTests(unittest.TestCase):
     def test_home_bridge_starts_as_a_non_collidable_blueprint(self):
         self.assertIn('built=False)', BUILD)
         self.assertIn('prop(piece, "float", "Transparency", 0.62)', BUILD)
-        self.assertIn('prop(piece, "bool", "CanCollide", "false")', BUILD)
+        self.assertIn('for key in ("CanCollide", "CanTouch", "CanQuery")', BUILD)
+        self.assertIn('prop(piece, "bool", key, "false")', BUILD)
         self.assertIn('add_radial_bridge(bridge_dusk, "MoonBridge", math.pi / 8, 73, 120)', BUILD)
 
     def test_repair_checks_server_cost_and_activates_only_owners_bridge(self):
