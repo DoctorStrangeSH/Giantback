@@ -534,6 +534,9 @@ local function searchMoonGate(player)
     if not player:GetAttribute("Fox") or player:GetAttribute("Companion") ~= "Fox" then
         return tip(player, "Позови лисёнка — только его нюх найдёт следы у древних корней.")
     end
+    if not player:GetAttribute("Moth") or not player:GetAttribute("MoonBloom") then
+        return tip(player, "Сначала познакомься с лунной молью и пробуди её первый цветок.")
+    end
     if player:GetAttribute("MoonGateTrace") then
         return tip(player, "Лисёнок уже нашёл следы. Теперь руны ждут лунного света.")
     end
