@@ -261,6 +261,9 @@ local function addPlot(plotId, index)
     label(item, "State", stateText, UDim2.new(1, -72, 0, 30), UDim2.fromOffset(60, 31), 12, palette.muted)
 end
 
+local showToast
+local getObjective
+
 local function renderCity()
     local cityLevel = tonumber(player:GetAttribute("City_Level")) or 1
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
@@ -339,8 +342,6 @@ local panelTitles = {
 
 local activeTab = nil
 local navButtons = {}
-local showToast
-local getObjective
 
 local function openTab(tabName)
     if activeTab == tabName and panel.Visible then
