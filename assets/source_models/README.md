@@ -196,3 +196,8 @@ The Moth OBJ deliberately keeps animated pieces in separate left/right objects. 
 | MothGlowCore | Moonlight glow |
 
 The matching pivot locations are validated by the runtime blockout contract, but must still be checked after import. Do not merge the left/right animated groups into one MeshPart.
+
+
+## Visual review build
+
+The `Fox Hero Blender visual acceptance` workflow produces a reproducible review package with four PNG angles, a Blender project, OBJ, rig metadata and mesh-quality report. Download the `Fox-Hero-Blender-Visual-Review` artifact from the workflow run. CI output checks do not replace human visual acceptance.
