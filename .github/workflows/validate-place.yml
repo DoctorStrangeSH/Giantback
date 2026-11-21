@@ -87,6 +87,10 @@ jobs:
               "ResourcePicked",
               "p.MaxActivationDistance + 1",
               "kind = \"renewable\"",
+              "old.schemaVersion = 3",
+              "old.resourceCooldowns = savedCooldowns",
+              "old.collectedNodes = savedCollected",
+              "LocalTransparencyModifier = visible and 0 or 1",
           ]
           combined = "\n".join(sources)
           missing_markers = [marker for marker in required_markers if marker not in combined]
