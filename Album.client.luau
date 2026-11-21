@@ -335,6 +335,7 @@ local function updateFoxCacheMarkers()
         if anchor and anchor:IsA("BasePart") then
             local localPrompt = foxCachePrompts[cacheId]
             if not localPrompt or not localPrompt.Parent then
+                local cacheIdForPrompt = cacheId
                 localPrompt = Instance.new("ProximityPrompt")
                 localPrompt.Name = "FoxCacheLocalPrompt"
                 localPrompt.ObjectText = "Тайник лисёнка"
@@ -345,7 +346,7 @@ local function updateFoxCacheMarkers()
                 localPrompt.Enabled = false
                 localPrompt.Parent = anchor
                 localPrompt.Triggered:Connect(function()
-                    event:FireServer("CollectFoxCache", cacheId)
+                    event:FireServer("CollectFoxCache", cacheIdForPrompt)
                 end)
                 foxCachePrompts[cacheId] = localPrompt
             end
@@ -376,7 +377,7 @@ end
 player:GetAttributeChangedSignal("FoxCacheSpot"):Connect(updateFoxCacheMarkers)
 player:GetAttributeChangedSignal("Companion"):Connect(updateFoxCacheMarkers)
 workspace.DescendantAdded:Connect(function(descendant)
-    if descendant.Name == "FoxCache01" or descendant.Name == "FoxCache02" or descendant.Name == "FoxCache03" or descendant.Name == "FoxCacheVisuals" then
+    if descendant.Name == "FoxCache01" or descendant.Name == "FoxCache02" or descendant.Name == "FoxCache03" or descendant.Name == "FoxCacheVisuals" or descendant.Name == "FoxCacheVisual01" or descendant.Name == "FoxCacheVisual02" or descendant.Name == "FoxCacheVisual03" then
         task.defer(updateFoxCacheMarkers)
     end
 end)
