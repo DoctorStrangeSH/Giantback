@@ -2,7 +2,8 @@
 
 | Source file | Roblox MeshPart asset ID | Scale | Pivot | Studio checked | Notes |
 |---|---|---|---|---|---|
-| fox_companion.obj | pending import | pending | pending | no | keep tail and legs riggable |
+| fox_companion.obj | pending import | pending | pending | no | current source; retained as rollback baseline |
+| fox_companion_hero.obj | not generated yet | pending | pending | no | Blender generator added; preview output and Studio review pending |
 | moth_companion.obj | pending import | pending | pending | no | keep wing groups separate |
 | home_cottage.obj | pending import | pending | pending | no | static building |
 | farm_bed.obj | pending import | pending | pending | no | crop visuals may be separate |
