@@ -871,7 +871,6 @@ local function refresh()
     resourceHeader.Text = "МАТЕРИАЛЫ И ФЕРМА • УР. " .. tostring(player:GetAttribute("Farm_Level") or 1)
     updateFoxCacheMarkers()
     updateMothBloomReveal()
-    updateMoonGatePuzzle()
 end
 
 local function updateRoute()
