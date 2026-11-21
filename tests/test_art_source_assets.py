@@ -47,6 +47,16 @@ class OriginalMeshSourceTests(unittest.TestCase):
             self.assertTrue(used, stem)
             self.assertTrue(used.issubset(declared), f"{stem}: {used - declared}")
 
+
+    def test_world_visual_palette_defines_every_referenced_color(self):
+        script = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
+        palette_block = re.search(r"local palette = \{(.*?)\n\}", script, re.DOTALL)
+        self.assertIsNotNone(palette_block)
+        declared = set(re.findall(r"^\s+([A-Za-z_]\w*)\s*=", palette_block.group(1), re.MULTILINE))
+        referenced = set(re.findall(r"palette\.([A-Za-z_]\w*)", script))
+        self.assertTrue(referenced)
+        self.assertEqual(referenced - declared, set())
+
     def test_companion_sources_keep_named_rigging_parts(self):
         fox = (ASSET_DIR / "fox_companion.obj").read_text(encoding="utf-8")
         moth = (ASSET_DIR / "moth_companion.obj").read_text(encoding="utf-8")
