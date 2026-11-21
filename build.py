@@ -112,9 +112,9 @@ for label, center_x, center_z, bank_size, bank_color, canopy in island_specs:
     if label == "Grove":
         part(model, "Driftwood", (center_x + 10, 12.3, center_z + 8), (5, 1.6, 2), "A17B55", True)
         cache_specs = [
-            ("FoxCache01", (center_x - 34, 12.05, center_z - 35)),
-            ("FoxCache02", (center_x + 39, 12.05, center_z - 3)),
-            ("FoxCache03", (center_x - 8, 12.05, center_z + 50)),
+            ("FoxCache01", (center_x - 15, 12.05, center_z + 30)),
+            ("FoxCache02", (center_x + 35, 12.05, center_z - 15)),
+            ("FoxCache03", (center_x - 15, 12.05, center_z - 45)),
         ]
         for cache_name, cache_position in cache_specs:
             cache_anchor = part(model, cache_name, cache_position, (1.1, 0.25, 1.1), "91B883")
