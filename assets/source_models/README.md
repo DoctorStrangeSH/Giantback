@@ -59,6 +59,13 @@ blender --background --python tools/blender/prepare_source_uv.py -- --input asse
 The second command is only for intentionally replacing a previous preview. To avoid overwriting, use a fresh output folder instead.
 
 
+
+### UV collapse diagnostics
+
+The pure-Python OBJ validator also calculates the 2D shoelace area of every exported face in UV space. Faces whose UV polygon collapses to a line or point are rejected, and the report records the summed UV face area and the number of collapsed faces. This catches a class of broken unwraps that a simple 0–1 bounds check cannot detect.
+
+This is not a complete overlap or texel-density analyzer: overlapping islands and uneven scale still require checker-texture inspection in Blender.
+
 ### Export validation is independently tested
 
 The Blender script delegates OBJ validation to `tools/blender/obj_export_validation.py`, a pure-Python module with no Blender dependency. CI exercises real temporary OBJ fixtures, including valid positive and negative-relative indices, invalid vertex/UV/normal references, missing UV data, and UV coordinates outside the atlas. The Blender export step also requires the generated MTL file to exist and be referenced by the OBJ.
