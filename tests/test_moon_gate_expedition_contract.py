@@ -95,6 +95,14 @@ class MoonGateExpeditionContractTests(unittest.TestCase):
         self.assertIn("moonGateBarrier:Destroy()", ALBUM)
         self.assertIn("updateMoonGateBarrier(runeAnchor, gateOpen)", ALBUM)
 
+
+    def test_gate_seal_and_local_barrier_are_ground_aligned(self):
+        self.assertIn("local groundY = bank.Position.Y + bank.Size.Y / 2 + 0.13", VISUALS)
+        self.assertIn("local gatePosition = Vector3.new(gateRune.Position.X, groundY", VISUALS)
+        self.assertIn('Vector3.new(6.7, 5.1, 1.25)', VISUALS)
+        self.assertIn("local floorY = bank and bank.Position.Y + bank.Size.Y / 2 + 0.13", ALBUM)
+        self.assertIn("floorY + 2.55", ALBUM)
+
     def test_fox_gate_search_is_unlocked_only_after_the_moth_and_moonbloom(self):
         self.assertIn('if not player:GetAttribute("Moth") or not player:GetAttribute("MoonBloom") then', WORLD)
         self.assertIn('foxEquipped and player:GetAttribute("MoonBloom") == true and not traceFound', ALBUM)
