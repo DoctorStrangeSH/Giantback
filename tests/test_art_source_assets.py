@@ -1,3 +1,4 @@
+import ast
 from pathlib import Path
 import re
 import struct
@@ -12,6 +13,7 @@ ASSET_DIR = ROOT / "assets" / "source_models"
 sys.path.insert(0, str(ROOT / "tools" / "blender"))
 from obj_export_validation import validate_obj
 from generate_uv_checker import build_checker
+from fox_rig_contract import validate_rig_payload
 REQUIRED = (
     "fox_companion",
     "moth_companion",
@@ -72,6 +74,66 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn("bpy.ops.uv.pack_islands(", source)
         self.assertIn("export_uv=True", source)
         self.assertIn("export_normals=True", source)
+
+    def test_hero_rig_sidecar_matches_all_groups_and_has_valid_pivots(self):
+        source_path = ROOT / "tools" / "blender" / "build_fox_companion.py"
+        tree = ast.parse(source_path.read_text(encoding="utf-8"))
+        assignments = {
+            node.targets[0].id: ast.literal_eval(node.value)
+            for node in tree.body
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id in {"GROUPS", "RIG_PARTS"}
+        }
+        groups = assignments["GROUPS"]
+        parts = assignments["RIG_PARTS"]
+        payload = {
+            "asset": "fox_companion_hero",
+            "coordinate_system": "Y-up; character faces -Z",
+            "units": "source model units",
+            "parts": parts,
+        }
+        result = validate_rig_payload(payload, expected_groups=groups)
+        self.assertEqual(result["part_count"], 17)
+        self.assertEqual(result["animated_count"], 10)
+        self.assertEqual(result["attachment_count"], 3)
+
+    def test_hero_rig_validator_rejects_missing_groups_and_bad_pivots(self):
+        source_path = ROOT / "tools" / "blender" / "build_fox_companion.py"
+        tree = ast.parse(source_path.read_text(encoding="utf-8"))
+        assignments = {
+            node.targets[0].id: ast.literal_eval(node.value)
+            for node in tree.body
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id in {"GROUPS", "RIG_PARTS"}
+        }
+        payload = {
+            "asset": "fox_companion_hero",
+            "coordinate_system": "Y-up; character faces -Z",
+            "units": "source model units",
+            "parts": assignments["RIG_PARTS"],
+        }
+        with self.assertRaisesRegex(ValueError, "group mismatch"):
+            validate_rig_payload(payload, expected_groups=assignments["GROUPS"] + ("Unexpected",))
+        broken = {**payload, "parts": {**payload["parts"], "FoxTail": {**payload["parts"]["FoxTail"], "pivot": [0, float("nan"), 1]}}}
+        with self.assertRaisesRegex(ValueError, "three finite numbers"):
+            validate_rig_payload(broken, expected_groups=assignments["GROUPS"])
+
+    def test_hero_rig_validator_rejects_unknown_attachment_parent(self):
+        payload = {
+            "asset": "fox_companion_hero",
+            "coordinate_system": "Y-up; character faces -Z",
+            "units": "source model units",
+            "parts": {
+                "FoxTail": {"runtime_name": "Tail", "pivot": [0, 0, 0], "animated": True},
+                "FoxTailTip": {"runtime_name": "Tail tip", "pivot": [0, 1, 0], "animated": True, "attach_to": "MissingTail"},
+            },
+        }
+        with self.assertRaisesRegex(ValueError, "unknown group"):
+            validate_rig_payload(payload)
 
     def test_hero_generator_has_separate_face_ear_tail_and_paw_forms(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
