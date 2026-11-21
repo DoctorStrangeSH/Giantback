@@ -37,6 +37,7 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
         self.assertIn('line.startswith("vt ")', validator)
         self.assertIn('line.startswith("vn ")', validator)
         self.assertIn('line.startswith("f ")', validator)
+        self.assertIn("vertex index out of range", validator)
         self.assertIn("UV index out of range", validator)
         self.assertIn("normal index out of range", validator)
         self.assertIn("export_stats = validate_export(destination)", source)
