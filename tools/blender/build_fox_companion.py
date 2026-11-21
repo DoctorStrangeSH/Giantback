@@ -177,19 +177,26 @@ def lofted_muzzle(name, profiles, mat, sides=48):
 
 
 def leaf_mesh(name, center, width, height, depth, mat, facing=-1.0):
-    """A softly pointed ear/tuft leaf with a rounded cross-section."""
+    """Create a sculpted ear shell with a curved centerline, tapered tip and convex front."""
     cx, cy, cz = center
-    ring_count, sides = 9, 20
+    ring_count, sides = 25, 32
     verts, faces = [], []
     for row in range(ring_count):
         t = row / (ring_count - 1)
-        y = cy + (t - 0.5) * height
-        profile = max(0.035, math.sin(math.pi * (t ** 0.92)) ** 0.72)
-        bend = 0.055 * math.sin(t * math.pi)
+        # Broad lower ear, gently pinched upper third and a rounded pointed tip.
+        profile = max(0.018, math.sin(math.pi * (t ** 0.82)) ** 0.78)
+        profile *= 1.0 - 0.12 * t
+        center_x = cx + (t ** 1.55) * width * 0.075 * (1 if cx > 0 else -1)
+        center_z = cz + 0.045 * math.sin(math.pi * t)
         for side in range(sides):
             angle = 2.0 * math.pi * side / sides
-            x = cx + math.cos(angle) * width * profile * 0.5
-            z = cz + facing * (math.sin(angle) * depth * profile * 0.5 + bend)
+            across = math.cos(angle)
+            front_back = math.sin(angle)
+            x = center_x + across * width * profile * 0.5
+            y = cy + (t - 0.5) * height
+            # Front surface is softly convex; rear remains fuller near the base.
+            bulge = depth * profile * 0.5 * front_back
+            z = center_z + facing * (bulge + 0.035 * math.sin(math.pi * t))
             verts.append((x, y, z))
     for row in range(ring_count - 1):
         for side in range(sides):
@@ -204,7 +211,6 @@ def leaf_mesh(name, center, width, height, depth, mat, facing=-1.0):
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     return smooth(obj, mat, name)
-
 
 def curved_plume(name, points, radii, mat, sides=24, steps_per_segment=6):
     """Smooth tapered tube following a Catmull-Rom centerline."""
