@@ -52,6 +52,15 @@ jobs:
               "WorldVisuals",
               "Album",
               "GiantbackHUD",
+              "PublicSpawn",
+              "HomeBridge01",
+              "HomeBridge02",
+              "HomeBridge03",
+              "HomeBridge04",
+              "HomeBridge05",
+              "HomeBridge06",
+              "HomeBridge07",
+              "HomeBridge08",
           }
           missing = required - names
           if missing:
@@ -104,7 +113,7 @@ jobs:
               "HomeSpawn",
               "OwnerUserId",
               "savedFarm.plots = citySnapshot.farm.plots",
-              "type(data.island) == \\"table\\" and data.island or data.city",
+              'type(data.island) == "table" and data.island or data.city',
               "player.RespawnLocation = homeSpawn",
               "occupiedHomeSlots[session.homeSlot] = nil",
               "CarrotSeed",
