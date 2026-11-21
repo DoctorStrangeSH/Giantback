@@ -49,7 +49,7 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
 class UVCheckerTextureTests(unittest.TestCase):
     def test_checker_generator_emits_valid_rgb_png_with_expected_dimensions(self):
         png = build_checker(size=128, tiles=8, subdivisions=4)
-        self.assertTrue(png.startswith(b"\\x89PNG\\r\\n\\x1a\\n"))
+        self.assertTrue(png.startswith(bytes((137, 80, 78, 71, 13, 10, 26, 10))))
         offset = 8
         chunks = {}
         while offset < len(png):
