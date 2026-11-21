@@ -78,6 +78,27 @@ for x, label, canopy in [(0, "Grove", "6DA878"), (100, "Dusk", "AA83B3")]:
     if label == "Grove":
         part(model, "Driftwood", (x + 10, 12.3, -32), (5, 1.6, 2), "A17B55", True)
 
+# Permanent wooden bridges replace the old moving-island travel loop.
+bridge_home = obj(w, "Model", "BridgeToGrove")
+for i, z in enumerate((-14.5, -17.5, -20.5)):
+    part(bridge_home, "BridgeDeck", (0, 12.0, z), (5.2, 0.48, 3.0), "A87950")
+for side in (-1, 1):
+    part(bridge_home, "BridgeRail", (side * 2.65, 13.0, -17.5), (0.35, 1.55, 9.0), "79583F")
+    for z in (-21.0, -17.5, -14.0):
+        part(bridge_home, "BridgePost", (side * 2.65, 13.1, z), (0.55, 2.0, 0.55), "936847")
+
+bridge_forest = obj(w, "Model", "BridgeToDusk")
+for i in range(15):
+    x = 25.0 + i * 3.55
+    part(bridge_forest, "BridgeDeck", (x, 12.0, -40), (3.35, 0.48, 5.3), "A87950")
+for side in (-1, 1):
+    part(bridge_forest, "BridgeRail", (50.0, 13.0, -40 + side * 2.65), (55.0, 0.35, 0.35), "79583F")
+    for i in range(8):
+        x = 25.0 + i * 7.1
+        part(bridge_forest, "BridgePost", (x, 13.1, -40 + side * 2.65), (0.55, 2.0, 0.55), "936847")
+for x in (27.0, 73.0):
+    part(bridge_forest, "BridgeLamp", (x, 14.0, -40), (0.55, 2.6, 0.55), "CE9661")
+
 storage = obj(doc, "ReplicatedStorage", "ReplicatedStorage")
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
