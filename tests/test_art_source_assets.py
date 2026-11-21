@@ -59,7 +59,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('if output.exists() and any(output.iterdir()) and not args.overwrite', source)
         self.assertNotIn('fox_companion.obj"', source)
 
-    def test_hero_generator_preserves_all_sixteen_runtime_rig_groups(self):
+    def test_hero_generator_preserves_all_seventeen_runtime_rig_groups(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
         expected = (
             "FoxBody", "FoxBelly", "FoxHead", "FoxMuzzle",
@@ -74,6 +74,10 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn("bpy.ops.uv.pack_islands(", source)
         self.assertIn("export_uv=True", source)
         self.assertIn("export_normals=True", source)
+        self.assertIn("def write_mesh_quality_report(output, objects):", source)
+        self.assertIn("fox_companion_hero_mesh_report.json", source)
+        self.assertIn("if not obj.data.uv_layers:", source)
+        self.assertIn("if not obj.data.materials or any(mat is None for mat in obj.data.materials):", source)
 
     def test_hero_rig_sidecar_matches_all_groups_and_has_valid_pivots(self):
         source_path = ROOT / "tools" / "blender" / "build_fox_companion.py"
