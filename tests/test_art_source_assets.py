@@ -78,6 +78,11 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn("fox_companion_hero_mesh_report.json", source)
         self.assertIn("if not obj.data.uv_layers:", source)
         self.assertIn("if not obj.data.materials or any(mat is None for mat in obj.data.materials):", source)
+        self.assertIn("import bmesh", source)
+        self.assertIn("bmesh.ops.recalc_face_normals(bm, faces=bm.faces)", source)
+        self.assertIn("face.calc_area() <= 1e-10", source)
+        self.assertIn("not edge.is_manifold", source)
+        self.assertIn('"non_manifold_edges": 0', source)
 
     def test_hero_rig_sidecar_matches_all_groups_and_has_valid_pivots(self):
         source_path = ROOT / "tools" / "blender" / "build_fox_companion.py"
