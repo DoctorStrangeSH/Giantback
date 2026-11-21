@@ -139,6 +139,8 @@ jobs:
               "FoxCacheLocalPrompt",
               "FoxCacheHighlight",
               "FoxCacheVisuals",
+              "foxSniffUntil",
+              "sniffing and 9 or 4.2",
               "MoonSeed",
               'itemId = "MoonSeed"',
               "FoxCache01",
