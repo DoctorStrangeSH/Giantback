@@ -149,6 +149,35 @@ f -3/-3/-1 -2/-2/-1 -1/-1/-1
                 with self.assertRaisesRegex(RuntimeError, message):
                     validate_obj(path)
 
+    def test_collapsed_uv_faces_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._write_obj(Path(directory), """v 0 0 0
+v 1 0 0
+v 0 1 0
+vt 0.5 0.5
+vt 0.5 0.5
+vt 0.5 0.5
+vn 0 0 1
+f 1/1/1 2/2/1 3/3/1
+""")
+            with self.assertRaisesRegex(RuntimeError, "zero-area UVs"):
+                validate_obj(path)
+
+    def test_validator_reports_uv_face_area_for_review(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._write_obj(Path(directory), """v 0 0 0
+v 1 0 0
+v 0 1 0
+vt 0 0
+vt 1 0
+vt 0 1
+vn 0 0 1
+f 1/1/1 2/2/1 3/3/1
+""")
+            result = validate_obj(path)
+            self.assertEqual(result["uv_degenerate_faces"], 0)
+            self.assertAlmostEqual(result["uv_face_area_total"], 0.5)
+
     def test_uv_coordinates_outside_atlas_are_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             path = self._write_obj(Path(directory), """v 0 0 0
