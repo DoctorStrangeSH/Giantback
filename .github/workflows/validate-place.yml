@@ -140,7 +140,7 @@ jobs:
               "FoxCacheHighlight",
               "FoxCacheVisuals",
               "MoonSeed",
-              "itemId = \\"MoonSeed\\"",
+              'itemId = "MoonSeed"',
               "FoxCache01",
               "FoxCache02",
               "FoxCache03",
