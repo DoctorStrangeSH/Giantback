@@ -490,6 +490,8 @@ createPersonalCity = function(player, session)
     for _, source in giant:GetChildren() do
         if source:IsA("BasePart") and personalPartNames[source.Name] then
             local clone = source:Clone()
+            clone.CanCollide = false
+            clone.CanTouch = false
             clone.CastShadow = false
             clone.Parent = cityModel
             if clone.Name == "Planter" then planter = clone end
