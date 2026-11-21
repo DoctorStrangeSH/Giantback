@@ -1,14 +1,17 @@
 from pathlib import Path
 import re
+import struct
 import sys
 import tempfile
 import unittest
+import zlib
 
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSET_DIR = ROOT / "assets" / "source_models"
 sys.path.insert(0, str(ROOT / "tools" / "blender"))
 from obj_export_validation import validate_obj
+from generate_uv_checker import build_checker
 REQUIRED = (
     "fox_companion",
     "moth_companion",
@@ -41,6 +44,34 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
         self.assertIn("export_stats = validate_obj(destination)", source)
         self.assertIn("material_file = destination.with_suffix(\".mtl\")", source)
         self.assertIn("material_file.name not in export_stats[\"material_libraries\"]", source)
+
+
+class UVCheckerTextureTests(unittest.TestCase):
+    def test_checker_generator_emits_valid_rgb_png_with_expected_dimensions(self):
+        png = build_checker(size=128, tiles=8, subdivisions=4)
+        self.assertTrue(png.startswith(b"\\x89PNG\\r\\n\\x1a\\n"))
+        offset = 8
+        chunks = {}
+        while offset < len(png):
+            length = struct.unpack(">I", png[offset:offset + 4])[0]
+            kind = png[offset + 4:offset + 8]
+            payload = png[offset + 8:offset + 8 + length]
+            chunks.setdefault(kind, []).append(payload)
+            offset += 12 + length
+        width, height, bit_depth, color_type, compression, filtering, interlace = struct.unpack(
+            ">IIBBBBB", chunks[b"IHDR"][0]
+        )
+        self.assertEqual((width, height, bit_depth, color_type), (128, 128, 8, 2))
+        self.assertEqual((compression, filtering, interlace), (0, 0, 0))
+        pixels = zlib.decompress(b"".join(chunks[b"IDAT"]))
+        self.assertEqual(len(pixels), height * (1 + width * 3))
+        self.assertIn(b"IEND", chunks)
+
+    def test_checker_generator_rejects_invalid_dimensions_and_grid(self):
+        with self.assertRaises(ValueError):
+            build_checker(size=100, tiles=8)
+        with self.assertRaises(ValueError):
+            build_checker(size=128, tiles=1)
 
 
 class BlenderObjExportValidationTests(unittest.TestCase):
