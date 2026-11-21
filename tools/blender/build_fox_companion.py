@@ -122,6 +122,34 @@ def sculpted_head(name, center, scale, mat, segments=64, rings=40):
     return smooth(obj, mat, name)
 
 
+
+def organic_torso(name, center, profile, mat, sides=64):
+    """Organic Y-axis body loft with broad ribcage and tapered shoulder/hip transitions."""
+    cx, cy, cz = center
+    verts, faces = [], []
+    for y_offset, radius_x, radius_z, z_shift in profile:
+        for side in range(sides):
+            angle = 2.0 * math.pi * side / sides
+            x = math.cos(angle) * radius_x
+            z = math.sin(angle) * radius_z
+            front_fullness = 1.0 + 0.055 * max(0.0, -math.sin(angle))
+            verts.append((cx + x * front_fullness, cy + y_offset,
+                          cz + z * front_fullness + z_shift))
+    for row in range(len(profile) - 1):
+        for side in range(sides):
+            a = row * sides + side
+            b = row * sides + (side + 1) % sides
+            faces.append((a, b, b + sides, a + sides))
+    faces.append(tuple(range(sides - 1, -1, -1)))
+    faces.append(tuple((len(profile) - 1) * sides + side for side in range(sides)))
+    mesh = bpy.data.meshes.new(name + "Mesh")
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    return smooth(obj, mat, name)
+
+
 def lofted_muzzle(name, profiles, mat, sides=48):
     """Create a tapered muzzle from hand-shaped elliptical cross sections along Z."""
     verts, faces = [], []
@@ -232,8 +260,17 @@ def curved_plume(name, points, radii, mat, sides=24, steps_per_segment=6):
 
 def create_fox(p):
     # Compact pear-shaped body, with the face consistently pointing toward -Z.
-    ellipsoid("FoxBody", (0, 0.91, 0.05), (0.57, 0.63, 0.91), p["fox_orange"])
-    ellipsoid("FoxBelly", (0, 0.91, -0.48), (0.43, 0.54, 0.31), p["cream"])
+    organic_torso("FoxBody", (0, 0.91, 0.05), [
+        (-0.62, 0.12, 0.20, 0.02), (-0.53, 0.34, 0.48, 0.02),
+        (-0.30, 0.49, 0.72, 0.00), (0.02, 0.57, 0.91, 0.00),
+        (0.29, 0.54, 0.82, 0.02), (0.50, 0.40, 0.57, 0.04),
+        (0.62, 0.12, 0.20, 0.05),
+    ], p["fox_orange"])
+    organic_torso("FoxBelly", (0, 0.92, -0.36), [
+        (-0.48, 0.08, 0.08, 0.00), (-0.38, 0.25, 0.10, 0.00),
+        (-0.18, 0.36, 0.12, 0.00), (0.08, 0.37, 0.12, 0.00),
+        (0.31, 0.27, 0.10, 0.00), (0.40, 0.08, 0.07, 0.00),
+    ], p["cream"])
 
     # Head silhouette: broad forehead, soft cheeks and a shorter, friendlier muzzle.
     sculpted_head("FoxHead", (0, 1.73, -0.62), (0.62, 0.61, 0.56), p["fox_orange"], 64, 40)
