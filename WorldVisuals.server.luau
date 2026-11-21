@@ -203,6 +203,11 @@ for _, item in workspace:GetDescendants() do
             item.CanCollide = false
             item.CanTouch = false
             item.CanQuery = false
+        elseif item.Name == "BridgeDeck" or item.Name == "BridgeRail" or item.Name == "BridgePost" then
+            item.Material = Enum.Material.WoodPlanks
+        elseif item.Name == "BridgeLamp" then
+            item.Material = Enum.Material.Metal
+            addLight(item, palette.gold, 12, 0.7)
         elseif item.Name == "Trail" then
             item.Material = Enum.Material.Sand
         elseif item.Name == "Nest" or item.Name == "Driftwood" or item.Name == "Gangway" or item.Name == "Planter" then
