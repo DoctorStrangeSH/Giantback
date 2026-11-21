@@ -84,6 +84,31 @@ class OriginalMeshSourceTests(unittest.TestCase):
             self.assertLessEqual(faces, face_budgets[stem], f"{stem} face budget")
 
 
+
+    def test_obj_faces_do_not_contain_zero_area_triangles(self):
+        for stem in REQUIRED:
+            content = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
+            vertices = []
+            for line in content.splitlines():
+                if line.startswith("v "):
+                    vertices.append(tuple(float(value) for value in line.split()[1:4]))
+                    continue
+                if not line.startswith("f "):
+                    continue
+                indices = [int(token.split("/")[0]) - 1 for token in line.split()[1:]]
+                self.assertGreaterEqual(len(indices), 3, stem)
+                for offset in range(1, len(indices) - 1):
+                    a, b, c = (vertices[indices[index]] for index in (0, offset, offset + 1))
+                    ab = tuple(b[i] - a[i] for i in range(3))
+                    ac = tuple(c[i] - a[i] for i in range(3))
+                    cross = (
+                        ab[1] * ac[2] - ab[2] * ac[1],
+                        ab[2] * ac[0] - ab[0] * ac[2],
+                        ab[0] * ac[1] - ab[1] * ac[0],
+                    )
+                    area_twice = sum(value * value for value in cross) ** 0.5
+                    self.assertGreater(area_twice, 1e-9, f"{stem}: zero-area face {indices}")
+
     def test_every_named_mesh_group_contains_geometry(self):
         for stem in REQUIRED:
             content = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
