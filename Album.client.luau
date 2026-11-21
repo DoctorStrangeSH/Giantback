@@ -405,24 +405,51 @@ local function updateFoxScentTrail(grove, activeCacheId, foxEquipped)
 
     local bank = grove:FindFirstChild("Bank")
     local groundY = bank and bank.Position.Y + bank.Size.Y / 2 + 0.13 or trail.Position.Y + trail.Size.Y / 2 + 0.08
-    local startPosition = Vector3.new(trail.Position.X, groundY, trail.Position.Z)
+    local groveCenter = bank and bank.Position or Vector3.new(trail.Position.X, 0, trail.Position.Z)
+    local startPosition = Vector3.new(trail.Position.X, groundY, trail.Position.Z + math.min(6, trail.Size.Z * 0.35))
     local finishPosition = Vector3.new(anchor.Position.X, groundY, anchor.Position.Z)
-    local directionVector = finishPosition - startPosition
-    local distance = directionVector.Magnitude
-    if distance < 4 then return end
-
-    local direction = directionVector.Unit
-    local printCount = math.clamp(math.floor(distance / 3.8), 6, 12)
-    for index = 1, printCount do
-        local alpha = index / (printCount + 1)
-        local position = startPosition:Lerp(finishPosition, alpha)
-        createFoxPawPrint(folder, position, direction, index)
+    local scentRouteOffsets = {
+        FoxCache02 = {
+            Vector3.new(10, 0, 16),
+            Vector3.new(20, 0, 2),
+            Vector3.new(27, 0, -5),
+        },
+        FoxCache03 = {
+            Vector3.new(10, 0, 16),
+            Vector3.new(20, 0, 0),
+            Vector3.new(22, 0, -18),
+            Vector3.new(5, 0, -32),
+        },
+    }
+    local routePoints = {startPosition}
+    for _, offset in scentRouteOffsets[activeCacheId] or {} do
+        table.insert(routePoints, Vector3.new(groveCenter.X + offset.X, groundY, groveCenter.Z + offset.Z))
     end
+    table.insert(routePoints, finishPosition)
 
-    for index = 1, 4 do
-        local alpha = index / 5
-        local position = startPosition:Lerp(finishPosition, alpha) + Vector3.new(0, 0.72 + (index % 2) * 0.12, 0)
-        makeFoxScentPart(folder, "ScentMote" .. tostring(index), Vector3.new(0.14, 0.14, 0.14), CFrame.new(position), 0.42)
+    local printIndex = 0
+    local moteIndex = 0
+    for segmentIndex = 1, #routePoints - 1 do
+        local segmentStart = routePoints[segmentIndex]
+        local segmentEnd = routePoints[segmentIndex + 1]
+        local segmentVector = segmentEnd - segmentStart
+        local segmentDistance = segmentVector.Magnitude
+        if segmentDistance > 2 then
+            local direction = segmentVector.Unit
+            local printCount = math.max(1, math.floor(segmentDistance / 3.8))
+            for step = 1, printCount do
+                printIndex += 1
+                local alpha = step / (printCount + 1)
+                local position = segmentStart:Lerp(segmentEnd, alpha)
+                createFoxPawPrint(folder, position, direction, printIndex)
+            end
+
+            if segmentDistance > 8 then
+                moteIndex += 1
+                local motePosition = segmentStart:Lerp(segmentEnd, 0.5) + Vector3.new(0, 0.72 + (moteIndex % 2) * 0.12, 0)
+                makeFoxScentPart(folder, "ScentMote" .. tostring(moteIndex), Vector3.new(0.14, 0.14, 0.14), CFrame.new(motePosition), 0.42)
+            end
+        end
     end
 end
 
