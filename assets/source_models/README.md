@@ -127,7 +127,7 @@ blender --background --python tools/blender/build_fox_companion.py -- --output-d
 
 Outputs are isolated in the selected build folder: `fox_companion_hero.obj`, `fox_companion_hero.mtl`, `fox_companion_hero.blend` and `fox_companion_hero_three_quarter.png`, `fox_companion_hero_front.png`, `fox_companion_hero_side.png` and `fox_companion_hero_back.png`. The generator refuses a non-empty output folder unless `--overwrite` is explicit. It renders a consistent orthographic three-quarter, front, side and back review set with a neutral studio floor and contact shadows, so silhouette and paw placement can be compared before artistic acceptance. The original `fox_companion.obj/.mtl` are not modified.
 
-This is the first sculpted-form silhouette/material blockout, not finished production art. Smart UV is only an automatic unwrap; hand-painted fur detail, seam/overlap review, animation pivots, Blender 4.2 runtime render and Roblox Studio acceptance are still required. Preserve the sixteen documented rig group names when evaluating the exported OBJ.
+This is the first sculpted-form silhouette/material blockout, not finished production art. Smart UV is only an automatic unwrap; hand-painted fur detail, seam/overlap review, Blender 4.2 runtime render and Roblox Studio acceptance are still required. The hero variant has 17 groups: the two inner-ear inserts are split into `FoxEarInnerLeft` and `FoxEarInnerRight` so they can follow their respective animated ears. The original source OBJ remains unchanged with its original 16 groups.
 
 ## Import into Roblox Studio
 
@@ -162,6 +162,21 @@ Keep the following pieces separate on import. Duplicate runtime names are intent
 | FoxNose | Nose |
 
 Keep the four legs and tail groups separate; do not merge them into the body mesh.
+
+### Fox Hero variant mapping
+
+The hero generator intentionally improves on the legacy source grouping: each inner-ear insert is a separate object and follows its matching ear. It also writes `fox_companion_hero_rig.json`, a source-space pivot sidecar. OBJ does not preserve object origins, so use this JSON when setting MeshPart pivots/attachments in Studio. The sidecar uses Y-up coordinates and the fox faces -Z. It is metadata for manual import/rig setup, not an automatically applied Roblox rig.
+
+| Hero OBJ object | Runtime MeshPart name | Pivot / attachment |
+|---|---|---|
+| FoxEarLeft / FoxEarRight | Ear | Base of each ear |
+| FoxEarInnerLeft / FoxEarInnerRight | Inner ear | Attach to matching ear |
+| FoxLegFrontLeft / Right | Paw | Upper leg joint |
+| FoxLegBackLeft / Right | Paw | Upper leg joint |
+| FoxTail | Tail | Tail root |
+| FoxTailTip | Tail tip | Attach to tail |
+
+The complete pivot table for all 17 groups is generated beside the OBJ as `fox_companion_hero_rig.json`.
 
 ## Companion rig import mapping
 
