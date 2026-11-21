@@ -907,8 +907,7 @@ end)
 
 -- All islands are fixed. Eight personal bridges lead into the shared Grove hub.
 
--- Per-player city models overlap the shared prototype visually; the client renders
--- only its owner's city while every interaction is validated against OwnerUserId.
+-- Each player owns a distinct fixed island; every personal interaction is validated against OwnerUserId.
 Players.PlayerAdded:Connect(init)
 for _, player in Players:GetPlayers() do task.spawn(init, player) end
 Players.PlayerRemoving:Connect(function(player)
