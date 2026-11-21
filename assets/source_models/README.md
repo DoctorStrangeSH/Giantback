@@ -201,3 +201,8 @@ The matching pivot locations are validated by the runtime blockout contract, but
 ## Visual review build
 
 The `Fox Hero Blender visual acceptance` workflow produces a reproducible review package with four PNG angles, a Blender project, OBJ, rig metadata and mesh-quality report. Download the `Fox-Hero-Blender-Visual-Review` artifact from the workflow run. CI output checks do not replace human visual acceptance.
+
+
+## Topology validation note
+
+The FoxHead generator was corrected after Blender's mesh-quality report found zero-area pole-cap faces. The revised topology uses single-vertex poles with triangle fans. A successful rerun of the visual-review workflow is still required.
