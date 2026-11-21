@@ -157,9 +157,11 @@ def add_radial_bridge(parent, name, angle, start_radius, end_radius, built=True)
             post = part(bridge, "BridgePost", (px, 13.1, pz), (0.55, 2.0, 0.55), "936847")
             set_bridge_piece_state(post, built)
     for t in (0.28, 0.72):
-        x, z = start_x + dx * t, start_z + dz * t
-        lamp = part(bridge, "BridgeLamp", (x, 14.0, z), (0.55, 2.6, 0.55), "CE9661")
-        set_bridge_piece_state(lamp, built)
+        for side in (-1, 1):
+            x = start_x + dx * t + local_x[0] * side * 2.05
+            z = start_z + dz * t + local_x[1] * side * 2.05
+            lamp = part(bridge, "BridgeLamp", (x, 14.0, z), (0.55, 2.6, 0.55), "CE9661")
+            set_bridge_piece_state(lamp, built)
 
 bridge_home = obj(w, "Model", "BridgeToGrove")
 for slot_index in range(8):
