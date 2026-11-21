@@ -107,7 +107,7 @@ class OriginalMeshSourceTests(unittest.TestCase):
                     continue
                 name = block.splitlines()[0][7:]
                 for property_name in ("Ka", "Kd", "Ks"):
-                    match = re.search(rf"^{property_name}\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)$", block, re.MULTILINE)
+                    match = re.search(rf"^{property_name}\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s*$", block, re.MULTILINE)
                     self.assertIsNotNone(match, f"{stem}/{name}: missing {property_name}")
                     values = [float(value) for value in match.groups()]
                     self.assertTrue(all(0.0 <= value <= 1.0 for value in values), f"{stem}/{name}: invalid {property_name}")
