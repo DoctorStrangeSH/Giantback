@@ -22,6 +22,29 @@ All OBJ/MTL files in this directory are original procedural source meshes create
 
 The OBJ sources are not yet wired into the running place: Roblox requires imported/published MeshPart asset IDs before a place can reference them. The current Parts-based visuals remain temporary blockout until that Studio import step is completed.
 
+
+## Fox rig import mapping
+
+Keep the following pieces separate on import. Duplicate runtime names are intentional and allow the common follower animator to move each paw and ear independently.
+
+| OBJ object | Runtime MeshPart name |
+|---|---|
+| FoxBody | Body |
+| FoxBelly | Chest bib |
+| FoxHead | Head |
+| FoxMuzzle | Muzzle |
+| FoxEarLeft / Right | Ear |
+| FoxEarInner | Inner ear |
+| FoxLegFrontLeft / Right | Paw |
+| FoxLegBackLeft / Right | Paw |
+| FoxTail | Tail |
+| FoxTailTip | Tail tip |
+| FoxEyes | Eye |
+| FoxEyeSparkles | Eye shine |
+| FoxNose | Nose |
+
+Keep the four legs and tail groups separate; do not merge them into the body mesh.
+
 ## Companion rig import mapping
 
 The Moth OBJ deliberately keeps animated pieces in separate left/right objects. During Studio import, rename the imported MeshParts to the runtime rig names below (duplicate names are intentional; the follower animator uses each part's local X position to choose its side).
