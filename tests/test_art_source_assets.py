@@ -83,6 +83,35 @@ class OriginalMeshSourceTests(unittest.TestCase):
             self.assertLessEqual(vertices, vertex_budgets[stem], f"{stem} vertex budget")
             self.assertLessEqual(faces, face_budgets[stem], f"{stem} face budget")
 
+
+    def test_every_named_mesh_group_contains_geometry(self):
+        for stem in REQUIRED:
+            content = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
+            groups = re.split(r"(?=^o )", content, flags=re.MULTILINE)
+            named_groups = [block for block in groups if block.startswith("o ")]
+            self.assertGreater(len(named_groups), 0, stem)
+            for block in named_groups:
+                name = block.splitlines()[0][2:]
+                self.assertRegex(block, r"(?m)^f ", f"{stem}: empty group {name}")
+
+    def test_source_material_library_has_no_unused_or_invalid_materials(self):
+        for stem in REQUIRED:
+            obj = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
+            mtl = (ASSET_DIR / f"{stem}.mtl").read_text(encoding="utf-8")
+            used = set(re.findall(r"^usemtl\\s+(\\S+)", obj, re.MULTILINE))
+            declared = set(re.findall(r"^newmtl\\s+(\\S+)", mtl, re.MULTILINE))
+            self.assertEqual(declared - used, set(), f"{stem}: unused materials")
+            blocks = re.split(r"(?=^newmtl )", mtl, flags=re.MULTILINE)
+            for block in blocks:
+                if not block.startswith("newmtl "):
+                    continue
+                name = block.splitlines()[0][7:]
+                for property_name in ("Ka", "Kd", "Ks"):
+                    match = re.search(rf"^{property_name}\\s+([0-9.]+)\\s+([0-9.]+)\\s+([0-9.]+)$", block, re.MULTILINE)
+                    self.assertIsNotNone(match, f"{stem}/{name}: missing {property_name}")
+                    values = [float(value) for value in match.groups()]
+                    self.assertTrue(all(0.0 <= value <= 1.0 for value in values), f"{stem}/{name}: invalid {property_name}")
+
     def test_companion_sources_keep_named_rigging_parts(self):
         fox = (ASSET_DIR / "fox_companion.obj").read_text(encoding="utf-8")
         moth = (ASSET_DIR / "moth_companion.obj").read_text(encoding="utf-8")
