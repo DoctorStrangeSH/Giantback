@@ -49,7 +49,6 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
         self.assertIn("export_normals=True", source)
         self.assertIn("export_object_groups=True", source)
         self.assertIn('"final_art_approved": False', source)
-        self.assertIn("destination = args.output / f\"{asset}.obj\"", source)
         main_block = source.split("def main()", 1)[1]
         self.assertIn('source = input_dir / f"{asset}.obj"', main_block)
         self.assertIn('destination = output_dir / f"{asset}.obj"', main_block)
