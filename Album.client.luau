@@ -583,9 +583,20 @@ end
 local moonGatePrompts = {}
 local moonGateHighlights = {}
 local moonGateBarrier = nil
+local lastMoonGateOpen = nil
 
 local function updateMoonGateBarrier(runeAnchor, gateOpen)
-    if gateOpen or not runeAnchor or not runeAnchor:IsA("BasePart") then
+    if gateOpen then
+        if moonGateBarrier then
+            local barrier = moonGateBarrier
+            moonGateBarrier = nil
+            task.delay(0.8, function()
+                if barrier.Parent then barrier:Destroy() end
+            end)
+        end
+        return
+    end
+    if not runeAnchor or not runeAnchor:IsA("BasePart") then
         if moonGateBarrier then
             moonGateBarrier:Destroy()
             moonGateBarrier = nil
@@ -611,11 +622,20 @@ local function updateMoonGateBarrier(runeAnchor, gateOpen)
     moonGateBarrier.CFrame = CFrame.new(runeAnchor.Position.X, floorY + 2.55, runeAnchor.Position.Z - 2.25)
 end
 
-local function setLocalModelVisibility(model, visible)
+local function setLocalModelVisibility(model, visible, fadeDuration)
     if not model then return end
+    local transparency = visible and 0 or 1
     for _, descendant in model:GetDescendants() do
         if descendant:IsA("BasePart") then
-            descendant.LocalTransparencyModifier = visible and 0 or 1
+            if fadeDuration and fadeDuration > 0 then
+                TweenService:Create(
+                    descendant,
+                    TweenInfo.new(fadeDuration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                    {LocalTransparencyModifier = transparency}
+                ):Play()
+            else
+                descendant.LocalTransparencyModifier = transparency
+            end
         elseif descendant:IsA("PointLight") then
             descendant.Enabled = visible
         end
@@ -689,11 +709,14 @@ local function updateMoonGatePuzzle()
     local relicCollected = player:GetAttribute("MoonRelic") == true
     local runeAnchor = dusk:FindFirstChild("MoonGateRune")
 
+    local gateJustOpened = lastMoonGateOpen == false and gateOpen
+    lastMoonGateOpen = gateOpen
+
     updateMoonGateBarrier(runeAnchor, gateOpen)
     setLocalModelVisibility(tracksVisual, (foxEquipped and player:GetAttribute("MoonBloom") == true) or traceFound)
     setLocalModelVisibility(runesVisual, gateOpen or (traceFound and mothEquipped))
-    setLocalModelVisibility(sealVisual, not gateOpen)
-    setLocalModelVisibility(clearingVisual, gateOpen)
+    setLocalModelVisibility(sealVisual, not gateOpen, gateJustOpened and 0.8 or nil)
+    setLocalModelVisibility(clearingVisual, gateOpen, gateJustOpened and 0.95 or nil)
 
     if clearingVisual then
         for _, descendant in clearingVisual:GetDescendants() do
