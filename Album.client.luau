@@ -133,16 +133,16 @@ toggle.AnchorPoint = Vector2.new(1, 0)
 local toggleGlyph = label(toggle, "Glyph", "✿", UDim2.fromOffset(28, 36), UDim2.fromOffset(12, 9), Enum.Font.GothamBold, palette.gold)
 toggleGlyph.TextSize = 22
 toggleGlyph.TextXAlignment = Enum.TextXAlignment.Center
-local toggleTitle = label(toggle, "Title", "СПУТНИКИ", UDim2.new(1, -52, 0, 20), UDim2.fromOffset(45, 8), Enum.Font.GothamBold, palette.cream)
+local toggleTitle = label(toggle, "Title", "КОЛЛЕКЦИЯ", UDim2.new(1, -52, 0, 20), UDim2.fromOffset(45, 8), Enum.Font.GothamBold, palette.cream)
 toggleTitle.TextSize = 11
 local toggleCount = label(toggle, "Count", "0 / 2", UDim2.new(1, -52, 0, 17), UDim2.fromOffset(45, 27), Enum.Font.GothamMedium, palette.mint)
 toggleCount.TextSize = 10
 
 local panel = Instance.new("Frame")
-panel.Name = "CompanionPanel"
+panel.Name = "CollectionPanel"
 panel.AnchorPoint = Vector2.new(1, 0)
 panel.Position = UDim2.new(1, -20, 0, 84)
-panel.Size = UDim2.fromOffset(294, 246)
+panel.Size = UDim2.fromOffset(294, 330)
 panel.BackgroundColor3 = palette.deep
 panel.Visible = false
 panel.Parent = gui
@@ -150,9 +150,9 @@ round(panel, 18)
 outline(panel, Color3.fromRGB(189, 218, 175), 1.2, 0.45)
 gradient(panel, Color3.fromRGB(56, 83, 72), palette.deep, 90)
 
-local panelTitle = label(panel, "PanelTitle", "ТВОЯ КОМАНДА", UDim2.new(1, -28, 0, 23), UDim2.fromOffset(16, 12), Enum.Font.GothamBold, palette.cream)
+local panelTitle = label(panel, "PanelTitle", "ТВОЯ КОЛЛЕКЦИЯ", UDim2.new(1, -28, 0, 23), UDim2.fromOffset(16, 12), Enum.Font.GothamBold, palette.cream)
 panelTitle.TextSize = 12
-local panelSubtitle = label(panel, "PanelSubtitle", "Спутники помогают находить секреты", UDim2.new(1, -28, 0, 18), UDim2.fromOffset(16, 34), Enum.Font.Gotham, palette.muted)
+local panelSubtitle = label(panel, "PanelSubtitle", "Спутники и материалы для твоего города", UDim2.new(1, -28, 0, 18), UDim2.fromOffset(16, 34), Enum.Font.Gotham, palette.muted)
 panelSubtitle.TextSize = 10
 
 local divider = Instance.new("Frame")
@@ -210,6 +210,56 @@ end
 
 createCompanionCard("Fox", 1)
 createCompanionCard("Moth", 2)
+
+local resourceHeader = label(
+    panel,
+    "ResourceHeader",
+    "НАЙДЕННЫЕ МАТЕРИАЛЫ",
+    UDim2.new(1, -28, 0, 18),
+    UDim2.fromOffset(16, 235),
+    Enum.Font.GothamBold,
+    palette.mint
+)
+resourceHeader.TextSize = 10
+
+local function resourceChip(id, title, glyph, position, accent)
+    local chip = Instance.new("Frame")
+    chip.Name = id .. "Chip"
+    chip.Position = position
+    chip.Size = UDim2.new(0.5, -9, 0, 56)
+    chip.BackgroundColor3 = palette.surface
+    chip.Parent = panel
+    round(chip, 12)
+    outline(chip, accent, 1, 0.72)
+    gradient(chip, palette.surface, palette.deepSoft, 90)
+
+    local icon = label(chip, "Glyph", glyph, UDim2.fromOffset(28, 38), UDim2.fromOffset(7, 9), Enum.Font.GothamBold, accent)
+    icon.TextSize = 21
+    icon.TextXAlignment = Enum.TextXAlignment.Center
+
+    local name = label(chip, "Name", title, UDim2.new(1, -43, 0, 25), UDim2.fromOffset(39, 5), Enum.Font.GothamBold, palette.cream)
+    name.TextSize = 9
+    name.TextYAlignment = Enum.TextYAlignment.Center
+
+    local count = label(chip, "Count", "0 шт.", UDim2.new(1, -43, 0, 18), UDim2.fromOffset(39, 31), Enum.Font.GothamMedium, accent)
+    count.TextSize = 10
+    return count
+end
+
+local sunResourceCount = resourceChip(
+    "SunPetal",
+    "Солнечный лепесток",
+    "✿",
+    UDim2.fromOffset(14, 258),
+    palette.gold
+)
+local moonResourceCount = resourceChip(
+    "MoonPetal",
+    "Лунный лепесток",
+    "✧",
+    UDim2.new(0.5, 7, 0, 258),
+    palette.lilac
+)
 
 toggle.Activated:Connect(function()
     panel.Visible = not panel.Visible
@@ -313,7 +363,9 @@ local function refresh()
         entry.action.TextColor3 = owned and palette.mint or palette.gold
     end
     toggleCount.Text = tostring(found) .. " / 2"
-    panelTitle.Text = "ТВОЯ КОМАНДА  •  " .. tostring(found) .. "/2"
+    panelTitle.Text = "ТВОЯ КОЛЛЕКЦИЯ  •  " .. tostring(found) .. "/2"
+    sunResourceCount.Text = tostring(player:GetAttribute("Resource_SunPetal") or 0) .. " шт."
+    moonResourceCount.Text = tostring(player:GetAttribute("Resource_MoonPetal") or 0) .. " шт."
 end
 
 local function updateRoute()
@@ -352,7 +404,7 @@ local function updateLayout()
         toggle.Size = UDim2.fromOffset(144, 48)
         panel.AnchorPoint = Vector2.new(0, 0)
         panel.Position = UDim2.fromOffset(16, 174)
-        panel.Size = UDim2.fromOffset(math.min(gui.AbsoluteSize.X - 32, 294), 246)
+        panel.Size = UDim2.fromOffset(math.min(gui.AbsoluteSize.X - 32, 294), 330)
     else
         quest.Position = UDim2.fromOffset(20, 20)
         quest.Size = UDim2.fromOffset(370, 104)
