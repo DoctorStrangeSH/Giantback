@@ -14,7 +14,15 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot"}
+local farmPlotIds = {"Plot01", "Plot02", "Plot03", "Plot04"}
+local cropDefinitions = {
+    Carrot = {
+        seedItemId = "CarrotSeed",
+        harvestItemId = "Carrot",
+        growthSeconds = 180,
+    },
+}
 local resourceNodeIds = {
     GroveSunPetal01 = true,
     GroveSunPetal02 = true,
@@ -22,6 +30,7 @@ local resourceNodeIds = {
     DuskMoonPetal02 = true,
 }
 local sessions = {}
+local createPersonalCity
 local atDusk, sailing = false, false
 giant:SetAttribute("Dock", "Grove")
 local homePivot = giant:GetPivot()
@@ -29,6 +38,89 @@ local homePivot = giant:GetPivot()
 local function tip(player, message)
     event:FireClient(player, message)
 end
+
+local function defaultCity()
+    local plots = {}
+    for _, plotId in farmPlotIds do
+        plots[plotId] = {
+            cropId = "",
+            plantedAt = 0,
+            readyAt = 0,
+        }
+    end
+    return {
+        level = 1,
+        farm = {
+            level = 1,
+            plots = plots,
+        },
+        buildings = {},
+    }
+end
+
+local function safeTimestamp(value)
+    local number = tonumber(value)
+    if not number or number ~= number or number == math.huge or number == -math.huge then
+        return 0
+    end
+    return math.clamp(math.floor(number), 0, 4102444800)
+end
+
+local function isFarmPlotUnlocked(farm, plotId)
+    if plotId == "Plot01" then return true end
+    if plotId == "Plot02" or plotId == "Plot03" then
+        return farm.level >= 2
+    end
+    if plotId == "Plot04" then
+        return farm.level >= 3
+    end
+    return false
+end
+
+local function normalizeCity(raw)
+    local city = defaultCity()
+    if type(raw) ~= "table" then return city end
+
+    city.level = math.clamp(math.floor(tonumber(raw.level) or 1), 1, 5)
+    local rawFarm = type(raw.farm) == "table" and raw.farm or {}
+    city.farm.level = math.clamp(math.floor(tonumber(rawFarm.level) or 1), 1, 3)
+    local rawPlots = type(rawFarm.plots) == "table" and rawFarm.plots or {}
+
+    for _, plotId in farmPlotIds do
+        local saved = type(rawPlots[plotId]) == "table" and rawPlots[plotId] or {}
+        local cropId = saved.cropId
+        local plantedAt = safeTimestamp(saved.plantedAt)
+        local readyAt = safeTimestamp(saved.readyAt)
+
+        if cropDefinitions[cropId]
+            and isFarmPlotUnlocked(city.farm, plotId)
+            and plantedAt > 0
+            and readyAt >= plantedAt then
+            city.farm.plots[plotId] = {
+                cropId = cropId,
+                plantedAt = plantedAt,
+                readyAt = readyAt,
+            }
+        end
+    end
+
+    return city
+end
+
+local function syncFarm(player)
+    local session = sessions[player]
+    if not session or not session.city then return end
+
+    player:SetAttribute("City_Level", session.city.level)
+    player:SetAttribute("Farm_Level", session.city.farm.level)
+    for _, plotId in farmPlotIds do
+        local plot = session.city.farm.plots[plotId]
+        player:SetAttribute("Farm_" .. plotId .. "_Unlocked", isFarmPlotUnlocked(session.city.farm, plotId))
+        player:SetAttribute("Farm_" .. plotId .. "_CropId", plot.cropId or "")
+        player:SetAttribute("Farm_" .. plotId .. "_ReadyAt", plot.readyAt or 0)
+    end
+end
+
 
 local function syncInventory(player)
     local session = sessions[player]
@@ -73,13 +165,15 @@ local function save(player)
             end
         end
 
+        local citySnapshot = normalizeCity(session.city)
+
         local ok, err = pcall(function()
             store:UpdateAsync(tostring(player.UserId), function(old)
                 if type(old) ~= "table" then old = {} end
                 for _, key in progress do
                     old[key] = old[key] == true or snapshot[key]
                 end
-                old.schemaVersion = 3
+                old.schemaVersion = 4
 
                 local savedInventory = type(old.inventory) == "table" and old.inventory or {}
                 for _, key in inventoryKeys do
@@ -98,6 +192,17 @@ local function save(player)
                     if collected then savedCollected[nodeId] = true end
                 end
                 old.collectedNodes = savedCollected
+
+                local savedCity = type(old.city) == "table" and old.city or {}
+                savedCity.level = citySnapshot.level
+                local savedFarm = type(savedCity.farm) == "table" and savedCity.farm or {}
+                savedFarm.level = citySnapshot.farm.level
+                savedFarm.plots = citySnapshot.farm.plots
+                savedCity.farm = savedFarm
+                if type(savedCity.buildings) ~= "table" then
+                    savedCity.buildings = {}
+                end
+                old.city = savedCity
                 return old
             end)
         end)
@@ -118,9 +223,12 @@ local function init(player)
         inventory = {},
         resourceCooldowns = {},
         collectedNodes = {},
+        city = defaultCity(),
+        cityModel = nil,
         online = false,
     }
     for _, key in inventoryKeys do session.inventory[key] = 0 end
+    session.inventory.CarrotSeed = 3
     sessions[player] = session
     player.RespawnLocation = giant.HomeSpawn
 
@@ -132,9 +240,16 @@ local function init(player)
             for _, key in progress do player:SetAttribute(key, data[key] == true) end
             local savedInventory = type(data.inventory) == "table" and data.inventory or {}
             for _, key in inventoryKeys do
-                local amount = tonumber(savedInventory[key]) or 0
+                local savedAmount = savedInventory[key]
+                local amount
+                if key == "CarrotSeed" and savedAmount == nil then
+                    amount = 3
+                else
+                    amount = tonumber(savedAmount) or 0
+                end
                 session.inventory[key] = math.clamp(math.floor(amount), 0, 1000000)
             end
+            session.city = normalizeCity(data.city)
 
             local savedCooldowns = type(data.resourceCooldowns) == "table" and data.resourceCooldowns or {}
             for nodeId, readyAt in savedCooldowns do
@@ -154,6 +269,10 @@ local function init(player)
     end
 
     syncInventory(player)
+    syncFarm(player)
+    if createPersonalCity then
+        createPersonalCity(player, session)
+    end
     player:SetAttribute("Ready", true)
 end
 event.OnServerEvent:Connect(function(player, action)
@@ -183,26 +302,6 @@ event.OnServerEvent:Connect(function(player, action)
     end
 end)
 
-Players.PlayerAdded:Connect(init)
-for _, player in Players:GetPlayers() do task.spawn(init, player) end
-Players.PlayerRemoving:Connect(function(player)
-    save(player)
-    sessions[player] = nil
-end)
-game:BindToClose(function()
-    local pending = 0
-    for _, player in Players:GetPlayers() do
-        pending += 1
-        task.spawn(function() save(player) pending -= 1 end)
-    end
-    while pending > 0 do task.wait() end
-end)
-task.spawn(function()
-    while task.wait(60) do
-        for _, player in Players:GetPlayers() do task.spawn(save, player) end
-    end
-end)
-
 local function prompt(part, title, verb, callback)
     local p = Instance.new("ProximityPrompt")
     p.ObjectText, p.ActionText = title, verb
@@ -218,6 +317,258 @@ local function prompt(part, title, verb, callback)
     end)
     return p
 end
+
+local function makeFarmVisualPart(parent, name, size, frame, color, shape, material)
+    local part = Instance.new("Part")
+    part.Name = name
+    part.Size = size
+    part.CFrame = frame
+    part.Color = color
+    part.Shape = shape or Enum.PartType.Block
+    part.Material = material or Enum.Material.SmoothPlastic
+    part.Anchored = true
+    part.CanCollide = false
+    part.CanTouch = false
+    part.CanQuery = false
+    part.CastShadow = false
+    part.TopSurface = Enum.SurfaceType.Smooth
+    part.BottomSurface = Enum.SurfaceType.Smooth
+    part.Parent = parent
+    return part
+end
+
+local function refreshFarmPlotVisual(cityModel, plotId, farm)
+    local plotModel = cityModel and cityModel:FindFirstChild(plotId)
+    if not plotModel then return end
+
+    local state = farm.plots[plotId]
+    if not state then return end
+    local unlocked = isFarmPlotUnlocked(farm, plotId)
+    local soil = plotModel:FindFirstChild("Soil")
+    local anchor = plotModel:FindFirstChild("PromptAnchor")
+    local interaction = anchor and anchor:FindFirstChildOfClass("ProximityPrompt")
+
+    if soil then
+        soil.Color = unlocked and Color3.fromRGB(111, 77, 54) or Color3.fromRGB(88, 91, 83)
+        soil.Material = unlocked and Enum.Material.Ground or Enum.Material.Slate
+    end
+
+    if interaction then
+        if not unlocked then
+            interaction.ActionText = "Закрыто"
+            interaction.ObjectText = "Улучшить ферму"
+        elseif state.cropId == "" then
+            interaction.ActionText = "Посадить"
+            interaction.ObjectText = "Морковь"
+        elseif os.time() >= state.readyAt then
+            interaction.ActionText = "Собрать"
+            interaction.ObjectText = "Морковь созрела"
+        else
+            interaction.ActionText = "Проверить"
+            interaction.ObjectText = "Морковь растёт"
+        end
+    end
+
+    local cropVisual = plotModel:FindFirstChild("CropVisual")
+    if not unlocked or state.cropId == "" then
+        if cropVisual then cropVisual:Destroy() end
+        return
+    end
+
+    if not cropVisual then
+        cropVisual = Instance.new("Model")
+        cropVisual.Name = "CropVisual"
+        cropVisual.Parent = plotModel
+        makeFarmVisualPart(cropVisual, "Stem", Vector3.new(0.2, 0.4, 0.2), CFrame.new(), Color3.fromRGB(101, 158, 89), Enum.PartType.Cylinder)
+        makeFarmVisualPart(cropVisual, "LeafLeft", Vector3.new(0.65, 0.16, 0.32), CFrame.new(), Color3.fromRGB(120, 181, 101), Enum.PartType.Ball)
+        makeFarmVisualPart(cropVisual, "LeafRight", Vector3.new(0.65, 0.16, 0.32), CFrame.new(), Color3.fromRGB(94, 151, 86), Enum.PartType.Ball)
+        makeFarmVisualPart(cropVisual, "Root", Vector3.new(0.8, 0.34, 0.34), CFrame.new(), Color3.fromRGB(231, 139, 75), Enum.PartType.Cylinder)
+    end
+
+    local now = os.time()
+    local duration = math.max(1, state.readyAt - state.plantedAt)
+    local growth = math.clamp((now - state.plantedAt) / duration, 0, 1)
+    local ready = now >= state.readyAt
+    local stem = cropVisual:FindFirstChild("Stem")
+    local leftLeaf = cropVisual:FindFirstChild("LeafLeft")
+    local rightLeaf = cropVisual:FindFirstChild("LeafRight")
+    local root = cropVisual:FindFirstChild("Root")
+
+    if soil and stem and leftLeaf and rightLeaf and root then
+        local height = 0.25 + growth * 0.62
+        stem.Size = Vector3.new(0.2, height, 0.2)
+        stem.CFrame = soil.CFrame * CFrame.new(0, soil.Size.Y / 2 + height / 2, 0) * CFrame.Angles(0, 0, math.rad(90))
+        leftLeaf.Size = Vector3.new(0.55 + growth * 0.2, 0.16, 0.3 + growth * 0.12)
+        rightLeaf.Size = leftLeaf.Size
+        leftLeaf.CFrame = soil.CFrame * CFrame.new(-0.34, soil.Size.Y / 2 + height * 0.8, 0) * CFrame.Angles(0, 0, math.rad(-24))
+        rightLeaf.CFrame = soil.CFrame * CFrame.new(0.34, soil.Size.Y / 2 + height * 0.8, 0) * CFrame.Angles(0, 0, math.rad(24))
+        root.Transparency = ready and 0 or 1
+        root.CFrame = soil.CFrame * CFrame.new(0, soil.Size.Y / 2 + 0.25, 0) * CFrame.Angles(0, 0, math.rad(90))
+    end
+end
+
+local function refreshFarmCity(player, cityModel)
+    local session = sessions[player]
+    if not session or not session.city or not cityModel then return end
+    for _, plotId in farmPlotIds do
+        refreshFarmPlotVisual(cityModel, plotId, session.city.farm)
+    end
+end
+
+local function interactFarmPlot(player, ownerUserId, plotId)
+    if player.UserId ~= ownerUserId then return end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+
+    local farm = session.city.farm
+    local state = farm.plots[plotId]
+    if not state then return end
+    if not isFarmPlotUnlocked(farm, plotId) then
+        return tip(player, "Эта грядка откроется после улучшения фермы.")
+    end
+
+    local now = os.time()
+    if state.cropId == "" then
+        if (session.inventory.CarrotSeed or 0) < 1 then
+            return tip(player, "Семена закончились. Найди или купи новые у торговца.")
+        end
+        session.inventory.CarrotSeed -= 1
+        state.cropId = "Carrot"
+        state.plantedAt = now
+        state.readyAt = now + cropDefinitions.Carrot.growthSeconds
+        tip(player, "Морковь посажена! Она созреет примерно через 3 минуты.")
+    else
+        if now < state.readyAt then
+            local remaining = state.readyAt - now
+            return tip(player, "Морковь ещё растёт: осталось " .. tostring(math.ceil(remaining / 60)) .. " мин.")
+        end
+        session.inventory.Carrot = (session.inventory.Carrot or 0) + 1
+        state.cropId = ""
+        state.plantedAt = 0
+        state.readyAt = 0
+        tip(player, "Урожай собран: морковь ×1!")
+    end
+
+    syncInventory(player)
+    syncFarm(player)
+    refreshFarmCity(player, session.cityModel)
+    if session.online and not save(player) then
+        warn("Farm save will be retried:", player.UserId, plotId)
+        tip(player, "Урожай сохранён в текущей сессии. Сохранение временно задерживается.")
+    end
+end
+
+createPersonalCity = function(player, session)
+    local cityFolder = giant:FindFirstChild("PersonalCities")
+    if not cityFolder then
+        cityFolder = Instance.new("Folder")
+        cityFolder.Name = "PersonalCities"
+        cityFolder.Parent = giant
+    end
+
+    local cityName = "City_" .. tostring(player.UserId)
+    local previous = cityFolder:FindFirstChild(cityName)
+    if previous then previous:Destroy() end
+
+    local cityModel = Instance.new("Model")
+    cityModel.Name = cityName
+    cityModel:SetAttribute("OwnerUserId", player.UserId)
+    cityModel:SetAttribute("CityLevel", session.city.level)
+    cityModel:SetAttribute("FarmLevel", session.city.farm.level)
+    cityModel.Parent = cityFolder
+
+    local planter
+    local lanternBase
+    local personalPartNames = {
+        Cottage = true,
+        Roof = true,
+        Window = true,
+        Planter = true,
+        LanternBase = true,
+    }
+    for _, source in giant:GetChildren() do
+        if source:IsA("BasePart") and personalPartNames[source.Name] then
+            local clone = source:Clone()
+            clone.Parent = cityModel
+            if clone.Name == "Planter" then planter = clone end
+            if clone.Name == "LanternBase" then lanternBase = clone end
+        end
+    end
+
+    if planter then
+        prompt(planter, "Сад у дома", "Разбудить цветок", function(visitor)
+            if visitor.UserId ~= player.UserId then return end
+            if visitor:GetAttribute("Flower") then return tip(visitor, "Твой лунный цветок уже расцвёл.") end
+            if not visitor:GetAttribute("Seed") then return tip(visitor, "Лисёнок чует семя на тропе возле гнезда.") end
+            if visitor:GetAttribute("Companion") ~= "Moth" then return tip(visitor, "Позови лунную моль из альбома.") end
+            visitor:SetAttribute("Flower", true)
+            tip(visitor, "Моль расправила крылья. Твой лунный цветок расцвёл!")
+        end)
+    end
+
+    if lanternBase then
+        prompt(lanternBase, "Садовый фонарь", "Осмотреть площадку", function(visitor)
+            if visitor.UserId ~= player.UserId then return end
+            if not visitor:GetAttribute("Timber") then return tip(visitor, "После цветения возьми лисёнка к коряге в Солнечной роще.") end
+            if not visitor:GetAttribute("Lantern") then
+                visitor:SetAttribute("Lantern", true)
+                return tip(visitor, "Фонарь построен! Позови моль, чтобы зажечь его.")
+            end
+            if visitor:GetAttribute("Lit") then return tip(visitor, "Фонарь освещает твой сад.") end
+            if visitor:GetAttribute("Companion") ~= "Moth" then return tip(visitor, "Позови лунную моль из альбома.") end
+            visitor:SetAttribute("Lit", true)
+            tip(visitor, "Моль зажгла твой первый садовый фонарь!")
+        end)
+    end
+
+    local meadow = giant:FindFirstChild("Meadow")
+    if meadow then
+        local plotPositions = {
+            Plot01 = Vector3.new(-14.5, meadow.Size.Y / 2 + 0.22, 9),
+            Plot02 = Vector3.new(-10.5, meadow.Size.Y / 2 + 0.22, 9),
+            Plot03 = Vector3.new(-14.5, meadow.Size.Y / 2 + 0.22, 13),
+            Plot04 = Vector3.new(-10.5, meadow.Size.Y / 2 + 0.22, 13),
+        }
+
+        for _, plotId in farmPlotIds do
+            local plotModel = Instance.new("Model")
+            plotModel.Name = plotId
+            plotModel:SetAttribute("OwnerUserId", player.UserId)
+            plotModel:SetAttribute("PlotId", plotId)
+            plotModel.Parent = cityModel
+
+            local soilFrame = meadow.CFrame * CFrame.new(plotPositions[plotId])
+            local soil = makeFarmVisualPart(
+                plotModel,
+                "Soil",
+                Vector3.new(3.2, 0.44, 3.2),
+                soilFrame,
+                Color3.fromRGB(111, 77, 54),
+                Enum.PartType.Block,
+                Enum.Material.Ground
+            )
+
+            local anchor = Instance.new("Part")
+            anchor.Name = "PromptAnchor"
+            anchor.Size = Vector3.new(0.5, 0.5, 0.5)
+            anchor.Transparency = 1
+            anchor.Anchored = true
+            anchor.CanCollide = false
+            anchor.CanTouch = false
+            anchor.CanQuery = true
+            anchor.CFrame = soil.CFrame * CFrame.new(0, 1.1, 0)
+            anchor.Parent = plotModel
+
+            prompt(anchor, "Грядка", "Посадить", function(visitor)
+                interactFarmPlot(visitor, player.UserId, plotId)
+            end)
+        end
+    end
+
+    session.cityModel = cityModel
+    refreshFarmCity(player, cityModel)
+end
+
 
 local function encounter(id, island, height)
     local nest = island.Nest
@@ -456,13 +807,6 @@ prompt(workspace.Grove.Trail,"Следы в траве","Попросить ли
     player:SetAttribute("Seed",true)
     tip(player,"Лисёнок выкопал лунное семя! Отправляйся за молью.")
 end)
-prompt(giant.Planter,"Сад у дома","Разбудить цветок",function(player)
-    if player:GetAttribute("Flower") then return tip(player,"Твой лунный цветок уже расцвёл.") end
-    if not player:GetAttribute("Seed") then return tip(player,"Лисёнок чует семя на тропе возле гнезда.") end
-    if player:GetAttribute("Companion") ~= "Moth" then return tip(player,"Позови лунную моль из альбома.") end
-    player:SetAttribute("Flower",true)
-    tip(player,"Моль расправила крылья. Твой первый лунный цветок расцвёл!")
-end)
 
 prompt(workspace.Grove.Driftwood,"Коряга на берегу","Искать сухие ветви",function(player)
     if not player:GetAttribute("Flower") then return tip(player,"Сначала вырасти лунный цветок у дома.") end
@@ -470,17 +814,6 @@ prompt(workspace.Grove.Driftwood,"Коряга на берегу","Искать 
     if player:GetAttribute("Companion") ~= "Fox" then return tip(player,"Позови лисёнка. Он найдёт крепкие ветви.") end
     player:SetAttribute("Timber",true)
     tip(player,"Лисёнок нашёл ветви для садового фонаря!")
-end)
-prompt(giant.LanternBase,"Садовый фонарь","Осмотреть площадку",function(player)
-    if not player:GetAttribute("Timber") then return tip(player,"После цветения возьми лисёнка к коряге в Солнечной роще.") end
-    if not player:GetAttribute("Lantern") then
-        player:SetAttribute("Lantern",true)
-        return tip(player,"Фонарь построен! Позови моль, чтобы зажечь его.")
-    end
-    if player:GetAttribute("Lit") then return tip(player,"Фонарь освещает твой сад.") end
-    if player:GetAttribute("Companion") ~= "Moth" then return tip(player,"Позови лунную моль из альбома.") end
-    player:SetAttribute("Lit",true)
-    tip(player,"Моль зажгла твой первый садовый фонарь!")
 end)
 
 local helm
@@ -535,3 +868,38 @@ for _, island in {workspace.Grove,workspace.Dusk} do
         player.Character:PivotTo(giant.HomeSpawn.CFrame + Vector3.new(0,4,0))
     end)
 end
+
+-- Per-player city models overlap the shared prototype visually; the client renders
+-- only its owner's city while every interaction is validated against OwnerUserId.
+Players.PlayerAdded:Connect(init)
+for _, player in Players:GetPlayers() do task.spawn(init, player) end
+Players.PlayerRemoving:Connect(function(player)
+    save(player)
+    local cityFolder = giant:FindFirstChild("PersonalCities")
+    local cityModel = cityFolder and cityFolder:FindFirstChild("City_" .. tostring(player.UserId))
+    if cityModel then cityModel:Destroy() end
+    sessions[player] = nil
+end)
+game:BindToClose(function()
+    local pending = 0
+    for _, player in Players:GetPlayers() do
+        pending += 1
+        task.spawn(function() save(player) pending -= 1 end)
+    end
+    while pending > 0 do task.wait() end
+end)
+task.spawn(function()
+    while task.wait(60) do
+        for _, player in Players:GetPlayers() do task.spawn(save, player) end
+    end
+end)
+task.spawn(function()
+    while task.wait(5) do
+        for player, session in sessions do
+            if player.Parent and session.cityModel then
+                refreshFarmCity(player, session.cityModel)
+            end
+        end
+    end
+end)
+
