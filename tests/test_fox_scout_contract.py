@@ -130,7 +130,7 @@ class FoxScoutContractTests(unittest.TestCase):
         self.assertIn("увидеть золотые следы", HUD)
 
     def test_hud_explains_the_fox_scout_ability_and_active_find(self):
-        self.assertIn("Нюх следопыта открывает личные тайники", HUD)
+        self.assertIn("Находит тайники и древние следы скрытых проходов", HUD)
         self.assertIn("Следуй по золотым следам лап в Солнечной роще", HUD)
         self.assertIn("найдёт лунное семя", HUD)
 
