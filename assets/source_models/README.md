@@ -65,6 +65,19 @@ The Blender script delegates OBJ validation to `tools/blender/obj_export_validat
 
 This validates the exported file structure, not Blender's actual UV unwrap quality. The script still needs a real Blender 4.2 run and human visual review.
 
+
+### Reproducible UV checker texture
+
+Generate a checker PNG without Blender or third-party Python packages:
+
+```bash
+python tools/blender/generate_uv_checker.py --output build/uv_checker.png
+```
+
+Defaults: 1024×1024, 8×8 large tiles, each split into 8×8 smaller checks. The warm/cool high-contrast pattern and fine grid make stretched, rotated or unevenly scaled UV islands easier to spot. The generator refuses to overwrite an existing file unless `--overwrite` is passed.
+
+In Blender, create an Image Texture node, open `build/uv_checker.png`, connect it to the Principled BSDF Base Color for preview only, and inspect the fox from front, sides, back and underside. Remove the checker material before painting/authoring production textures. This checker is a diagnostic aid, not final game art.
+
 ### Required manual review before accepting a UV preview
 
 1. Open the exported OBJ in Blender 4.2.x and inspect the UV Editor with a checker texture.
