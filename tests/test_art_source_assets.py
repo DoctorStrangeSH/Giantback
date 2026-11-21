@@ -1,0 +1,67 @@
+from pathlib import Path
+import re
+import unittest
+
+
+ROOT = Path(__file__).resolve().parents[1]
+ASSET_DIR = ROOT / "assets" / "source_models"
+REQUIRED = (
+    "fox_companion",
+    "moth_companion",
+    "home_cottage",
+    "farm_bed",
+    "bridge_segment",
+    "home_island",
+)
+
+
+class OriginalMeshSourceTests(unittest.TestCase):
+    def test_every_source_mesh_has_a_matching_material_file(self):
+        for stem in REQUIRED:
+            obj = ASSET_DIR / f"{stem}.obj"
+            mtl = ASSET_DIR / f"{stem}.mtl"
+            self.assertTrue(obj.is_file(), stem)
+            self.assertTrue(mtl.is_file(), stem)
+            self.assertIn(f"mtllib {stem}.mtl", obj.read_text(encoding="utf-8"))
+
+    def test_obj_files_have_geometry_and_valid_face_indices(self):
+        for stem in REQUIRED:
+            content = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
+            lines = content.splitlines()
+            vertices = [line for line in lines if line.startswith("v ")]
+            faces = [line for line in lines if line.startswith("f ")]
+            self.assertGreater(len(vertices), 40, stem)
+            self.assertGreater(len(faces), 30, stem)
+            for face in faces:
+                for token in face.split()[1:]:
+                    index = int(token.split("/")[0])
+                    self.assertGreater(index, 0, stem)
+                    self.assertLessEqual(index, len(vertices), stem)
+
+    def test_every_used_material_is_declared(self):
+        for stem in REQUIRED:
+            obj = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
+            mtl = (ASSET_DIR / f"{stem}.mtl").read_text(encoding="utf-8")
+            used = set(re.findall(r"^usemtl\\s+(\\S+)", obj, re.MULTILINE))
+            declared = set(re.findall(r"^newmtl\\s+(\\S+)", mtl, re.MULTILINE))
+            self.assertTrue(used, stem)
+            self.assertTrue(used.issubset(declared), f"{stem}: {used - declared}")
+
+    def test_companion_sources_keep_named_rigging_parts(self):
+        fox = (ASSET_DIR / "fox_companion.obj").read_text(encoding="utf-8")
+        moth = (ASSET_DIR / "moth_companion.obj").read_text(encoding="utf-8")
+        for name in ("FoxBody", "FoxHead", "FoxTail", "FoxTailTip", "FoxLegFrontLeft"):
+            self.assertIn(f"o {name}", fox)
+        for name in ("MothBody", "MothUpperWings", "MothLowerWings", "MothAntennae", "MothGlowCore"):
+            self.assertIn(f"o {name}", moth)
+
+    def test_island_has_separate_grass_and_cliff_materials(self):
+        island = (ASSET_DIR / "home_island.obj").read_text(encoding="utf-8")
+        self.assertIn("o IslandGrassTop", island)
+        self.assertIn("o IslandCliff", island)
+        self.assertIn("usemtl grass", island)
+        self.assertIn("usemtl cliff", island)
+
+
+if __name__ == "__main__":
+    unittest.main()
