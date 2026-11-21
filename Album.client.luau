@@ -144,7 +144,7 @@ local panel = Instance.new("Frame")
 panel.Name = "CollectionPanel"
 panel.AnchorPoint = Vector2.new(1, 0)
 panel.Position = UDim2.new(1, -20, 0, 84)
-panel.Size = UDim2.fromOffset(294, 380)
+panel.Size = UDim2.fromOffset(294, 440)
 panel.BackgroundColor3 = palette.deep
 panel.Visible = false
 panel.Parent = gui
@@ -170,7 +170,7 @@ local names = {
     Moth = "Лунная моль",
 }
 local descriptions = {
-    Fox = "Чует спрятанные семена и ветви",
+    Fox = "Нюх следопыта: находит спрятанные тайники и редкие находки.",
     Moth = "Пробуждает цветы и свет",
 }
 local companionButtons = {}
@@ -207,7 +207,7 @@ local function createCompanionCard(id, index)
             event:FireServer(id)
         end
     end)
-    companionButtons[id] = {button = card, state = state, action = action}
+    companionButtons[id] = {button = card, state = state, action = action, description = description}
 end
 
 createCompanionCard("Fox", 1)
@@ -276,6 +276,13 @@ local carrotCount = resourceChip(
     UDim2.new(0.5, 7, 0, 318),
     palette.gold
 )
+local moonSeedCount = resourceChip(
+    "MoonSeed",
+    "Лунное семя",
+    "✦",
+    UDim2.fromOffset(14, 378),
+    palette.lilac
+)
 
 toggle.Activated:Connect(function()
     panel.Visible = not panel.Visible
@@ -312,6 +319,69 @@ local function getHomeIsland()
     return folder and folder:FindFirstChild("HomeIsland_" .. tostring(player.UserId))
 end
 
+local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
+local foxCachePrompts = {}
+local foxCacheHighlights = {}
+
+local function updateFoxCacheMarkers()
+    local grove = workspace:FindFirstChild("Grove")
+    if not grove then return end
+    local visuals = grove:FindFirstChild("FoxCacheVisuals")
+    local activeCacheId = player:GetAttribute("FoxCacheSpot")
+    local foxEquipped = player:GetAttribute("Companion") == "Fox"
+
+    for index, cacheId in foxCacheIds do
+        local anchor = grove:FindFirstChild(cacheId)
+        if anchor and anchor:IsA("BasePart") then
+            local localPrompt = foxCachePrompts[cacheId]
+            if not localPrompt or not localPrompt.Parent then
+                localPrompt = Instance.new("ProximityPrompt")
+                localPrompt.Name = "FoxCacheLocalPrompt"
+                localPrompt.ObjectText = "Тайник лисёнка"
+                localPrompt.ActionText = "Забрать находку"
+                localPrompt.HoldDuration = 0.25
+                localPrompt.MaxActivationDistance = 8
+                localPrompt.RequiresLineOfSight = false
+                localPrompt.Enabled = false
+                localPrompt.Parent = anchor
+                localPrompt.Triggered:Connect(function()
+                    event:FireServer("CollectFoxCache", cacheId)
+                end)
+                foxCachePrompts[cacheId] = localPrompt
+            end
+            localPrompt.Enabled = activeCacheId == cacheId and foxEquipped
+        end
+
+        local visual = visuals and visuals:FindFirstChild("FoxCacheVisual" .. string.format("%02d", index))
+        if visual then
+            local highlight = foxCacheHighlights[cacheId]
+            if not highlight or not highlight.Parent then
+                highlight = Instance.new("Highlight")
+                highlight.Name = "FoxCacheHighlight"
+                highlight.Adornee = visual
+                highlight.FillColor = Color3.fromRGB(255, 205, 112)
+                highlight.OutlineColor = Color3.fromRGB(255, 239, 190)
+                highlight.FillTransparency = 0.52
+                highlight.OutlineTransparency = 0.04
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Enabled = false
+                highlight.Parent = visual
+                foxCacheHighlights[cacheId] = highlight
+            end
+            highlight.Enabled = activeCacheId == cacheId
+        end
+    end
+end
+
+player:GetAttributeChangedSignal("FoxCacheSpot"):Connect(updateFoxCacheMarkers)
+player:GetAttributeChangedSignal("Companion"):Connect(updateFoxCacheMarkers)
+workspace.DescendantAdded:Connect(function(descendant)
+    if descendant.Name == "FoxCache01" or descendant.Name == "FoxCache02" or descendant.Name == "FoxCache03" or descendant.Name == "FoxCacheVisuals" then
+        task.defer(updateFoxCacheMarkers)
+    end
+end)
+updateFoxCacheMarkers()
+
 local route = {
     {flag = "Fox", area = "Grove", part = "Nest", label = "Лисёнок", hint = "Подружись с лисёнком у гнезда в Солнечной роще."},
     {flag = "Seed", area = "Grove", part = "Trail", label = "Следы на тропе", hint = "Позови лисёнка и попроси его обыскать тропу."},
@@ -328,6 +398,16 @@ local function goal()
     local homeIsland = getHomeIsland()
     if not homeIsland or not player:GetAttribute("Ready") then
         return "Загружаем твой остров…"
+    end
+
+    local activeCacheId = player:GetAttribute("FoxCacheSpot")
+    if type(activeCacheId) == "string" and activeCacheId ~= "" then
+        local grove = workspace:FindFirstChild("Grove")
+        local target = grove and grove:FindFirstChild(activeCacheId)
+        if player:GetAttribute("Companion") ~= "Fox" then
+            return "Позови лисёнка — он уже нашёл тайник. Затем следуй за золотой меткой.", target, "Тайник лисёнка"
+        end
+        return "Лисёнок учуял тайник! Следуй за золотой меткой и забери находку.", target, "Тайник лисёнка"
     end
 
     for _, step in route do
@@ -357,6 +437,19 @@ local function refresh()
 
         entry.state.Text = not owned and "ЕЩЁ НЕ НАЙДЕН" or equipped and "С ТОБОЙ" or "В КОЛЛЕКЦИИ"
         entry.action.Text = not owned and "НАЙТИ" or equipped and "РЯДОМ" or "ПОЗВАТЬ"
+        if id == "Fox" and owned then
+            local activeCacheId = player:GetAttribute("FoxCacheSpot")
+            local readyAt = tonumber(player:GetAttribute("FoxSearchReadyAt")) or 0
+            if type(activeCacheId) == "string" and activeCacheId ~= "" then
+                entry.description.Text = "Тайник найден! " .. (equipped and "Следуй за золотой меткой." or "Позови лисёнка и забери находку.")
+            elseif readyAt > os.time() then
+                entry.description.Text = "Нюх восстановится через " .. tostring(readyAt - os.time()) .. " сек."
+            else
+                entry.description.Text = "Нюх следопыта готов. Ищи следы в Солнечной роще."
+            end
+        else
+            entry.description.Text = descriptions[id]
+        end
         entry.button.BackgroundColor3 = equipped and palette.surfaceLight or palette.surface
         entry.state.TextColor3 = equipped and palette.gold or owned and palette.mint or palette.muted
         entry.action.TextColor3 = owned and palette.mint or palette.gold
@@ -367,7 +460,9 @@ local function refresh()
     moonResourceCount.Text = tostring(player:GetAttribute("Resource_MoonPetal") or 0) .. " шт."
     carrotSeedCount.Text = tostring(player:GetAttribute("Resource_CarrotSeed") or 0) .. " шт."
     carrotCount.Text = tostring(player:GetAttribute("Resource_Carrot") or 0) .. " шт."
+    moonSeedCount.Text = tostring(player:GetAttribute("Resource_MoonSeed") or 0) .. " шт."
     resourceHeader.Text = "МАТЕРИАЛЫ И ФЕРМА • УР. " .. tostring(player:GetAttribute("Farm_Level") or 1)
+    updateFoxCacheMarkers()
 end
 
 local function updateRoute()
@@ -499,7 +594,7 @@ local function updateLayout()
         toggle.Size = UDim2.fromOffset(144, 48)
         panel.AnchorPoint = Vector2.new(0, 0)
         panel.Position = UDim2.fromOffset(16, 174)
-        panel.Size = UDim2.fromOffset(math.min(gui.AbsoluteSize.X - 32, 294), 380)
+        panel.Size = UDim2.fromOffset(math.min(gui.AbsoluteSize.X - 32, 294), 440)
     else
         quest.Position = UDim2.fromOffset(20, 20)
         quest.Size = UDim2.fromOffset(370, 104)
@@ -508,7 +603,7 @@ local function updateLayout()
         toggle.Size = UDim2.fromOffset(156, 54)
         panel.AnchorPoint = Vector2.new(1, 0)
         panel.Position = UDim2.new(1, -20, 0, 84)
-        panel.Size = UDim2.fromOffset(294, 380)
+        panel.Size = UDim2.fromOffset(294, 440)
     end
 end
 
