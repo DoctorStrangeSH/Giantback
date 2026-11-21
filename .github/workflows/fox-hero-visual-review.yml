@@ -23,7 +23,7 @@ jobs:
         run: python -m pip install bpy==4.2.0
       - name: Render Fox Hero
         run: |
-          python -c "import runpy,sys; sys.argv=['build_fox_companion.py','--','--output-dir','build/fox_hero']; runpy.run_path('tools/blender/build_fox_companion.py',run_name='__main__')"
+          python -c "import runpy,sys; sys.path.insert(0,'tools/blender'); sys.argv=['build_fox_companion.py','--','--output-dir','build/fox_hero']; runpy.run_path('tools/blender/build_fox_companion.py',run_name='__main__')"
       - name: Check review package
         run: |
           python -c "import json,pathlib; p=pathlib.Path('build/fox_hero'); names=['fox_companion_hero_three_quarter.png','fox_companion_hero_front.png','fox_companion_hero_side.png','fox_companion_hero_back.png','fox_companion_hero.blend','fox_companion_hero.obj','fox_companion_hero_rig.json','fox_companion_hero_mesh_report.json']; missing=[n for n in names if not (p/n).is_file()]; assert not missing, missing; assert len(json.loads((p/'fox_companion_hero_rig.json').read_text())['parts'])==17"
