@@ -50,7 +50,8 @@ class RebootContractTests(unittest.TestCase):
     def test_farm_screen_explains_planting_and_harvesting(self):
         self.assertIn("Подойди к свободной грядке", HUD)
         self.assertIn("Собрать", HUD)
-        self.assertIn("Farm_Plot", HUD)
+        self.assertIn('"Farm_" .. plotId .. "_Unlocked"', HUD)
+        self.assertIn('"Farm_" .. plotId .. "_ReadyAt"', HUD)
         self.assertIn("Resource_CarrotSeed", HUD)
         self.assertIn("Resource_Carrot", HUD)
 
