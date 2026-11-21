@@ -283,6 +283,13 @@ local moonSeedCount = resourceChip(
     UDim2.fromOffset(14, 378),
     palette.lilac
 )
+local starShardCount = resourceChip(
+    "StarShard",
+    "Звёздный осколок",
+    "✧",
+    UDim2.new(0.5, 7, 0, 378),
+    palette.gold
+)
 
 toggle.Activated:Connect(function()
     panel.Visible = not panel.Visible
@@ -573,10 +580,138 @@ local function updateMothBloomReveal()
 
 end
 
+local moonGatePrompts = {}
+local moonGateHighlights = {}
+
+local function setLocalModelVisibility(model, visible)
+    if not model then return end
+    for _, descendant in model:GetDescendants() do
+        if descendant:IsA("BasePart") then
+            descendant.LocalTransparencyModifier = visible and 0 or 1
+        elseif descendant:IsA("PointLight") then
+            descendant.Enabled = visible
+        end
+    end
+end
+
+local function setMoonGateHighlight(model, key, color, enabled)
+    if not model then
+        local existing = moonGateHighlights[key]
+        if existing then existing.Enabled = false end
+        return
+    end
+    local highlight = moonGateHighlights[key]
+    if not highlight or highlight.Parent ~= model then
+        if highlight then highlight:Destroy() end
+        highlight = Instance.new("Highlight")
+        highlight.Name = "MoonGate" .. key .. "Highlight"
+        highlight.Adornee = model
+        highlight.FillColor = color
+        highlight.OutlineColor = Color3.fromRGB(245, 230, 255)
+        highlight.FillTransparency = 0.64
+        highlight.OutlineTransparency = 0.08
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlight.Parent = model
+        moonGateHighlights[key] = highlight
+    end
+    highlight.Enabled = enabled
+end
+
+local function configureMoonGatePrompt(key, anchor, objectText, actionText, action, enabled)
+    local prompt = moonGatePrompts[key]
+    if anchor and (not prompt or prompt.Parent ~= anchor) then
+        if prompt then prompt:Destroy() end
+        prompt = Instance.new("ProximityPrompt")
+        prompt.Name = "MoonGate" .. key .. "LocalPrompt"
+        prompt.ObjectText = objectText
+        prompt.ActionText = actionText
+        prompt.HoldDuration = 0.35
+        prompt.MaxActivationDistance = 8
+        prompt.RequiresLineOfSight = false
+        prompt.Enabled = false
+        prompt.Parent = anchor
+        prompt.Triggered:Connect(function()
+            event:FireServer(action)
+        end)
+        moonGatePrompts[key] = prompt
+    end
+    if prompt then
+        prompt.Enabled = anchor ~= nil and enabled
+    end
+end
+
+local function updateMoonGatePuzzle()
+    local dusk = workspace:FindFirstChild("Dusk")
+    if not dusk then
+        for _, prompt in moonGatePrompts do prompt.Enabled = false end
+        for _, highlight in moonGateHighlights do highlight.Enabled = false end
+        return
+    end
+
+    local visuals = dusk:FindFirstChild("MoonGateVisuals")
+    local tracksVisual = visuals and visuals:FindFirstChild("MoonGateTracksVisual")
+    local runesVisual = visuals and visuals:FindFirstChild("MoonGateRunesVisual")
+    local sealVisual = visuals and visuals:FindFirstChild("MoonGateSeal")
+    local clearingVisual = visuals and visuals:FindFirstChild("MoonGateClearingVisual")
+    local foxEquipped = player:GetAttribute("Companion") == "Fox"
+    local mothEquipped = player:GetAttribute("Companion") == "Moth"
+    local traceFound = player:GetAttribute("MoonGateTrace") == true
+    local gateOpen = player:GetAttribute("MoonGateOpen") == true
+    local relicCollected = player:GetAttribute("MoonRelic") == true
+
+    setLocalModelVisibility(tracksVisual, foxEquipped or traceFound)
+    setLocalModelVisibility(runesVisual, gateOpen or (traceFound and mothEquipped))
+    setLocalModelVisibility(sealVisual, not gateOpen)
+    setLocalModelVisibility(clearingVisual, gateOpen)
+
+    if clearingVisual then
+        for _, descendant in clearingVisual:GetDescendants() do
+            if descendant.Name == "MoonRelicGem" and descendant:IsA("BasePart") then
+                descendant.LocalTransparencyModifier = relicCollected and 1 or 0
+                local light = descendant:FindFirstChildOfClass("PointLight")
+                if light then light.Enabled = not relicCollected end
+            end
+        end
+    end
+
+    setMoonGateHighlight(tracksVisual, "Tracks", Color3.fromRGB(255, 202, 119), foxEquipped and not traceFound)
+    setMoonGateHighlight(runesVisual, "Runes", Color3.fromRGB(204, 181, 238), traceFound and mothEquipped and not gateOpen)
+    setMoonGateHighlight(clearingVisual, "Relic", Color3.fromRGB(239, 184, 91), gateOpen and not relicCollected)
+
+    configureMoonGatePrompt(
+        "Tracks",
+        dusk:FindFirstChild("MoonGateTracks"),
+        "Следы под корнями",
+        "Попросить лисёнка искать",
+        "SearchMoonGate",
+        foxEquipped and not traceFound
+    )
+    configureMoonGatePrompt(
+        "Runes",
+        dusk:FindFirstChild("MoonGateRune"),
+        "Древние лунные руны",
+        "Осветить руны",
+        "RevealMoonGate",
+        traceFound and mothEquipped and not gateOpen
+    )
+    configureMoonGatePrompt(
+        "Relic",
+        dusk:FindFirstChild("MoonRelic"),
+        "Звёздный осколок",
+        "Забрать реликвию",
+        "CollectMoonRelic",
+        gateOpen and not relicCollected
+    )
+end
+
 player:GetAttributeChangedSignal("FoxCacheSpot"):Connect(updateFoxCacheMarkers)
 player:GetAttributeChangedSignal("Companion"):Connect(updateFoxCacheMarkers)
 player:GetAttributeChangedSignal("Companion"):Connect(updateMothBloomReveal)
 player:GetAttributeChangedSignal("MoonBloom"):Connect(updateMothBloomReveal)
+player:GetAttributeChangedSignal("Companion"):Connect(updateMoonGatePuzzle)
+player:GetAttributeChangedSignal("MoonGateTrace"):Connect(updateMoonGatePuzzle)
+player:GetAttributeChangedSignal("MoonGateOpen"):Connect(updateMoonGatePuzzle)
+player:GetAttributeChangedSignal("MoonRelic"):Connect(updateMoonGatePuzzle)
 workspace.DescendantAdded:Connect(function(descendant)
     if descendant.Name == "FoxCache01" or descendant.Name == "FoxCache02" or descendant.Name == "FoxCache03" or descendant.Name == "FoxCacheVisuals" or descendant.Name == "FoxCacheVisual01" or descendant.Name == "FoxCacheVisual02" or descendant.Name == "FoxCacheVisual03" or descendant.Name == "Trail" or descendant.Name == "Bank" then
         task.defer(updateFoxCacheMarkers)
@@ -584,15 +719,22 @@ workspace.DescendantAdded:Connect(function(descendant)
     if descendant.Name == "Dusk" or descendant.Name == "MoonBloom" or descendant.Name == "MoonBloomVisuals" or descendant.Name == "MoonBloomVisual" then
         task.defer(updateMothBloomReveal)
     end
+    if descendant.Name == "Dusk" or descendant.Name == "MoonGateTracks" or descendant.Name == "MoonGateRune" or descendant.Name == "MoonRelic" or descendant.Name == "MoonGateVisuals" or descendant.Name == "MoonGateTracksVisual" or descendant.Name == "MoonGateRunesVisual" or descendant.Name == "MoonGateSeal" or descendant.Name == "MoonGateClearingVisual" then
+        task.defer(updateMoonGatePuzzle)
+    end
 end)
 updateFoxCacheMarkers()
 updateMothBloomReveal()
+updateMoonGatePuzzle()
 
 local route = {
     {flag = "Fox", area = "Grove", part = "Nest", label = "Лисёнок", hint = "Подружись с лисёнком у гнезда в Солнечной роще."},
     {flag = "Seed", area = "Grove", part = "Trail", label = "Следы на тропе", hint = "Позови лисёнка и попроси его обыскать тропу."},
     {flag = "Moth", area = "Dusk", part = "Nest", label = "Лунная моль", hint = "Подружись с молью у гнезда в Лунной роще."},
     {flag = "MoonBloom", area = "Dusk", part = "MoonBloom", label = "Тайный лунный цветок", hint = "Позови лунную моль — её сияние раскроет скрытый цветок."},
+    {flag = "MoonGateTrace", area = "Dusk", part = "MoonGateTracks", label = "Следы у корней", hint = "Позови лисёнка и попроси его найти древние следы под корнями."},
+    {flag = "MoonGateOpen", area = "Dusk", part = "MoonGateRune", label = "Лунные руны", hint = "Позови лунную моль и освети древние руны у каменной арки."},
+    {flag = "MoonRelic", area = "Dusk", part = "MoonRelic", label = "Звёздный осколок", hint = "Пройди через открывшийся проход и забери редкий звёздный осколок."},
     {flag = "Flower", area = "HomeIsland", part = "Planter", label = "Лунный цветок", hint = "Позови моль к клумбе возле дома."},
     {flag = "Timber", area = "Grove", part = "Driftwood", label = "Сухие ветви", hint = "Возьми лисёнка к коряге за ветвями для фонаря."},
     {flag = "Lantern", area = "HomeIsland", part = "LanternBase", label = "Садовый фонарь", hint = "Собери фонарь из ветвей на площадке рядом с домом."},
@@ -671,9 +813,11 @@ local function refresh()
     carrotSeedCount.Text = tostring(player:GetAttribute("Resource_CarrotSeed") or 0) .. " шт."
     carrotCount.Text = tostring(player:GetAttribute("Resource_Carrot") or 0) .. " шт."
     moonSeedCount.Text = tostring(player:GetAttribute("Resource_MoonSeed") or 0) .. " шт."
+    starShardCount.Text = tostring(player:GetAttribute("Resource_StarShard") or 0) .. " шт."
     resourceHeader.Text = "МАТЕРИАЛЫ И ФЕРМА • УР. " .. tostring(player:GetAttribute("Farm_Level") or 1)
     updateFoxCacheMarkers()
     updateMothBloomReveal()
+    updateMoonGatePuzzle()
 end
 
 local function updateRoute()
