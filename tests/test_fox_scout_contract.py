@@ -105,7 +105,7 @@ class FoxScoutContractTests(unittest.TestCase):
 
     def test_fox_scent_trail_connects_the_grove_tracks_to_the_active_cache(self):
         self.assertIn('local trail = grove:FindFirstChild("Trail")', ALBUM)
-        self.assertIn("startPosition:Lerp(finishPosition, alpha)", ALBUM)
+        self.assertIn("segmentStart:Lerp(segmentEnd, alpha)", ALBUM)
         self.assertIn("math.floor(distance / 3.8)", ALBUM)
         self.assertIn('"ScentMote" .. tostring(index)', ALBUM)
 
