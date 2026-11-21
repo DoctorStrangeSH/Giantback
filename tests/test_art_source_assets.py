@@ -149,7 +149,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
             self.assertIn('fox_companion_hero_{view_name}.png', source)
         self.assertIn("REVIEW_ONLY_Ground", source)
         self.assertIn("data.use_shadow = True", source)
-        self.assertIn("def write_rig_metadata(output):", source)
+        self.assertIn("def write_rig_metadata(output, objects):", source)
         self.assertIn('fox_companion_hero_rig.json', source)
         self.assertIn('"FoxEarInnerLeft"', source)
         self.assertIn('"FoxEarInnerRight"', source)
