@@ -444,7 +444,7 @@ local function refresh()
             if type(activeCacheId) == "string" and activeCacheId ~= "" then
                 entry.description.Text = "Тайник найден! " .. (equipped and "Следуй за золотой меткой." or "Позови лисёнка и забери находку.")
             elseif readyAt > os.time() then
-                entry.description.Text = "Нюх восстановится через " .. tostring(readyAt - os.time()) .. " сек."
+                entry.description.Text = "Нюх отдыхает. Скоро снова будет готов."
             else
                 entry.description.Text = "Нюх следопыта готов. Ищи следы в Солнечной роще."
             end
