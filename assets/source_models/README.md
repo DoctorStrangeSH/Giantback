@@ -78,6 +78,19 @@ Defaults: 1024×1024, 8×8 large tiles, each split into 8×8 smaller checks. The
 
 In Blender, create an Image Texture node, open `build/uv_checker.png`, connect it to the Principled BSDF Base Color for preview only, and inspect the fox from front, sides, back and underside. Remove the checker material before painting/authoring production textures. This checker is a diagnostic aid, not final game art.
 
+
+### Automated checker render for visual review
+
+After generating the checker PNG and exporting a UV preview OBJ, Blender can create a repeatable lit still plus an editable review scene:
+
+```bash
+blender --background --python tools/blender/render_uv_preview.py -- --input build/uv_preview/fox_companion.obj --checker build/uv_checker.png --output build/uv_review/fox_companion_uv.png
+```
+
+The script imports only the preview OBJ, requires UV layers on every mesh, assigns a temporary checker material, frames the model with an orthographic camera and three area lights, then writes a PNG and a companion `.blend` scene. Existing outputs are protected unless `--overwrite` is explicitly supplied. It does not edit source OBJ/MTL files or create production textures.
+
+Use the rendered still as a quick diagnostic, then open the saved scene and inspect front, back, both sides, top and underside. The render is not an artistic beauty pass and does not approve UV seams or texel density. A human must still inspect the UV Editor and record acceptance evidence in ASSET_MANIFEST.md.
+
 ### Required manual review before accepting a UV preview
 
 1. Open the exported OBJ in Blender 4.2.x and inspect the UV Editor with a checker texture.
