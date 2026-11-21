@@ -1,0 +1,168 @@
+local Players = game:GetService("Players")
+local Storage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local event = Storage:WaitForChild("AlbumAction")
+local gui = Instance.new("ScreenGui")
+gui.Name = "GiantbackJournal"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+local function card(kind, parent, text, pos, size)
+    local c = Instance.new(kind)
+    c.Position, c.Size = pos, size
+    c.Text = text
+    c.Font = Enum.Font.GothamMedium
+    c.TextSize = 15
+    c.TextWrapped = true
+    c.TextColor3 = Color3.fromRGB(255,243,210)
+    c.BackgroundColor3 = Color3.fromRGB(37,66,60)
+    c.BackgroundTransparency = 0.08
+    c.BorderSizePixel = 0
+    Instance.new("UICorner",c).CornerRadius = UDim.new(0,10)
+    c.Parent = parent
+    return c
+end
+local status = card("TextLabel",gui,"",UDim2.fromOffset(10,8),UDim2.new(1,-115,0,56))
+local limit = Instance.new("UISizeConstraint",status)
+limit.MaxSize = Vector2.new(500,56)
+local toggle = card("TextButton",gui,"Альбом",UDim2.new(1,-95,0,8),UDim2.fromOffset(85,48))
+local panel = Instance.new("Frame")
+panel.Position = UDim2.new(1,-242,0,69)
+panel.Size = UDim2.fromOffset(232,132)
+panel.BackgroundTransparency = 1
+panel.Visible = false
+panel.Parent = gui
+toggle.Activated:Connect(function() panel.Visible = not panel.Visible end)
+local rows = {}
+local names = {Fox="Лисёнок-корешок",Moth="Лунная моль"}
+for i,id in {"Fox","Moth"} do
+    rows[id] = card("TextButton",panel,"",UDim2.fromOffset(0,(i-1)*60),UDim2.fromOffset(232,56))
+    rows[id].Activated:Connect(function()
+        if player:GetAttribute(id) then event:FireServer(id) end
+    end)
+end
+local function goal()
+    if not player:GetAttribute("Fox") then return "Перейди мостик в Солнечную рощу. У гнезда ждёт лисёнок." end
+    if not player:GetAttribute("Seed") then return "Возьми лисёнка на тропу рядом с гнездом. Он чует семя!" end
+    if not player:GetAttribute("Moth") then return "У штурвала плыви к Лунной роще. Найди моль у гнезда." end
+    if not player:GetAttribute("Flower") then return "Позови моль и подойди к клумбе возле дома." end
+    if not player:GetAttribute("Timber") then return "Возьми лисёнка к коряге в Солнечной роще за ветвями для фонаря." end
+    if not player:GetAttribute("Lantern") then return "Построй фонарь на площадке рядом со штурвалом." end
+    if not player:GetAttribute("Lit") then return "Позови моль и зажги садовый фонарь на площадке." end
+    return "Садовый фонарь горит • Коллекция 2/2"
+end
+local lastTip = 0
+local function refresh()
+    for id,row in rows do
+        local owned = player:GetAttribute(id)
+        local equipped = player:GetAttribute("Companion") == id
+        row.Text = names[id] .. "\n" .. (equipped and "✓ Рядом" or owned and "Позвать" or "Ещё не найден")
+    end
+    if os.clock() >= lastTip then
+        status.Text = (player:GetAttribute("OfflineAlbum") and "Без сохранения • " or "") .. goal()
+    end
+end
+event.OnClientEvent:Connect(function(message)
+    lastTip = os.clock()+3.5
+    status.Text = message
+    task.delay(3.6,refresh)
+end)
+player.AttributeChanged:Connect(refresh)
+refresh()
+
+local models = {}
+local function follow(dt)
+    for _, owner in Players:GetPlayers() do
+        local root = owner.Character and owner.Character:FindFirstChild("HumanoidRootPart")
+        local id = owner:GetAttribute("Companion")
+        local model = models[owner]
+        if model and (model.Name ~= id or not root) then
+            model:Destroy()
+            models[owner] = nil
+            model = nil
+        end
+        if root and names[id] then
+            local bob = math.sin(workspace:GetServerTimeNow()*3)*.22
+            local target = root.CFrame * CFrame.new(2.8,(id=="Fox" and -1.6 or 1)+bob,2)
+            if not model then
+                model = Storage[id]:Clone()
+                model:PivotTo(target)
+                model.Parent = workspace
+                models[owner] = model
+            else
+                model:PivotTo(model:GetPivot():Lerp(target,1-math.exp(-10*dt)))
+            end
+        end
+    end
+end
+Players.PlayerRemoving:Connect(function(owner)
+    if models[owner] then models[owner]:Destroy() models[owner] = nil end
+end)
+RunService.RenderStepped:Connect(follow)
+
+local planter = workspace:WaitForChild("Mossback"):WaitForChild("Planter")
+local flower
+local function bloom()
+    if flower or not player:GetAttribute("Flower") then return end
+    flower = Instance.new("Model")
+    flower.Name = "Moonflower"
+    for i=0,6 do
+        local petal = Instance.new("Part")
+        petal.Anchored,petal.CanCollide = true,false
+        petal.Shape = Enum.PartType.Ball
+        petal.Size = i==0 and Vector3.new(1.1,1.1,1.1) or Vector3.new(1.45,.65,1.45)
+        local angle = i*math.pi/3
+        petal.Position = i==0 and Vector3.new(0,.35,0) or Vector3.new(math.cos(angle),0,math.sin(angle))
+        petal.Color = i==0 and Color3.fromRGB(255,202,115) or Color3.fromRGB(216,173,246)
+        petal.Material = Enum.Material.Neon
+        petal.Parent = flower
+    end
+    flower.Parent = workspace
+    local function placeFlower() flower:PivotTo(planter.CFrame * CFrame.new(0,1,0)) end
+    placeFlower()
+    planter:GetPropertyChangedSignal("CFrame"):Connect(placeFlower)
+end
+player:GetAttributeChangedSignal("Flower"):Connect(bloom)
+bloom()
+
+local base = workspace.Mossback:WaitForChild("LanternBase")
+local lantern
+local lamp
+local light
+local function updateLantern()
+    if not player:GetAttribute("Lantern") then return end
+    if not lantern then
+        lantern = Instance.new("Model")
+        lantern.Name = "GardenLantern"
+        local function piece(name, height, size, color)
+            local part = Instance.new("Part")
+            part.Name = name
+            part.Anchored = true
+            part.CanCollide = false
+            part.Size = size
+            part.Color = color
+            part.CFrame = base.CFrame * CFrame.new(0,height,0)
+            part.Parent = lantern
+            return part
+        end
+        local wood = Color3.fromRGB(129,87,62)
+        local post = piece("Post",1.8,Vector3.new(.5,3,.5),wood)
+        piece("Shelf",3.4,Vector3.new(1.7,.3,1.7),wood)
+        lamp = piece("Glass",4.25,Vector3.new(1.3,1.45,1.3),Color3.fromRGB(242,198,127))
+        piece("Cap",5.1,Vector3.new(1.85,.3,1.85),Color3.fromRGB(79,115,101))
+        light = Instance.new("PointLight",lamp)
+        light.Color = lamp.Color
+        light.Range,light.Brightness = 16,2
+        lantern.PrimaryPart = post
+        lantern.Parent = workspace
+        RunService.RenderStepped:Connect(function()
+            local target = base.CFrame * CFrame.new(0,1.8,0)
+            if post.CFrame ~= target then lantern:PivotTo(target) end
+        end)
+    end
+    light.Enabled = player:GetAttribute("Lit") == true
+    lamp.Material = light.Enabled and Enum.Material.Neon or Enum.Material.SmoothPlastic
+end
+player:GetAttributeChangedSignal("Lantern"):Connect(updateLantern)
+player:GetAttributeChangedSignal("Lit"):Connect(updateLantern)
+updateLantern()

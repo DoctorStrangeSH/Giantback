@@ -1,0 +1,3638 @@
+<?xml version='1.0' encoding='utf-8'?>
+<roblox version="4">
+  <Item class="Workspace" referent="RBX1">
+    <Properties>
+      <string name="Name">Workspace</string>
+    </Properties>
+    <Item class="Model" referent="RBX2">
+      <Properties>
+        <string name="Name">Mossback</string>
+      </Properties>
+      <Item class="Part" referent="RBX4">
+        <Properties>
+          <string name="Name">Shell</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4282871652</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>39</X>
+            <Y>16</Y>
+            <Z>32</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>4</Y>
+            <Z>0</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX5">
+        <Properties>
+          <string name="Name">Meadow</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4287215993</Color3uint8>
+          <Vector3 name="size">
+            <X>34</X>
+            <Y>4</Y>
+            <Z>28</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>10</Y>
+            <Z>0</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX6">
+        <Properties>
+          <string name="Name">Head</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4288137367</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>14</X>
+            <Y>11</Y>
+            <Z>13</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>21</X>
+            <Y>7</Y>
+            <Z>0</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX7">
+        <Properties>
+          <string name="Name">Eye</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4280500038</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>2.2</X>
+            <Y>2.4</Y>
+            <Z>1.4</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>24</X>
+            <Y>8.5</Y>
+            <Z>-5.4</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX8">
+        <Properties>
+          <string name="Name">Glint</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294963917</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.65</X>
+            <Y>0.65</Y>
+            <Z>0.45</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>24.35</X>
+            <Y>9</Y>
+            <Z>-5.95</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX9">
+        <Properties>
+          <string name="Name">Flipper</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285636486</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>10</X>
+            <Y>5</Y>
+            <Z>13</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-11</X>
+            <Y>0</Y>
+            <Z>-12</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX10">
+        <Properties>
+          <string name="Name">Flipper</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285636486</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>10</X>
+            <Y>5</Y>
+            <Z>13</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>11</X>
+            <Y>0</Y>
+            <Z>-12</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX11">
+        <Properties>
+          <string name="Name">Eye</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4280500038</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>2.2</X>
+            <Y>2.4</Y>
+            <Z>1.4</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>24</X>
+            <Y>8.5</Y>
+            <Z>5.4</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX12">
+        <Properties>
+          <string name="Name">Glint</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294963917</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.65</X>
+            <Y>0.65</Y>
+            <Z>0.45</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>24.35</X>
+            <Y>9</Y>
+            <Z>5.95</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX13">
+        <Properties>
+          <string name="Name">Flipper</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285636486</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>10</X>
+            <Y>5</Y>
+            <Z>13</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-11</X>
+            <Y>0</Y>
+            <Z>12</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX14">
+        <Properties>
+          <string name="Name">Flipper</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285636486</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>10</X>
+            <Y>5</Y>
+            <Z>13</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>11</X>
+            <Y>0</Y>
+            <Z>12</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX15">
+        <Properties>
+          <string name="Name">Cottage</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294169241</Color3uint8>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>6</Y>
+            <Z>7</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-9</X>
+            <Y>15</Y>
+            <Z>-6</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX16">
+        <Properties>
+          <string name="Name">Roof</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4290536019</Color3uint8>
+          <Vector3 name="size">
+            <X>6.2</X>
+            <Y>0.8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-11.65</X>
+            <Y>19</Y>
+            <Z>-6</Z>
+            <R00>0.9063077870366499</R00>
+            <R01>-0.42261826174069944</R01>
+            <R02>0</R02>
+            <R10>0.42261826174069944</R10>
+            <R11>0.9063077870366499</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX17">
+        <Properties>
+          <string name="Name">Roof</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4290536019</Color3uint8>
+          <Vector3 name="size">
+            <X>6.2</X>
+            <Y>0.8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-6.35</X>
+            <Y>19</Y>
+            <Z>-6</Z>
+            <R00>0.9063077870366499</R00>
+            <R01>0.42261826174069944</R01>
+            <R02>0</R02>
+            <R10>-0.42261826174069944</R10>
+            <R11>0.9063077870366499</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX18">
+        <Properties>
+          <string name="Name">Window</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294952041</Color3uint8>
+          <Vector3 name="size">
+            <X>3</X>
+            <Y>2.3</Y>
+            <Z>0.2</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-9</X>
+            <Y>15</Y>
+            <Z>-2.46</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX19">
+        <Properties>
+          <string name="Name">Planter</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286602056</Color3uint8>
+          <Vector3 name="size">
+            <X>6</X>
+            <Y>1</Y>
+            <Z>4</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-8</X>
+            <Y>12.5</Y>
+            <Z>5</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="SpawnLocation" referent="RBX20">
+        <Properties>
+          <string name="Name">HomeSpawn</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4290629004</Color3uint8>
+          <Vector3 name="size">
+            <X>5</X>
+            <Y>0.3</Y>
+            <Z>5</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>12.15</Y>
+            <Z>1</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="Neutral">true</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX21">
+        <Properties>
+          <string name="Name">Helm</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4291728993</Color3uint8>
+          <Vector3 name="size">
+            <X>2</X>
+            <Y>2.4</Y>
+            <Z>2</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>10</X>
+            <Y>13.2</Y>
+            <Z>0</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX22">
+        <Properties>
+          <string name="Name">LanternBase</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289366372</Color3uint8>
+          <Vector3 name="size">
+            <X>3</X>
+            <Y>0.7</Y>
+            <Z>3</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>6</X>
+            <Y>12.35</Y>
+            <Z>8</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX23">
+        <Properties>
+          <string name="Name">Gangway</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4290350949</Color3uint8>
+          <Vector3 name="size">
+            <X>6</X>
+            <Y>1</Y>
+            <Z>8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>11.5</Y>
+            <Z>-17</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="RBX3">
+      <Properties>
+        <string name="Name">Lagoon</string>
+        <bool name="Anchored">true</bool>
+        <Color3uint8 name="Color3uint8">4284858307</Color3uint8>
+        <Vector3 name="size">
+          <X>460</X>
+          <Y>2</Y>
+          <Z>300</Z>
+        </Vector3>
+        <CoordinateFrame name="CFrame">
+          <X>48</X>
+          <Y>-6</Y>
+          <Z>0</Z>
+          <R00>1.0</R00>
+          <R01>-0.0</R01>
+          <R02>0</R02>
+          <R10>0.0</R10>
+          <R11>1.0</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+      </Properties>
+    </Item>
+    <Item class="Model" referent="RBX24">
+      <Properties>
+        <string name="Name">Grove</string>
+      </Properties>
+      <Item class="Part" referent="RBX25">
+        <Properties>
+          <string name="Name">Bank</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4287740035</Color3uint8>
+          <Vector3 name="size">
+            <X>45</X>
+            <Y>9</Y>
+            <Z>40</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>7</Y>
+            <Z>-40</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX26">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-18.216804500185354</X>
+            <Y>15</Y>
+            <Z>-56.85457697959819</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX27">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285376632</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-18.216804500185354</X>
+            <Y>20</Y>
+            <Z>-56.85457697959819</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX28">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-9.69988637368558</X>
+            <Y>15</Y>
+            <Z>-55.920385611598945</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX29">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285376632</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-9.69988637368558</X>
+            <Y>20</Y>
+            <Z>-55.920385611598945</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX30">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>13.939339352140925</X>
+            <Y>15</Y>
+            <Z>-43.69910933681875</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX31">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285376632</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>13.939339352140925</X>
+            <Y>20</Y>
+            <Z>-43.69910933681875</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX32">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-15.037845399571632</X>
+            <Y>15</Y>
+            <Z>-36.96951782843164</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX33">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285376632</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-15.037845399571632</X>
+            <Y>20</Y>
+            <Z>-36.96951782843164</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX34">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-11.355173612303199</X>
+            <Y>15</Y>
+            <Z>-45.66898513607742</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX35">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285376632</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-11.355173612303199</X>
+            <Y>20</Y>
+            <Z>-45.66898513607742</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX36">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>15.648374757661557</X>
+            <Y>15</Y>
+            <Z>-55.164444508505596</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX37">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285376632</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>15.648374757661557</X>
+            <Y>20</Y>
+            <Z>-55.164444508505596</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX38">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>19.630144814995234</X>
+            <Y>15</Y>
+            <Z>-50.73485646331382</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX39">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285376632</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>19.630144814995234</X>
+            <Y>20</Y>
+            <Z>-50.73485646331382</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX40">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>9.878170409241319</X>
+            <Y>15</Y>
+            <Z>-50.39947160828721</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX41">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285376632</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>9.878170409241319</X>
+            <Y>20</Y>
+            <Z>-50.39947160828721</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX42">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-15.308184502785123</X>
+            <Y>15</Y>
+            <Z>-49.97799010216528</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX43">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285376632</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-15.308184502785123</X>
+            <Y>20</Y>
+            <Z>-49.97799010216528</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX44">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-14.50523328510456</X>
+            <Y>15</Y>
+            <Z>-45.91159077587916</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX45">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4285376632</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-14.50523328510456</X>
+            <Y>20</Y>
+            <Z>-45.91159077587916</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX46">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-11.498631656778176</X>
+            <Y>11.9</Y>
+            <Z>-34.727783021880285</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX47">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>7.537348877212821</X>
+            <Y>11.9</Y>
+            <Z>-40.64139564054905</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX48">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>2.9180380034326134</X>
+            <Y>11.9</Y>
+            <Z>-45.945857103640854</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX49">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>5.073719600342201</X>
+            <Y>11.9</Y>
+            <Z>-38.48323602667813</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX50">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-6.235559695262607</X>
+            <Y>11.9</Y>
+            <Z>-53.50470731797277</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX51">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0.9500697476409528</X>
+            <Y>11.9</Y>
+            <Z>-25.366676437972274</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX52">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-2.4238056260453007</X>
+            <Y>11.9</Y>
+            <Z>-57.293678154960375</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX53">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-13.674107978420093</X>
+            <Y>11.9</Y>
+            <Z>-25.881375595349105</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX54">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-5.867626661206522</X>
+            <Y>11.9</Y>
+            <Z>-48.058644959363804</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX55">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>16.202680475879433</X>
+            <Y>11.9</Y>
+            <Z>-42.515587309377345</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX56">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0.6396625774174147</X>
+            <Y>11.9</Y>
+            <Z>-39.34919125140165</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX57">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-11.453426426713524</X>
+            <Y>11.9</Y>
+            <Z>-42.920873425881794</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX58">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>16.797237629721977</X>
+            <Y>11.9</Y>
+            <Z>-39.599622982917936</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX59">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-0.5714750383821112</X>
+            <Y>11.9</Y>
+            <Z>-26.483910247331224</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX60">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>9.171233497452612</X>
+            <Y>11.9</Y>
+            <Z>-30.452759720109633</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX61">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-1.7385175756238205</X>
+            <Y>11.9</Y>
+            <Z>-52.71296538963106</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX62">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-3.661933852394121</X>
+            <Y>11.9</Y>
+            <Z>-24.123109026179293</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX63">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>11.134960089986063</X>
+            <Y>11.9</Y>
+            <Z>-43.317405557667264</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX64">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-12.057389700815339</X>
+            <Y>11.9</Y>
+            <Z>-34.065329603060874</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX65">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>1.965941483115138</X>
+            <Y>11.9</Y>
+            <Z>-55.32653069841254</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX66">
+        <Properties>
+          <string name="Name">Trail</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4291542419</Color3uint8>
+          <Vector3 name="size">
+            <X>4</X>
+            <Y>0.08</Y>
+            <Z>18</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>11.54</Y>
+            <Z>-31</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX67">
+        <Properties>
+          <string name="Name">Nest</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4290681196</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>5</X>
+            <Y>1</Y>
+            <Z>4</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>12</Y>
+            <Z>-40</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX68">
+        <Properties>
+          <string name="Name">Driftwood</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4288772949</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>5</X>
+            <Y>1.6</Y>
+            <Z>2</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>10</X>
+            <Y>12.3</Y>
+            <Z>-32</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Model" referent="RBX69">
+      <Properties>
+        <string name="Name">Dusk</string>
+      </Properties>
+      <Item class="Part" referent="RBX70">
+        <Properties>
+          <string name="Name">Bank</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289440914</Color3uint8>
+          <Vector3 name="size">
+            <X>45</X>
+            <Y>9</Y>
+            <Z>40</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>100</X>
+            <Y>7</Y>
+            <Z>-40</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX71">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>110.85938144868699</X>
+            <Y>15</Y>
+            <Z>-39.93390661240972</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX72">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289364915</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>110.85938144868699</X>
+            <Y>20</Y>
+            <Z>-39.93390661240972</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX73">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>112.43531692903645</X>
+            <Y>15</Y>
+            <Z>-39.875854966417705</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX74">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289364915</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>112.43531692903645</X>
+            <Y>20</Y>
+            <Z>-39.875854966417705</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX75">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>111.54941023918926</X>
+            <Y>15</Y>
+            <Z>-38.20539152564005</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX76">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289364915</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>111.54941023918926</X>
+            <Y>20</Y>
+            <Z>-38.20539152564005</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX77">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>80.57844613137433</X>
+            <Y>15</Y>
+            <Z>-37.17967035032719</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX78">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289364915</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>80.57844613137433</X>
+            <Y>20</Y>
+            <Z>-37.17967035032719</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX79">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>110.14307170911655</X>
+            <Y>15</Y>
+            <Z>-54.38003885299683</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX80">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289364915</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>110.14307170911655</X>
+            <Y>20</Y>
+            <Z>-54.38003885299683</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX81">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>111.34439763269985</X>
+            <Y>15</Y>
+            <Z>-50.686755731074406</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX82">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289364915</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>111.34439763269985</X>
+            <Y>20</Y>
+            <Z>-50.686755731074406</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX83">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>111.98415131271645</X>
+            <Y>15</Y>
+            <Z>-46.72956638740784</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX84">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289364915</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>111.98415131271645</X>
+            <Y>20</Y>
+            <Z>-46.72956638740784</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX85">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>90.07179063263011</X>
+            <Y>15</Y>
+            <Z>-55.98443114411002</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX86">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289364915</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>90.07179063263011</X>
+            <Y>20</Y>
+            <Z>-55.98443114411002</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX87">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>85.81056428878009</X>
+            <Y>15</Y>
+            <Z>-53.14352649726925</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX88">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289364915</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>85.81056428878009</X>
+            <Y>20</Y>
+            <Z>-53.14352649726925</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX89">
+        <Properties>
+          <string name="Name">Trunk</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4286802001</Color3uint8>
+          <Vector3 name="size">
+            <X>1.8</X>
+            <Y>7</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>113.78956480530069</X>
+            <Y>15</Y>
+            <Z>-49.09839665285235</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX90">
+        <Properties>
+          <string name="Name">Crown</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289364915</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>9</X>
+            <Y>8</Y>
+            <Z>9</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>113.78956480530069</X>
+            <Y>20</Y>
+            <Z>-49.09839665285235</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX91">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>91.92341993207125</X>
+            <Y>11.9</Y>
+            <Z>-56.526172383161956</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX92">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>99.07736487498266</X>
+            <Y>11.9</Y>
+            <Z>-24.891800144629407</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX93">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>85.41539240213454</X>
+            <Y>11.9</Y>
+            <Z>-36.30637484827763</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX94">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>100.43479310853829</X>
+            <Y>11.9</Y>
+            <Z>-49.293610162823114</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX95">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>98.65896608572638</X>
+            <Y>11.9</Y>
+            <Z>-43.23469172666385</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX96">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>106.643180443688</X>
+            <Y>11.9</Y>
+            <Z>-54.42384266358504</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX97">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>92.0713612339534</X>
+            <Y>11.9</Y>
+            <Z>-44.2246093333741</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX98">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>100.80182464898346</X>
+            <Y>11.9</Y>
+            <Z>-45.01948964824071</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX99">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>119.08263354408643</X>
+            <Y>11.9</Y>
+            <Z>-38.66923297476565</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX100">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>98.09268524740726</X>
+            <Y>11.9</Y>
+            <Z>-35.57405340025009</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX101">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>104.50593643840456</X>
+            <Y>11.9</Y>
+            <Z>-28.68643116849777</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX102">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>104.43872358149261</X>
+            <Y>11.9</Y>
+            <Z>-53.4756687501529</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX103">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294371003</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>112.53677905699666</X>
+            <Y>11.9</Y>
+            <Z>-52.11955977241289</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX104">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>106.9965237776232</X>
+            <Y>11.9</Y>
+            <Z>-51.34098464101197</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX105">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>104.11981868553687</X>
+            <Y>11.9</Y>
+            <Z>-24.921900571171037</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX106">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>82.99467390149175</X>
+            <Y>11.9</Y>
+            <Z>-43.43779734242913</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX107">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>109.57658024989706</X>
+            <Y>11.9</Y>
+            <Z>-32.513165083215995</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX108">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294363509</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>109.74825824752295</X>
+            <Y>11.9</Y>
+            <Z>-48.088385360002995</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX109">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>97.08286396111379</X>
+            <Y>11.9</Y>
+            <Z>-51.503062614157145</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX110">
+        <Properties>
+          <string name="Name">Bloom</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292117640</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.8</X>
+            <Y>0.8</Y>
+            <Z>0.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>89.76303641277926</X>
+            <Y>11.9</Y>
+            <Z>-52.75855933708773</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX111">
+        <Properties>
+          <string name="Name">Trail</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4291542419</Color3uint8>
+          <Vector3 name="size">
+            <X>4</X>
+            <Y>0.08</Y>
+            <Z>18</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>100</X>
+            <Y>11.54</Y>
+            <Z>-31</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX112">
+        <Properties>
+          <string name="Name">Nest</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4290681196</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>5</X>
+            <Y>1</Y>
+            <Z>4</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>100</X>
+            <Y>12</Y>
+            <Z>-40</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="ReplicatedStorage" referent="RBX113">
+    <Properties>
+      <string name="Name">ReplicatedStorage</string>
+    </Properties>
+    <Item class="Model" referent="RBX114">
+      <Properties>
+        <string name="Name">Fox</string>
+      </Properties>
+      <Item class="Part" referent="RBX115">
+        <Properties>
+          <string name="Name">Body</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4292380243</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>2.6</X>
+            <Y>2.5</Y>
+            <Z>3</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>0</Y>
+            <Z>0</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX116">
+        <Properties>
+          <string name="Name">Muzzle</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294958507</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>1.6</X>
+            <Y>1.2</Y>
+            <Z>1.1</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>-0.3</Y>
+            <Z>-1.2</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX117">
+        <Properties>
+          <string name="Name">Ear</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4290471242</Color3uint8>
+          <Vector3 name="size">
+            <X>0.65</X>
+            <Y>1.4</Y>
+            <Z>0.65</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-0.8</X>
+            <Y>1.1</Y>
+            <Z>-0.4</Z>
+            <R00>0.9659258262890683</R00>
+            <R01>-0.25881904510252074</R01>
+            <R02>0</R02>
+            <R10>0.25881904510252074</R10>
+            <R11>0.9659258262890683</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX118">
+        <Properties>
+          <string name="Name">Eye</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4280892224</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.35</X>
+            <Y>0.39</Y>
+            <Z>0.32</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-0.62</X>
+            <Y>0.24</Y>
+            <Z>-1.25</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX119">
+        <Properties>
+          <string name="Name">Ear</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4290471242</Color3uint8>
+          <Vector3 name="size">
+            <X>0.65</X>
+            <Y>1.4</Y>
+            <Z>0.65</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0.8</X>
+            <Y>1.1</Y>
+            <Z>-0.4</Z>
+            <R00>0.9659258262890683</R00>
+            <R01>0.25881904510252074</R01>
+            <R02>0</R02>
+            <R10>-0.25881904510252074</R10>
+            <R11>0.9659258262890683</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX120">
+        <Properties>
+          <string name="Name">Eye</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4280892224</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.35</X>
+            <Y>0.39</Y>
+            <Z>0.32</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0.62</X>
+            <Y>0.24</Y>
+            <Z>-1.25</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX121">
+        <Properties>
+          <string name="Name">Tail</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294231947</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>1.4</X>
+            <Y>1.4</Y>
+            <Z>2.3</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>0.25</Y>
+            <Z>1.8</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Model" referent="RBX122">
+      <Properties>
+        <string name="Name">Moth</string>
+      </Properties>
+      <Item class="Part" referent="RBX123">
+        <Properties>
+          <string name="Name">Body</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294959521</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.75</X>
+            <Y>1.5</Y>
+            <Z>1.8</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>0</X>
+            <Y>0</Y>
+            <Z>0</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX124">
+        <Properties>
+          <string name="Name">Wing</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289105104</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>2.3</X>
+            <Y>2</Y>
+            <Z>0.65</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-1.05</X>
+            <Y>0.3</Y>
+            <Z>0</Z>
+            <R00>0.9063077870366499</R00>
+            <R01>-0.42261826174069944</R01>
+            <R02>0</R02>
+            <R10>0.42261826174069944</R10>
+            <R11>0.9063077870366499</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX125">
+        <Properties>
+          <string name="Name">Mark</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294959521</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.65</X>
+            <Y>0.65</Y>
+            <Z>0.15</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>-1.35</X>
+            <Y>0.45</Y>
+            <Z>-0.32</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX126">
+        <Properties>
+          <string name="Name">Wing</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4289105104</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>2.3</X>
+            <Y>2</Y>
+            <Z>0.65</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>1.05</X>
+            <Y>0.3</Y>
+            <Z>0</Z>
+            <R00>0.9063077870366499</R00>
+            <R01>0.42261826174069944</R01>
+            <R02>0</R02>
+            <R10>-0.42261826174069944</R10>
+            <R11>0.9063077870366499</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="RBX127">
+        <Properties>
+          <string name="Name">Mark</string>
+          <bool name="Anchored">true</bool>
+          <Color3uint8 name="Color3uint8">4294959521</Color3uint8>
+          <token name="shape">0</token>
+          <Vector3 name="size">
+            <X>0.65</X>
+            <Y>0.65</Y>
+            <Z>0.15</Z>
+          </Vector3>
+          <CoordinateFrame name="CFrame">
+            <X>1.35</X>
+            <Y>0.45</Y>
+            <Z>-0.32</Z>
+            <R00>1.0</R00>
+            <R01>-0.0</R01>
+            <R02>0</R02>
+            <R10>0.0</R10>
+            <R11>1.0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0</R21>
+            <R22>1</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="ServerScriptService" referent="RBX128">
+    <Properties>
+      <string name="Name">ServerScriptService</string>
+    </Properties>
+    <Item class="Script" referent="RBX129">
+      <Properties>
+        <string name="Name">World</string>
+        <ProtectedString name="Source">local Players = game:GetService("Players")
+local Storage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local store
+if not RunService:IsStudio() then
+    store = game:GetService("DataStoreService"):GetDataStore("GiantbackAlbum_v1")
+end
+local event = Instance.new("RemoteEvent")
+event.Name = "AlbumAction"
+event.Parent = Storage
+local giant = workspace.Mossback
+local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
+local progress = {"Fox", "Moth", "Seed", "Flower", "Timber", "Lantern", "Lit"}
+local sessions = {}
+local atDusk, sailing = false, false
+local homePivot = giant:GetPivot()
+
+local function tip(player, message)
+    event:FireClient(player, message)
+end
+
+local function save(player)
+    local session = sessions[player]
+    if not session or not session.online then return end
+    local snapshot = {}
+    for _, key in progress do snapshot[key] = player:GetAttribute(key) == true end
+    local ok, err = pcall(function()
+        store:UpdateAsync(tostring(player.UserId), function(old)
+            old = old or {}
+            for _, key in progress do old[key] = old[key] or snapshot[key] end
+            return old
+        end)
+    end)
+    if not ok then warn("Album save:", err) end
+end
+
+local function init(player)
+    if sessions[player] then return end
+    local session = {}
+    sessions[player] = session
+    player.RespawnLocation = giant.HomeSpawn
+    if not RunService:IsStudio() then
+        local ok, data = pcall(function() return store:GetAsync(tostring(player.UserId)) end)
+        if sessions[player] ~= session then return end
+        session.online = ok
+        if ok and type(data) == "table" then
+            for _, key in progress do player:SetAttribute(key, data[key] == true) end
+        end
+        if not ok then player:SetAttribute("OfflineAlbum", true) end
+    end
+    player:SetAttribute("Ready", true)
+end
+Players.PlayerAdded:Connect(init)
+for _, player in Players:GetPlayers() do task.spawn(init, player) end
+Players.PlayerRemoving:Connect(function(player)
+    save(player)
+    sessions[player] = nil
+end)
+game:BindToClose(function()
+    local pending = 0
+    for _, player in Players:GetPlayers() do
+        pending += 1
+        task.spawn(function() save(player) pending -= 1 end)
+    end
+    while pending &gt; 0 do task.wait() end
+end)
+task.spawn(function()
+    while task.wait(60) do
+        for _, player in Players:GetPlayers() do task.spawn(save, player) end
+    end
+end)
+
+local function prompt(part, title, verb, callback)
+    local p = Instance.new("ProximityPrompt")
+    p.ObjectText, p.ActionText = title, verb
+    p.RequiresLineOfSight = false
+    p.MaxActivationDistance = 9
+    p.Parent = part
+    p.Triggered:Connect(function(player)
+        local character = player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        if root and player:GetAttribute("Ready") and (root.Position-part.Position).Magnitude &lt;= 12 then
+            callback(player)
+        end
+    end)
+    return p
+end
+
+local function encounter(id, island, height)
+    local nest = island.Nest
+    local model = Storage[id]:Clone()
+    model.Parent = island
+    model:PivotTo(CFrame.new(nest.Position + Vector3.new(0,height,0)) * CFrame.Angles(0,math.pi,0))
+    prompt(nest,pets[id],"Подружиться",function(player)
+        player:SetAttribute(id,true)
+        player:SetAttribute("Companion",id)
+        tip(player,pets[id] .. " теперь с тобой!")
+    end)
+end
+encounter("Fox",workspace.Grove,1.8)
+encounter("Moth",workspace.Dusk,3.5)
+
+event.OnServerEvent:Connect(function(player, action)
+    if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
+    if pets[action] and player:GetAttribute(action) then player:SetAttribute("Companion",action) end
+end)
+prompt(workspace.Grove.Trail,"Следы в траве","Попросить лисёнка искать",function(player)
+    if player:GetAttribute("Companion") ~= "Fox" then return tip(player,"Позови лисёнка из альбома.") end
+    if player:GetAttribute("Seed") then return tip(player,"Семя уже найдено. Лунная моль поможет ему расцвести.") end
+    player:SetAttribute("Seed",true)
+    tip(player,"Лисёнок выкопал лунное семя! Отправляйся за молью.")
+end)
+prompt(giant.Planter,"Сад у дома","Разбудить цветок",function(player)
+    if player:GetAttribute("Flower") then return tip(player,"Твой лунный цветок уже расцвёл.") end
+    if not player:GetAttribute("Seed") then return tip(player,"Лисёнок чует семя на тропе возле гнезда.") end
+    if player:GetAttribute("Companion") ~= "Moth" then return tip(player,"Позови лунную моль из альбома.") end
+    player:SetAttribute("Flower",true)
+    tip(player,"Моль расправила крылья. Твой первый лунный цветок расцвёл!")
+end)
+
+prompt(workspace.Grove.Driftwood,"Коряга на берегу","Искать сухие ветви",function(player)
+    if not player:GetAttribute("Flower") then return tip(player,"Сначала вырасти лунный цветок у дома.") end
+    if player:GetAttribute("Timber") then return tip(player,"Ветви уже собраны. Площадка рядом со штурвалом.") end
+    if player:GetAttribute("Companion") ~= "Fox" then return tip(player,"Позови лисёнка. Он найдёт крепкие ветви.") end
+    player:SetAttribute("Timber",true)
+    tip(player,"Лисёнок нашёл ветви для садового фонаря!")
+end)
+prompt(giant.LanternBase,"Садовый фонарь","Осмотреть площадку",function(player)
+    if not player:GetAttribute("Timber") then return tip(player,"После цветения возьми лисёнка к коряге в Солнечной роще.") end
+    if not player:GetAttribute("Lantern") then
+        player:SetAttribute("Lantern",true)
+        return tip(player,"Фонарь построен! Позови моль, чтобы зажечь его.")
+    end
+    if player:GetAttribute("Lit") then return tip(player,"Фонарь освещает твой сад.") end
+    if player:GetAttribute("Companion") ~= "Moth" then return tip(player,"Позови лунную моль из альбома.") end
+    player:SetAttribute("Lit",true)
+    tip(player,"Моль зажгла твой первый садовый фонарь!")
+end)
+
+local helm
+helm = prompt(giant.Helm,"Мохоспин","К Лунной роще",function()
+    if sailing then return end
+    sailing = true
+    helm.Enabled = false
+    local origin = giant:GetPivot()
+    local deck = giant.Meadow
+    local riders = {}
+    for _, player in Players:GetPlayers() do
+        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if root and not root.Anchored then
+            local pos = deck.CFrame:PointToObjectSpace(root.Position)
+            if math.abs(pos.X) &lt;= 17 and math.abs(pos.Z) &lt;= 14 and pos.Y &gt;= 0 and pos.Y &lt; 20 then
+                riders[root] = origin:ToObjectSpace(root.CFrame)
+                root.Anchored = true
+            end
+        end
+    end
+    local target = homePivot + Vector3.new(atDusk and 0 or 100,0,0)
+    local elapsed = 0
+    while elapsed &lt; 5 do
+        elapsed += RunService.Heartbeat:Wait()
+        local t = math.min(elapsed/5,1)
+        local frame = origin:Lerp(target,t*t*(3-2*t))
+        giant:PivotTo(frame)
+        for root, offset in riders do
+            if root.Parent then root.CFrame = frame * offset end
+        end
+    end
+    for root in riders do if root.Parent then root.Anchored = false end end
+    atDusk = not atDusk
+    helm.ActionText = atDusk and "К Солнечной роще" or "К Лунной роще"
+    sailing = false
+    helm.Enabled = true
+end)
+
+-- A shore-side call bell prevents riders left ashore from becoming stranded.
+for _, island in {workspace.Grove,workspace.Dusk} do
+    local bell = Instance.new("Part")
+    bell.Name = "CallBell"
+    bell.Anchored = true
+    bell.Size = Vector3.new(2,3,2)
+    bell.Color = Color3.fromRGB(237,185,101)
+    bell.Position = island.Bank.Position + Vector3.new(5,6,-1+17)
+    bell.Parent = island
+    prompt(bell,"Дом на спине","Вернуться домой",function(player)
+        if sailing then return tip(player,"Мохоспин в пути. Дождись прибытия.") end
+        player.Character:PivotTo(giant.HomeSpawn.CFrame + Vector3.new(0,4,0))
+    end)
+end
+</ProtectedString>
+      </Properties>
+    </Item>
+  </Item>
+  <Item class="StarterPlayer" referent="RBX130">
+    <Properties>
+      <string name="Name">StarterPlayer</string>
+    </Properties>
+    <Item class="StarterPlayerScripts" referent="RBX131">
+      <Properties>
+        <string name="Name">StarterPlayerScripts</string>
+      </Properties>
+      <Item class="LocalScript" referent="RBX132">
+        <Properties>
+          <string name="Name">Album</string>
+          <ProtectedString name="Source">local Players = game:GetService("Players")
+local Storage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local event = Storage:WaitForChild("AlbumAction")
+local gui = Instance.new("ScreenGui")
+gui.Name = "GiantbackJournal"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+local function card(kind, parent, text, pos, size)
+    local c = Instance.new(kind)
+    c.Position, c.Size = pos, size
+    c.Text = text
+    c.Font = Enum.Font.GothamMedium
+    c.TextSize = 15
+    c.TextWrapped = true
+    c.TextColor3 = Color3.fromRGB(255,243,210)
+    c.BackgroundColor3 = Color3.fromRGB(37,66,60)
+    c.BackgroundTransparency = 0.08
+    c.BorderSizePixel = 0
+    Instance.new("UICorner",c).CornerRadius = UDim.new(0,10)
+    c.Parent = parent
+    return c
+end
+local status = card("TextLabel",gui,"",UDim2.fromOffset(10,8),UDim2.new(1,-115,0,56))
+local limit = Instance.new("UISizeConstraint",status)
+limit.MaxSize = Vector2.new(500,56)
+local toggle = card("TextButton",gui,"Альбом",UDim2.new(1,-95,0,8),UDim2.fromOffset(85,48))
+local panel = Instance.new("Frame")
+panel.Position = UDim2.new(1,-242,0,69)
+panel.Size = UDim2.fromOffset(232,132)
+panel.BackgroundTransparency = 1
+panel.Visible = false
+panel.Parent = gui
+toggle.Activated:Connect(function() panel.Visible = not panel.Visible end)
+local rows = {}
+local names = {Fox="Лисёнок-корешок",Moth="Лунная моль"}
+for i,id in {"Fox","Moth"} do
+    rows[id] = card("TextButton",panel,"",UDim2.fromOffset(0,(i-1)*60),UDim2.fromOffset(232,56))
+    rows[id].Activated:Connect(function()
+        if player:GetAttribute(id) then event:FireServer(id) end
+    end)
+end
+local function goal()
+    if not player:GetAttribute("Fox") then return "Перейди мостик в Солнечную рощу. У гнезда ждёт лисёнок." end
+    if not player:GetAttribute("Seed") then return "Возьми лисёнка на тропу рядом с гнездом. Он чует семя!" end
+    if not player:GetAttribute("Moth") then return "У штурвала плыви к Лунной роще. Найди моль у гнезда." end
+    if not player:GetAttribute("Flower") then return "Позови моль и подойди к клумбе возле дома." end
+    if not player:GetAttribute("Timber") then return "Возьми лисёнка к коряге в Солнечной роще за ветвями для фонаря." end
+    if not player:GetAttribute("Lantern") then return "Построй фонарь на площадке рядом со штурвалом." end
+    if not player:GetAttribute("Lit") then return "Позови моль и зажги садовый фонарь на площадке." end
+    return "Садовый фонарь горит • Коллекция 2/2"
+end
+local lastTip = 0
+local function refresh()
+    for id,row in rows do
+        local owned = player:GetAttribute(id)
+        local equipped = player:GetAttribute("Companion") == id
+        row.Text = names[id] .. "\n" .. (equipped and "✓ Рядом" or owned and "Позвать" or "Ещё не найден")
+    end
+    if os.clock() &gt;= lastTip then
+        status.Text = (player:GetAttribute("OfflineAlbum") and "Без сохранения • " or "") .. goal()
+    end
+end
+event.OnClientEvent:Connect(function(message)
+    lastTip = os.clock()+3.5
+    status.Text = message
+    task.delay(3.6,refresh)
+end)
+player.AttributeChanged:Connect(refresh)
+refresh()
+
+local models = {}
+local function follow(dt)
+    for _, owner in Players:GetPlayers() do
+        local root = owner.Character and owner.Character:FindFirstChild("HumanoidRootPart")
+        local id = owner:GetAttribute("Companion")
+        local model = models[owner]
+        if model and (model.Name ~= id or not root) then
+            model:Destroy()
+            models[owner] = nil
+            model = nil
+        end
+        if root and names[id] then
+            local bob = math.sin(workspace:GetServerTimeNow()*3)*.22
+            local target = root.CFrame * CFrame.new(2.8,(id=="Fox" and -1.6 or 1)+bob,2)
+            if not model then
+                model = Storage[id]:Clone()
+                model:PivotTo(target)
+                model.Parent = workspace
+                models[owner] = model
+            else
+                model:PivotTo(model:GetPivot():Lerp(target,1-math.exp(-10*dt)))
+            end
+        end
+    end
+end
+Players.PlayerRemoving:Connect(function(owner)
+    if models[owner] then models[owner]:Destroy() models[owner] = nil end
+end)
+RunService.RenderStepped:Connect(follow)
+
+local planter = workspace:WaitForChild("Mossback"):WaitForChild("Planter")
+local flower
+local function bloom()
+    if flower or not player:GetAttribute("Flower") then return end
+    flower = Instance.new("Model")
+    flower.Name = "Moonflower"
+    for i=0,6 do
+        local petal = Instance.new("Part")
+        petal.Anchored,petal.CanCollide = true,false
+        petal.Shape = Enum.PartType.Ball
+        petal.Size = i==0 and Vector3.new(1.1,1.1,1.1) or Vector3.new(1.45,.65,1.45)
+        local angle = i*math.pi/3
+        petal.Position = i==0 and Vector3.new(0,.35,0) or Vector3.new(math.cos(angle),0,math.sin(angle))
+        petal.Color = i==0 and Color3.fromRGB(255,202,115) or Color3.fromRGB(216,173,246)
+        petal.Material = Enum.Material.Neon
+        petal.Parent = flower
+    end
+    flower.Parent = workspace
+    local function placeFlower() flower:PivotTo(planter.CFrame * CFrame.new(0,1,0)) end
+    placeFlower()
+    planter:GetPropertyChangedSignal("CFrame"):Connect(placeFlower)
+end
+player:GetAttributeChangedSignal("Flower"):Connect(bloom)
+bloom()
+
+local base = workspace.Mossback:WaitForChild("LanternBase")
+local lantern
+local lamp
+local light
+local function updateLantern()
+    if not player:GetAttribute("Lantern") then return end
+    if not lantern then
+        lantern = Instance.new("Model")
+        lantern.Name = "GardenLantern"
+        local function piece(name, height, size, color)
+            local part = Instance.new("Part")
+            part.Name = name
+            part.Anchored = true
+            part.CanCollide = false
+            part.Size = size
+            part.Color = color
+            part.CFrame = base.CFrame * CFrame.new(0,height,0)
+            part.Parent = lantern
+            return part
+        end
+        local wood = Color3.fromRGB(129,87,62)
+        local post = piece("Post",1.8,Vector3.new(.5,3,.5),wood)
+        piece("Shelf",3.4,Vector3.new(1.7,.3,1.7),wood)
+        lamp = piece("Glass",4.25,Vector3.new(1.3,1.45,1.3),Color3.fromRGB(242,198,127))
+        piece("Cap",5.1,Vector3.new(1.85,.3,1.85),Color3.fromRGB(79,115,101))
+        light = Instance.new("PointLight",lamp)
+        light.Color = lamp.Color
+        light.Range,light.Brightness = 16,2
+        lantern.PrimaryPart = post
+        lantern.Parent = workspace
+        RunService.RenderStepped:Connect(function()
+            local target = base.CFrame * CFrame.new(0,1.8,0)
+            if post.CFrame ~= target then lantern:PivotTo(target) end
+        end)
+    end
+    light.Enabled = player:GetAttribute("Lit") == true
+    lamp.Material = light.Enabled and Enum.Material.Neon or Enum.Material.SmoothPlastic
+end
+player:GetAttributeChangedSignal("Lantern"):Connect(updateLantern)
+player:GetAttributeChangedSignal("Lit"):Connect(updateLantern)
+updateLantern()
+</ProtectedString>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+</roblox>
