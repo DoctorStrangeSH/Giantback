@@ -148,6 +148,8 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
             self.assertIn('"' + view + '"', source)
             self.assertIn('fox_companion_hero_{view_name}.png', source)
         self.assertIn("REVIEW_ONLY_Ground", source)
+        self.assertIn("floor.rotation_euler.x = math.radians(90.0)", source)
+        self.assertIn("# Blender planes are created in XY (normal +Z); the character uses Y-up.", source)
         self.assertIn("data.use_shadow = True", source)
         self.assertIn("def write_rig_metadata(output, objects):", source)
         self.assertIn('fox_companion_hero_rig.json', source)
