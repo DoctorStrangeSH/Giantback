@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
 
 local player = Players.LocalPlayer
 local storage = ReplicatedStorage
@@ -1034,7 +1035,63 @@ local encounterLocations = {
     Moth = "Dusk",
 }
 
-local function captureAnimation(model, id, isEncounter)
+local mothAbilityUntil = 0
+local pendingMothBurst = false
+
+local function playMothAbilityBurst(model)
+    mothAbilityUntil = os.clock() + 2.4
+    if not model or not model.Parent then
+        pendingMothBurst = true
+        return
+    end
+
+    pendingMothBurst = false
+    local origin = model:GetPivot().Position + Vector3.new(0, 0.55, 0)
+    local burst = Instance.new("Folder")
+    burst.Name = "MothAbilityBurstLocal"
+    burst.Parent = workspace
+
+    for index = 1, 12 do
+        local angle = (index - 1) * math.pi * 2 / 12
+        local direction = Vector3.new(math.cos(angle), 0, math.sin(angle))
+        local startPosition = origin + direction * 0.48 + Vector3.new(0, (index % 3) * 0.12, 0)
+        local mote = Instance.new("Part")
+        mote.Name = "LunarSpark"
+        mote.Shape = Enum.PartType.Ball
+        mote.Size = Vector3.new(0.2, 0.2, 0.2)
+        mote.CFrame = CFrame.new(startPosition)
+        mote.Anchored = true
+        mote.CanCollide = false
+        mote.CanTouch = false
+        mote.CanQuery = false
+        mote.CastShadow = false
+        mote.Material = Enum.Material.Neon
+        mote.Color = index % 3 == 0 and palette.gold or palette.lilac
+        mote.Transparency = 0.08
+        mote.Parent = burst
+
+        local finishPosition = startPosition + direction * (1.45 + (index % 3) * 0.22) + Vector3.new(0, 1.0 + (index % 4) * 0.16, 0)
+        local tween = TweenService:Create(
+            mote,
+            TweenInfo.new(0.82, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                CFrame = CFrame.new(finishPosition),
+                Size = Vector3.new(0.035, 0.035, 0.035),
+                Transparency = 1,
+            }
+        )
+        tween:Play()
+    end
+
+    Debris:AddItem(burst, 1.0)
+end
+
+local function celebrateMothAbility()
+    if player:GetAttribute("Companion") ~= "Moth" then return end
+    playMothAbilityBurst(models[player])
+end
+
+local function captureAnimation(model, id, isEncounter, isLocal)
     local pivot = model:GetPivot()
     local offsets = {}
     for _, part in model:GetDescendants() do
@@ -1048,6 +1105,7 @@ local function captureAnimation(model, id, isEncounter)
         origin = pivot,
         offsets = offsets,
         isEncounter = isEncounter == true,
+        isLocal = isLocal == true,
     }
     animationStates[model] = state
     return state
@@ -1055,7 +1113,9 @@ end
 
 local function animateModelParts(model, state, time, moving)
     local pivot = model:GetPivot()
-    local sniffing = state.id == "Fox" and not state.isEncounter and os.clock() < foxSniffUntil
+    local now = os.clock()
+    local sniffing = state.id == "Fox" and not state.isEncounter and now < foxSniffUntil
+    local mothAbility = state.id == "Moth" and state.isLocal and now < mothAbilityUntil
     for part, offset in state.offsets do
         if part.Parent then
             local transform = CFrame.new()
@@ -1082,11 +1142,23 @@ local function animateModelParts(model, state, time, moving)
             elseif state.id == "Moth" then
                 if part.Name == "Wing" or part.Name == "Wing tip" or part.Name == "Wing jewel" then
                     local side = offset.Position.X >= 0 and 1 or -1
-                    local flap = math.sin(time * 11.5) * 0.42
+                    local flapSpeed = mothAbility and 21 or 11.5
+                    local flapStrength = mothAbility and 0.76 or 0.42
+                    local flap = math.sin(time * flapSpeed) * flapStrength
                     transform = CFrame.Angles(0, 0, flap * side)
                 elseif part.Name == "Antenna" then
                     local side = offset.Position.X >= 0 and 1 or -1
-                    transform = CFrame.Angles(0, 0, math.sin(time * 2.8 + side) * 0.07)
+                    local twitchSpeed = mothAbility and 7 or 2.8
+                    local twitchStrength = mothAbility and 0.14 or 0.07
+                    transform = CFrame.Angles(0, 0, math.sin(time * twitchSpeed + side) * twitchStrength)
+                elseif part.Name == "Moonlight glow" then
+                    local pulse = mothAbility and (1.15 + math.sin(time * 12) * 0.35) or 0.65
+                    local light = part:FindFirstChildOfClass("PointLight")
+                    if light then
+                        light.Brightness = pulse
+                        light.Range = mothAbility and 14 or 9
+                    end
+                    transform = CFrame.new(0, math.sin(time * (mothAbility and 9 or 2.8)) * (mothAbility and 0.12 or 0.035), 0)
                 end
             end
 
@@ -1163,7 +1235,10 @@ local function follow(dt)
                 model.Parent = workspace
                 model:PivotTo(target)
                 models[owner] = model
-                captureAnimation(model, id, false)
+                captureAnimation(model, id, false, owner == player)
+                if owner == player and id == "Moth" and pendingMothBurst then
+                    playMothAbilityBurst(model)
+                end
             else
                 model:PivotTo(model:GetPivot():Lerp(target, 1 - math.exp(-9 * dt)))
             end
@@ -1193,6 +1268,18 @@ local function follow(dt)
         end
     end
 end
+
+player:GetAttributeChangedSignal("MoonBloom"):Connect(function()
+    if player:GetAttribute("MoonBloom") then celebrateMothAbility() end
+end)
+player:GetAttributeChangedSignal("MoonGateOpen"):Connect(function()
+    if player:GetAttribute("MoonGateOpen") then celebrateMothAbility() end
+end)
+player:GetAttributeChangedSignal("Companion"):Connect(function()
+    if player:GetAttribute("Companion") ~= "Moth" then
+        pendingMothBurst = false
+    end
+end)
 
 Players.PlayerRemoving:Connect(function(owner)
     if models[owner] then
