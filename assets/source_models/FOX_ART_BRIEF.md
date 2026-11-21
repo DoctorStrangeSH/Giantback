@@ -102,3 +102,8 @@ The current Fox Hero generator now builds the skull from a dense deformed quad s
 ## Organic torso pass
 
 FoxBody and FoxBelly are now separate organic Y-axis loft meshes with shaped cross-section profiles. The body profile broadens through the ribcage and tapers toward shoulders/hips; the cream belly uses a shallow inset-like profile. This remains a procedural sculpting foundation and requires Blender renders from front/side/back to validate silhouette and intersections.
+
+
+## Organic limb pass
+
+Front and rear leg meshes now use their own multi-section loft profiles, with narrower ankle transitions and fuller upper limbs. They remain inside the existing four limb rig groups. Separate paw-end forms are retained for silhouette and material contrast. This is still procedural geometry and requires render-based proportion review.
