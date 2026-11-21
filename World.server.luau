@@ -459,6 +459,7 @@ local function interactFarmPlot(player, ownerUserId, plotId)
 end
 
 createPersonalCity = function(player, session)
+    local ownerUserId = player.UserId
     local cityFolder = giant:FindFirstChild("PersonalCities")
     if not cityFolder then
         cityFolder = Instance.new("Folder")
@@ -472,7 +473,7 @@ createPersonalCity = function(player, session)
 
     local cityModel = Instance.new("Model")
     cityModel.Name = cityName
-    cityModel:SetAttribute("OwnerUserId", player.UserId)
+    cityModel:SetAttribute("OwnerUserId", ownerUserId)
     cityModel:SetAttribute("CityLevel", session.city.level)
     cityModel:SetAttribute("FarmLevel", session.city.farm.level)
     cityModel.Parent = cityFolder
@@ -532,13 +533,14 @@ createPersonalCity = function(player, session)
         }
 
         for _, plotId in farmPlotIds do
+            local currentPlotId = plotId
             local plotModel = Instance.new("Model")
-            plotModel.Name = plotId
-            plotModel:SetAttribute("OwnerUserId", player.UserId)
-            plotModel:SetAttribute("PlotId", plotId)
+            plotModel.Name = currentPlotId
+            plotModel:SetAttribute("OwnerUserId", ownerUserId)
+            plotModel:SetAttribute("PlotId", currentPlotId)
             plotModel.Parent = cityModel
 
-            local soilFrame = meadow.CFrame * CFrame.new(plotPositions[plotId])
+            local soilFrame = meadow.CFrame * CFrame.new(plotPositions[currentPlotId])
             local soil = makeFarmVisualPart(
                 plotModel,
                 "Soil",
@@ -561,7 +563,7 @@ createPersonalCity = function(player, session)
             anchor.Parent = plotModel
 
             prompt(anchor, "Грядка", "Посадить", function(visitor)
-                interactFarmPlot(visitor, player.UserId, plotId)
+                interactFarmPlot(visitor, ownerUserId, currentPlotId)
             end)
         end
     end
