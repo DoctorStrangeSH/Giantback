@@ -307,38 +307,35 @@ local markerText = label(markerFrame, "MarkerText", "СЛЕДУЮЩАЯ ЦЕЛЬ
 markerText.TextSize = 10
 markerText.TextXAlignment = Enum.TextXAlignment.Center
 
+local function getHomeIsland()
+    local folder = workspace:FindFirstChild("PlayerIslands")
+    return folder and folder:FindFirstChild("HomeIsland_" .. tostring(player.UserId))
+end
+
 local route = {
     {flag = "Fox", area = "Grove", part = "Nest", label = "Лисёнок", hint = "Подружись с лисёнком у гнезда в Солнечной роще."},
     {flag = "Seed", area = "Grove", part = "Trail", label = "Следы на тропе", hint = "Позови лисёнка и попроси его обыскать тропу."},
     {flag = "Moth", area = "Dusk", part = "Nest", label = "Лунная моль", hint = "Подружись с молью у гнезда в Лунной роще."},
-    {flag = "Flower", area = "Mossback", part = "Planter", label = "Лунный цветок", hint = "Позови моль к клумбе возле дома."},
+    {flag = "Flower", area = "HomeIsland", part = "Planter", label = "Лунный цветок", hint = "Позови моль к клумбе возле дома."},
     {flag = "Timber", area = "Grove", part = "Driftwood", label = "Сухие ветви", hint = "Возьми лисёнка к коряге за ветвями для фонаря."},
-    {flag = "Lantern", area = "Mossback", part = "LanternBase", label = "Садовый фонарь", hint = "Собери фонарь из ветвей на площадке рядом с домом."},
-    {flag = "Lit", area = "Mossback", part = "LanternBase", label = "Зажечь фонарь", hint = "Позови моль и зажги садовый фонарь."},
+    {flag = "Lantern", area = "HomeIsland", part = "LanternBase", label = "Садовый фонарь", hint = "Собери фонарь из ветвей на площадке рядом с домом."},
+    {flag = "Lit", area = "HomeIsland", part = "LanternBase", label = "Зажечь фонарь", hint = "Позови моль и зажги садовый фонарь."},
 }
 
 local lastTip = 0
 
 local function goal()
-    local giant = workspace:FindFirstChild("Mossback")
-    if not giant or not player:GetAttribute("Ready") then
+    local homeIsland = getHomeIsland()
+    if not homeIsland or not player:GetAttribute("Ready") then
         return "Загружаем твой остров…"
     end
 
-    local cityFolder = giant:FindFirstChild("PersonalCities")
-    local personalCity = cityFolder and cityFolder:FindFirstChild("City_" .. tostring(player.UserId))
     for _, step in route do
         if player:GetAttribute(step.flag) then
             continue
         end
 
-        local area
-        if step.area == "Mossback" then
-            area = personalCity or giant
-        else
-            area = workspace:FindFirstChild(step.area)
-        end
-
+        local area = step.area == "HomeIsland" and homeIsland or workspace:FindFirstChild(step.area)
         local target = area and area:FindFirstChild(step.part)
         if step.area == "Grove" and not player:GetAttribute("Fox") then
             return "Пройди по деревянному мосту в Солнечную рощу и найди лисёнка.", target, step.label
@@ -350,90 +347,6 @@ local function goal()
 
     return "Отлично! Теперь развивай свой остров и ферму."
 end
-
-local function applyPersonalCityVisibility(cityModel)
-    local visible = cityModel:GetAttribute("OwnerUserId") == player.UserId
-    for _, descendant in cityModel:GetDescendants() do
-        if descendant:IsA("BasePart") then
-            descendant.LocalTransparencyModifier = visible and 0 or 1
-            descendant.CastShadow = visible
-        elseif descendant:IsA("ProximityPrompt") then
-            descendant.Enabled = visible
-        end
-    end
-end
-
-local function findPersonalCityRoot(instance)
-    local giant = workspace:FindFirstChild("Mossback")
-    local folder = giant and giant:FindFirstChild("PersonalCities")
-    local current = instance
-    while current and current ~= giant do
-        if current:IsA("Model") and current.Parent == folder then
-            return current
-        end
-        current = current.Parent
-    end
-    return nil
-end
-
-local sharedHomeParts = {
-    Cottage = true,
-    Roof = true,
-    Window = true,
-    Planter = true,
-    LanternBase = true,
-}
-
-local function hideSharedHomeParts()
-    local giant = workspace:FindFirstChild("Mossback")
-    if not giant then return end
-    for _, descendant in giant:GetChildren() do
-        if descendant:IsA("BasePart") and sharedHomeParts[descendant.Name] then
-            descendant.LocalTransparencyModifier = 1
-            descendant.CastShadow = false
-        end
-    end
-end
-
-workspace.DescendantAdded:Connect(function(descendant)
-    local giant = workspace:FindFirstChild("Mossback")
-    if giant and descendant:IsA("BasePart") and descendant.Parent == giant and sharedHomeParts[descendant.Name] then
-        descendant.LocalTransparencyModifier = 1
-        descendant.CastShadow = false
-    end
-
-    local cityModel = findPersonalCityRoot(descendant)
-    if not cityModel then return end
-
-    local visible = cityModel:GetAttribute("OwnerUserId") == player.UserId
-    if descendant:IsA("BasePart") then
-        descendant.LocalTransparencyModifier = visible and 0 or 1
-        descendant.CastShadow = visible
-    elseif descendant:IsA("ProximityPrompt") then
-        descendant.Enabled = visible
-    elseif descendant == cityModel then
-        task.defer(applyPersonalCityVisibility, cityModel)
-    end
-end)
-
-task.spawn(function()
-    local giant = workspace:WaitForChild("Mossback", 12)
-    if not giant then return end
-    hideSharedHomeParts()
-    local folder = giant:WaitForChild("PersonalCities", 12)
-    if folder then
-        for _, cityModel in folder:GetChildren() do
-            if cityModel:IsA("Model") then
-                applyPersonalCityVisibility(cityModel)
-            end
-        end
-        folder.ChildAdded:Connect(function(cityModel)
-            if cityModel:IsA("Model") then
-                task.defer(applyPersonalCityVisibility, cityModel)
-            end
-        end)
-    end
-end)
 
 local function refresh()
     local found = 0
@@ -785,8 +698,19 @@ end)
 
 RunService.RenderStepped:Connect(follow)
 
--- The flower is assembled locally for its owner and travels with the moving home.
-local planter = workspace:WaitForChild("Mossback"):WaitForChild("Planter")
+-- The moonflower is a local visual attached to this player's permanent home island.
+local function waitForHomePart(name)
+    while player.Parent do
+        local homeIsland = getHomeIsland()
+        local part = homeIsland and homeIsland:FindFirstChild(name)
+        if part then return part end
+        task.wait(0.1)
+    end
+    return nil
+end
+
+local planter = waitForHomePart("Planter")
+if not planter then return end
 local flower
 
 local function flowerPart(parent, name, size, frame, color, material, shape)
@@ -840,14 +764,14 @@ local function bloom()
         if flower then flower:PivotTo(planter.CFrame * CFrame.new(0, 1.05, 0)) end
     end
     placeFlower()
-    planter:GetPropertyChangedSignal("CFrame"):Connect(placeFlower)
 end
 
 player:GetAttributeChangedSignal("Flower"):Connect(bloom)
 bloom()
 
--- The garden lantern follows the deck and becomes luminous when the moth helps.
-local base = workspace.Mossback:WaitForChild("LanternBase")
+-- The garden lantern belongs to the player's own permanent island.
+local base = waitForHomePart("LanternBase")
+if not base then return end
 local lantern
 local lamp
 local light
