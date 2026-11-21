@@ -313,7 +313,7 @@ local route = {
     {flag = "Moth", area = "Dusk", part = "Nest", label = "Лунная моль", hint = "Подружись с молью у гнезда в Лунной роще."},
     {flag = "Flower", area = "Mossback", part = "Planter", label = "Лунный цветок", hint = "Позови моль к клумбе возле дома."},
     {flag = "Timber", area = "Grove", part = "Driftwood", label = "Сухие ветви", hint = "Возьми лисёнка к коряге за ветвями для фонаря."},
-    {flag = "Lantern", area = "Mossback", part = "LanternBase", label = "Садовый фонарь", hint = "Собери фонарь из ветвей рядом со штурвалом."},
+    {flag = "Lantern", area = "Mossback", part = "LanternBase", label = "Садовый фонарь", hint = "Собери фонарь из ветвей на площадке рядом с домом."},
     {flag = "Lit", area = "Mossback", part = "LanternBase", label = "Зажечь фонарь", hint = "Позови моль и зажги садовый фонарь."},
 }
 
