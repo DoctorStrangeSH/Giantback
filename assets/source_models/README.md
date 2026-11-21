@@ -39,6 +39,37 @@ blender --background --python tools/blender/prepare_source_uv.py -- --input asse
 
 This is an automated UV blockout only. It does not paint textures, author final seams, or approve the look. Preview files must be opened and inspected in Blender, then imported into Roblox Studio before the source manifest can be marked accepted. Original source OBJ/MTL files are never overwritten.
 
+
+## UV preview safety and visual acceptance
+
+The preview tool has a few safeguards:
+
+- Input and output directories must be different.
+- Existing preview OBJ/MTL/manifest files are not overwritten unless `--overwrite-previews` is explicitly supplied.
+- Each exported OBJ is parsed again: it must contain vertices, UVs, normals and faces; every face corner must reference valid UV and normal indices; UV coordinates must remain inside the 0–1 atlas.
+- The manifest records source and preview SHA-256 hashes plus exported vertex/UV/normal/face counts. This makes it possible to compare previews without changing the editable source.
+
+Run the fox first, inspect it, then process the remaining assets:
+
+```bash
+blender --background --python tools/blender/prepare_source_uv.py -- --input assets/source_models --output build/uv_preview --assets fox_companion
+blender --background --python tools/blender/prepare_source_uv.py -- --input assets/source_models --output build/uv_preview --assets fox_companion --overwrite-previews
+```
+
+The second command is only for intentionally replacing a previous preview. To avoid overwriting, use a fresh output folder instead.
+
+### Required manual review before accepting a UV preview
+
+1. Open the exported OBJ in Blender 4.2.x and inspect the UV Editor with a checker texture.
+2. Confirm there are no collapsed or overlapping islands except intentional mirrored/stacked regions.
+3. Check seams on the muzzle, ears, paws, tail and eye parts; Smart UV seams are only a starting point.
+4. Check texel density across body/head and small details; adjust islands manually where visible stretching appears.
+5. Paint or author a proper texture set and verify MTL/material assignments.
+6. Export/import into Roblox Studio, verify object names, pivots, materials and shading on PC and a mobile-sized viewport.
+7. Only after review, add preview/texture references and Studio acceptance evidence to ASSET_MANIFEST.md.
+
+CI validates file structure and index safety; it cannot approve seam quality, texture painting, visual style or Roblox Studio appearance. UV and texture status therefore remains [~] until a human visual review is recorded.
+
 ## Import into Roblox Studio
 
 1. Open the 3D Importer and select the OBJ file. Keep its matching MTL file beside it.
