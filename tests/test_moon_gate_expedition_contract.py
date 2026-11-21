@@ -74,7 +74,7 @@ class MoonGateExpeditionContractTests(unittest.TestCase):
 
     def test_client_reveals_the_gate_only_for_personal_progress(self):
         self.assertIn("local function updateMoonGatePuzzle()", ALBUM)
-        self.assertIn("foxEquipped or traceFound", ALBUM)
+        self.assertIn("(foxEquipped and player:GetAttribute(\"MoonBloom\") == true) or traceFound", ALBUM)
         self.assertIn("gateOpen or (traceFound and mothEquipped)", ALBUM)
         self.assertIn("setLocalModelVisibility(sealVisual, not gateOpen)", ALBUM)
         self.assertIn("setLocalModelVisibility(clearingVisual, gateOpen)", ALBUM)
