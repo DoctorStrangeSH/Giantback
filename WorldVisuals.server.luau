@@ -180,6 +180,39 @@ if terrain then
     clouds.Parent = terrain
 end
 
+-- Give the prototype geometry consistent materials and remove collision from foliage.
+for _, item in workspace:GetDescendants() do
+    if item:IsA("BasePart") then
+        if item.Name == "Meadow" then
+            item.Material = Enum.Material.Grass
+        elseif item.Name == "Shell" or item.Name == "Head" or item.Name == "Flipper" then
+            item.Material = Enum.Material.SmoothPlastic
+        elseif item.Name == "Cottage" then
+            item.Material = Enum.Material.WoodPlanks
+        elseif item.Name == "Roof" then
+            item.Material = Enum.Material.Slate
+        elseif item.Name == "Bank" then
+            item.Material = Enum.Material.Grass
+        elseif item.Name == "Trunk" then
+            item.Material = Enum.Material.Wood
+            item.CanCollide = false
+        elseif item.Name == "Crown" then
+            item.Material = Enum.Material.Grass
+            item.CanCollide = false
+        elseif item.Name == "Bloom" then
+            item.CanCollide = false
+            item.CanTouch = false
+            item.CanQuery = false
+        elseif item.Name == "Trail" then
+            item.Material = Enum.Material.Sand
+        elseif item.Name == "Nest" or item.Name == "Driftwood" or item.Name == "Gangway" or item.Name == "Planter" then
+            item.Material = Enum.Material.WoodPlanks
+        elseif item.Name == "Glint" or item.Name == "Window" then
+            item.Material = Enum.Material.Neon
+        end
+    end
+end
+
 local lagoon = workspace:FindFirstChild("Lagoon")
 if lagoon and lagoon:IsA("BasePart") then
     lagoon.Material = Enum.Material.Glass
@@ -220,15 +253,15 @@ end
 
 -- Cottage details: door, shutters, porch, chimney and warm windows.
 local cottage = makeFolder(giantDetails, "CottageDetails")
-makePart(cottage, "Front door", Vector3.new(2, 4.2, 0.3), CFrame.new(-9, 14.2, -2.25), Color3.fromRGB(121, 83, 63), Enum.Material.WoodPlanks)
-makePart(cottage, "Door inset", Vector3.new(1.25, 2.6, 0.12), CFrame.new(-9, 14.2, -2.08), Color3.fromRGB(153, 108, 75), Enum.Material.Wood)
-orb(cottage, "Door handle", Vector3.new(-8.25, 14.2, -1.98), Vector3.new(0.22, 0.22, 0.22), palette.gold, Enum.Material.Metal)
-for _, x in {-11.6, -6.4} do
+makePart(cottage, "Front door", Vector3.new(1.8, 4.2, 0.3), CFrame.new(-12.2, 14.2, -2.25), Color3.fromRGB(121, 83, 63), Enum.Material.WoodPlanks)
+makePart(cottage, "Door inset", Vector3.new(1.1, 2.6, 0.12), CFrame.new(-12.2, 14.2, -2.08), Color3.fromRGB(153, 108, 75), Enum.Material.Wood)
+orb(cottage, "Door handle", Vector3.new(-11.55, 14.2, -1.98), Vector3.new(0.22, 0.22, 0.22), palette.gold, Enum.Material.Metal)
+for _, x in {-10.9, -7.1} do
     makePart(cottage, "Window shutter", Vector3.new(0.8, 2.8, 0.3), CFrame.new(x, 15.1, -2.38), palette.coral, Enum.Material.WoodPlanks)
     makePart(cottage, "Shutter hinge", Vector3.new(0.12, 2.8, 0.12), CFrame.new(x, 15.1, -2.2), palette.bark, Enum.Material.Wood)
 end
-makePart(cottage, "Porch step", Vector3.new(4.8, 0.45, 1.6), CFrame.new(-9, 12.45, -1.1), palette.barkLight, Enum.Material.WoodPlanks)
-for _, x in {-11.8, -6.2} do
+makePart(cottage, "Porch step", Vector3.new(4.8, 0.45, 1.6), CFrame.new(-12.2, 12.45, -1.1), palette.barkLight, Enum.Material.WoodPlanks)
+for _, x in {-14.1, -10.3} do
     cylinder(cottage, "Porch post", Vector3.new(x, 14, -0.8), 3.2, 0.35, palette.barkLight, Enum.Material.Wood)
     orb(cottage, "Porch post cap", Vector3.new(x, 15.7, -0.8), Vector3.new(0.6, 0.35, 0.6), palette.gold, Enum.Material.Wood)
 end
@@ -285,8 +318,11 @@ local function decorateIsland(island, isDusk)
                 orb(islandDetails, "Canopy cluster", item.Position + offset, Vector3.new(4.6, 4.1, 4.6), color, Enum.Material.Grass)
             end
         elseif item:IsA("BasePart") and item.Name == "Bloom" then
-            addFlower(islandDetails, item.Position, isDusk and palette.lilacLight or palette.coral, 0.56, math.floor(item.Position.X * 10 + item.Position.Z * 10))
+            addFlower(islandDetails, item.Position, isDusk and palette.lilacLight or palette.coral, 0.56, math.abs(math.floor(item.Position.X * 10 + item.Position.Z * 10)) + 1)
             item.Transparency = 1
+            item.CanCollide = false
+            item.CanTouch = false
+            item.CanQuery = false
         end
     end
 
@@ -337,7 +373,7 @@ local function decorateIsland(island, isDusk)
         end
         for i = 1, 5 do
             local x = centerX + (i - 3) * 5
-            local bell = makePart(islandDetails, "Wayfinder bell", Vector3.new(0.35, 2.2, 0.35), CFrame.new(x, 12.8, -27), palette.gold, Enum.Material.Metal, Enum.PartType.Cylinder)
+            local bell = cylinder(islandDetails, "Wayfinder bell", Vector3.new(x, 12.8, -27), 2.2, 0.35, palette.gold, Enum.Material.Metal)
             orb(islandDetails, "Bell clapper", Vector3.new(x, 11.6, -27), Vector3.new(0.65, 0.65, 0.65), palette.coral, Enum.Material.Metal)
         end
     end
