@@ -58,6 +58,13 @@ blender --background --python tools/blender/prepare_source_uv.py -- --input asse
 
 The second command is only for intentionally replacing a previous preview. To avoid overwriting, use a fresh output folder instead.
 
+
+### Export validation is independently tested
+
+The Blender script delegates OBJ validation to `tools/blender/obj_export_validation.py`, a pure-Python module with no Blender dependency. CI exercises real temporary OBJ fixtures, including valid positive and negative-relative indices, invalid vertex/UV/normal references, missing UV data, and UV coordinates outside the atlas. The Blender export step also requires the generated MTL file to exist and be referenced by the OBJ.
+
+This validates the exported file structure, not Blender's actual UV unwrap quality. The script still needs a real Blender 4.2 run and human visual review.
+
 ### Required manual review before accepting a UV preview
 
 1. Open the exported OBJ in Blender 4.2.x and inspect the UV Editor with a checker texture.
