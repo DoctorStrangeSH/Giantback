@@ -287,10 +287,16 @@ def create_fox(p):
 
     # Four independently animated, rounded paws with darker soft paw ends.
     for side, suffix in ((-1, "Left"), (1, "Right")):
-        ellipsoid("FoxLegFront" + suffix, (side*0.34, 0.40, -0.55),
-                 (0.22, 0.43, 0.25), p["fox_orange"])
-        ellipsoid("FoxLegBack" + suffix, (side*0.34, 0.39, 0.57),
-                 (0.25, 0.42, 0.31), p["fox_orange"])
+        organic_torso("FoxLegFront" + suffix, (side*0.34, 0.40, -0.55), [
+            (-0.42, 0.12, 0.13, 0.00), (-0.32, 0.17, 0.18, 0.00),
+            (-0.12, 0.19, 0.20, 0.00), (0.12, 0.17, 0.18, 0.00),
+            (0.32, 0.14, 0.15, 0.00), (0.42, 0.10, 0.12, 0.00),
+        ], p["fox_orange"], sides=40)
+        organic_torso("FoxLegBack" + suffix, (side*0.34, 0.39, 0.57), [
+            (-0.41, 0.14, 0.15, 0.00), (-0.30, 0.20, 0.22, 0.00),
+            (-0.10, 0.22, 0.25, 0.00), (0.12, 0.21, 0.24, 0.00),
+            (0.31, 0.17, 0.19, 0.00), (0.41, 0.11, 0.13, 0.00),
+        ], p["fox_orange"], sides=40)
         ellipsoid("PawFront" + suffix, (side*0.34, 0.12, -0.61),
                  (0.22, 0.13, 0.25), p["cream"], 24, 16)
         ellipsoid("PawBack" + suffix, (side*0.34, 0.12, 0.61),
