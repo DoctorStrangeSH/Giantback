@@ -79,7 +79,7 @@ A fox art pass is not complete until all of these are true:
 1. Revised ears, cheeks, muzzle and tail silhouette are reviewed in front / 3/4 / side / back views.
 2. Mesh topology is clean; no zero-area faces, flipped normals, accidental intersections or paper-thin surfaces.
 3. UV islands have no accidental collapse; overlap is intentional and documented; texel density is consistent across face and body.
-4. Hand-authored color/roughness details improve expression without noisy fur patterns.
+4. Hand-authored color/roughness details improve expression without noisy fur patterns. The hero blockout now includes subtle paired brows and a curved smile; these remain grouped into FoxHead and FoxMuzzle so the 17-part runtime contract is unchanged.
 5. Eyes, nose, muzzle and chest read at a 375 px mobile viewport and at normal in-world follow distance.
 6. Tail and four legs remain independently animatable.
 7. Roblox Studio import preserves names, uses `fox_companion_hero_rig.json` to restore source-space pivots, and preserves materials and silhouette; PC and mobile review is recorded in ASSET_MANIFEST.md.
