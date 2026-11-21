@@ -456,6 +456,57 @@ for index, cacheId in foxCacheAnchors do
     end
 end
 
+-- The Moon Moth reveals this hidden flower locally; its light and prompt are
+-- enabled only for players who have equipped the Moth or already awakened it.
+local moonBloomVisuals = makeFolder(dusk, "MoonBloomVisuals")
+local moonBloomAnchor = dusk:FindFirstChild("MoonBloom")
+if moonBloomAnchor and moonBloomAnchor:IsA("BasePart") then
+    local moonBloom = Instance.new("Model")
+    moonBloom.Name = "MoonBloomVisual"
+    moonBloom.Parent = moonBloomVisuals
+
+    local position = moonBloomAnchor.Position
+    for index = 1, 4 do
+        local angle = index * math.pi / 2
+        orb(
+            moonBloom,
+            "Moonstone",
+            position + Vector3.new(math.cos(angle) * 1.35, 0.22, math.sin(angle) * 1.35),
+            Vector3.new(0.72, 0.52, 0.68),
+            palette.stone,
+            Enum.Material.Rock
+        )
+    end
+    cylinder(moonBloom, "Moon bloom stem", position + Vector3.new(0, 0.48, 0), 0.95, 0.12, palette.leaf, Enum.Material.Grass)
+    for index = 1, 6 do
+        local angle = (index - 1) * math.pi / 3
+        orb(
+            moonBloom,
+            "Moon petal",
+            position + Vector3.new(math.cos(angle) * 0.56, 1.12, math.sin(angle) * 0.56),
+            Vector3.new(0.72, 0.28, 0.48),
+            palette.lilacLight,
+            Enum.Material.Neon
+        )
+    end
+    orb(moonBloom, "Moon leaves", position + Vector3.new(0, 0.55, 0.38), Vector3.new(0.9, 0.2, 0.5), palette.leafLight, Enum.Material.Grass)
+    local heart = orb(moonBloom, "Moon heart", position + Vector3.new(0, 1.2, 0), Vector3.new(0.34, 0.34, 0.34), palette.cream, Enum.Material.Neon)
+    local moonLight = addLight(heart, palette.lilacLight, 13, 0.85)
+    moonLight.Enabled = false
+    for index = 1, 3 do
+        local angle = index * math.pi * 2 / 3
+        orb(
+            moonBloom,
+            "Moon mote",
+            position + Vector3.new(math.cos(angle) * 1.05, 1.55 + index * 0.12, math.sin(angle) * 1.05),
+            Vector3.new(0.13, 0.13, 0.13),
+            palette.gold,
+            Enum.Material.Neon,
+            0.28
+        )
+    end
+end
+
 -- Small visual details for the collectible companions.
 local fox = ReplicatedStorage:FindFirstChild("Fox")
 if fox then
