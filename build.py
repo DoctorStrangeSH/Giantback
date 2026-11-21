@@ -122,6 +122,12 @@ for label, center_x, center_z, bank_size, bank_color, canopy in island_specs:
             prop(cache_anchor, "bool", "CanCollide", "false")
             prop(cache_anchor, "bool", "CanTouch", "false")
             prop(cache_anchor, "bool", "CanQuery", "true")
+    elif label == "Dusk":
+        moon_bloom = part(model, "MoonBloom", (center_x + 24, 12.05, center_z + 20), (1.2, 0.25, 1.2), "ABAC92")
+        prop(moon_bloom, "float", "Transparency", "1")
+        prop(moon_bloom, "bool", "CanCollide", "false")
+        prop(moon_bloom, "bool", "CanTouch", "false")
+        prop(moon_bloom, "bool", "CanQuery", "true")
 
 # Eight fixed home islands surround a shared forest hub. Every island has its
 # own permanent bridge; all bridges meet the same public Grove without crossing.
