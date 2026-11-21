@@ -258,6 +258,56 @@ def curved_plume(name, points, radii, mat, sides=24, steps_per_segment=6):
     return smooth(obj, mat, name)
 
 
+
+def plush_tail(name, points, widths, depths, mat, sides=48, steps_per_segment=8):
+    """Elliptical swept tail with a broad plush cross-section and tapered ends."""
+    samples = []
+    for segment in range(len(points) - 1):
+        p0 = Vector(points[max(0, segment - 1)])
+        p1 = Vector(points[segment])
+        p2 = Vector(points[segment + 1])
+        p3 = Vector(points[min(len(points) - 1, segment + 2)])
+        for step in range(steps_per_segment):
+            t = step / steps_per_segment
+            t2, t3 = t*t, t*t*t
+            pos = 0.5 * ((2*p1) + (-p0+p2)*t
+                + (2*p0-5*p1+4*p2-p3)*t2
+                + (-p0+3*p1-3*p2+p3)*t3)
+            width = widths[segment]*(1-t) + widths[segment+1]*t
+            depth = depths[segment]*(1-t) + depths[segment+1]*t
+            samples.append((pos, width, depth))
+    samples.append((Vector(points[-1]), widths[-1], depths[-1]))
+    verts, faces = [], []
+    previous_normal = Vector((1, 0, 0))
+    for index, (point, width, depth) in enumerate(samples):
+        tangent = (samples[min(index+1, len(samples)-1)][0]
+                   - samples[max(index-1, 0)][0]).normalized()
+        normal = tangent.cross(Vector((0, 1, 0)))
+        if normal.length < 1e-5:
+            normal = previous_normal
+        else:
+            normal.normalize()
+        binormal = tangent.cross(normal).normalized()
+        previous_normal = normal
+        for side in range(sides):
+            angle = 2*math.pi*side/sides
+            offset = normal*(math.cos(angle)*width) + binormal*(math.sin(angle)*depth)
+            verts.append(tuple(point + offset))
+    for row in range(len(samples)-1):
+        for side in range(sides):
+            a = row*sides+side
+            b = row*sides+(side+1)%sides
+            faces.append((a,b,b+sides,a+sides))
+    faces.append(tuple(range(sides-1,-1,-1)))
+    faces.append(tuple((len(samples)-1)*sides+side for side in range(sides)))
+    mesh = bpy.data.meshes.new(name+"Mesh")
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    return smooth(obj, mat, name)
+
+
 def create_fox(p):
     # Compact pear-shaped body, with the face consistently pointing toward -Z.
     organic_torso("FoxBody", (0, 0.91, 0.05), [
@@ -303,13 +353,14 @@ def create_fox(p):
                  (0.24, 0.13, 0.27), p["cream"], 24, 16)
 
     # Big plush tail sweeps up behind the body; cream tip remains separately riggable.
-    curved_plume("FoxTail",
+    plush_tail("FoxTail",
         [(0.15, 1.02, 0.68), (0.39, 1.10, 1.08), (0.43, 1.42, 1.55),
          (0.28, 1.76, 1.86), (0.12, 1.91, 1.99)],
-        [0.24, 0.36, 0.49, 0.43, 0.26], p["fox_orange"])
-    curved_plume("FoxTailTip",
+        [0.18, 0.29, 0.40, 0.37, 0.27],
+        [0.15, 0.25, 0.34, 0.32, 0.23], p["fox_orange"])
+    plush_tail("FoxTailTip",
         [(0.12, 1.91, 1.91), (0.06, 2.03, 2.02), (0.00, 2.12, 2.11)],
-        [0.28, 0.22, 0.025], p["cream"])
+        [0.27, 0.22, 0.015], [0.23, 0.18, 0.012], p["cream"])
 
     # Eyes sit on the front (-Z) plane; pupils and catchlights are readable at distance.
     for side, suffix in ((-1, "Left"), (1, "Right")):
