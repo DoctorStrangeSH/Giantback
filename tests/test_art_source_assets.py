@@ -61,7 +61,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
         expected = (
             "FoxBody", "FoxBelly", "FoxHead", "FoxMuzzle",
-            "FoxEarLeft", "FoxEarRight", "FoxEarInner",
+            "FoxEarLeft", "FoxEarRight", "FoxEarInnerLeft", "FoxEarInnerRight",
             "FoxLegFrontLeft", "FoxLegFrontRight",
             "FoxLegBackLeft", "FoxLegBackRight",
             "FoxTail", "FoxTailTip", "FoxEyes", "FoxEyeSparkles", "FoxNose",
@@ -87,6 +87,14 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
             self.assertIn('fox_companion_hero_{view_name}.png', source)
         self.assertIn("REVIEW_ONLY_Ground", source)
         self.assertIn("data.use_shadow = True", source)
+        self.assertIn("def write_rig_metadata(output):", source)
+        self.assertIn('fox_companion_hero_rig.json', source)
+        self.assertIn('"FoxEarInnerLeft"', source)
+        self.assertIn('"FoxEarInnerRight"', source)
+        self.assertIn('"attach_to": "FoxEarLeft"', source)
+        self.assertIn('"attach_to": "FoxEarRight"', source)
+        self.assertIn('"FoxTail": {"runtime_name": "Tail", "pivot": [0.15, 1.02, 0.68]', source)
+        self.assertIn('"obj_note": "OBJ does not preserve object origins;', source)
 
 
 class BlenderUVReviewRendererTests(unittest.TestCase):
