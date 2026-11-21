@@ -81,6 +81,12 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
             self.assertIn(feature, source)
         self.assertIn("curved_plume(", source)
         self.assertIn("leaf_mesh(", source)
+        self.assertIn("def render_review_views(", source)
+        for view in ("three_quarter", "front", "side", "back"):
+            self.assertIn('"' + view + '"', source)
+            self.assertIn('fox_companion_hero_{view_name}.png', source)
+        self.assertIn("REVIEW_ONLY_Ground", source)
+        self.assertIn("data.use_shadow = True", source)
 
 
 class BlenderUVReviewRendererTests(unittest.TestCase):
