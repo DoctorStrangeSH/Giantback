@@ -324,13 +324,118 @@ local foxCachePrompts = {}
 local foxCacheHighlights = {}
 local foxSniffUntil = 0
 local lastFoxCacheSpot = ""
+local foxScentTrailFolder = nil
+local foxScentTrailCacheId = ""
+
+local function clearFoxScentTrail()
+    if foxScentTrailFolder then
+        foxScentTrailFolder:Destroy()
+        foxScentTrailFolder = nil
+    end
+    foxScentTrailCacheId = ""
+end
+
+local function makeFoxScentPart(parent, name, size, frame, transparency)
+    local part = Instance.new("Part")
+    part.Name = name
+    part.Shape = Enum.PartType.Ball
+    part.Size = size
+    part.CFrame = frame
+    part.Anchored = true
+    part.CanCollide = false
+    part.CanTouch = false
+    part.CanQuery = false
+    part.CastShadow = false
+    part.Material = Enum.Material.Neon
+    part.Color = Color3.fromRGB(255, 198, 112)
+    part.Transparency = transparency or 0.24
+    part.Parent = parent
+    return part
+end
+
+local function createFoxPawPrint(parent, position, direction, index)
+    local side = index % 2 == 0 and 1 or -1
+    local sideVector = Vector3.new(-direction.Z, 0, direction.X)
+    local printPosition = position + sideVector * (0.38 * side)
+    local frame = CFrame.lookAt(printPosition, printPosition + direction)
+    local print = Instance.new("Model")
+    print.Name = "FoxScentPaw" .. string.format("%02d", index)
+    print.Parent = parent
+
+    makeFoxScentPart(print, "Pad", Vector3.new(0.42, 0.07, 0.34), frame * CFrame.new(0, 0.04, 0.12), 0.24)
+    local toes = {
+        {x = -0.17, z = -0.11},
+        {x = -0.055, z = -0.19},
+        {x = 0.055, z = -0.19},
+        {x = 0.17, z = -0.11},
+    }
+    for toeIndex, toe in toes do
+        makeFoxScentPart(
+            print,
+            "Toe" .. tostring(toeIndex),
+            Vector3.new(0.16, 0.07, 0.16),
+            frame * CFrame.new(toe.x, 0.045, toe.z),
+            0.18
+        )
+    end
+end
+
+local function updateFoxScentTrail(grove, activeCacheId, foxEquipped)
+    if not foxEquipped or type(activeCacheId) ~= "string" or activeCacheId == "" then
+        clearFoxScentTrail()
+        return
+    end
+
+    local anchor = grove:FindFirstChild(activeCacheId)
+    local trail = grove:FindFirstChild("Trail")
+    if not anchor or not anchor:IsA("BasePart") or not trail or not trail:IsA("BasePart") then
+        clearFoxScentTrail()
+        return
+    end
+    if foxScentTrailCacheId == activeCacheId and foxScentTrailFolder and foxScentTrailFolder.Parent then
+        return
+    end
+
+    clearFoxScentTrail()
+    local folder = Instance.new("Folder")
+    folder.Name = "FoxScentTrailLocal"
+    folder.Parent = workspace
+    foxScentTrailFolder = folder
+    foxScentTrailCacheId = activeCacheId
+
+    local bank = grove:FindFirstChild("Bank")
+    local groundY = bank and bank.Position.Y + bank.Size.Y / 2 + 0.13 or trail.Position.Y + trail.Size.Y / 2 + 0.08
+    local startPosition = Vector3.new(trail.Position.X, groundY, trail.Position.Z)
+    local finishPosition = Vector3.new(anchor.Position.X, groundY, anchor.Position.Z)
+    local directionVector = finishPosition - startPosition
+    local distance = directionVector.Magnitude
+    if distance < 4 then return end
+
+    local direction = directionVector.Unit
+    local printCount = math.clamp(math.floor(distance / 3.8), 6, 12)
+    for index = 1, printCount do
+        local alpha = index / (printCount + 1)
+        local position = startPosition:Lerp(finishPosition, alpha)
+        createFoxPawPrint(folder, position, direction, index)
+    end
+
+    for index = 1, 4 do
+        local alpha = index / 5
+        local position = startPosition:Lerp(finishPosition, alpha) + Vector3.new(0, 0.72 + (index % 2) * 0.12, 0)
+        makeFoxScentPart(folder, "ScentMote" .. tostring(index), Vector3.new(0.14, 0.14, 0.14), CFrame.new(position), 0.42)
+    end
+end
 
 local function updateFoxCacheMarkers()
     local grove = workspace:FindFirstChild("Grove")
-    if not grove then return end
+    if not grove then
+        clearFoxScentTrail()
+        return
+    end
     local visuals = grove:FindFirstChild("FoxCacheVisuals")
     local activeCacheId = player:GetAttribute("FoxCacheSpot")
     local foxEquipped = player:GetAttribute("Companion") == "Fox"
+    updateFoxScentTrail(grove, activeCacheId, foxEquipped)
     local currentCacheSpot = type(activeCacheId) == "string" and activeCacheId or ""
     if currentCacheSpot ~= "" and currentCacheSpot ~= lastFoxCacheSpot then
         foxSniffUntil = os.clock() + 2.2
@@ -384,7 +489,7 @@ end
 player:GetAttributeChangedSignal("FoxCacheSpot"):Connect(updateFoxCacheMarkers)
 player:GetAttributeChangedSignal("Companion"):Connect(updateFoxCacheMarkers)
 workspace.DescendantAdded:Connect(function(descendant)
-    if descendant.Name == "FoxCache01" or descendant.Name == "FoxCache02" or descendant.Name == "FoxCache03" or descendant.Name == "FoxCacheVisuals" or descendant.Name == "FoxCacheVisual01" or descendant.Name == "FoxCacheVisual02" or descendant.Name == "FoxCacheVisual03" then
+    if descendant.Name == "FoxCache01" or descendant.Name == "FoxCache02" or descendant.Name == "FoxCache03" or descendant.Name == "FoxCacheVisuals" or descendant.Name == "FoxCacheVisual01" or descendant.Name == "FoxCacheVisual02" or descendant.Name == "FoxCacheVisual03" or descendant.Name == "Trail" or descendant.Name == "Bank" then
         task.defer(updateFoxCacheMarkers)
     end
 end)
@@ -413,9 +518,9 @@ local function goal()
         local grove = workspace:FindFirstChild("Grove")
         local target = grove and grove:FindFirstChild(activeCacheId)
         if player:GetAttribute("Companion") ~= "Fox" then
-            return "Позови лисёнка — он уже нашёл тайник. Затем следуй за золотой меткой.", target, "Тайник лисёнка"
+            return "Позови лисёнка — он уже нашёл тайник. Затем следуй по золотым следам лап.", target, "Тайник лисёнка"
         end
-        return "Лисёнок учуял тайник! Следуй за золотой меткой и забери находку.", target, "Тайник лисёнка"
+        return "Лисёнок учуял тайник! Следуй по золотым следам лап и забери находку.", target, "Тайник лисёнка"
     end
 
     for _, step in route do
