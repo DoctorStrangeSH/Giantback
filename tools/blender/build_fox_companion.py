@@ -331,8 +331,15 @@ def create_fox(p):
     # Head silhouette: broad forehead, soft cheeks and a shorter, friendlier muzzle.
     sculpted_head("FoxHead", (0, 1.73, -0.62), (0.62, 0.61, 0.56), p["fox_orange"], 64, 40)
     lofted_muzzle("FoxMuzzle", [(-1.385, 1.42, 0.075, 0.065), (-1.33, 1.42, 0.20, 0.13), (-1.23, 1.43, 0.31, 0.19), (-1.11, 1.44, 0.36, 0.215), (-1.015, 1.45, 0.29, 0.17), (-0.985, 1.45, 0.18, 0.11)], p["cream"])
-    ellipsoid("CheekFluff_L", (-0.43, 1.48, -0.87), (0.22, 0.18, 0.19), p["cream"], 24, 16)
-    ellipsoid("CheekFluff_R", (0.43, 1.48, -0.87), (0.22, 0.18, 0.19), p["cream"], 24, 16)
+    # Tapered cheek tufts follow the muzzle silhouette instead of reading as round add-on balls.
+    curved_plume("CheekFluff_L",
+        [(-0.22, 1.36, -1.015), (-0.39, 1.42, -1.035),
+         (-0.56, 1.49, -0.965), (-0.66, 1.57, -0.865)],
+        [0.012, 0.095, 0.082, 0.008], p["cream"], sides=20, steps_per_segment=7)
+    curved_plume("CheekFluff_R",
+        [(0.22, 1.36, -1.015), (0.39, 1.42, -1.035),
+         (0.56, 1.49, -0.965), (0.66, 1.57, -0.865)],
+        [0.012, 0.095, 0.082, 0.008], p["cream"], sides=20, steps_per_segment=7)
     ellipsoid("ForeheadTuft", (0, 2.22, -0.59), (0.16, 0.20, 0.18), p["fox_orange"], 24, 16)
 
     # Tall, gently outward-splayed ears with separate inset inner-ear pieces.
