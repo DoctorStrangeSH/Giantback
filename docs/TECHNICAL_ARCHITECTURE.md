@@ -183,7 +183,7 @@ The moving-island loop and overlapping PersonalCities approach are retired. The 
 
 - The Fox is the first active exploration companion. The player must equip it and interact with the tracks on \`Grove.Trail\` to request a search.
 - The server rotates through three fixed cache anchors in the Grove. Cache selection is based on the player's saved search count, not on client input.
-- The client receives only the active cache ID as a player attribute. It highlights that cache locally and creates a local-only ProximityPrompt; other players cannot claim or see the active marker.
+- The client receives only the active cache ID as a player attribute. It highlights that cache locally, creates a local-only ProximityPrompt and plays a short Fox sniff/tail-wag animation; other players cannot claim or see the active marker.
 - The client sends the cache ID as an interaction request. The server verifies the ID allowlist, the player's active cache, equipped Fox, character root and 10-stud interaction distance before granting anything.
 - The first successful find grants one \`MoonSeed\` and sets the \`Seed\` story flag. The MoonSeed is consumed when the player wakes the home flower with the Moth.
 - Later cache rewards follow a deterministic rotation: 2 SunPetals, 2 Wood, then 1 CarrotSeed. There are no paid random rewards.
