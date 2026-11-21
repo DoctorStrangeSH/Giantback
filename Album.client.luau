@@ -582,6 +582,31 @@ end
 
 local moonGatePrompts = {}
 local moonGateHighlights = {}
+local moonGateBarrier = nil
+
+local function updateMoonGateBarrier(runeAnchor, gateOpen)
+    if gateOpen or not runeAnchor or not runeAnchor:IsA("BasePart") then
+        if moonGateBarrier then
+            moonGateBarrier:Destroy()
+            moonGateBarrier = nil
+        end
+        return
+    end
+
+    if not moonGateBarrier or not moonGateBarrier.Parent then
+        moonGateBarrier = Instance.new("Part")
+        moonGateBarrier.Name = "MoonGateLocalBarrier"
+        moonGateBarrier.Size = Vector3.new(6.35, 4.8, 1.05)
+        moonGateBarrier.Anchored = true
+        moonGateBarrier.Transparency = 1
+        moonGateBarrier.CanCollide = true
+        moonGateBarrier.CanTouch = false
+        moonGateBarrier.CanQuery = false
+        moonGateBarrier.CastShadow = false
+        moonGateBarrier.Parent = workspace
+    end
+    moonGateBarrier.CFrame = CFrame.new(runeAnchor.Position + Vector3.new(0, 2.8, -2.25))
+end
 
 local function setLocalModelVisibility(model, visible)
     if not model then return end
@@ -645,6 +670,7 @@ local function updateMoonGatePuzzle()
     if not dusk then
         for _, prompt in moonGatePrompts do prompt.Enabled = false end
         for _, highlight in moonGateHighlights do highlight.Enabled = false end
+        updateMoonGateBarrier(nil, false)
         return
     end
 
@@ -658,8 +684,10 @@ local function updateMoonGatePuzzle()
     local traceFound = player:GetAttribute("MoonGateTrace") == true
     local gateOpen = player:GetAttribute("MoonGateOpen") == true
     local relicCollected = player:GetAttribute("MoonRelic") == true
+    local runeAnchor = dusk:FindFirstChild("MoonGateRune")
 
-    setLocalModelVisibility(tracksVisual, foxEquipped or traceFound)
+    updateMoonGateBarrier(runeAnchor, gateOpen)
+    setLocalModelVisibility(tracksVisual, (foxEquipped and player:GetAttribute("MoonBloom") == true) or traceFound)
     setLocalModelVisibility(runesVisual, gateOpen or (traceFound and mothEquipped))
     setLocalModelVisibility(sealVisual, not gateOpen)
     setLocalModelVisibility(clearingVisual, gateOpen)
@@ -684,7 +712,7 @@ local function updateMoonGatePuzzle()
         "Следы под корнями",
         "Попросить лисёнка искать",
         "SearchMoonGate",
-        foxEquipped and not traceFound
+        foxEquipped and player:GetAttribute("MoonBloom") == true and not traceFound
     )
     configureMoonGatePrompt(
         "Runes",
