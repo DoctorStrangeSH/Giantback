@@ -156,6 +156,33 @@ local function init(player)
     syncInventory(player)
     player:SetAttribute("Ready", true)
 end
+event.OnServerEvent:Connect(function(player, action)
+    if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
+
+    if action == "RequestResourceState" then
+        local session = sessions[player]
+        if not session then return end
+        local state = {cooldowns = {}, collected = {}}
+        local now = os.time()
+        for nodeId, readyAt in session.resourceCooldowns do
+            if resourceNodeIds[nodeId] and readyAt > now then
+                state.cooldowns[nodeId] = readyAt
+            end
+        end
+        for nodeId, collected in session.collectedNodes do
+            if resourceNodeIds[nodeId] and collected == true then
+                state.collected[nodeId] = true
+            end
+        end
+        event:FireClient(player, "ResourceState", state)
+        return
+    end
+
+    if pets[action] and player:GetAttribute(action) then
+        player:SetAttribute("Companion",action)
+    end
+end)
+
 Players.PlayerAdded:Connect(init)
 for _, player in Players:GetPlayers() do task.spawn(init, player) end
 Players.PlayerRemoving:Connect(function(player)
@@ -212,10 +239,9 @@ encounter("Fox",workspace.Grove,1.8)
 encounter("Moth",workspace.Dusk,3.5)
 
 
--- Server-authoritative gatherables. A node can be claimed once, is removed for
--- everyone, and returns only after its explicit cooldown. Inventory is saved per player.
--- Resource nodes are shared in the world, but collection state is personal.
--- Each player gets an independent cooldown; the client hides a collected node locally.
+-- Server-authoritative gatherables. Nodes stay in the shared world, while each
+-- player's cooldown and permanent-claim state are stored independently in their profile.
+-- The client hides a collected node locally; other players can still gather it.
 local function createResourceFlower(def, position)
     local model = Instance.new("Model")
     model.Name = def.key
@@ -424,32 +450,6 @@ for _, definition in resourceDefinitions do
     spawnResource(definition)
 end
 
-event.OnServerEvent:Connect(function(player, action)
-    if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
-
-    if action == "RequestResourceState" then
-        local session = sessions[player]
-        if not session then return end
-        local state = {cooldowns = {}, collected = {}}
-        local now = os.time()
-        for nodeId, readyAt in session.resourceCooldowns do
-            if resourceNodeIds[nodeId] and readyAt > now then
-                state.cooldowns[nodeId] = readyAt
-            end
-        end
-        for nodeId, collected in session.collectedNodes do
-            if resourceNodeIds[nodeId] and collected == true then
-                state.collected[nodeId] = true
-            end
-        end
-        event:FireClient(player, "ResourceState", state)
-        return
-    end
-
-    if pets[action] and player:GetAttribute(action) then
-        player:SetAttribute("Companion",action)
-    end
-end)
 prompt(workspace.Grove.Trail,"Следы в траве","Попросить лисёнка искать",function(player)
     if player:GetAttribute("Companion") ~= "Fox" then return tip(player,"Позови лисёнка из альбома.") end
     if player:GetAttribute("Seed") then return tip(player,"Семя уже найдено. Лунная моль поможет ему расцвести.") end
