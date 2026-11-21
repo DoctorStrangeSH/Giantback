@@ -66,6 +66,7 @@ jobs:
               "FoxCache01",
               "FoxCache02",
               "FoxCache03",
+              "MoonBloom",
           }
           missing = required - names
           if missing:
@@ -139,6 +140,13 @@ jobs:
               "FoxCacheLocalPrompt",
               "FoxCacheHighlight",
               "FoxCacheVisuals",
+              "MoonBloomVisuals",
+              "MoonBloomVisual",
+              "MoonBloomLocalPrompt",
+              "MoonBloomHighlight",
+              "CollectMoonBloom",
+              "local function updateMothBloomReveal",
+              "Лунная моль раскрыла тайный цветок",
               "FoxScentTrailLocal",
               'not bank or not bank:IsA("BasePart")',
               "FoxScentPaw",
