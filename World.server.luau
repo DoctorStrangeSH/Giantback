@@ -30,7 +30,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone"}
 local farmPlotIds = {"Plot01", "Plot02", "Plot03", "Plot04"}
 local cropDefinitions = {
     Carrot = {
@@ -74,6 +74,7 @@ local function allocateHomeIsland(player, session)
             end
             island.Parent = homeIslandFolder
             island:PivotTo(homeSlotCFrame(slotIndex))
+            applyHomeBridgeState(slotIndex, session.city.bridges.homeToGrove == true)
 
             local homeSpawn = island:FindFirstChild("HomeSpawn")
             if not homeSpawn or not homeSpawn:IsA("SpawnLocation") then
@@ -113,6 +114,9 @@ local function defaultCity()
             level = 1,
             plots = plots,
         },
+        bridges = {
+            homeToGrove = false,
+        },
         buildings = {},
     }
 end
@@ -141,6 +145,8 @@ local function normalizeCity(raw)
     if type(raw) ~= "table" then return city end
 
     city.level = math.clamp(math.floor(tonumber(raw.level) or 1), 1, 5)
+    local rawBridges = type(raw.bridges) == "table" and raw.bridges or {}
+    city.bridges.homeToGrove = rawBridges.homeToGrove == true
     local rawFarm = type(raw.farm) == "table" and raw.farm or {}
     city.farm.level = math.clamp(math.floor(tonumber(rawFarm.level) or 1), 1, 3)
     local rawPlots = type(rawFarm.plots) == "table" and rawFarm.plots or {}
@@ -189,6 +195,31 @@ local function syncInventory(player)
     end
 end
 
+local function syncBridge(player)
+    local session = sessions[player]
+    player:SetAttribute("Bridge_HomeToGrove", session ~= nil and session.city.bridges.homeToGrove == true)
+end
+
+local function applyHomeBridgeState(slotIndex, built)
+    local bridgeRoot = workspace:FindFirstChild("BridgeToGrove")
+    local bridge = bridgeRoot and bridgeRoot:FindFirstChild(string.format("HomeBridge%02d", slotIndex))
+    if not bridge then return false end
+
+    for _, item in bridge:GetDescendants() do
+        if item:IsA("BasePart") then
+            item.Transparency = built and 0 or 0.62
+            item.CanCollide = built
+            item.CanTouch = built
+            item.CanQuery = built
+            if item.Name == "BridgeLamp" then
+                local light = item:FindFirstChildOfClass("PointLight")
+                if light then light.Brightness = built and 0.7 or 0.08 end
+            end
+        end
+    end
+    return true
+end
+
 local function save(player)
     local session = sessions[player]
     if not session or not session.online or not store then return false end
@@ -224,6 +255,13 @@ local function save(player)
             end
         end
 
+        local homeMaterialCooldownSnapshot = {}
+        for materialId, readyAt in session.homeMaterialCooldowns do
+            if materialId == "Wood" or materialId == "Stone" then
+                homeMaterialCooldownSnapshot[materialId] = math.max(0, math.floor(tonumber(readyAt) or 0))
+            end
+        end
+
         local citySnapshot = normalizeCity(session.city)
 
         local ok, err = pcall(function()
@@ -252,6 +290,12 @@ local function save(player)
                 end
                 old.collectedNodes = savedCollected
 
+                local savedHomeCooldowns = type(old.homeMaterialCooldowns) == "table" and old.homeMaterialCooldowns or {}
+                for materialId, readyAt in homeMaterialCooldownSnapshot do
+                    savedHomeCooldowns[materialId] = math.max(tonumber(savedHomeCooldowns[materialId]) or 0, readyAt)
+                end
+                old.homeMaterialCooldowns = savedHomeCooldowns
+
                 -- Schema v5 moves the old city payload into the permanent island record.
                 -- Keep this migration idempotent and preserve existing farm/building progress.
                 local savedIsland = type(old.island) == "table" and old.island
@@ -261,6 +305,8 @@ local function save(player)
                 savedFarm.level = citySnapshot.farm.level
                 savedFarm.plots = citySnapshot.farm.plots
                 savedIsland.farm = savedFarm
+                savedIsland.bridges = type(savedIsland.bridges) == "table" and savedIsland.bridges or {}
+                savedIsland.bridges.homeToGrove = citySnapshot.bridges.homeToGrove == true
                 if type(savedIsland.buildings) ~= "table" then
                     savedIsland.buildings = {}
                 end
@@ -291,10 +337,13 @@ local function init(player)
         homeIsland = nil,
         homeSpawn = nil,
         homeSlot = nil,
+        homeMaterialCooldowns = {},
         online = false,
     }
     for _, key in inventoryKeys do session.inventory[key] = 0 end
     session.inventory.CarrotSeed = 3
+    session.inventory.Wood = 2
+    session.inventory.Stone = 1
     sessions[player] = session
 
     -- Spawn safely in the public hub while the private island profile is loading.
@@ -333,6 +382,10 @@ local function init(player)
                 local amount
                 if key == "CarrotSeed" and savedAmount == nil then
                     amount = 3
+                elseif key == "Wood" and savedAmount == nil then
+                    amount = 2
+                elseif key == "Stone" and savedAmount == nil then
+                    amount = 1
                 else
                     amount = tonumber(savedAmount) or 0
                 end
@@ -353,6 +406,13 @@ local function init(player)
                     session.collectedNodes[nodeId] = true
                 end
             end
+
+            local savedHomeCooldowns = type(data.homeMaterialCooldowns) == "table" and data.homeMaterialCooldowns or {}
+            for materialId, readyAt in savedHomeCooldowns do
+                if (materialId == "Wood" or materialId == "Stone") and type(readyAt) == "number" then
+                    session.homeMaterialCooldowns[materialId] = math.max(0, math.floor(readyAt))
+                end
+            end
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     else
@@ -361,6 +421,7 @@ local function init(player)
 
     syncInventory(player)
     syncFarm(player)
+    syncBridge(player)
     if not allocateHomeIsland(player, session) then
         sessions[player] = nil
         player:Kick("На этом сервере заняты все 8 домашних островов. Попробуй другой сервер.")
@@ -563,6 +624,56 @@ local function interactFarmPlot(player, ownerUserId, plotId)
     end
 end
 
+local function gatherHomeMaterial(player, ownerUserId, materialId)
+    if player.UserId ~= ownerUserId then return end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+
+    local definitions = {
+        Wood = {amount = 3, cooldown = 60, title = "Дерево"},
+        Stone = {amount = 2, cooldown = 60, title = "Камень"},
+    }
+    local definition = definitions[materialId]
+    if not definition then return end
+
+    local now = os.time()
+    local readyAt = session.homeMaterialCooldowns[materialId] or 0
+    if readyAt > now then
+        return tip(player, definition.title .. " снова появится через " .. tostring(math.ceil((readyAt - now) / 60)) .. " мин.")
+    end
+
+    session.inventory[materialId] = (session.inventory[materialId] or 0) + definition.amount
+    session.homeMaterialCooldowns[materialId] = now + definition.cooldown
+    syncInventory(player)
+    tip(player, "Собрано: " .. definition.title .. " ×" .. tostring(definition.amount))
+    if session.online then save(player) end
+end
+
+local function repairHomeBridge(player, ownerUserId)
+    if player.UserId ~= ownerUserId then return end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if session.city.bridges.homeToGrove then
+        return tip(player, "Мост в Солнечную рощу уже восстановлен.")
+    end
+
+    local woodCost, stoneCost = 5, 3
+    local wood = session.inventory.Wood or 0
+    local stone = session.inventory.Stone or 0
+    if wood < woodCost or stone < stoneCost then
+        return tip(player, "Для моста нужно дерево ×5 и камень ×3. Собери материалы на своём острове.")
+    end
+
+    session.inventory.Wood = wood - woodCost
+    session.inventory.Stone = stone - stoneCost
+    session.city.bridges.homeToGrove = true
+    applyHomeBridgeState(session.homeSlot, true)
+    syncInventory(player)
+    syncBridge(player)
+    tip(player, "Мост восстановлен! Теперь можно идти в Солнечную рощу.")
+    if session.online then save(player) end
+end
+
 createPersonalCity = function(player, session)
     local ownerUserId = player.UserId
     local homeIsland = session.homeIsland
@@ -582,6 +693,25 @@ createPersonalCity = function(player, session)
     -- Only player-specific quest interactions and farm plots are created here.
     local planter = homeIsland:FindFirstChild("Planter")
     local lanternBase = homeIsland:FindFirstChild("LanternBase")
+    local woodPile = homeIsland:FindFirstChild("WoodPile")
+    local stonePile = homeIsland:FindFirstChild("StonePile")
+    local gangway = homeIsland:FindFirstChild("Gangway")
+
+    if woodPile then
+        prompt(woodPile, "Сухие ветви", "Собрать дерево ×3", function(visitor)
+            gatherHomeMaterial(visitor, ownerUserId, "Wood")
+        end)
+    end
+    if stonePile then
+        prompt(stonePile, "Камни у дома", "Собрать камень ×2", function(visitor)
+            gatherHomeMaterial(visitor, ownerUserId, "Stone")
+        end)
+    end
+    if gangway then
+        prompt(gangway, "Мост в Солнечную рощу", "Восстановить мост", function(visitor)
+            repairHomeBridge(visitor, ownerUserId)
+        end)
+    end
 
     if planter then
         prompt(planter, "Сад у дома", "Разбудить цветок", function(visitor)
