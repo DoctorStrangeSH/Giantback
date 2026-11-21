@@ -29,7 +29,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
-local progress = {"Fox", "Moth", "Seed", "Flower", "Timber", "Lantern", "Lit"}
+local progress = {"Fox", "Moth", "Seed", "MoonBloom", "Flower", "Timber", "Lantern", "Lit"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "MoonSeed"}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCacheIdSet = {}
@@ -528,6 +528,32 @@ local function collectFoxCache(player, cacheId)
     end
 end
 
+local function collectMoonBloom(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if player:GetAttribute("Companion") ~= "Moth" then
+        return tip(player, "Позови лунную моль — только её свет раскрывает этот цветок.")
+    end
+    if player:GetAttribute("MoonBloom") then
+        return tip(player, "Этот лунный цветок уже пробуждён.")
+    end
+
+    local dusk = workspace:FindFirstChild("Dusk")
+    local anchor = dusk and dusk:FindFirstChild("MoonBloom")
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not anchor or not anchor:IsA("BasePart") or not root then return end
+    if (root.Position - anchor.Position).Magnitude > 10 then return end
+
+    player:SetAttribute("MoonBloom", true)
+    session.inventory.MoonPetal = (session.inventory.MoonPetal or 0) + 2
+    syncInventory(player)
+    tip(player, "Лунная моль раскрыла тайный цветок! Получено: лунные лепестки ×2.")
+    if session.online and not save(player) then
+        warn("MoonBloom discovery save will be retried:", player.UserId)
+    end
+end
+
 local function startFoxSearch(player)
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
@@ -563,6 +589,11 @@ end
 
 event.OnServerEvent:Connect(function(player, action, payload)
     if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
+
+    if action == "CollectMoonBloom" then
+        collectMoonBloom(player)
+        return
+    end
 
     if action == "CollectFoxCache" then
         collectFoxCache(player, payload)
