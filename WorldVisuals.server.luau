@@ -507,6 +507,142 @@ if moonBloomAnchor and moonBloomAnchor:IsA("BasePart") then
     end
 end
 
+-- The first joint expedition: the Fox finds an ancient trail, then the Moth
+-- lights the runes to reveal a personal moonlit clearing and its rare relic.
+local moonGateVisuals = makeFolder(dusk, "MoonGateVisuals")
+local bank = dusk:FindFirstChild("Bank")
+local gateTracks = dusk:FindFirstChild("MoonGateTracks")
+local gateRune = dusk:FindFirstChild("MoonGateRune")
+local relicAnchor = dusk:FindFirstChild("MoonRelic")
+if bank and gateTracks and gateRune and relicAnchor then
+    local groundY = bank.Position.Y + bank.Size.Y / 2 + 0.2
+    local gatePosition = gateRune.Position + Vector3.new(0, 0, -2.2)
+
+    local tracks = Instance.new("Model")
+    tracks.Name = "MoonGateTracksVisual"
+    tracks.Parent = moonGateVisuals
+    local trackStart = gateTracks.Position
+    local trackFinish = gatePosition + Vector3.new(0, 0, 3)
+    for index = 1, 7 do
+        local alpha = index / 8
+        local position = trackStart:Lerp(trackFinish, alpha)
+        local direction = (trackFinish - trackStart).Unit
+        local side = index % 2 == 0 and 1 or -1
+        local sideVector = Vector3.new(-direction.Z, 0, direction.X)
+        local frame = CFrame.lookAt(position + sideVector * (0.28 * side), position + sideVector * (0.28 * side) + direction)
+        orb(tracks, "Fox paw pad", Vector3.new(0.34, 0.07, 0.28), frame * CFrame.new(0, 0.04, 0.08), palette.gold, Enum.Material.Neon, 0.18)
+        for toeIndex = 1, 3 do
+            local toeX = (toeIndex - 2) * 0.14
+            orb(tracks, "Fox paw toe", Vector3.new(0.12, 0.06, 0.12), frame * CFrame.new(toeX, 0.045, -0.13), palette.gold, Enum.Material.Neon, 0.22)
+        end
+    end
+    for index = 1, 3 do
+        local alpha = index / 4
+        local motePosition = trackStart:Lerp(trackFinish, alpha) + Vector3.new(0, 0.8 + (index % 2) * 0.15, 0)
+        local mote = orb(tracks, "Scent mote", motePosition, Vector3.new(0.16, 0.16, 0.16), palette.gold, Enum.Material.Neon, 0.2)
+        addLight(mote, palette.gold, 4, 0.22)
+    end
+
+    local gateShell = Instance.new("Model")
+    gateShell.Name = "MoonGateShell"
+    gateShell.Parent = moonGateVisuals
+    for side = -1, 1, 2 do
+        local pillarPosition = gatePosition + Vector3.new(side * 4.1, 2.7, 0)
+        orb(gateShell, "Ancient gate stone", pillarPosition, Vector3.new(2.15, 5.8, 2.2), palette.stone, Enum.Material.Rock)
+        orb(gateShell, "Moss on gate stone", pillarPosition + Vector3.new(-side * 0.2, 1.35, -0.45), Vector3.new(1.8, 0.7, 1.5), palette.moss, Enum.Material.Grass)
+        for rootIndex = 1, 3 do
+            local rootOffset = Vector3.new(side * (0.6 + rootIndex * 0.25), 1.3 - rootIndex * 0.8, 0.82)
+            local root = orb(gateShell, "Old tree root", pillarPosition + rootOffset, Vector3.new(0.42, 2.1, 0.48), palette.bark, Enum.Material.Wood)
+            root.CFrame = root.CFrame * CFrame.Angles(0, 0, math.rad(side * (18 + rootIndex * 12)))
+        end
+    end
+    orb(gateShell, "Ancient gate crown", gatePosition + Vector3.new(0, 5.9, 0), Vector3.new(10.4, 1.7, 2.35), palette.stone, Enum.Material.Rock)
+    for index = 1, 5 do
+        local x = -3.4 + (index - 1) * 1.7
+        orb(gateShell, "Crown moss", gatePosition + Vector3.new(x, 6.65, -0.25), Vector3.new(1.5, 0.42, 1.3), palette.mossLight, Enum.Material.Grass)
+    end
+    for index = 1, 4 do
+        local step = makePart(
+            gateShell,
+            "Worn moonstone step",
+            Vector3.new(2.5, 0.28, 1.25),
+            CFrame.new(gatePosition + Vector3.new(0, 0.16, 2.2 + index * 1.05)) * CFrame.Angles(0, math.rad((index % 2 == 0 and 1 or -1) * 4), 0),
+            palette.stone,
+            Enum.Material.Slate
+        )
+    end
+
+    local seal = Instance.new("Model")
+    seal.Name = "MoonGateSeal"
+    seal.Parent = moonGateVisuals
+    orb(seal, "Sealed stone", gatePosition + Vector3.new(0, 2.8, -0.05), Vector3.new(6.7, 5.1, 1.25), Color3.fromRGB(79, 84, 103), Enum.Material.Rock)
+    for index = 1, 3 do
+        local rune = makePart(
+            seal,
+            "Dormant seal rune",
+            Vector3.new(0.18, 1.35, 0.12),
+            CFrame.new(gatePosition + Vector3.new((index - 2) * 1.55, 3.0, -0.7)) * CFrame.Angles(0, 0, math.rad(18 * (index - 2))),
+            palette.lilac,
+            Enum.Material.Neon
+        )
+        addLight(rune, palette.lilac, 5, 0.12)
+    end
+
+    local runes = Instance.new("Model")
+    runes.Name = "MoonGateRunesVisual"
+    runes.Parent = moonGateVisuals
+    local runeStone = orb(runes, "Moon rune stone", gateRune.Position + Vector3.new(0, 0.8, 0), Vector3.new(2.5, 2.0, 1.0), palette.stone, Enum.Material.Rock)
+    runeStone.CFrame = CFrame.new(runeStone.Position) * CFrame.Angles(0, math.rad(12), math.rad(-8))
+    for index = 1, 3 do
+        local x = (index - 2) * 0.62
+        local rune = makePart(
+            runes,
+            "Awakening rune",
+            Vector3.new(0.18, 0.95, 0.14),
+            CFrame.new(gateRune.Position + Vector3.new(x, 1.05, -0.58)) * CFrame.Angles(0, 0, math.rad((index - 2) * 18)),
+            palette.lilacLight,
+            Enum.Material.Neon
+        )
+        addLight(rune, palette.lilacLight, 7, 0.32)
+    end
+
+    local clearing = Instance.new("Model")
+    clearing.Name = "MoonGateClearingVisual"
+    clearing.Parent = moonGateVisuals
+    local relicPosition = relicAnchor.Position + Vector3.new(0, 1.25, 0)
+    for index = 1, 8 do
+        local angle = index * math.pi / 4
+        local stonePosition = relicAnchor.Position + Vector3.new(math.cos(angle) * 5.0, 0.18, math.sin(angle) * 4.2)
+        orb(clearing, "Clearing moonstone", stonePosition, Vector3.new(1.15, 0.48, 1.0), palette.stone, Enum.Material.Rock)
+        local flowerPosition = relicAnchor.Position + Vector3.new(math.cos(angle) * 3.3, 0.25, math.sin(angle) * 2.8)
+        addFlower(clearing, flowerPosition, index % 2 == 0 and palette.lilacLight or palette.moon, 0.72, 1200 + index)
+    end
+    cylinder(clearing, "Relic pedestal", relicAnchor.Position + Vector3.new(0, 0.45, 0), 0.9, 2.0, palette.stone, Enum.Material.Slate)
+    cylinder(clearing, "Pedestal gold ring", relicAnchor.Position + Vector3.new(0, 0.94, 0), 0.16, 1.65, palette.gold, Enum.Material.Metal)
+    local relic = makePart(
+        clearing,
+        "MoonRelicGem",
+        Vector3.new(0.78, 1.8, 0.72),
+        CFrame.new(relicPosition) * CFrame.Angles(math.rad(12), math.rad(18), math.rad(12)),
+        palette.lilacLight,
+        Enum.Material.Neon
+    )
+    addLight(relic, palette.lilacLight, 16, 1.0)
+    for index = 1, 4 do
+        local angle = index * math.pi / 2
+        local mote = orb(
+            clearing,
+            "Relic mote",
+            relicPosition + Vector3.new(math.cos(angle) * 1.7, 0.55 + (index % 2) * 0.25, math.sin(angle) * 1.7),
+            Vector3.new(0.16, 0.16, 0.16),
+            palette.gold,
+            Enum.Material.Neon,
+            0.18
+        )
+        addLight(mote, palette.gold, 5, 0.2)
+    end
+end
+
 -- Small visual details for the collectible companions.
 local fox = ReplicatedStorage:FindFirstChild("Fox")
 if fox then
