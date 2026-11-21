@@ -96,7 +96,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         }
         result = validate_rig_payload(payload, expected_groups=groups)
         self.assertEqual(result["part_count"], 17)
-        self.assertEqual(result["animated_count"], 10)
+        self.assertEqual(result["animated_count"], 12)
         self.assertEqual(result["attachment_count"], 3)
 
     def test_hero_rig_validator_rejects_missing_groups_and_bad_pivots(self):
