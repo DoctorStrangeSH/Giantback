@@ -82,6 +82,12 @@ class FoxScoutContractTests(unittest.TestCase):
         self.assertIn('FoxSearchReadyAt', ALBUM)
         self.assertIn("Нюх следопыта готов", ALBUM)
 
+    def test_fox_plays_a_short_sniff_animation_when_a_cache_is_revealed(self):
+        self.assertIn("foxSniffUntil", ALBUM)
+        self.assertIn('part.Name == "Muzzle" and sniffing', ALBUM)
+        self.assertIn("sniffing and 9 or 4.2", ALBUM)
+        self.assertIn("sniffing and 0.16 or 0.055", ALBUM)
+
     def test_hud_explains_the_fox_scout_ability_and_active_find(self):
         self.assertIn("Нюх следопыта открывает личные тайники", HUD)
         self.assertIn("Следуй за золотой меткой в Солнечной роще", HUD)
