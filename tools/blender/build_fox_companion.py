@@ -267,14 +267,27 @@ def add_review_camera(objects):
     high = Vector(tuple(max(point[i] for point in corners) for i in range(3)))
     center = (low + high) * 0.5
     radius = max((high-low).length * 0.5, 1.0)
+
     camera_data = bpy.data.cameras.new("FoxHeroReviewCamera")
     camera = bpy.data.objects.new("FoxHeroReviewCamera", camera_data)
     bpy.context.scene.collection.objects.link(camera)
-    camera.location = center + Vector((1.5, 1.0, -2.5)).normalized() * radius * 3.8
-    camera.rotation_euler = (center-camera.location).to_track_quat("-Z", "Y").to_euler()
     camera_data.type = "ORTHO"
-    camera_data.ortho_scale = radius * 2.65
+    camera_data.ortho_scale = radius * 2.55
     bpy.context.scene.camera = camera
+
+    # Neutral warm studio floor gives the paws a readable contact shadow.
+    floor_mat = material("ReviewFloor", (0.19, 0.22, 0.25), 0.94)
+    bpy.ops.mesh.primitive_plane_add(size=200, location=(center.x, -0.035, center.z))
+    floor = bpy.context.object
+    floor.name = "REVIEW_ONLY_Ground"
+    floor.data.materials.append(floor_mat)
+
+    world = bpy.data.worlds.new("FoxHeroReviewWorld") if not bpy.data.worlds else bpy.data.worlds[0]
+    bpy.context.scene.world = world
+    world.use_nodes = True
+    world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.16, 0.19, 0.23, 1)
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.55
+
     for name, offset, power, size in (
         ("Key", (1.8, 2.8, -2.0), 1200, 3.2),
         ("Fill", (-2.0, 1.0, -1.0), 650, 2.8),
@@ -284,10 +297,29 @@ def add_review_camera(objects):
         data.energy = power
         data.shape = "DISK"
         data.size = size
+        data.use_shadow = True
         light = bpy.data.objects.new(name, data)
         bpy.context.scene.collection.objects.link(light)
         light.location = center + Vector(offset)
         light.rotation_euler = (center-light.location).to_track_quat("-Z", "Y").to_euler()
+
+    return camera, center, radius
+
+
+def render_review_views(camera, center, radius, output):
+    # One consistent orthographic scale makes silhouette comparisons meaningful.
+    distance = radius * 4.2
+    views = {
+        "three_quarter": Vector((1.5, 0.65, -2.5)).normalized(),
+        "front": Vector((0.0, 0.15, -1.0)),
+        "side": Vector((1.0, 0.12, 0.0)),
+        "back": Vector((0.0, 0.15, 1.0)),
+    }
+    for view_name, direction in views.items():
+        camera.location = center + direction * distance
+        camera.rotation_euler = (center-camera.location).to_track_quat("-Z", "Y").to_euler()
+        bpy.context.scene.render.filepath = str(output / f"fox_companion_hero_{view_name}.png")
+        bpy.ops.render.render(write_still=True)
 
 
 def export_obj(objects, path):
@@ -316,23 +348,23 @@ def main():
     palette = make_palette()
     objects = create_fox(palette)
     unwrap_and_pack(objects)
-    add_review_camera(objects)
+    camera, center, radius = add_review_camera(objects)
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE_NEXT"
     scene.render.resolution_x = 1200
     scene.render.resolution_y = 1200
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = "PNG"
-    scene.render.filepath = str(output / "fox_companion_hero.png")
+    scene.render.filepath = str(output / "fox_companion_hero_three_quarter.png")
     scene.view_settings.view_transform = "AgX"
     blend_path = output / "fox_companion_hero.blend"
     obj_path = output / "fox_companion_hero.obj"
     bpy.ops.wm.save_as_mainfile(filepath=str(blend_path))
     export_obj(objects, obj_path)
-    bpy.ops.render.render(write_still=True)
+    render_review_views(camera, center, radius, output)
     print("Fox hero preview OBJ:", obj_path)
     print("Fox hero review blend:", blend_path)
-    print("Fox hero preview render:", scene.render.filepath)
+    print("Fox hero review renders: three_quarter, front, side, back")
     print("NOTE: stylized mesh blockout only; painted fur and Studio acceptance remain open.")
 
 
