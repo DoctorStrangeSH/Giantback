@@ -375,6 +375,7 @@ local function applyPersonalCityVisibility(cityModel)
     for _, descendant in cityModel:GetDescendants() do
         if descendant:IsA("BasePart") then
             descendant.LocalTransparencyModifier = visible and 0 or 1
+            descendant.CastShadow = visible
         elseif descendant:IsA("ProximityPrompt") then
             descendant.Enabled = visible
         end
@@ -394,30 +395,39 @@ local function findPersonalCityRoot(instance)
     return nil
 end
 
+local sharedHomeParts = {
+    Cottage = true,
+    Roof = true,
+    Window = true,
+    Planter = true,
+    LanternBase = true,
+}
+
 local function hideSharedHomeParts()
     local giant = workspace:FindFirstChild("Mossback")
     if not giant then return end
-    local sharedParts = {
-        Cottage = true,
-        Roof = true,
-        Window = true,
-        Planter = true,
-        LanternBase = true,
-    }
     for _, descendant in giant:GetChildren() do
-        if descendant:IsA("BasePart") and sharedParts[descendant.Name] then
+        if descendant:IsA("BasePart") and sharedHomeParts[descendant.Name] then
             descendant.LocalTransparencyModifier = 1
+            descendant.CastShadow = false
         end
     end
 end
 
 workspace.DescendantAdded:Connect(function(descendant)
+    local giant = workspace:FindFirstChild("Mossback")
+    if giant and descendant:IsA("BasePart") and descendant.Parent == giant and sharedHomeParts[descendant.Name] then
+        descendant.LocalTransparencyModifier = 1
+        descendant.CastShadow = false
+    end
+
     local cityModel = findPersonalCityRoot(descendant)
     if not cityModel then return end
 
     local visible = cityModel:GetAttribute("OwnerUserId") == player.UserId
     if descendant:IsA("BasePart") then
         descendant.LocalTransparencyModifier = visible and 0 or 1
+        descendant.CastShadow = visible
     elseif descendant:IsA("ProximityPrompt") then
         descendant.Enabled = visible
     elseif descendant == cityModel then
