@@ -58,6 +58,29 @@ class OriginalMeshSourceTests(unittest.TestCase):
         self.assertEqual(referenced - declared, set())
 
 
+
+    def test_source_mesh_dimensions_stay_within_import_scale_contract(self):
+        # Dimensions are source-space units, not Roblox-imported MeshPart measurements.
+        expected_dimensions = {
+            "fox_companion": (1.36, 2.65, 3.54),
+            "moth_companion": (3.18, 1.97, 1.11),
+            "home_cottage": (12.55, 11.38, 13.85),
+            "farm_bed": (7.51, 1.39, 4.85),
+            "bridge_segment": (6.20, 2.50, 5.50),
+            "home_island": (68.73, 20.95, 52.86),
+        }
+        for stem, expected in expected_dimensions.items():
+            vertices = []
+            for line in (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8").splitlines():
+                if line.startswith("v "):
+                    vertices.append(tuple(float(value) for value in line.split()[1:4]))
+            actual = tuple(
+                max(vertex[axis] for vertex in vertices) - min(vertex[axis] for vertex in vertices)
+                for axis in range(3)
+            )
+            for axis, (measured, target) in enumerate(zip(actual, expected)):
+                self.assertAlmostEqual(measured, target, delta=0.025, msg=f"{stem} axis {axis} scale drift")
+
     def test_source_meshes_stay_within_provisional_mobile_geometry_budgets(self):
         # These are source-mesh guardrails, not a substitute for Roblox device profiling.
         face_budgets = {
