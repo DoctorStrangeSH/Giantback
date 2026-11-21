@@ -28,6 +28,7 @@ gui.IgnoreGuiInset = true
 gui.DisplayOrder = 20
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
+gui.Enabled = false -- Unified HUD lives in HUD.client.luau; this script keeps companion and resource visuals.
 gui.Enabled = false -- Replaced by the unified GiantbackHUD; this script keeps companion and resource visuals.
 
 local function round(instance, radius)
