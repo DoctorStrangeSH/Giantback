@@ -197,7 +197,7 @@ local function createResourceFlower(def, position)
 
     makePart(
         "Stem",
-        Vector3.new(0.14, 0.95, 0.14),
+        Vector3.new(0.95, 0.14, 0.14),
         CFrame.new(0, 0.55, 0) * CFrame.Angles(0, 0, math.rad(90)),
         Color3.fromRGB(111, 164, 111),
         Enum.Material.Grass,
