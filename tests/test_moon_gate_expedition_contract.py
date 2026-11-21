@@ -96,6 +96,19 @@ class MoonGateExpeditionContractTests(unittest.TestCase):
         self.assertIn("updateMoonGateBarrier(runeAnchor, gateOpen)", ALBUM)
 
 
+
+    def test_gate_opening_fades_the_seal_and_reveals_the_clearing(self):
+        self.assertIn("local gateJustOpened = lastMoonGateOpen == false and gateOpen", ALBUM)
+        self.assertIn("setLocalModelVisibility(sealVisual, not gateOpen, gateJustOpened and 0.8 or nil)", ALBUM)
+        self.assertIn("setLocalModelVisibility(clearingVisual, gateOpen, gateJustOpened and 0.95 or nil)", ALBUM)
+        self.assertIn("TweenService:Create(", ALBUM)
+        self.assertIn("{LocalTransparencyModifier = transparency}", ALBUM)
+
+    def test_local_collision_barrier_remains_until_the_gate_seal_finishes_opening(self):
+        self.assertIn("task.delay(0.8, function()", ALBUM)
+        self.assertIn("local barrier = moonGateBarrier", ALBUM)
+        self.assertIn("moonGateBarrier = nil", ALBUM)
+
     def test_gate_seal_and_local_barrier_are_ground_aligned(self):
         self.assertIn("local groundY = bank.Position.Y + bank.Size.Y / 2 + 0.13", VISUALS)
         self.assertIn("local gatePosition = Vector3.new(gateRune.Position.X, groundY", VISUALS)
