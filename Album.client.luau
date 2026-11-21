@@ -322,6 +322,8 @@ end
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCachePrompts = {}
 local foxCacheHighlights = {}
+local foxSniffUntil = 0
+local lastFoxCacheSpot = ""
 
 local function updateFoxCacheMarkers()
     local grove = workspace:FindFirstChild("Grove")
@@ -329,6 +331,11 @@ local function updateFoxCacheMarkers()
     local visuals = grove:FindFirstChild("FoxCacheVisuals")
     local activeCacheId = player:GetAttribute("FoxCacheSpot")
     local foxEquipped = player:GetAttribute("Companion") == "Fox"
+    local currentCacheSpot = type(activeCacheId) == "string" and activeCacheId or ""
+    if currentCacheSpot ~= "" and currentCacheSpot ~= lastFoxCacheSpot then
+        foxSniffUntil = os.clock() + 2.2
+    end
+    lastFoxCacheSpot = currentCacheSpot
 
     for index, cacheId in foxCacheIds do
         local anchor = grove:FindFirstChild(cacheId)
@@ -648,25 +655,28 @@ end
 
 local function animateModelParts(model, state, time, moving)
     local pivot = model:GetPivot()
+    local sniffing = state.id == "Fox" and not state.isEncounter and os.clock() < foxSniffUntil
     for part, offset in state.offsets do
         if part.Parent then
             local transform = CFrame.new()
 
             if state.id == "Fox" then
-                if part.Name == "Tail" then
-                    local sway = math.sin(time * 4.2) * 0.3
+                if part.Name == "Muzzle" and sniffing then
+                    transform = CFrame.new(0, -0.14, 0) * CFrame.Angles(math.sin(time * 12) * 0.045, 0, 0)
+                elseif part.Name == "Tail" then
+                    local sway = math.sin(time * (sniffing and 9 or 4.2)) * (sniffing and 0.48 or 0.3)
                     transform = CFrame.Angles(sway * 0.45, sway, sway * 0.2)
                 elseif part.Name == "Tail tip" then
-                    local sway = math.sin(time * 4.2 - 0.25) * 0.36
+                    local sway = math.sin(time * (sniffing and 9 or 4.2) - 0.25) * (sniffing and 0.52 or 0.36)
                     transform = CFrame.Angles(sway * 0.35, sway, 0)
                 elseif part.Name == "Paw" then
-                    local stride = moving and 0.32 or 0.055
+                    local stride = moving and 0.32 or sniffing and 0.16 or 0.055
                     local phase = (math.abs(offset.Position.X) + math.abs(offset.Position.Z)) * 1.8
-                    local step = math.sin(time * (moving and 10 or 2.4) + phase) * stride
+                    local step = math.sin(time * (moving and 10 or sniffing and 8 or 2.4) + phase) * stride
                     transform = CFrame.new(0, math.max(0, step) * 0.16, 0) * CFrame.Angles(step, 0, 0)
                 elseif part.Name == "Ear" or part.Name == "Inner ear" then
                     local side = offset.Position.X >= 0 and 1 or -1
-                    local twitch = math.sin(time * 2.2 + side) * 0.055
+                    local twitch = math.sin(time * (sniffing and 5 or 2.2) + side) * (sniffing and 0.09 or 0.055)
                     transform = CFrame.Angles(0, 0, twitch * side)
                 end
             elseif state.id == "Moth" then
