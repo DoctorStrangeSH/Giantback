@@ -1,9 +1,14 @@
 local Players = game:GetService("Players")
 local Storage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local store
-if not RunService:IsStudio() then
-    store = game:GetService("DataStoreService"):GetDataStore("GiantbackAlbum_v1")
+local DataStoreService = game:GetService("DataStoreService")
+local storeName = RunService:IsStudio() and "GiantbackAlbum_Studio_v1" or "GiantbackAlbum_v1"
+local storeOk, storeResult = pcall(function()
+    return DataStoreService:GetDataStore(storeName)
+end)
+local store = storeOk and storeResult or nil
+if not store then
+    warn("Giantback profile storage is unavailable; this session will not be saved.")
 end
 local event = Instance.new("RemoteEvent")
 event.Name = "AlbumAction"
@@ -232,7 +237,7 @@ local function init(player)
     sessions[player] = session
     player.RespawnLocation = giant.HomeSpawn
 
-    if not RunService:IsStudio() then
+    if store then
         local ok, data = pcall(function() return store:GetAsync(tostring(player.UserId)) end)
         if sessions[player] ~= session then return end
         session.online = ok
@@ -266,6 +271,8 @@ local function init(player)
             end
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
+    else
+        player:SetAttribute("OfflineAlbum", true)
     end
 
     syncInventory(player)
