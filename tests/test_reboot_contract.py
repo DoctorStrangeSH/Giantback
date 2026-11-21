@@ -13,6 +13,17 @@ SPEC = (ROOT / "PROJECT_SPEC.md").read_text(encoding="utf-8")
 
 class RebootContractTests(unittest.TestCase):
 
+
+    def test_hud_callbacks_are_forward_declared_before_renderers_use_them(self):
+        toast_decl = HUD.index("local showToast")
+        objective_decl = HUD.index("local getObjective")
+        render_city = HUD.index("local function renderCity")
+        render_pets = HUD.index("local function renderPets")
+        self.assertLess(toast_decl, render_pets)
+        self.assertLess(objective_decl, render_city)
+        self.assertEqual(HUD.count("local showToast"), 1)
+        self.assertEqual(HUD.count("local getObjective"), 1)
+
     def test_toast_lifetime_is_generation_safe_when_messages_arrive_quickly(self):
         self.assertIn("local toastGeneration = 0", HUD)
         self.assertIn("local currentGeneration = toastGeneration", HUD)
