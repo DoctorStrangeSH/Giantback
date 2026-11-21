@@ -97,3 +97,8 @@ A fox art pass is not complete until all of these are true:
 ## Organic head and muzzle pass
 
 The current Fox Hero generator now builds the skull from a dense deformed quad shell with cheek/jaw shaping, and constructs the muzzle as a tapered multi-section loft. These replace the previous stock ellipsoid primitives for the two most visually important facial masses. This is an intermediate procedural sculpting pass, not a hand-sculpted production asset; cheek tufts, body, paws and several details still use primitive-derived forms and need artist review.
+
+
+## Organic torso pass
+
+FoxBody and FoxBelly are now separate organic Y-axis loft meshes with shaped cross-section profiles. The body profile broadens through the ribcage and tapers toward shoulders/hips; the cream belly uses a shallow inset-like profile. This remains a procedural sculpting foundation and requires Blender renders from front/side/back to validate silhouette and intersections.
