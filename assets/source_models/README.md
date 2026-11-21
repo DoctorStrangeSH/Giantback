@@ -114,6 +114,21 @@ Use the rendered still as a quick diagnostic, then open the saved scene and insp
 
 CI validates file structure and index safety; it cannot approve seam quality, texture painting, visual style or Roblox Studio appearance. UV and texture status therefore remains [~] until a human visual review is recorded.
 
+
+## Fox hero mesh generation
+
+A separate first-pass hero mesh generator is available at `tools/blender/build_fox_companion.py`. It builds a softer, more expressive fox silhouette with shaped ears and inner-ear inserts, layered cheeks, a cream chest, rounded paws, large readable eyes and a curved two-part tail.
+
+Run with Blender 4.2.x:
+
+```bash
+blender --background --python tools/blender/build_fox_companion.py -- --output-dir build/fox_hero
+```
+
+Outputs are isolated in the selected build folder: `fox_companion_hero.obj`, `fox_companion_hero.mtl`, `fox_companion_hero.blend` and `fox_companion_hero.png`. The generator refuses a non-empty output folder unless `--overwrite` is explicit. The original `fox_companion.obj/.mtl` are not modified.
+
+This is the first sculpted-form silhouette/material blockout, not finished production art. Smart UV is only an automatic unwrap; hand-painted fur detail, seam/overlap review, animation pivots, Blender 4.2 runtime render and Roblox Studio acceptance are still required. Preserve the sixteen documented rig group names when evaluating the exported OBJ.
+
 ## Import into Roblox Studio
 
 1. Open the 3D Importer and select the OBJ file. Keep its matching MTL file beside it.
