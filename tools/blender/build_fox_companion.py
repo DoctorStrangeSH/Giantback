@@ -397,7 +397,7 @@ def write_mesh_quality_report(output, objects):
         "parts": parts,
     }
     path = output / "fox_companion_hero_mesh_report.json"
-    path.write_text(json.dumps(payload, indent=2) + "\\n", encoding="utf-8")
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
 
 
