@@ -163,7 +163,9 @@
 - Each server has eight fixed home-island slots arranged around the shared Grove hub. The slot radius is 240 studs; all islands face inward toward their permanent bridge.
 - A joining player receives a clone named `HomeIsland_<UserId>` inside Workspace.PlayerIslands, with OwnerUserId, OwnerName and HomeIslandSlot attributes.
 - Each island has its own HomeSpawn, cottage, planter, lantern pad and PersonalCity container. Four farm plots are created inside that player's island; they no longer overlap or depend on client-side hiding.
-- Eight radial bridges connect the personal islands to the shared Grove. A separate fixed bridge connects Grove to Dusk.
+- Eight radial bridges connect the personal islands to the shared Grove. Each home bridge starts as a translucent, non-collidable blueprint; the player repairs their own bridge for 5 Wood and 3 Stone. A separate fixed bridge connects Grove to Dusk.
+- Every personal island has owner-only WoodPile and StonePile interactions. A harvest grants 3 Wood or 2 Stone with a 60-second per-profile cooldown; the cooldown is persisted.
+- The first starter bundle is 2 Wood and 1 Stone, so one harvest from each pile completes the first bridge recipe.
 - A temporary PublicSpawn in Grove is used while the profile loads. The player is then moved to their own HomeSpawn, which is also used for respawns.
 - Slot occupancy is server-local and released when the player leaves. The slot number is not persisted; the island's gameplay state is stored in the player's profile.
 - Profile schemaVersion 5 migrates the old `city` payload into `island`, preserves farm/building data, removes the legacy field and accepts old profiles idempotently.
