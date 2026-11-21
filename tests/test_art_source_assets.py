@@ -98,8 +98,8 @@ class OriginalMeshSourceTests(unittest.TestCase):
         for stem in REQUIRED:
             obj = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
             mtl = (ASSET_DIR / f"{stem}.mtl").read_text(encoding="utf-8")
-            used = set(re.findall(r"^usemtl\\s+(\\S+)", obj, re.MULTILINE))
-            declared = set(re.findall(r"^newmtl\\s+(\\S+)", mtl, re.MULTILINE))
+            used = set(re.findall(r"^usemtl\s+(\S+)", obj, re.MULTILINE))
+            declared = set(re.findall(r"^newmtl\s+(\S+)", mtl, re.MULTILINE))
             self.assertEqual(declared - used, set(), f"{stem}: unused materials")
             blocks = re.split(r"(?=^newmtl )", mtl, flags=re.MULTILINE)
             for block in blocks:
@@ -107,7 +107,7 @@ class OriginalMeshSourceTests(unittest.TestCase):
                     continue
                 name = block.splitlines()[0][7:]
                 for property_name in ("Ka", "Kd", "Ks"):
-                    match = re.search(rf"^{property_name}\\s+([0-9.]+)\\s+([0-9.]+)\\s+([0-9.]+)$", block, re.MULTILINE)
+                    match = re.search(rf"^{property_name}\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)$", block, re.MULTILINE)
                     self.assertIsNotNone(match, f"{stem}/{name}: missing {property_name}")
                     values = [float(value) for value in match.groups()]
                     self.assertTrue(all(0.0 <= value <= 1.0 for value in values), f"{stem}/{name}: invalid {property_name}")
