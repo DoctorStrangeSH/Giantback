@@ -76,9 +76,9 @@ class MothLunarGlowContractTests(unittest.TestCase):
         self.assertIn("light.Range = mothAbility and 14 or 9", ALBUM)
 
     def test_moth_ability_burst_is_created_only_for_the_local_players_own_companion(self):
-        self.assertIn("if player:GetAttribute(\\"Companion\\") ~= \\"Moth\\" then return end", ALBUM)
+        self.assertIn('if player:GetAttribute("Companion") ~= "Moth" then return end', ALBUM)
         self.assertIn("captureAnimation(model, id, false, owner == player)", ALBUM)
-        self.assertIn("owner == player and id == \\"Moth\\" and pendingMothBurst", ALBUM)
+        self.assertIn('owner == player and id == "Moth" and pendingMothBurst', ALBUM)
         self.assertIn("pendingMothBurst = false", ALBUM)
 
     def test_first_expedition_visits_moonbloom_after_meeting_the_moth(self):
