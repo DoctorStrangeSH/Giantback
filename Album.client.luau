@@ -596,7 +596,7 @@ local function updateMoonGateBarrier(runeAnchor, gateOpen)
     if not moonGateBarrier or not moonGateBarrier.Parent then
         moonGateBarrier = Instance.new("Part")
         moonGateBarrier.Name = "MoonGateLocalBarrier"
-        moonGateBarrier.Size = Vector3.new(6.35, 4.8, 1.05)
+        moonGateBarrier.Size = Vector3.new(6.35, 5.1, 1.25)
         moonGateBarrier.Anchored = true
         moonGateBarrier.Transparency = 1
         moonGateBarrier.CanCollide = true
@@ -605,7 +605,10 @@ local function updateMoonGateBarrier(runeAnchor, gateOpen)
         moonGateBarrier.CastShadow = false
         moonGateBarrier.Parent = workspace
     end
-    moonGateBarrier.CFrame = CFrame.new(runeAnchor.Position + Vector3.new(0, 2.8, -2.25))
+    local dusk = runeAnchor.Parent
+    local bank = dusk and dusk:FindFirstChild("Bank")
+    local floorY = bank and bank.Position.Y + bank.Size.Y / 2 + 0.13 or runeAnchor.Position.Y - 0.42
+    moonGateBarrier.CFrame = CFrame.new(runeAnchor.Position.X, floorY + 2.55, runeAnchor.Position.Z - 2.25)
 end
 
 local function setLocalModelVisibility(model, visible)
