@@ -29,8 +29,8 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
-local progress = {"Fox", "Moth", "Seed", "MoonBloom", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "MoonSeed"}
+local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "MoonSeed", "StarShard"}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCacheIdSet = {}
 for _, cacheId in foxCacheIds do
@@ -528,6 +528,83 @@ local function collectFoxCache(player, cacheId)
     end
 end
 
+local function searchMoonGate(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not player:GetAttribute("Fox") or player:GetAttribute("Companion") ~= "Fox" then
+        return tip(player, "Позови лисёнка — только его нюх найдёт следы у древних корней.")
+    end
+    if player:GetAttribute("MoonGateTrace") then
+        return tip(player, "Лисёнок уже нашёл следы. Теперь руны ждут лунного света.")
+    end
+
+    local dusk = workspace:FindFirstChild("Dusk")
+    local anchor = dusk and dusk:FindFirstChild("MoonGateTracks")
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not anchor or not anchor:IsA("BasePart") or not root then return end
+    if (root.Position - anchor.Position).Magnitude > 10 then return end
+
+    player:SetAttribute("MoonGateTrace", true)
+    tip(player, "Лисёнок нашёл древний след под корнями! Теперь позови лунную моль к рунам.")
+    if session.online and not save(player) then
+        warn("MoonGate Fox trace save will be retried:", player.UserId)
+    end
+end
+
+local function revealMoonGate(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not player:GetAttribute("MoonGateTrace") then
+        return tip(player, "Сначала попроси лисёнка найти древний след у корней.")
+    end
+    if not player:GetAttribute("Moth") or player:GetAttribute("Companion") ~= "Moth" then
+        return tip(player, "Позови лунную моль — только её свет пробудит древние руны.")
+    end
+    if player:GetAttribute("MoonGateOpen") then
+        return tip(player, "Тайный проход уже открыт. Поляна ждёт тебя за аркой.")
+    end
+
+    local dusk = workspace:FindFirstChild("Dusk")
+    local anchor = dusk and dusk:FindFirstChild("MoonGateRune")
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not anchor or not anchor:IsA("BasePart") or not root then return end
+    if (root.Position - anchor.Position).Magnitude > 10 then return end
+
+    player:SetAttribute("MoonGateOpen", true)
+    tip(player, "Лунная моль зажгла древние руны! Тайный проход открылся — за аркой спрятан звёздный осколок.")
+    if session.online and not save(player) then
+        warn("MoonGate Moth reveal save will be retried:", player.UserId)
+    end
+end
+
+local function collectMoonRelic(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not player:GetAttribute("MoonGateOpen") then
+        return tip(player, "Сначала раскрой тайный проход с помощью обоих питомцев.")
+    end
+    if player:GetAttribute("MoonRelic") then
+        return tip(player, "Звёздный осколок уже хранится в твоей коллекции.")
+    end
+
+    local dusk = workspace:FindFirstChild("Dusk")
+    local anchor = dusk and dusk:FindFirstChild("MoonRelic")
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not anchor or not anchor:IsA("BasePart") or not root then return end
+    if (root.Position - anchor.Position).Magnitude > 10 then return end
+
+    player:SetAttribute("MoonRelic", true)
+    session.inventory.StarShard = (session.inventory.StarShard or 0) + 1
+    syncInventory(player)
+    tip(player, "Редкая находка! Ты получил звёздный осколок ×1.")
+    if session.online and not save(player) then
+        warn("Moon Relic reward save will be retried:", player.UserId)
+    end
+end
+
 local function collectMoonBloom(player)
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
@@ -589,6 +666,21 @@ end
 
 event.OnServerEvent:Connect(function(player, action, payload)
     if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
+
+    if action == "SearchMoonGate" then
+        searchMoonGate(player)
+        return
+    end
+
+    if action == "RevealMoonGate" then
+        revealMoonGate(player)
+        return
+    end
+
+    if action == "CollectMoonRelic" then
+        collectMoonRelic(player)
+        return
+    end
 
     if action == "CollectMoonBloom" then
         collectMoonBloom(player)
