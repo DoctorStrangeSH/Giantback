@@ -57,6 +57,32 @@ class OriginalMeshSourceTests(unittest.TestCase):
         self.assertTrue(referenced)
         self.assertEqual(referenced - declared, set())
 
+
+    def test_source_meshes_stay_within_provisional_mobile_geometry_budgets(self):
+        # These are source-mesh guardrails, not a substitute for Roblox device profiling.
+        face_budgets = {
+            "fox_companion": 6000,
+            "moth_companion": 4000,
+            "home_cottage": 1800,
+            "farm_bed": 3500,
+            "bridge_segment": 1200,
+            "home_island": 1000,
+        }
+        vertex_budgets = {
+            "fox_companion": 3500,
+            "moth_companion": 2200,
+            "home_cottage": 1000,
+            "farm_bed": 2000,
+            "bridge_segment": 600,
+            "home_island": 500,
+        }
+        for stem in REQUIRED:
+            lines = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8").splitlines()
+            vertices = sum(line.startswith("v ") for line in lines)
+            faces = sum(line.startswith("f ") for line in lines)
+            self.assertLessEqual(vertices, vertex_budgets[stem], f"{stem} vertex budget")
+            self.assertLessEqual(faces, face_budgets[stem], f"{stem} face budget")
+
     def test_companion_sources_keep_named_rigging_parts(self):
         fox = (ASSET_DIR / "fox_companion.obj").read_text(encoding="utf-8")
         moth = (ASSET_DIR / "moth_companion.obj").read_text(encoding="utf-8")
