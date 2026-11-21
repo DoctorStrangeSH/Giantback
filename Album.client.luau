@@ -379,7 +379,93 @@ local function updateRoute()
     end
 end
 
-event.OnClientEvent:Connect(function(message)
+local resourceNodeHidden = {}
+local resourceVisibilityGeneration = {}
+
+local function findResourceNode(nodeId)
+    for _, islandName in {"Grove", "Dusk"} do
+        local island = workspace:FindFirstChild(islandName)
+        local folder = island and island:FindFirstChild("ResourceNodes")
+        local node = folder and folder:FindFirstChild(nodeId)
+        if node and node:IsA("Model") then return node end
+    end
+    return nil
+end
+
+local function applyResourceNodeVisibility(model, visible)
+    for _, descendant in model:GetDescendants() do
+        if descendant:IsA("BasePart") then
+            descendant.LocalTransparencyModifier = visible and 0 or 1
+        elseif descendant:IsA("ProximityPrompt") then
+            descendant.Enabled = visible
+        end
+    end
+end
+
+local function setResourceNodeVisible(nodeId, visible)
+    resourceNodeHidden[nodeId] = not visible
+    local model = findResourceNode(nodeId)
+    if not model then return false end
+    applyResourceNodeVisibility(model, visible)
+    return true
+end
+
+local function hideResourceNodeWhenReady(nodeId, generation, attempts)
+    if generation ~= resourceVisibilityGeneration[nodeId] then return end
+    if setResourceNodeVisible(nodeId, false) then return end
+    if attempts < 40 then
+        task.delay(0.25, function()
+            hideResourceNodeWhenReady(nodeId, generation, attempts + 1)
+        end)
+    end
+end
+
+local function applyResourceNodeState(nodeId, readyAt, unique)
+    if type(nodeId) ~= "string" then return end
+    local generation = (resourceVisibilityGeneration[nodeId] or 0) + 1
+    resourceVisibilityGeneration[nodeId] = generation
+
+    if unique then
+        hideResourceNodeWhenReady(nodeId, generation, 0)
+        return
+    end
+
+    local remaining = (tonumber(readyAt) or 0) - os.time()
+    if remaining <= 0 then
+        setResourceNodeVisible(nodeId, true)
+        return
+    end
+
+    hideResourceNodeWhenReady(nodeId, generation, 0)
+    task.delay(remaining, function()
+        if resourceVisibilityGeneration[nodeId] == generation then
+            setResourceNodeVisible(nodeId, true)
+        end
+    end)
+end
+
+workspace.DescendantAdded:Connect(function(descendant)
+    if not descendant:IsA("Model") then return end
+    local nodeId = descendant:GetAttribute("ResourceNodeId")
+    if nodeId and resourceNodeHidden[nodeId] then
+        applyResourceNodeVisibility(descendant, false)
+    end
+end)
+
+event.OnClientEvent:Connect(function(message, payload)
+    if message == "ResourceState" and type(payload) == "table" then
+        for nodeId in payload.collected or {} do
+            applyResourceNodeState(nodeId, nil, true)
+        end
+        for nodeId, readyAt in payload.cooldowns or {} do
+            applyResourceNodeState(nodeId, readyAt, false)
+        end
+        return
+    elseif message == "ResourcePicked" and type(payload) == "table" then
+        applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
+        return
+    end
+
     lastTip = os.clock() + 3.5
     questText.Text = message
     TweenService:Create(questAccent, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -389,6 +475,13 @@ event.OnClientEvent:Connect(function(message)
         TweenService:Create(questAccent, TweenInfo.new(0.25), {BackgroundColor3 = palette.gold}):Play()
         updateRoute()
     end)
+end)
+
+task.spawn(function()
+    if not player:GetAttribute("Ready") then
+        player:GetAttributeChangedSignal("Ready"):Wait()
+    end
+    event:FireServer("RequestResourceState")
 end)
 
 player.AttributeChanged:Connect(refresh)
