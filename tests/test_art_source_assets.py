@@ -192,7 +192,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('\"BrowRight\"', source)
         self.assertIn('\"Smile\"', source)
         self.assertIn('\"expression\": material(\"expression\"', source)
-        self.assertIn('\"FoxHead\": [\"FoxHead\", \"ForeheadTuft\", \"BrowLeft\", \"BrowRight\"]', source)
+        self.assertIn('"FoxHead": ["FoxHead", "ForeheadTuft", "ForeheadTuft_L", "ForeheadTuft_R", "BrowLeft", "BrowRight"]', source)
         self.assertIn('\"FoxMuzzle\": [\"FoxMuzzle\", \"CheekFluff_L\", \"CheekFluff_R\", \"Smile\"]', source)
         self.assertIn("def render_review_views(", source)
         for view in ("three_quarter", "front", "side", "back"):
