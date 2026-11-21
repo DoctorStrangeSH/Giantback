@@ -17,6 +17,7 @@ from pathlib import Path
 
 import bpy
 from mathutils import Vector
+from fox_rig_contract import validate_rig_payload
 
 BLENDER_MIN = (4, 2, 0)
 BLENDER_MAX = (4, 4, 0)
@@ -348,7 +349,7 @@ RIG_PARTS = {
 }
 
 
-def write_rig_metadata(output):
+def write_rig_metadata(output, objects):
     payload = {
         "asset": "fox_companion_hero",
         "coordinate_system": "Y-up; character faces -Z",
@@ -356,6 +357,10 @@ def write_rig_metadata(output):
         "obj_note": "OBJ does not preserve object origins; use these source-space pivots when creating Roblox MeshParts and animation attachments.",
         "parts": RIG_PARTS,
     }
+    object_names = {obj.name for obj in objects}
+    if object_names != set(GROUPS):
+        raise RuntimeError("Fox hero object groups do not match the rig contract")
+    validate_rig_payload(payload, expected_groups=GROUPS)
     path = output / "fox_companion_hero_rig.json"
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
@@ -398,7 +403,7 @@ def main():
     scene.view_settings.view_transform = "AgX"
     blend_path = output / "fox_companion_hero.blend"
     obj_path = output / "fox_companion_hero.obj"
-    rig_path = write_rig_metadata(output)
+    rig_path = write_rig_metadata(output, objects)
     bpy.ops.wm.save_as_mainfile(filepath=str(blend_path))
     export_obj(objects, obj_path)
     render_review_views(camera, center, radius, output)
