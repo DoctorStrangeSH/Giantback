@@ -515,7 +515,6 @@ end
 
 local mothBloomPrompt = nil
 local mothBloomHighlight = nil
-local lastMothEquipped = false
 
 local function updateMothBloomReveal()
     local dusk = workspace:FindFirstChild("Dusk")
@@ -572,11 +571,6 @@ local function updateMothBloomReveal()
         mothBloomPrompt.Enabled = mothEquipped and not found
     end
 
-    if mothEquipped and not lastMothEquipped and not found then
-        lastTip = os.clock() + 2.8
-        questText.Text = "Лунная моль озарила тайный цветок! Ищи сияние в Лунной роще."
-    end
-    lastMothEquipped = mothEquipped
 end
 
 player:GetAttributeChangedSignal("FoxCacheSpot"):Connect(updateFoxCacheMarkers)
