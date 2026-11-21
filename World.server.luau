@@ -396,7 +396,7 @@ local function refreshFarmPlotVisual(cityModel, plotId, farm)
 
     if soil and stem and leftLeaf and rightLeaf and root then
         local height = 0.25 + growth * 0.62
-        stem.Size = Vector3.new(0.2, height, 0.2)
+        stem.Size = Vector3.new(height, 0.2, 0.2)
         stem.CFrame = soil.CFrame * CFrame.new(0, soil.Size.Y / 2 + height / 2, 0) * CFrame.Angles(0, 0, math.rad(90))
         leftLeaf.Size = Vector3.new(0.55 + growth * 0.2, 0.16, 0.3 + growth * 0.12)
         rightLeaf.Size = leftLeaf.Size
@@ -489,6 +489,7 @@ createPersonalCity = function(player, session)
     for _, source in giant:GetChildren() do
         if source:IsA("BasePart") and personalPartNames[source.Name] then
             local clone = source:Clone()
+            clone.CastShadow = false
             clone.Parent = cityModel
             if clone.Name == "Planter" then planter = clone end
             if clone.Name == "LanternBase" then lanternBase = clone end
@@ -524,10 +525,10 @@ createPersonalCity = function(player, session)
     local meadow = giant:FindFirstChild("Meadow")
     if meadow then
         local plotPositions = {
-            Plot01 = Vector3.new(-14.5, meadow.Size.Y / 2 + 0.22, 9),
-            Plot02 = Vector3.new(-10.5, meadow.Size.Y / 2 + 0.22, 9),
-            Plot03 = Vector3.new(-14.5, meadow.Size.Y / 2 + 0.22, 13),
-            Plot04 = Vector3.new(-10.5, meadow.Size.Y / 2 + 0.22, 13),
+            Plot01 = Vector3.new(-14.5, meadow.Size.Y / 2 + 0.22, 8.8),
+            Plot02 = Vector3.new(-10.5, meadow.Size.Y / 2 + 0.22, 8.8),
+            Plot03 = Vector3.new(-14.5, meadow.Size.Y / 2 + 0.22, 12.4),
+            Plot04 = Vector3.new(-10.5, meadow.Size.Y / 2 + 0.22, 12.4),
         }
 
         for _, plotId in farmPlotIds do
