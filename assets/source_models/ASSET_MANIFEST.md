@@ -26,6 +26,14 @@ Dimensions below are measured from the editable OBJ vertex bounds in source unit
 
 Coordinate convention: Y is up. The fox and cottage front faces point toward -Z. Bridge length is along X in the source file; rotate the segment for the required world direction after import. Preserve the source pivots until Studio scale and placement are reviewed. The moth's positive minimum Y is intentional in its floating source pose; align its runtime follower offset in Studio rather than editing the OBJ pivot blindly.
 
+## Surface data status
+
+| Source data | Status | Notes |
+|---|---|---|
+| Polygon normals | [~] Generated per face | Explicit unit normals now exist; smooth/weighted artist normals still need DCC review |
+| UV coordinates | [ ] Not authored | Proper unwrap and texture painting remain open |
+| MTL materials | [~] Base color palette | Material IDs/colors are source placeholders, not finished PBR textures |
+
 ## Source geometry snapshot
 
 The current editable OBJ sources were measured in Git (not imported Roblox MeshParts):
