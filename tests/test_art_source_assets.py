@@ -155,6 +155,8 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn("def organic_torso(", source)
         self.assertIn('organic_torso("FoxBody"', source)
         self.assertIn('organic_torso("FoxBelly"', source)
+        self.assertIn('organic_torso("FoxLegFront" + suffix', source)
+        self.assertIn('organic_torso("FoxLegBack" + suffix', source)
         self.assertIn("def sculpted_head(", source)
         self.assertIn("def lofted_muzzle(", source)
         self.assertIn('sculpted_head("FoxHead"', source)
