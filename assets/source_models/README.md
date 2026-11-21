@@ -16,7 +16,15 @@ All OBJ/MTL files in this directory are original procedural source meshes create
 
 All six sources use Y-up coordinates. Dimensions and intended anchors are recorded in ASSET_MANIFEST.md and protected by CI scale-drift tests. The fox and cottage face toward -Z; the bridge segment runs along X and may need rotation when placed in the world. Keep the original source pivots on first import. In particular, the moth's positive minimum Y is a deliberate floating pose, not a ground-contact model.
 
-OBJ files currently contain no authored UV coordinates or vertex normals. Treat the MTL colors as the initial material palette only. During Studio import, inspect shading and material appearance closely; do not assume textured detail or final smooth shading is present. If the importer produces faceting or material loss, return to the source-art pass rather than patching it with random runtime Parts.
+OBJ files now include generated per-face normals, but no UV coordinates. Treat the MTL colors as the initial material palette only. During Studio import, inspect shading and material appearance closely; the flat normals may reveal faceting on curved forms, and no textured detail is present. If the importer produces faceting or material loss, return to the source-art pass rather than patching it with random runtime Parts.
+
+## Generated source normals (preliminary)
+
+Each polygon now has an explicit normalized face normal in OBJ (v//vn). These are generated flat-shading normals, not a hand-authored smoothing pass. They make face orientation explicit for importers and avoid relying on automatic normal generation, but curved companion surfaces may look faceted. Final smooth/weighted normals and a visual shading review remain part of the artist pass in a DCC tool and Roblox Studio.
+
+UV coordinates are still intentionally absent. Do not interpret the material colors as finished textures or the meshes as final production art. Proper UV unwrap, texture painting, eye/face polish, and Studio import acceptance remain open.
+
+
 
 ## Import into Roblox Studio
 
