@@ -128,5 +128,8 @@ starter_scripts = obj(starter_player, "StarterPlayerScripts", "StarterPlayerScri
 client_script = obj(starter_scripts, "LocalScript", "Album")
 prop(client_script, "ProtectedString", "Source", (root / "Album.client.luau").read_text(encoding="utf-8"))
 
+hud_script = obj(starter_scripts, "LocalScript", "GiantbackHUD")
+prop(hud_script, "ProtectedString", "Source", (root / "HUD.client.luau").read_text(encoding="utf-8"))
+
 X.indent(doc)
 X.ElementTree(doc).write(root / "Giantback.rbxlx", encoding="utf-8", xml_declaration=True)
