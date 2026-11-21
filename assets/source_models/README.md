@@ -26,6 +26,19 @@ UV coordinates are still intentionally absent. Do not interpret the material col
 
 
 
+
+## Non-destructive UV preview pipeline
+
+A Blender 4.2.x helper is available at `tools/blender/prepare_source_uv.py`. It imports the six named source meshes, runs Smart UV Project and packs a shared 0–1 atlas while preserving the named mesh objects, then exports preview OBJ/MTL files with UVs and normals to a separate output directory.
+
+Example from the repository root:
+
+```bash
+blender --background --python tools/blender/prepare_source_uv.py -- --input assets/source_models --output build/uv_preview --assets fox_companion moth_companion
+```
+
+This is an automated UV blockout only. It does not paint textures, author final seams, or approve the look. Preview files must be opened and inspected in Blender, then imported into Roblox Studio before the source manifest can be marked accepted. Original source OBJ/MTL files are never overwritten.
+
 ## Import into Roblox Studio
 
 1. Open the 3D Importer and select the OBJ file. Keep its matching MTL file beside it.
