@@ -127,3 +127,8 @@ Each eye now has a softly arched upper eyelid rim and a secondary catchlight. Th
 ## Cheek silhouette pass
 
 The paired cream cheek accents now use tapered curved-plume geometry, widening through the cheek and narrowing to soft tips. They follow the lower muzzle contour and remain inside FoxMuzzle, replacing the previous round ellipsoid add-ons. Check front and three-quarter renders for symmetry, overlap and readability before approval.
+
+
+## Soft-fur material pass
+
+Fox orange and cream materials use restrained Noise Texture → Bump micro-relief (scale 34, strength 0.10, distance 0.022) to break the overly plastic highlight while preserving a clean stylized silhouette. Facial glossy materials are intentionally unchanged. Validate under neutral studio lighting and at gameplay distance; this is a subtle surface treatment, not painted fur strands.
