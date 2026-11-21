@@ -30,7 +30,7 @@ Coordinate convention: Y is up. The fox and cottage front faces point toward -Z.
 
 | Source data | Status | Notes |
 |---|---|---|
-| Polygon normals | [~] Generated per face | Explicit unit normals now exist; smooth/weighted artist normals still need DCC review |
+| Polygon normals | [~] Crease-aware generated normals | Angle-weighted per-corner normals, 50° crease threshold; visual artist review still required |
 | UV coordinates | [ ] Not authored | Proper unwrap and texture painting remain open |
 | MTL materials | [~] Base color palette | Material IDs/colors are source placeholders, not finished PBR textures |
 
