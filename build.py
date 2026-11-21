@@ -57,7 +57,7 @@ part(g, "Window", (-9, 15, -2.46), (3, 2.3, 0.2), "FFC469")
 part(g, "Planter", (-8, 12.5, 5), (6, 1, 4), "805B48")
 spawn = part(g, "HomeSpawn", (0, 12.15, 1), (5, 0.3, 5), "BDCD8C", cls="SpawnLocation")
 prop(spawn, "bool", "Neutral", "true")
-part(g, "Helm", (10, 13.2, 0), (2, 2.4, 2), "CE9661")
+part(g, "TownBoard", (10, 13.2, 0), (2.8, 2.4, 0.8), "CE9661")
 part(g, "LanternBase", (6, 12.35, 8), (3, 0.7, 3), "AA8964")
 part(g, "Gangway", (0, 11.5, -17), (6, 1, 8), "B98F65")
 
