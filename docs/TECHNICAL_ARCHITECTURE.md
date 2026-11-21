@@ -200,3 +200,14 @@ The moving-island loop and overlapping PersonalCities approach are retired. The 
 - The client sends only \`CollectMoonBloom\`; the server checks Ready/session state, equipped Moth, the personal \`MoonBloom\` flag, anchor existence and a 10-stud interaction distance.
 - A successful first discovery sets \`MoonBloom=true\`, grants MoonPetal ×2, synchronizes inventory and saves progress. Repeat requests grant nothing.
 - The discovery is placed after meeting the Moth and before waking the home Moonflower, making the companion ability part of the first expedition rather than a cosmetic toggle.
+
+
+## 16. Personal Moon Gate expedition
+
+- Dusk contains three invisible, queryable anchors: \`MoonGateTracks\`, \`MoonGateRune\` and \`MoonRelic\`. They are non-collidable and carry no server ProximityPrompts.
+- The player first equips the Fox and uses the local tracks prompt. The server checks the owned/equipped Fox, Ready session, anchor and 10-stud distance before setting \`MoonGateTrace\`.
+- The player then equips the Moth and uses the local rune prompt. The server requires the saved trace flag, owned/equipped Moth, the rune anchor and 10-stud distance before setting \`MoonGateOpen\`.
+- The gate seal, runes, tracks and clearing are rendered per client through \`LocalTransparencyModifier\`. The client creates local-only ProximityPrompts and Highlights; one player's discovery does not reveal the passage to others.
+- The hidden clearing contains one StarShard. The server requires \`MoonGateOpen\`, an unclaimed \`MoonRelic\` flag, the relic anchor and 10-stud distance before granting \`StarShard +1\`.
+- \`MoonGateTrace\`, \`MoonGateOpen\`, \`MoonRelic\` are monotonic profile progress flags. StarShard uses the existing inventory snapshot/sync pipeline; this is backward-compatible and does not require a schema migration.
+- The main first-expedition route places this joint puzzle after MoonBloom and before the home Moonflower.
