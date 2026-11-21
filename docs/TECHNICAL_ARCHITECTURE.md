@@ -143,7 +143,7 @@
 - Уникальные сюжетные и коллекционные находки сохраняют постоянный флаг collectedNodes и больше не доступны тому же игроку.
 - Клиент запрашивает персональное состояние после загрузки профиля; сервер отправляет cooldowns и collected, не принимая эти значения от клиента.
 - Повторный вход восстанавливает локальную видимость из сохранённого профиля.
-- Инвентарь, cooldowns и unique claims сохраняются через UpdateAsync; schemaVersion текущего прототипа — 5.
+- Инвентарь, cooldowns и unique claims сохраняются через UpdateAsync; schemaVersion текущего прототипа — 6.
 - Клиент отображает счётчик, полученный из серверного профиля; локальная модель UI не является источником инвентаря.
 - Сохранение использует версию схемы и миграции, чтобы старые профили не теряли прогресс.
 
@@ -168,7 +168,7 @@
 - The first starter bundle is 2 Wood and 1 Stone, so one harvest from each pile completes the first bridge recipe.
 - A temporary PublicSpawn in Grove is used while the profile loads. The player is then moved to their own HomeSpawn, which is also used for respawns.
 - Slot occupancy is server-local and released when the player leaves. The slot number is not persisted; the island's gameplay state is stored in the player's profile.
-- Profile schemaVersion 5 migrates the old `city` payload into `island`, preserves farm/building data, removes the legacy field and accepts old profiles idempotently.
+- Profile schemaVersion 5 migrates the old `city` payload into `island`; schemaVersion 6 adds persistent Fox Scout cache state and the MoonSeed inventory item without discarding earlier profile fields.
 - Plot01 is open at farm level 1; Plot02/Plot03 open at level 2; Plot04 opens at level 3.
 - The first crop is Carrot: 3 starter seeds, 180 seconds of growth, then one carrot harvest. plantedAt and readyAt persist so growth continues offline.
 - Studio uses a separate DataStore, GiantbackAlbum_Studio_v1. Enable Studio Access to API Services to test saves; if DataStore is unavailable the session is marked offline and is not saved.
@@ -176,4 +176,16 @@
 
 ## Reboot decision (2026-11-21)
 
-The moving-island loop and overlapping PersonalCities approach are retired. The current implementation uses static turtle-shaped personal home islands, eight server-assigned slots and a shared bridge-connected adventure hub. See docs/REBOOT_ARCHITECTURE.md. CI validates the place source and profile migration; Studio multiplayer, persistence and mobile acceptance remain open.
+The moving-island loop and overlapping PersonalCities approach are retired. The current implementation uses static turtle-shaped personal home islands, eight server-assigned slots and a shared bridge-connected adventure hub. See docs/REBOOT_ARCHITECTURE.md. CI validates the place source, profile migration and Fox Scout contracts; Studio multiplayer, persistence and mobile acceptance remain open.
+
+
+## 14. Fox Scout and personal cache discovery
+
+- The Fox is the first active exploration companion. The player must equip it and interact with the tracks on \`Grove.Trail\` to request a search.
+- The server rotates through three fixed cache anchors in the Grove. Cache selection is based on the player's saved search count, not on client input.
+- The client receives only the active cache ID as a player attribute. It highlights that cache locally and creates a local-only ProximityPrompt; other players cannot claim or see the active marker.
+- The client sends the cache ID as an interaction request. The server verifies the ID allowlist, the player's active cache, equipped Fox, character root and 10-stud interaction distance before granting anything.
+- The first successful find grants one \`MoonSeed\` and sets the \`Seed\` story flag. The MoonSeed is consumed when the player wakes the home flower with the Moth.
+- Later cache rewards follow a deterministic rotation: 2 SunPetals, 2 Wood, then 1 CarrotSeed. There are no paid random rewards.
+- A successful collection starts a 120-second scout cooldown. The active cache ID, cooldown timestamp and completed search count are saved under \`profile.foxScout\`.
+- An active cache survives reconnects; the player can re-equip the Fox and finish the find. The client never decides reward amounts or cooldown state.
