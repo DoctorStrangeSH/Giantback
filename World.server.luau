@@ -36,9 +36,6 @@ local resourceNodeIds = {
 }
 local sessions = {}
 local createPersonalCity
-local atDusk, sailing = false, false
-giant:SetAttribute("Dock", "Grove")
-local homePivot = giant:GetPivot()
 
 local function tip(player, message)
     event:FireClient(player, message)
@@ -828,58 +825,8 @@ prompt(workspace.Grove.Driftwood,"Коряга на берегу","Искать 
     tip(player,"Лисёнок нашёл ветви для садового фонаря!")
 end)
 
-local helm
-helm = prompt(giant.Helm,"Мохоспин","К Лунной роще",function()
-    if sailing then return end
-    sailing = true
-    giant:SetAttribute("Dock", "Sailing")
-    helm.Enabled = false
-    local origin = giant:GetPivot()
-    local deck = giant.Meadow
-    local riders = {}
-    for _, player in Players:GetPlayers() do
-        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-        if root and not root.Anchored then
-            local pos = deck.CFrame:PointToObjectSpace(root.Position)
-            if math.abs(pos.X) <= 17 and math.abs(pos.Z) <= 14 and pos.Y >= 0 and pos.Y < 20 then
-                riders[root] = origin:ToObjectSpace(root.CFrame)
-                root.Anchored = true
-            end
-        end
-    end
-    local target = homePivot + Vector3.new(atDusk and 0 or 100,0,0)
-    local elapsed = 0
-    while elapsed < 5 do
-        elapsed += RunService.Heartbeat:Wait()
-        local t = math.min(elapsed/5,1)
-        local frame = origin:Lerp(target,t*t*(3-2*t))
-        giant:PivotTo(frame)
-        for root, offset in riders do
-            if root.Parent then root.CFrame = frame * offset end
-        end
-    end
-    for root in riders do if root.Parent then root.Anchored = false end end
-    atDusk = not atDusk
-    giant:SetAttribute("Dock", atDusk and "Dusk" or "Grove")
-    helm.ActionText = atDusk and "К Солнечной роще" or "К Лунной роще"
-    sailing = false
-    helm.Enabled = true
-end)
-
--- A shore-side call bell prevents riders left ashore from becoming stranded.
-for _, island in {workspace.Grove,workspace.Dusk} do
-    local bell = Instance.new("Part")
-    bell.Name = "CallBell"
-    bell.Anchored = true
-    bell.Size = Vector3.new(2,3,2)
-    bell.Color = Color3.fromRGB(237,185,101)
-    bell.Position = island.Bank.Position + Vector3.new(5,6,-1+17)
-    bell.Parent = island
-    prompt(bell,"Дом на спине","Вернуться домой",function(player)
-        if sailing then return tip(player,"Мохоспин в пути. Дождись прибытия.") end
-        player.Character:PivotTo(giant.HomeSpawn.CFrame + Vector3.new(0,4,0))
-    end)
-end
+-- Islands are fixed. Players walk between them over permanent bridges.
+-- The old helm/sailing and shore-call-bell loop is intentionally retired.
 
 -- Per-player city models overlap the shared prototype visually; the client renders
 -- only its owner's city while every interaction is validated against OwnerUserId.
