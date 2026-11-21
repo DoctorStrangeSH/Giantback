@@ -47,6 +47,7 @@ local resourceNodeIds = {
 }
 local sessions = {}
 local createPersonalCity
+local applyHomeBridgeState
 
 local function homeSlotCFrame(slotIndex)
     local angle = math.pi * 2 * (slotIndex - 1) / HOME_ISLAND_SLOT_COUNT
@@ -200,7 +201,7 @@ local function syncBridge(player)
     player:SetAttribute("Bridge_HomeToGrove", session ~= nil and session.city.bridges.homeToGrove == true)
 end
 
-local function applyHomeBridgeState(slotIndex, built)
+applyHomeBridgeState = function(slotIndex, built)
     local bridgeRoot = workspace:FindFirstChild("BridgeToGrove")
     local bridge = bridgeRoot and bridgeRoot:FindFirstChild(string.format("HomeBridge%02d", slotIndex))
     if not bridge then return false end
