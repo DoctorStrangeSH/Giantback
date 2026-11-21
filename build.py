@@ -111,6 +111,17 @@ for label, center_x, center_z, bank_size, bank_color, canopy in island_specs:
     part(model, "Nest", (center_x, 12, center_z), (5, 1, 4), "BE996C", True)
     if label == "Grove":
         part(model, "Driftwood", (center_x + 10, 12.3, center_z + 8), (5, 1.6, 2), "A17B55", True)
+        cache_specs = [
+            ("FoxCache01", (center_x - 34, 12.05, center_z - 35)),
+            ("FoxCache02", (center_x + 39, 12.05, center_z - 3)),
+            ("FoxCache03", (center_x - 8, 12.05, center_z + 50)),
+        ]
+        for cache_name, cache_position in cache_specs:
+            cache_anchor = part(model, cache_name, cache_position, (1.1, 0.25, 1.1), "91B883")
+            prop(cache_anchor, "float", "Transparency", "1")
+            prop(cache_anchor, "bool", "CanCollide", "false")
+            prop(cache_anchor, "bool", "CanTouch", "false")
+            prop(cache_anchor, "bool", "CanQuery", "true")
 
 # Eight fixed home islands surround a shared forest hub. Every island has its
 # own permanent bridge; all bridges meet the same public Grove without crossing.
