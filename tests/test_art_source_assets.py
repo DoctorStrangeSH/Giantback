@@ -132,6 +132,32 @@ class OriginalMeshSourceTests(unittest.TestCase):
             actual_groups = set(re.findall(r"^o (.+)$", content, re.MULTILINE))
             self.assertEqual(actual_groups, required_groups, f"{stem}: rig group mapping changed")
 
+
+    def test_every_source_face_references_a_valid_unit_face_normal(self):
+        for stem in REQUIRED:
+            content = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
+            normals = []
+            face_count = 0
+            for line in content.splitlines():
+                if line.startswith("vn "):
+                    normal = tuple(float(value) for value in line.split()[1:4])
+                    self.assertEqual(len(normal), 3, stem)
+                    length = sum(value * value for value in normal) ** 0.5
+                    self.assertAlmostEqual(length, 1.0, delta=0.002, msg=f"{stem}: non-unit normal")
+                    normals.append(normal)
+                elif line.startswith("f "):
+                    face_count += 1
+                    tokens = line.split()[1:]
+                    self.assertGreaterEqual(len(tokens), 3, stem)
+                    for token in tokens:
+                        parts = token.split("/")
+                        self.assertEqual(len(parts), 3, f"{stem}: face lacks explicit normal")
+                        self.assertEqual(parts[1], "", f"{stem}: unexpected unreviewed UV index")
+                        normal_index = int(parts[2])
+                        self.assertGreater(normal_index, 0, stem)
+                        self.assertLessEqual(normal_index, len(normals), stem)
+            self.assertEqual(len(normals), face_count, f"{stem}: expected one flat normal per face")
+
     def test_obj_faces_do_not_contain_zero_area_triangles(self):
         for stem in REQUIRED:
             content = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
