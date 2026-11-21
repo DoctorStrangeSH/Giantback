@@ -10,6 +10,7 @@ This is a polished stylized blockout (silhouette/material pass), not final paint
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import sys
 from pathlib import Path
@@ -21,7 +22,7 @@ BLENDER_MIN = (4, 2, 0)
 BLENDER_MAX = (4, 4, 0)
 GROUPS = (
     "FoxBody", "FoxBelly", "FoxHead", "FoxMuzzle",
-    "FoxEarLeft", "FoxEarRight", "FoxEarInner",
+    "FoxEarLeft", "FoxEarRight", "FoxEarInnerLeft", "FoxEarInnerRight",
     "FoxLegFrontLeft", "FoxLegFrontRight",
     "FoxLegBackLeft", "FoxLegBackRight",
     "FoxTail", "FoxTailTip", "FoxEyes", "FoxEyeSparkles", "FoxNose",
@@ -215,7 +216,8 @@ def create_fox(p):
         "FoxMuzzle": ["FoxMuzzle", "CheekFluff_L", "CheekFluff_R"],
         "FoxEarLeft": ["FoxEarLeft"],
         "FoxEarRight": ["FoxEarRight"],
-        "FoxEarInner": ["FoxEarInner_L", "FoxEarInner_R"],
+        "FoxEarInnerLeft": ["FoxEarInner_L"],
+        "FoxEarInnerRight": ["FoxEarInner_R"],
         "FoxLegFrontLeft": ["FoxLegFrontLeft", "PawFrontLeft"],
         "FoxLegFrontRight": ["FoxLegFrontRight", "PawFrontRight"],
         "FoxLegBackLeft": ["FoxLegBackLeft", "PawBackLeft"],
@@ -322,6 +324,43 @@ def render_review_views(camera, center, radius, output):
         bpy.ops.render.render(write_still=True)
 
 
+
+# Source-space pivots for the hero OBJ. OBJ itself does not preserve object origins,
+# so this sidecar is the authoritative hand-off for Roblox pivot placement.
+RIG_PARTS = {
+    "FoxBody": {"runtime_name": "Body", "pivot": [0.0, 0.91, 0.05], "animated": False},
+    "FoxBelly": {"runtime_name": "Chest bib", "pivot": [0.0, 0.91, -0.48], "animated": False},
+    "FoxHead": {"runtime_name": "Head", "pivot": [0.0, 1.73, -0.62], "animated": True},
+    "FoxMuzzle": {"runtime_name": "Muzzle", "pivot": [0.0, 1.42, -1.055], "animated": True},
+    "FoxEarLeft": {"runtime_name": "Ear", "pivot": [-0.39, 1.78, -0.52], "animated": True},
+    "FoxEarRight": {"runtime_name": "Ear", "pivot": [0.39, 1.78, -0.52], "animated": True},
+    "FoxEarInnerLeft": {"runtime_name": "Inner ear", "pivot": [-0.39, 1.78, -0.52], "animated": True, "attach_to": "FoxEarLeft"},
+    "FoxEarInnerRight": {"runtime_name": "Inner ear", "pivot": [0.39, 1.78, -0.52], "animated": True, "attach_to": "FoxEarRight"},
+    "FoxLegFrontLeft": {"runtime_name": "Paw", "pivot": [-0.34, 0.78, -0.55], "animated": True},
+    "FoxLegFrontRight": {"runtime_name": "Paw", "pivot": [0.34, 0.78, -0.55], "animated": True},
+    "FoxLegBackLeft": {"runtime_name": "Paw", "pivot": [-0.34, 0.78, 0.57], "animated": True},
+    "FoxLegBackRight": {"runtime_name": "Paw", "pivot": [0.34, 0.78, 0.57], "animated": True},
+    "FoxTail": {"runtime_name": "Tail", "pivot": [0.15, 1.02, 0.68], "animated": True},
+    "FoxTailTip": {"runtime_name": "Tail tip", "pivot": [0.12, 1.91, 1.91], "animated": True, "attach_to": "FoxTail"},
+    "FoxEyes": {"runtime_name": "Eye", "pivot": [0.0, 1.76, -1.105], "animated": False},
+    "FoxEyeSparkles": {"runtime_name": "Eye shine", "pivot": [0.0, 1.825, -1.216], "animated": False},
+    "FoxNose": {"runtime_name": "Nose", "pivot": [0.0, 1.47, -1.365], "animated": False},
+}
+
+
+def write_rig_metadata(output):
+    payload = {
+        "asset": "fox_companion_hero",
+        "coordinate_system": "Y-up; character faces -Z",
+        "units": "source model units",
+        "obj_note": "OBJ does not preserve object origins; use these source-space pivots when creating Roblox MeshParts and animation attachments.",
+        "parts": RIG_PARTS,
+    }
+    path = output / "fox_companion_hero_rig.json"
+    path.write_text(json.dumps(payload, indent=2) + "\\n", encoding="utf-8")
+    return path
+
+
 def export_obj(objects, path):
     bpy.ops.object.select_all(action="DESELECT")
     for obj in objects:
@@ -359,11 +398,13 @@ def main():
     scene.view_settings.view_transform = "AgX"
     blend_path = output / "fox_companion_hero.blend"
     obj_path = output / "fox_companion_hero.obj"
+    rig_path = write_rig_metadata(output)
     bpy.ops.wm.save_as_mainfile(filepath=str(blend_path))
     export_obj(objects, obj_path)
     render_review_views(camera, center, radius, output)
     print("Fox hero preview OBJ:", obj_path)
     print("Fox hero review blend:", blend_path)
+    print("Fox hero rig metadata:", rig_path)
     print("Fox hero review renders: three_quarter, front, side, back")
     print("NOTE: stylized mesh blockout only; painted fur and Studio acceptance remain open.")
 
