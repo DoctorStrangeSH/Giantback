@@ -52,7 +52,7 @@ class OriginalMeshSourceTests(unittest.TestCase):
         moth = (ASSET_DIR / "moth_companion.obj").read_text(encoding="utf-8")
         for name in ("FoxBody", "FoxHead", "FoxTail", "FoxTailTip", "FoxLegFrontLeft"):
             self.assertIn(f"o {name}", fox)
-        for name in ("MothBody", "MothUpperWings", "MothLowerWings", "MothAntennae", "MothGlowCore"):
+        for name in ("MothBody", "MothHead", "MothUpperWingLeft", "MothUpperWingRight", "MothUpperWingRoot", "MothLowerWingLeft", "MothLowerWingRight", "MothLowerWingRoot", "MothWingTipLeft", "MothWingTipRight", "MothAntennaLeft", "MothAntennaRight", "MothEyeLeft", "MothEyeRight", "MothGlowCore"):
             self.assertIn(f"o {name}", moth)
 
     def test_island_has_separate_grass_and_cliff_materials(self):
@@ -61,6 +61,20 @@ class OriginalMeshSourceTests(unittest.TestCase):
         self.assertIn("o IslandCliff", island)
         self.assertIn("usemtl grass", island)
         self.assertIn("usemtl cliff", island)
+
+    def test_moth_wing_and_antenna_meshes_are_split_for_independent_animation(self):
+        moth = (ASSET_DIR / "moth_companion.obj").read_text(encoding="utf-8")
+        blocks = re.split(r"(?=^o )", moth, flags=re.MULTILINE)
+        by_name = {block.splitlines()[0][2:]: block for block in blocks if block.startswith("o ")}
+        for left, right in (
+            ("MothUpperWingLeft", "MothUpperWingRight"),
+            ("MothLowerWingLeft", "MothLowerWingRight"),
+            ("MothWingTipLeft", "MothWingTipRight"),
+            ("MothAntennaLeft", "MothAntennaRight"),
+            ("MothEyeLeft", "MothEyeRight"),
+        ):
+            self.assertRegex(by_name[left], r"(?m)^f ")
+            self.assertRegex(by_name[right], r"(?m)^f ")
 
 
 if __name__ == "__main__":
