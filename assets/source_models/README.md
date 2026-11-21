@@ -5,7 +5,7 @@ All OBJ/MTL files in this directory are original procedural source meshes create
 | Source | Intended use | Parts/materials |
 |---|---|---|
 | fox_companion.obj | Fox companion | body, head, muzzle, ears, legs, tail, eyes |
-| moth_companion.obj | Moon moth companion | body, head, upper/lower wings, antennae, glow core |
+| moth_companion.obj | Moon moth companion | body, head, separately grouped left/right upper/lower wings, wing tips, antennae and eyes, glow core |
 | home_cottage.obj | Starter home | foundation, walls, gabled roof, door, windows, chimney, porch |
 | farm_bed.obj | Raised farm bed | frame, soil, carrot roots, crop leaves |
 | bridge_segment.obj | Modular bridge | deck, supports, rails, rope |
@@ -21,3 +21,22 @@ All OBJ/MTL files in this directory are original procedural source meshes create
 6. Do not replace current production models until the imported asset has been checked in Studio on PC and mobile.
 
 The OBJ sources are not yet wired into the running place: Roblox requires imported/published MeshPart asset IDs before a place can reference them. The current Parts-based visuals remain temporary blockout until that Studio import step is completed.
+
+## Companion rig import mapping
+
+The Moth OBJ deliberately keeps animated pieces in separate left/right objects. During Studio import, rename the imported MeshParts to the runtime rig names below (duplicate names are intentional; the follower animator uses each part's local X position to choose its side).
+
+| OBJ object | Runtime MeshPart name |
+|---|---|
+| MothBody | Body |
+| MothHead | Moth head |
+| MothUpperWingLeft / Right | Wing |
+| MothUpperWingRoot | Wing root (static) |
+| MothLowerWingLeft / Right | Wing lower |
+| MothLowerWingRoot | Wing root (static) |
+| MothWingTipLeft / Right | Wing tip |
+| MothAntennaLeft / Right | Antenna |
+| MothEyeLeft / Right | Moth eye |
+| MothGlowCore | Moonlight glow |
+
+The matching pivot locations are validated by the runtime blockout contract, but must still be checked after import. Do not merge the left/right animated groups into one MeshPart.
