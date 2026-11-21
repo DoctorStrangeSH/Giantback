@@ -1,0 +1,475 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local event = ReplicatedStorage:WaitForChild("AlbumAction")
+
+local palette = {
+    ink = Color3.fromRGB(38, 58, 51),
+    forest = Color3.fromRGB(54, 83, 68),
+    forestLight = Color3.fromRGB(79, 112, 84),
+    paper = Color3.fromRGB(250, 241, 218),
+    paperDark = Color3.fromRGB(230, 218, 188),
+    muted = Color3.fromRGB(116, 132, 111),
+    mint = Color3.fromRGB(168, 205, 150),
+    gold = Color3.fromRGB(239, 184, 91),
+    coral = Color3.fromRGB(216, 121, 94),
+    lilac = Color3.fromRGB(174, 151, 207),
+    white = Color3.fromRGB(255, 253, 244),
+}
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "GiantbackHUD"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.DisplayOrder = 40
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local function corner(target, radius)
+    local item = Instance.new("UICorner")
+    item.CornerRadius = UDim.new(0, radius or 16)
+    item.Parent = target
+    return item
+end
+
+local function stroke(target, color, transparency, thickness)
+    local item = Instance.new("UIStroke")
+    item.Color = color or palette.gold
+    item.Transparency = transparency or 0.5
+    item.Thickness = thickness or 1
+    item.Parent = target
+    return item
+end
+
+local function gradient(target, top, bottom)
+    local item = Instance.new("UIGradient")
+    item.Color = ColorSequence.new(top, bottom)
+    item.Rotation = 90
+    item.Parent = target
+    return item
+end
+
+local function label(parent, name, text, size, position, textSize, color, font)
+    local item = Instance.new("TextLabel")
+    item.Name = name
+    item.BackgroundTransparency = 1
+    item.Size = size
+    item.Position = position
+    item.Font = font or Enum.Font.GothamMedium
+    item.Text = text
+    item.TextColor3 = color or palette.ink
+    item.TextSize = textSize or 16
+    item.TextWrapped = true
+    item.TextXAlignment = Enum.TextXAlignment.Left
+    item.TextYAlignment = Enum.TextYAlignment.Center
+    item.Parent = parent
+    return item
+end
+
+local function button(parent, name, text, size, position, color)
+    local item = Instance.new("TextButton")
+    item.Name = name
+    item.Size = size
+    item.Position = position
+    item.BackgroundColor3 = color or palette.forest
+    item.Text = text
+    item.TextColor3 = palette.white
+    item.TextSize = 16
+    item.Font = Enum.Font.GothamBold
+    item.AutoButtonColor = true
+    item.TextWrapped = true
+    item.Parent = parent
+    corner(item, 14)
+    stroke(item, palette.gold, 0.65, 1)
+    return item
+end
+
+local function card(parent, name, height)
+    local item = Instance.new("Frame")
+    item.Name = name
+    item.Size = UDim2.new(1, 0, 0, height or 76)
+    item.BackgroundColor3 = palette.paper
+    item.BorderSizePixel = 0
+    item.Parent = parent
+    corner(item, 16)
+    stroke(item, palette.paperDark, 0.15, 1)
+    return item
+end
+
+local topBar = Instance.new("Frame")
+topBar.Name = "TopBar"
+topBar.Position = UDim2.fromOffset(16, 16)
+topBar.Size = UDim2.new(1, -32, 0, 58)
+topBar.BackgroundTransparency = 1
+topBar.Parent = gui
+
+local brand = Instance.new("Frame")
+brand.Name = "Brand"
+brand.Size = UDim2.fromOffset(178, 58)
+brand.BackgroundColor3 = palette.forest
+brand.Parent = topBar
+corner(brand, 18)
+stroke(brand, palette.gold, 0.4, 1.2)
+gradient(brand, palette.forestLight, palette.ink)
+local brandTitle = label(brand, "Title", "GIANTBACK", UDim2.new(1, -20, 0, 25), UDim2.fromOffset(12, 5), 18, palette.white, Enum.Font.GothamBlack)
+local brandSubtitle = label(brand, "Subtitle", "ТВОЙ МИР • ТВОИ ПРАВИЛА", UDim2.new(1, -20, 0, 18), UDim2.fromOffset(12, 32), 9, palette.mint, Enum.Font.GothamBold)
+
+local resources = Instance.new("Frame")
+resources.Name = "QuickResources"
+resources.AnchorPoint = Vector2.new(1, 0)
+resources.Position = UDim2.new(1, 0, 0, 0)
+resources.Size = UDim2.fromOffset(214, 58)
+resources.BackgroundColor3 = palette.paper
+resources.Parent = topBar
+corner(resources, 18)
+stroke(resources, palette.paperDark, 0.1, 1)
+local seedLabel = label(resources, "Seeds", "🌱  Семена  0", UDim2.new(0.5, -8, 1, 0), UDim2.fromOffset(10, 0), 13, palette.ink, Enum.Font.GothamBold)
+local cropLabel = label(resources, "Harvest", "🥕  Урожай  0", UDim2.new(0.5, -8, 1, 0), UDim2.new(0.5, 2, 0, 0), 13, palette.ink, Enum.Font.GothamBold)
+
+local objective = Instance.new("Frame")
+objective.Name = "ObjectiveCard"
+objective.Position = UDim2.fromOffset(16, 84)
+objective.Size = UDim2.fromOffset(352, 82)
+objective.BackgroundColor3 = palette.paper
+objective.Parent = gui
+corner(objective, 18)
+stroke(objective, palette.gold, 0.22, 1.4)
+
+local objectiveIcon = Instance.new("Frame")
+objectiveIcon.Position = UDim2.fromOffset(12, 13)
+objectiveIcon.Size = UDim2.fromOffset(54, 54)
+objectiveIcon.BackgroundColor3 = palette.gold
+objectiveIcon.Parent = objective
+corner(objectiveIcon, 16)
+local objectiveGlyph = label(objectiveIcon, "Glyph", "✦", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), 28, palette.ink, Enum.Font.GothamBlack)
+objectiveGlyph.TextXAlignment = Enum.TextXAlignment.Center
+
+local objectiveEyebrow = label(objective, "Eyebrow", "ТВОЯ СЛЕДУЮЩАЯ ЦЕЛЬ", UDim2.new(1, -82, 0, 18), UDim2.fromOffset(76, 10), 10, palette.forestLight, Enum.Font.GothamBold)
+local objectiveText = label(objective, "Objective", "Загружаем твой остров…", UDim2.new(1, -86, 0, 46), UDim2.fromOffset(76, 29), 14, palette.ink, Enum.Font.GothamBold)
+objectiveText.TextYAlignment = Enum.TextYAlignment.Top
+
+local nav = Instance.new("Frame")
+nav.Name = "MainNavigation"
+nav.AnchorPoint = Vector2.new(0.5, 1)
+nav.Position = UDim2.new(0.5, 0, 1, -14)
+nav.Size = UDim2.new(1, -32, 0, 68)
+nav.BackgroundColor3 = palette.ink
+nav.Parent = gui
+corner(nav, 20)
+stroke(nav, palette.gold, 0.35, 1.2)
+gradient(nav, palette.forest, palette.ink)
+
+local navLayout = Instance.new("UIListLayout")
+navLayout.FillDirection = Enum.FillDirection.Horizontal
+navLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+navLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+navLayout.Padding = UDim.new(0, 7)
+navLayout.Parent = nav
+
+local panel = Instance.new("Frame")
+panel.Name = "MainPanel"
+panel.AnchorPoint = Vector2.new(0.5, 0.5)
+panel.Position = UDim2.fromScale(0.5, 0.5)
+panel.Size = UDim2.fromOffset(470, 420)
+panel.BackgroundColor3 = palette.forest
+panel.Visible = false
+panel.Parent = gui
+corner(panel, 22)
+stroke(panel, palette.gold, 0.22, 1.5)
+gradient(panel, palette.forestLight, palette.ink)
+
+local panelTitle = label(panel, "PanelTitle", "МОЙ ОСТРОВ", UDim2.new(1, -82, 0, 30), UDim2.fromOffset(20, 15), 20, palette.white, Enum.Font.GothamBlack)
+local panelSubtitle = label(panel, "PanelSubtitle", "Развивай свой дом и открывай новые места", UDim2.new(1, -40, 0, 20), UDim2.fromOffset(20, 46), 12, palette.mint)
+local closeButton = button(panel, "Close", "✕", UDim2.fromOffset(42, 42), UDim2.new(1, -58, 0, 12), palette.coral)
+closeButton.TextSize = 20
+
+local body = Instance.new("ScrollingFrame")
+body.Name = "Content"
+body.Position = UDim2.fromOffset(16, 78)
+body.Size = UDim2.new(1, -32, 1, -94)
+body.BackgroundTransparency = 1
+body.BorderSizePixel = 0
+body.ScrollBarThickness = 5
+body.ScrollBarImageColor3 = palette.gold
+body.AutomaticCanvasSize = Enum.AutomaticSize.Y
+body.CanvasSize = UDim2.new()
+body.Parent = panel
+
+local bodyLayout = Instance.new("UIListLayout")
+bodyLayout.Padding = UDim.new(0, 9)
+bodyLayout.SortOrder = Enum.SortOrder.LayoutOrder
+bodyLayout.Parent = body
+
+local bodyPadding = Instance.new("UIPadding")
+bodyPadding.PaddingBottom = UDim.new(0, 8)
+bodyPadding.Parent = body
+
+local toast = Instance.new("Frame")
+toast.Name = "Toast"
+toast.AnchorPoint = Vector2.new(0.5, 1)
+toast.Position = UDim2.new(0.5, 0, 1, -96)
+toast.Size = UDim2.fromOffset(380, 48)
+toast.BackgroundColor3 = palette.ink
+toast.Visible = false
+toast.Parent = gui
+corner(toast, 15)
+stroke(toast, palette.gold, 0.3, 1)
+local toastText = label(toast, "Text", "", UDim2.new(1, -24, 1, -8), UDim2.fromOffset(12, 4), 14, palette.white, Enum.Font.GothamBold)
+toastText.TextXAlignment = Enum.TextXAlignment.Center
+
+local function clearBody()
+    for _, child in body:GetChildren() do
+        if child ~= bodyLayout and child ~= bodyPadding then
+            child:Destroy()
+        end
+    end
+end
+
+local function addInfo(titleText, description, height)
+    local item = card(body, "InfoCard", height or 82)
+    label(item, "Title", titleText, UDim2.new(1, -28, 0, 24), UDim2.fromOffset(14, 10), 16, palette.ink, Enum.Font.GothamBold)
+    local detail = label(item, "Description", description, UDim2.new(1, -28, 0, (height or 82) - 38), UDim2.fromOffset(14, 36), 13, palette.muted)
+    detail.TextYAlignment = Enum.TextYAlignment.Top
+    return item
+end
+
+local function addPlot(plotId, index)
+    local unlocked = player:GetAttribute("Farm_" .. plotId .. "_Unlocked") == true
+    local cropId = player:GetAttribute("Farm_" .. plotId .. "_CropId") or ""
+    local readyAt = tonumber(player:GetAttribute("Farm_" .. plotId .. "_ReadyAt")) or 0
+    local stateText
+    if not unlocked then
+        stateText = "Закрыта — откроется после улучшения фермы"
+    elseif cropId == "" then
+        stateText = "Свободна — можно посадить семена"
+    elseif readyAt <= os.time() then
+        stateText = "Урожай готов! Подойди и собери его"
+    else
+        local remaining = math.max(0, readyAt - os.time())
+        local minutes = math.floor(remaining / 60)
+        local seconds = remaining % 60
+        stateText = string.format("Морковь растёт — осталось %02d:%02d", minutes, seconds)
+    end
+    local item = card(body, "Plot" .. tostring(index), 66)
+    local icon = label(item, "Icon", unlocked and (cropId == "" and "＋" or "🥕") or "🔒", UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 12), 23, palette.forest, Enum.Font.GothamBlack)
+    icon.TextXAlignment = Enum.TextXAlignment.Center
+    label(item, "Title", "Грядка " .. tostring(index), UDim2.new(1, -72, 0, 22), UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
+    label(item, "State", stateText, UDim2.new(1, -72, 0, 30), UDim2.fromOffset(60, 31), 12, palette.muted)
+end
+
+local function renderCity()
+    local cityLevel = tonumber(player:GetAttribute("City_Level")) or 1
+    local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
+    addInfo("Добро пожаловать домой!", "Это твой остров. Здесь будут расти ферма, дом, мастерские и новые районы.", 84)
+    addInfo("Уровень города: " .. tostring(cityLevel), "Развивай остров, собирай материалы и открывай новые территории мостами.", 76)
+    addInfo("Ферма: уровень " .. tostring(farmLevel), "У тебя есть четыре места для грядок. Открой вкладку «Ферма», чтобы посмотреть их состояние.", 76)
+    addInfo("Твой следующий шаг", getObjective(), 76)
+end
+
+local function renderFarm()
+    local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
+    local seeds = tonumber(player:GetAttribute("Resource_CarrotSeed")) or 0
+    local carrots = tonumber(player:GetAttribute("Resource_Carrot")) or 0
+    addInfo("Ферма • уровень " .. tostring(farmLevel), "Семена: " .. tostring(seeds) .. "   •   Собрано моркови: " .. tostring(carrots), 70)
+    addInfo("Как работает ферма", "Подойди к свободной грядке и нажми «Посадить». Когда морковь вырастет, вернись и нажми «Собрать». Растения не пропадают, пока тебя нет.", 94)
+    for index = 1, 4 do
+        addPlot(string.format("Plot%02d", index), index)
+    end
+end
+
+local function renderPets()
+    local pets = {
+        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Помогает находить спрятанные семена и ресурсы.", location = "Ищи его в Солнечной роще.", icon = "🦊"},
+        {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает волшебные цветы и освещает секреты.", location = "Ищи её в Лунной роще.", icon = "🦋"},
+    }
+    for _, pet in pets do
+        local owned = player:GetAttribute(pet.id) == true
+        local equipped = player:GetAttribute("Companion") == pet.id
+        local item = card(body, pet.id .. "Card", 104)
+        local icon = label(item, "Icon", pet.icon, UDim2.fromOffset(58, 58), UDim2.fromOffset(10, 20), 34, palette.ink)
+        icon.TextXAlignment = Enum.TextXAlignment.Center
+        label(item, "Name", pet.name .. " • " .. pet.role, UDim2.new(1, -90, 0, 24), UDim2.fromOffset(76, 9), 15, palette.ink, Enum.Font.GothamBold)
+        local desc = owned and pet.description or pet.location
+        label(item, "Description", desc, UDim2.new(1, -90, 0, 34), UDim2.fromOffset(76, 34), 12, palette.muted)
+        local action = button(item, "Action", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН", UDim2.fromOffset(108, 28), UDim2.new(1, -120, 1, -36), equipped and palette.gold or palette.forest)
+        action.TextSize = 11
+        action.Activated:Connect(function()
+            if owned then
+                event:FireServer(pet.id)
+            else
+                showToast(pet.location)
+            end
+        end)
+    end
+end
+
+local function renderWorld()
+    addInfo("Твой архипелаг", "Острова остаются на своих местах. Ты открываешь новые земли и соединяешь их мостами.", 84)
+    local bridgeHome = workspace:FindFirstChild("BridgeToGrove")
+    local bridgeForest = workspace:FindFirstChild("BridgeToDusk")
+    addInfo("Домашний остров", "Твоя база, дом и ферма. Здесь начинается каждое приключение.", 68)
+    addInfo("Солнечная роща", bridgeHome and "Мост построен — можно идти в лес." or "Мост пока закрыт.", 68)
+    addInfo("Лунная роща", bridgeForest and "Мост построен — исследуй волшебную рощу." or "Мост пока закрыт.", 68)
+    addInfo("Скоро новые земли", "Каменный кряж, древние руины и кристальная пещера станут следующими большими открытиями.", 78)
+end
+
+local renderers = {
+    City = renderCity,
+    Farm = renderFarm,
+    Pets = renderPets,
+    World = renderWorld,
+}
+
+local panelTitles = {
+    City = {"МОЙ ОСТРОВ", "Твой дом и будущий город"},
+    Farm = {"МОЯ ФЕРМА", "Сажай, выращивай и собирай урожай"},
+    Pets = {"МОИ ПИТОМЦЫ", "Друзья, которые помогают в приключениях"},
+    World = {"КАРТА МИРА", "Открывай острова и исследуй новые места"},
+}
+
+local activeTab = nil
+local navButtons = {}
+
+local function openTab(tabName)
+    if activeTab == tabName and panel.Visible then
+        panel.Visible = false
+        activeTab = nil
+        return
+    end
+    activeTab = tabName
+    panelTitle.Text = panelTitles[tabName][1]
+    panelSubtitle.Text = panelTitles[tabName][2]
+    clearBody()
+    renderers[tabName]()
+    panel.Visible = true
+    for name, navButton in navButtons do
+        navButton.BackgroundColor3 = name == tabName and palette.gold or palette.forestLight
+        navButton.TextColor3 = name == tabName and palette.ink or palette.white
+    end
+end
+
+local navDefinitions = {
+    {id = "City", title = "ОСТРОВ", glyph = "⌂"},
+    {id = "Farm", title = "ФЕРМА", glyph = "♧"},
+    {id = "Pets", title = "ПИТОМЦЫ", glyph = "♡"},
+    {id = "World", title = "КАРТА", glyph = "✧"},
+}
+
+for _, definition in navDefinitions do
+    local navButton = button(nav, definition.id, definition.glyph .. "\n" .. definition.title, UDim2.new(0.25, -6, 1, -12), UDim2.new(), palette.forestLight)
+    navButton.TextSize = 13
+    navButton.TextYAlignment = Enum.TextYAlignment.Center
+    navButton.Activated:Connect(function()
+        openTab(definition.id)
+    end)
+    navButtons[definition.id] = navButton
+end
+
+closeButton.Activated:Connect(function()
+    panel.Visible = false
+    activeTab = nil
+end)
+
+function showToast(message)
+    if type(message) ~= "string" or message == "" then return end
+    toastText.Text = message
+    toast.Visible = true
+    toast.BackgroundTransparency = 0.08
+    toast.Position = UDim2.new(0.5, 0, 1, -96)
+    TweenService:Create(toast, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0.5, 0, 1, -106),
+    }):Play()
+    task.delay(3, function()
+        if toast.Parent then
+            TweenService:Create(toast, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+            task.wait(0.22)
+            toast.Visible = false
+        end
+    end)
+end
+
+function getObjective()
+    if not player:GetAttribute("Ready") then return "Загружаем твой остров…" end
+    if not player:GetAttribute("Fox") then return "Найди лисёнка в Солнечной роще и подружись с ним." end
+    if not player:GetAttribute("Seed") then return "Попроси лисёнка поискать следы на лесной тропе." end
+    if not player:GetAttribute("Moth") then return "Отыщи лунную моль в волшебной роще." end
+    if not player:GetAttribute("Flower") then return "Позови лунную моль к клумбе возле дома." end
+    if not player:GetAttribute("Timber") then return "Возьми лисёнка к коряге и найди крепкие ветви." end
+    if not player:GetAttribute("Lantern") then return "Заверши постройку садового фонаря у дома." end
+    if not player:GetAttribute("Lit") then return "Позови лунную моль и зажги садовый фонарь." end
+    return "Посади морковь на ферме и собери первый урожай!"
+end
+
+local function refresh()
+    seedLabel.Text = "🌱  Семена  " .. tostring(player:GetAttribute("Resource_CarrotSeed") or 0)
+    cropLabel.Text = "🥕  Урожай  " .. tostring(player:GetAttribute("Resource_Carrot") or 0)
+    objectiveText.Text = getObjective()
+    brandSubtitle.Text = "УРОВЕНЬ ГОРОДА " .. tostring(player:GetAttribute("City_Level") or 1)
+    if panel.Visible and activeTab and renderers[activeTab] then
+        clearBody()
+        renderers[activeTab]()
+    end
+end
+
+event.OnClientEvent:Connect(function(message, payload)
+    if type(message) == "string" and message ~= "ResourceState" and message ~= "ResourcePicked" then
+        showToast(message)
+    end
+end)
+
+player.AttributeChanged:Connect(refresh)
+task.spawn(function()
+    while gui.Parent do
+        if panel.Visible and activeTab == "Farm" then
+            clearBody()
+            renderFarm()
+        end
+        refresh()
+        task.wait(1)
+    end
+end)
+
+local function updateLayout()
+    local width = gui.AbsoluteSize.X
+    local height = gui.AbsoluteSize.Y
+    local compact = width < 700
+    if compact then
+        brand.Size = UDim2.fromOffset(math.max(132, width * 0.42), 58)
+        brandTitle.TextSize = 16
+        brandSubtitle.TextSize = 8
+        resources.Size = UDim2.fromOffset(math.max(170, width * 0.5), 58)
+        objective.Size = UDim2.new(1, -32, 0, 78)
+        objective.Position = UDim2.fromOffset(16, 84)
+        panel.Size = UDim2.new(1, -24, 0, math.min(430, height - 190))
+        panel.Position = UDim2.new(0.5, 0, 0.5, -8)
+        nav.Size = UDim2.new(1, -24, 0, 64)
+        nav.Position = UDim2.new(0.5, 0, 1, -10)
+        for _, navButton in navButtons do
+            navButton.TextSize = 10
+        end
+    else
+        brand.Size = UDim2.fromOffset(178, 58)
+        brandTitle.TextSize = 18
+        brandSubtitle.TextSize = 9
+        resources.Size = UDim2.fromOffset(214, 58)
+        objective.Size = UDim2.fromOffset(352, 82)
+        objective.Position = UDim2.fromOffset(16, 84)
+        panel.Size = UDim2.fromOffset(470, 420)
+        nav.Size = UDim2.fromOffset(560, 68)
+        nav.Position = UDim2.new(0.5, 0, 1, -14)
+        for _, navButton in navButtons do
+            navButton.TextSize = 13
+        end
+    end
+    if width < 410 then
+        resources.Size = UDim2.fromOffset(166, 58)
+        seedLabel.TextSize = 11
+        cropLabel.TextSize = 11
+    end
+end
+
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateLayout)
+task.defer(updateLayout)
+refresh()
