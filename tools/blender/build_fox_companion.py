@@ -414,9 +414,12 @@ def create_fox(p):
          (0.28, 1.76, 1.86), (0.12, 1.91, 1.99)],
         [0.18, 0.29, 0.40, 0.37, 0.27],
         [0.15, 0.25, 0.34, 0.32, 0.23], p["fox_orange"])
+    # Match the orange tail's final center/radii exactly, then taper the cream tip gradually.
     plush_tail("FoxTailTip",
-        [(0.12, 1.91, 1.91), (0.06, 2.03, 2.02), (0.00, 2.12, 2.11)],
-        [0.27, 0.22, 0.015], [0.23, 0.18, 0.012], p["cream"])
+        [(0.12, 1.91, 1.99), (0.10, 1.96, 2.04), (0.06, 2.03, 2.10),
+         (0.025, 2.09, 2.16), (0.00, 2.15, 2.20)],
+        [0.27, 0.255, 0.205, 0.115, 0.012],
+        [0.23, 0.215, 0.175, 0.095, 0.010], p["cream"])
 
     # Eyes sit on the front (-Z) plane; pupils and catchlights are readable at distance.
     for side, suffix in ((-1, "Left"), (1, "Right")):
