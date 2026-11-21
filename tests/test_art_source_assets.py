@@ -46,6 +46,43 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
         self.assertIn("material_file.name not in export_stats[\"material_libraries\"]", source)
 
 
+class FoxHeroMeshGeneratorTests(unittest.TestCase):
+    def test_hero_generator_is_valid_python_and_keeps_source_non_destructive(self):
+        path = ROOT / "tools" / "blender" / "build_fox_companion.py"
+        self.assertTrue(path.is_file())
+        source = path.read_text(encoding="utf-8")
+        compile(source, str(path), "exec")
+        self.assertIn('obj_path = output / "fox_companion_hero.obj"', source)
+        self.assertIn('blend_path = output / "fox_companion_hero.blend"', source)
+        self.assertIn('if output.exists() and any(output.iterdir()) and not args.overwrite', source)
+        self.assertNotIn('fox_companion.obj"', source)
+
+    def test_hero_generator_preserves_all_sixteen_runtime_rig_groups(self):
+        source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
+        expected = (
+            "FoxBody", "FoxBelly", "FoxHead", "FoxMuzzle",
+            "FoxEarLeft", "FoxEarRight", "FoxEarInner",
+            "FoxLegFrontLeft", "FoxLegFrontRight",
+            "FoxLegBackLeft", "FoxLegBackRight",
+            "FoxTail", "FoxTailTip", "FoxEyes", "FoxEyeSparkles", "FoxNose",
+        )
+        for group in expected:
+            self.assertIn('"' + group + '"', source)
+        self.assertIn("bpy.ops.uv.smart_project(", source)
+        self.assertIn("bpy.ops.uv.pack_islands(", source)
+        self.assertIn("export_uv=True", source)
+        self.assertIn("export_normals=True", source)
+
+    def test_hero_generator_has_separate_face_ear_tail_and_paw_forms(self):
+        source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
+        for feature in ("CheekFluff_L", "CheekFluff_R", "FoxEarInner_L",
+                        "FoxEarInner_R", "FoxTailTip", "EyeShineLeft",
+                        "EyeShineRight", "PawFrontLeft", "PawBackRight"):
+            self.assertIn(feature, source)
+        self.assertIn("curved_plume(", source)
+        self.assertIn("leaf_mesh(", source)
+
+
 class BlenderUVReviewRendererTests(unittest.TestCase):
     def test_review_renderer_is_valid_python_and_non_destructive(self):
         path = ROOT / "tools" / "blender" / "render_uv_preview.py"
