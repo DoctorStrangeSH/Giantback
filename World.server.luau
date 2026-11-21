@@ -30,7 +30,18 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "MoonSeed"}
+local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
+local foxCacheIdSet = {}
+for _, cacheId in foxCacheIds do
+    foxCacheIdSet[cacheId] = true
+end
+local FOX_SCOUT_COOLDOWN_SECONDS = 120
+local foxCacheRewards = {
+    FoxCache01 = {itemId = "SunPetal", amount = 2},
+    FoxCache02 = {itemId = "Wood", amount = 2},
+    FoxCache03 = {itemId = "CarrotSeed", amount = 1},
+}
 local farmPlotIds = {"Plot01", "Plot02", "Plot03", "Plot04"}
 local cropDefinitions = {
     Carrot = {
@@ -201,6 +212,13 @@ local function syncBridge(player)
     player:SetAttribute("Bridge_HomeToGrove", session ~= nil and session.city.bridges.homeToGrove == true)
 end
 
+local function syncFoxScout(player)
+    local session = sessions[player]
+    player:SetAttribute("FoxCacheSpot", session and session.foxCacheActiveId or "")
+    player:SetAttribute("FoxSearchReadyAt", session and session.foxSearchReadyAt or 0)
+    player:SetAttribute("FoxSearchCount", session and session.foxSearchCount or 0)
+end
+
 applyHomeBridgeState = function(slotIndex, built)
     local bridgeRoot = workspace:FindFirstChild("BridgeToGrove")
     local bridge = bridgeRoot and bridgeRoot:FindFirstChild(string.format("HomeBridge%02d", slotIndex))
@@ -264,6 +282,11 @@ local function save(player)
         end
 
         local citySnapshot = normalizeCity(session.city)
+        local foxScoutSnapshot = {
+            activeCacheId = foxCacheIdSet[session.foxCacheActiveId] and session.foxCacheActiveId or nil,
+            readyAt = math.max(0, math.floor(tonumber(session.foxSearchReadyAt) or 0)),
+            searchCount = math.max(0, math.floor(tonumber(session.foxSearchCount) or 0)),
+        }
 
         local ok, err = pcall(function()
             store:UpdateAsync(tostring(player.UserId), function(old)
@@ -271,7 +294,7 @@ local function save(player)
                 for _, key in progress do
                     old[key] = old[key] == true or snapshot[key]
                 end
-                old.schemaVersion = 5
+                old.schemaVersion = 6
 
                 local savedInventory = type(old.inventory) == "table" and old.inventory or {}
                 for _, key in inventoryKeys do
@@ -297,7 +320,14 @@ local function save(player)
                 end
                 old.homeMaterialCooldowns = savedHomeCooldowns
 
+                local savedFoxScout = type(old.foxScout) == "table" and old.foxScout or {}
+                savedFoxScout.activeCacheId = foxScoutSnapshot.activeCacheId
+                savedFoxScout.readyAt = math.max(tonumber(savedFoxScout.readyAt) or 0, foxScoutSnapshot.readyAt)
+                savedFoxScout.searchCount = math.max(tonumber(savedFoxScout.searchCount) or 0, foxScoutSnapshot.searchCount)
+                old.foxScout = savedFoxScout
+
                 -- Schema v5 moves the old city payload into the permanent island record.
+                -- Schema v6 adds persistent companion scouting and the MoonSeed inventory item.
                 -- Keep this migration idempotent and preserve existing farm/building progress.
                 local savedIsland = type(old.island) == "table" and old.island
                     or (type(old.city) == "table" and old.city or {})
@@ -339,6 +369,9 @@ local function init(player)
         homeSpawn = nil,
         homeSlot = nil,
         homeMaterialCooldowns = {},
+        foxCacheActiveId = nil,
+        foxSearchReadyAt = 0,
+        foxSearchCount = 0,
         online = false,
     }
     for _, key in inventoryKeys do session.inventory[key] = 0 end
@@ -414,6 +447,13 @@ local function init(player)
                     session.homeMaterialCooldowns[materialId] = math.max(0, math.floor(readyAt))
                 end
             end
+
+            local savedFoxScout = type(data.foxScout) == "table" and data.foxScout or {}
+            if foxCacheIdSet[savedFoxScout.activeCacheId] then
+                session.foxCacheActiveId = savedFoxScout.activeCacheId
+            end
+            session.foxSearchReadyAt = math.max(0, math.floor(tonumber(savedFoxScout.readyAt) or 0))
+            session.foxSearchCount = math.max(0, math.floor(tonumber(savedFoxScout.searchCount) or 0))
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     else
@@ -423,6 +463,7 @@ local function init(player)
     syncInventory(player)
     syncFarm(player)
     syncBridge(player)
+    syncFoxScout(player)
     if not allocateHomeIsland(player, session) then
         sessions[player] = nil
         player:Kick("На этом сервере заняты все 8 домашних островов. Попробуй другой сервер.")
@@ -442,8 +483,91 @@ local function init(player)
     end
     player:SetAttribute("Ready", true)
 end
-event.OnServerEvent:Connect(function(player, action)
+local function collectFoxCache(player, cacheId)
+    if typeof(cacheId) ~= "string" or not foxCacheIdSet[cacheId] then return end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if session.foxCacheActiveId ~= cacheId then return end
+    if player:GetAttribute("Companion") ~= "Fox" then
+        return tip(player, "Позови лисёнка, чтобы забрать найденный тайник.")
+    end
+
+    local grove = workspace:FindFirstChild("Grove")
+    local anchor = grove and grove:FindFirstChild(cacheId)
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not anchor or not anchor:IsA("BasePart") or not root then return end
+    if (root.Position - anchor.Position).Magnitude > 10 then return end
+
+    local reward = foxCacheRewards[cacheId]
+    if not reward then return end
+    local itemId = reward.itemId
+    local amount = reward.amount
+    if not player:GetAttribute("Seed") then
+        itemId = "MoonSeed"
+        amount = 1
+        player:SetAttribute("Seed", true)
+    end
+
+    session.inventory[itemId] = (session.inventory[itemId] or 0) + amount
+    session.foxCacheActiveId = nil
+    session.foxSearchCount += 1
+    session.foxSearchReadyAt = os.time() + FOX_SCOUT_COOLDOWN_SECONDS
+    syncInventory(player)
+    syncFoxScout(player)
+
+    local rewardNames = {
+        MoonSeed = "лунное семя",
+        SunPetal = "солнечные лепестки",
+        Wood = "дерево",
+        CarrotSeed = "семена моркови",
+    }
+    tip(player, "Лисёнок нашёл: " .. rewardNames[itemId] .. " ×" .. tostring(amount) .. "!")
+    if session.online and not save(player) then
+        warn("Fox cache reward save will be retried:", player.UserId, cacheId)
+    end
+end
+
+local function startFoxSearch(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if player:GetAttribute("Companion") ~= "Fox" then
+        return tip(player, "Позови лисёнка из альбома — он умеет находить тайники.")
+    end
+    if session.foxCacheActiveId then
+        return tip(player, "Лисёнок уже учуял тайник. Следуй за золотой меткой!")
+    end
+
+    local now = os.time()
+    if session.foxSearchReadyAt > now then
+        local remaining = session.foxSearchReadyAt - now
+        return tip(player, "Нюх лисёнка восстановится через " .. tostring(math.ceil(remaining / 60)) .. " мин.")
+    end
+
+    local cacheIndex = (session.foxSearchCount % #foxCacheIds) + 1
+    local cacheId = foxCacheIds[cacheIndex]
+    local grove = workspace:FindFirstChild("Grove")
+    local anchor = grove and grove:FindFirstChild(cacheId)
+    if not anchor then
+        warn("Fox scout cache is missing:", cacheId)
+        return tip(player, "Лисёнок пока не может найти след. Попробуй немного позже.")
+    end
+
+    session.foxCacheActiveId = cacheId
+    syncFoxScout(player)
+    tip(player, "Лисёнок учуял тайник! Ищи золотую метку в Солнечной роще.")
+    if session.online and not save(player) then
+        warn("Fox scout search state save will be retried:", player.UserId, cacheId)
+    end
+end
+
+event.OnServerEvent:Connect(function(player, action, payload)
     if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
+
+    if action == "CollectFoxCache" then
+        collectFoxCache(player, payload)
+        return
+    end
 
     if action == "RequestResourceState" then
         local session = sessions[player]
@@ -720,6 +844,11 @@ createPersonalCity = function(player, session)
             if visitor:GetAttribute("Flower") then return tip(visitor, "Твой лунный цветок уже расцвёл.") end
             if not visitor:GetAttribute("Seed") then return tip(visitor, "Лисёнок чует семя на тропе возле гнезда.") end
             if visitor:GetAttribute("Companion") ~= "Moth" then return tip(visitor, "Позови лунную моль из альбома.") end
+            local visitorSession = sessions[visitor]
+            if visitorSession and (visitorSession.inventory.MoonSeed or 0) > 0 then
+                visitorSession.inventory.MoonSeed -= 1
+                syncInventory(visitor)
+            end
             visitor:SetAttribute("Flower", true)
             tip(visitor, "Моль расправила крылья. Твой лунный цветок расцвёл!")
         end)
@@ -1021,12 +1150,7 @@ for _, definition in resourceDefinitions do
     spawnResource(definition)
 end
 
-prompt(workspace.Grove.Trail,"Следы в траве","Попросить лисёнка искать",function(player)
-    if player:GetAttribute("Companion") ~= "Fox" then return tip(player,"Позови лисёнка из альбома.") end
-    if player:GetAttribute("Seed") then return tip(player,"Семя уже найдено. Лунная моль поможет ему расцвести.") end
-    player:SetAttribute("Seed",true)
-    tip(player,"Лисёнок выкопал лунное семя! Отправляйся за молью.")
-end)
+prompt(workspace.Grove.Trail,"Следы в траве","Попросить лисёнка искать",startFoxSearch)
 
 prompt(workspace.Grove.Driftwood,"Коряга на берегу","Искать сухие ветви",function(player)
     if not player:GetAttribute("Flower") then return tip(player,"Сначала вырасти лунный цветок у дома.") end
