@@ -408,3 +408,10 @@ if moth then
     local glow = orb(mothDetails, "Moonlight glow", Vector3.new(0, 0.1, 0), Vector3.new(0.18, 0.18, 0.18), palette.moon, Enum.Material.Neon)
     addLight(glow, palette.lilacLight, 9, 0.65)
 end
+
+
+-- Let the gameplay bootstrap wait until the collectible models are fully decorated.
+local ready = ReplicatedStorage:FindFirstChild("GiantbackVisualsReady") or Instance.new("BoolValue")
+ready.Name = "GiantbackVisualsReady"
+ready.Value = true
+ready.Parent = ReplicatedStorage
