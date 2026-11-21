@@ -24,6 +24,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Run resource collection contract tests
+        run: python -m unittest discover -s tests -v
+
       - name: Build Roblox place
         run: python build.py
 
@@ -77,6 +80,13 @@ jobs:
               "CollectionPanel",
               "НАЙДЕННЫЕ МАТЕРИАЛЫ",
               "Vector3.new(0.95, 0.14, 0.14)",
+              "resourceCooldowns",
+              "collectedNodes",
+              "RequestResourceState",
+              "ResourceState",
+              "ResourcePicked",
+              "p.MaxActivationDistance + 1",
+              "kind = \"renewable\"",
           ]
           combined = "\n".join(sources)
           missing_markers = [marker for marker in required_markers if marker not in combined]
