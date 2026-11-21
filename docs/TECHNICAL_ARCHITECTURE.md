@@ -211,3 +211,11 @@ The moving-island loop and overlapping PersonalCities approach are retired. The 
 - The hidden clearing contains one StarShard. The server requires \`MoonGateOpen\`, an unclaimed \`MoonRelic\` flag, the relic anchor and 10-stud distance before granting \`StarShard +1\`.
 - \`MoonGateTrace\`, \`MoonGateOpen\`, \`MoonRelic\` are monotonic profile progress flags. StarShard uses the existing inventory snapshot/sync pipeline; this is backward-compatible and does not require a schema migration.
 - The main first-expedition route places this joint puzzle after MoonBloom and before the home Moonflower.
+
+
+## 17. Moth ability feedback
+
+- MoonBloom discovery and personal MoonGate opening trigger a client-only 12-spark radial burst around the local player's Moth.
+- The local Moth follower temporarily flaps its wings faster, moves its antennae more actively and pulses its existing Moonlight glow for 2.4 seconds.
+- The effect is cosmetic feedback only. It is driven by the player's saved progress attributes and never grants items or changes server gameplay.
+- Spark parts are non-collidable, non-queryable and cleaned up by Debris after one second. Other players' followers and wild encounters retain their calm idle animation.
