@@ -32,7 +32,10 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
         self.assertIn("export_object_groups=True", source)
         self.assertIn('"final_art_approved": False', source)
         self.assertIn("destination = args.output / f\"{asset}.obj\"", source)
-        self.assertNotIn("args.input / f\"{asset}.obj\"", source.split("export_preview(objects, destination)")[0].split("def main()")[1])
+        main_block = source.split("def main()", 1)[1]
+        self.assertIn("source = args.input / f\\\"{asset}.obj\\\"", main_block)
+        self.assertIn("destination = args.output / f\\\"{asset}.obj\\\"", main_block)
+        self.assertIn("export_preview(objects, destination)", main_block)
 
 
 class OriginalMeshSourceTests(unittest.TestCase):
