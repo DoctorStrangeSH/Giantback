@@ -46,6 +46,28 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
         self.assertIn("material_file.name not in export_stats[\"material_libraries\"]", source)
 
 
+class BlenderUVReviewRendererTests(unittest.TestCase):
+    def test_review_renderer_is_valid_python_and_non_destructive(self):
+        path = ROOT / "tools" / "blender" / "render_uv_preview.py"
+        self.assertTrue(path.is_file())
+        source = path.read_text(encoding="utf-8")
+        compile(source, str(path), "exec")
+        self.assertIn("input_path = args.input.resolve()", source)
+        self.assertIn("checker_path = args.checker.resolve()", source)
+        self.assertIn("if existing and not args.overwrite", source)
+        self.assertIn("FileExistsError", source)
+        self.assertIn("save_as_mainfile", source)
+        self.assertIn("write_still=True", source)
+
+    def test_review_renderer_requires_uvs_and_uses_diagnostic_only_material(self):
+        source = (ROOT / "tools" / "blender" / "render_uv_preview.py").read_text(encoding="utf-8")
+        self.assertIn("if not obj.data.uv_layers", source)
+        self.assertIn("TEMP_UV_DIAGNOSTIC_CHECKER", source)
+        self.assertIn("Diagnostic only", source)
+        self.assertIn('scene.render.engine = "BLENDER_EEVEE_NEXT"', source)
+        self.assertIn('scene.render.image_settings.file_format = "PNG"', source)
+
+
 class UVCheckerTextureTests(unittest.TestCase):
     def test_checker_generator_emits_valid_rgb_png_with_expected_dimensions(self):
         png = build_checker(size=128, tiles=8, subdivisions=4)
