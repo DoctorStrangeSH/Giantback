@@ -356,7 +356,19 @@ def create_fox(p):
         [(0.22, 1.36, -1.015), (0.39, 1.42, -1.035),
          (0.56, 1.49, -0.965), (0.66, 1.57, -0.865)],
         [0.012, 0.095, 0.082, 0.008], p["cream"], sides=20, steps_per_segment=7)
-    ellipsoid("ForeheadTuft", (0, 2.22, -0.59), (0.16, 0.20, 0.18), p["fox_orange"], 24, 16)
+    # Layered swept forelock tufts break the smooth cap silhouette.
+    curved_plume("ForeheadTuft",
+        [(-0.13, 2.16, -0.93), (-0.09, 2.27, -0.91),
+         (0.00, 2.34, -0.84), (0.035, 2.42, -0.76)],
+        [0.025, 0.105, 0.085, 0.006], p["fox_orange"], sides=20, steps_per_segment=7)
+    curved_plume("ForeheadTuft_L",
+        [(-0.28, 2.12, -0.88), (-0.31, 2.22, -0.86),
+         (-0.27, 2.29, -0.79)],
+        [0.012, 0.072, 0.004], p["fox_orange"], sides=16, steps_per_segment=6)
+    curved_plume("ForeheadTuft_R",
+        [(0.17, 2.14, -0.89), (0.22, 2.23, -0.85),
+         (0.31, 2.27, -0.77)],
+        [0.012, 0.068, 0.004], p["fox_orange"], sides=16, steps_per_segment=6)
 
     # Tall, gently outward-splayed ears with separate inset inner-ear pieces.
     leaf_mesh("FoxEarLeft", (-0.39, 2.20, -0.52), 0.46, 0.88, 0.30, p["fox_orange"])
@@ -428,7 +440,7 @@ def create_fox(p):
     grouped = {
         "FoxBody": ["FoxBody"],
         "FoxBelly": ["FoxBelly"],
-        "FoxHead": ["FoxHead", "ForeheadTuft", "BrowLeft", "BrowRight"],
+        "FoxHead": ["FoxHead", "ForeheadTuft", "ForeheadTuft_L", "ForeheadTuft_R", "BrowLeft", "BrowRight"],
         "FoxMuzzle": ["FoxMuzzle", "CheekFluff_L", "CheekFluff_R", "Smile"],
         "FoxEarLeft": ["FoxEarLeft"],
         "FoxEarRight": ["FoxEarRight"],
