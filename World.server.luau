@@ -14,6 +14,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "Flower", "Timber", "Lantern", "Lit"}
+local inventoryKeys = {"SunPetal", "MoonPetal"}
 local sessions = {}
 local atDusk, sailing = false, false
 giant:SetAttribute("Dock", "Grove")
@@ -23,35 +24,78 @@ local function tip(player, message)
     event:FireClient(player, message)
 end
 
-local function save(player)
+local function syncInventory(player)
     local session = sessions[player]
-    if not session or not session.online then return end
-    local snapshot = {}
-    for _, key in progress do snapshot[key] = player:GetAttribute(key) == true end
-    local ok, err = pcall(function()
-        store:UpdateAsync(tostring(player.UserId), function(old)
-            old = old or {}
-            for _, key in progress do old[key] = old[key] or snapshot[key] end
-            return old
-        end)
-    end)
-    if not ok then warn("Album save:", err) end
+    for _, key in inventoryKeys do
+        local amount = session and session.inventory and session.inventory[key] or 0
+        player:SetAttribute("Resource_" .. key, amount)
+    end
 end
 
+local function save(player)
+    local session = sessions[player]
+    if not session or not session.online or not store then return end
+    if session.saving then
+        session.saveAgain = true
+        return
+    end
+
+    session.saving = true
+    repeat
+        session.saveAgain = false
+        local snapshot = {}
+        for _, key in progress do snapshot[key] = player:GetAttribute(key) == true end
+
+        local inventorySnapshot = {}
+        for _, key in inventoryKeys do
+            inventorySnapshot[key] = math.max(0, math.floor(tonumber(session.inventory[key]) or 0))
+        end
+
+        local ok, err = pcall(function()
+            store:UpdateAsync(tostring(player.UserId), function(old)
+                if type(old) ~= "table" then old = {} end
+                for _, key in progress do
+                    old[key] = old[key] == true or snapshot[key]
+                end
+                old.schemaVersion = 2
+                local savedInventory = type(old.inventory) == "table" and old.inventory or {}
+                for _, key in inventoryKeys do
+                    savedInventory[key] = inventorySnapshot[key]
+                end
+                old.inventory = savedInventory
+                return old
+            end)
+        end)
+        if not ok then
+            warn("Album save:", err)
+            break
+        end
+    until not session.saveAgain
+    session.saving = false
+end
 local function init(player)
     if sessions[player] then return end
-    local session = {}
+    local session = {inventory = {}, online = false}
+    for _, key in inventoryKeys do session.inventory[key] = 0 end
     sessions[player] = session
     player.RespawnLocation = giant.HomeSpawn
+
     if not RunService:IsStudio() then
         local ok, data = pcall(function() return store:GetAsync(tostring(player.UserId)) end)
         if sessions[player] ~= session then return end
         session.online = ok
         if ok and type(data) == "table" then
             for _, key in progress do player:SetAttribute(key, data[key] == true) end
+            local savedInventory = type(data.inventory) == "table" and data.inventory or {}
+            for _, key in inventoryKeys do
+                local amount = tonumber(savedInventory[key]) or 0
+                session.inventory[key] = math.clamp(math.floor(amount), 0, 1000000)
+            end
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     end
+
+    syncInventory(player)
     player:SetAttribute("Ready", true)
 end
 Players.PlayerAdded:Connect(init)
@@ -108,6 +152,200 @@ local function encounter(id, island, height)
 end
 encounter("Fox",workspace.Grove,1.8)
 encounter("Moth",workspace.Dusk,3.5)
+
+
+-- Server-authoritative gatherables. A node can be claimed once, is removed for
+-- everyone, and returns only after its explicit cooldown. Inventory is saved per player.
+local resourceStates = {}
+
+local function createResourceFlower(def, position)
+    local model = Instance.new("Model")
+    model.Name = def.key
+    model:SetAttribute("ResourceNodeId", def.key)
+    model:SetAttribute("ResourceItemId", def.itemId)
+
+    local function makePart(name, size, frame, color, material, shape)
+        local part = Instance.new("Part")
+        part.Name = name
+        part.Anchored = true
+        part.CanCollide = false
+        part.CanTouch = false
+        part.CanQuery = false
+        part.CastShadow = false
+        part.Size = size
+        part.CFrame = frame
+        part.Color = color
+        part.Material = material or Enum.Material.SmoothPlastic
+        part.Shape = shape or Enum.PartType.Ball
+        part.TopSurface = Enum.SurfaceType.Smooth
+        part.BottomSurface = Enum.SurfaceType.Smooth
+        part.Parent = model
+        return part
+    end
+
+    local anchor = Instance.new("Part")
+    anchor.Name = "PromptAnchor"
+    anchor.Size = Vector3.new(0.55, 0.55, 0.55)
+    anchor.Transparency = 1
+    anchor.Anchored = true
+    anchor.CanCollide = false
+    anchor.CanTouch = false
+    anchor.CanQuery = true
+    anchor.CFrame = CFrame.new()
+    anchor.Parent = model
+    model.PrimaryPart = anchor
+
+    makePart(
+        "Stem",
+        Vector3.new(0.14, 0.95, 0.14),
+        CFrame.new(0, 0.55, 0) * CFrame.Angles(0, 0, math.rad(90)),
+        Color3.fromRGB(111, 164, 111),
+        Enum.Material.Grass,
+        Enum.PartType.Cylinder
+    )
+
+    for i = 1, 5 do
+        local angle = (i - 1) * math.pi * 2 / 5
+        local petalPosition = Vector3.new(math.cos(angle) * 0.48, 1.05, math.sin(angle) * 0.48)
+        makePart(
+            "Petal",
+            Vector3.new(0.82, 0.32, 0.62),
+            CFrame.new(petalPosition),
+            def.petalColor,
+            Enum.Material.SmoothPlastic
+        )
+    end
+
+    local heart = makePart(
+        "Heart",
+        Vector3.new(0.42, 0.42, 0.42),
+        CFrame.new(0, 1.12, 0),
+        def.heartColor,
+        Enum.Material.Neon
+    )
+    local glow = Instance.new("PointLight")
+    glow.Color = def.heartColor
+    glow.Range = 7
+    glow.Brightness = 0.45
+    glow.Parent = heart
+
+    makePart(
+        "LeafLeft",
+        Vector3.new(0.7, 0.22, 0.42),
+        CFrame.new(-0.38, 0.48, 0) * CFrame.Angles(0, 0, math.rad(-24)),
+        Color3.fromRGB(143, 190, 128)
+    )
+    makePart(
+        "LeafRight",
+        Vector3.new(0.7, 0.22, 0.42),
+        CFrame.new(0.38, 0.64, 0) * CFrame.Angles(0, 0, math.rad(24)),
+        Color3.fromRGB(113, 164, 111)
+    )
+
+    model:PivotTo(position)
+    return model, anchor
+end
+
+local resourceDefinitions = {
+    {
+        key = "GroveSunPetal01",
+        itemId = "SunPetal",
+        displayName = "Солнечный лепесток",
+        area = "Grove",
+        offset = Vector3.new(-12, 0, 3),
+        petalColor = Color3.fromRGB(244, 190, 111),
+        heartColor = Color3.fromRGB(255, 226, 145),
+        respawnSeconds = 300,
+    },
+    {
+        key = "GroveSunPetal02",
+        itemId = "SunPetal",
+        displayName = "Солнечный лепесток",
+        area = "Grove",
+        offset = Vector3.new(13, 0, -7),
+        petalColor = Color3.fromRGB(244, 190, 111),
+        heartColor = Color3.fromRGB(255, 226, 145),
+        respawnSeconds = 300,
+    },
+    {
+        key = "DuskMoonPetal01",
+        itemId = "MoonPetal",
+        displayName = "Лунный лепесток",
+        area = "Dusk",
+        offset = Vector3.new(-11, 0, 5),
+        petalColor = Color3.fromRGB(190, 164, 232),
+        heartColor = Color3.fromRGB(218, 208, 255),
+        respawnSeconds = 300,
+    },
+    {
+        key = "DuskMoonPetal02",
+        itemId = "MoonPetal",
+        displayName = "Лунный лепесток",
+        area = "Dusk",
+        offset = Vector3.new(12, 0, -8),
+        petalColor = Color3.fromRGB(190, 164, 232),
+        heartColor = Color3.fromRGB(218, 208, 255),
+        respawnSeconds = 300,
+    },
+}
+
+local function spawnResource(def)
+    local state = resourceStates[def.key]
+    if not state then
+        state = {active = false, model = nil}
+        resourceStates[def.key] = state
+    end
+    if state.active then return end
+
+    local island = workspace:FindFirstChild(def.area)
+    local bank = island and island:FindFirstChild("Bank")
+    if not island or not bank then return end
+
+    local folder = island:FindFirstChild("ResourceNodes")
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = "ResourceNodes"
+        folder.Parent = island
+    end
+
+    local position = CFrame.new(
+        bank.Position + Vector3.new(def.offset.X, bank.Size.Y / 2 + 0.18, def.offset.Z)
+    )
+    local model, anchor = createResourceFlower(def, position)
+    model.Parent = folder
+    state.model = model
+    state.active = true
+
+    prompt(anchor, def.displayName, "Собрать", function(player)
+        local session = sessions[player]
+        if not state.active or not session or not player:GetAttribute("Ready") then return end
+
+        -- Claim before changing inventory: two players cannot receive the same node.
+        state.active = false
+        if state.model then
+            state.model:Destroy()
+            state.model = nil
+        end
+
+        session.inventory[def.itemId] = (session.inventory[def.itemId] or 0) + 1
+        syncInventory(player)
+        tip(player, "Получено: " .. def.displayName .. " ×1")
+
+        if session.online then
+            task.spawn(save, player)
+        end
+
+        task.delay(def.respawnSeconds, function()
+            if not state.active then
+                spawnResource(def)
+            end
+        end)
+    end)
+end
+
+for _, definition in resourceDefinitions do
+    spawnResource(definition)
+end
 
 event.OnServerEvent:Connect(function(player, action)
     if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
