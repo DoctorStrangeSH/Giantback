@@ -413,7 +413,7 @@ local function updateLayout()
         toggle.Size = UDim2.fromOffset(156, 54)
         panel.AnchorPoint = Vector2.new(1, 0)
         panel.Position = UDim2.new(1, -20, 0, 84)
-        panel.Size = UDim2.fromOffset(294, 246)
+        panel.Size = UDim2.fromOffset(294, 330)
     end
 end
 
