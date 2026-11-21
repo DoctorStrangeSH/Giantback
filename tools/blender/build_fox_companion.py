@@ -357,7 +357,7 @@ def write_rig_metadata(output):
         "parts": RIG_PARTS,
     }
     path = output / "fox_companion_hero_rig.json"
-    path.write_text(json.dumps(payload, indent=2) + "\\n", encoding="utf-8")
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
 
 
