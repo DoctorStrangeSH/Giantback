@@ -61,6 +61,8 @@ jobs:
               "HomeBridge06",
               "HomeBridge07",
               "HomeBridge08",
+              "WoodPile",
+              "StonePile",
           }
           missing = required - names
           if missing:
@@ -116,6 +118,14 @@ jobs:
               'type(data.island) == "table" and data.island or data.city',
               "player.RespawnLocation = homeSpawn",
               "occupiedHomeSlots[session.homeSlot] = nil",
+              "Bridge_HomeToGrove",
+              "homeMaterialCooldowns",
+              "gatherHomeMaterial",
+              "repairHomeBridge",
+              "woodCost, stoneCost = 5, 3",
+              "savedIsland.bridges.homeToGrove = citySnapshot.bridges.homeToGrove == true",
+              "Resource_Wood",
+              "Resource_Stone",
               "CarrotSeed",
               "Carrot",
               "growthSeconds = 180",
