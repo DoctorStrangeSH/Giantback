@@ -1,0 +1,31 @@
+newmtl wood
+Ka 0.18 0.18 0.18
+Kd 0.43 0.26 0.14
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl wood_dark
+Ka 0.18 0.18 0.18
+Kd 0.25 0.14 0.08
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl wood_light
+Ka 0.18 0.18 0.18
+Kd 0.62 0.40 0.22
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl rope
+Ka 0.18 0.18 0.18
+Kd 0.58 0.43 0.28
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
