@@ -117,3 +117,8 @@ FoxTail and FoxTailTip now use a dedicated swept elliptical mesh, with independe
 ## Ear silhouette pass
 
 The ear generator now uses 25 profile rings and 32 cross-section sides, a broad lower section, tapered upper third, subtle outward sweep and convex front depth. Inner-ear forms remain separate so pink insets can be refined independently. Review front/side silhouettes and inner-ear intersections in Blender before treating the shape as approved.
+
+
+## Eye expression pass
+
+Each eye now has a softly arched upper eyelid rim and a secondary catchlight. The eyelid meshes join the existing FoxEyes group; both catchlights join FoxEyeSparkles. This adds more readable expression without increasing the runtime rig group count. Render review is needed to validate placement, eye openness and readability at gameplay distance.
