@@ -215,6 +215,10 @@ for _, item in visualParts do
             addLight(item, palette.gold, 12, 0.7)
         elseif item.Name == "Trail" then
             item.Material = Enum.Material.Sand
+        elseif item.Name == "WoodPile" then
+            item.Material = Enum.Material.WoodPlanks
+        elseif item.Name == "StonePile" then
+            item.Material = Enum.Material.Rock
         elseif item.Name == "Nest" or item.Name == "Driftwood" or item.Name == "Gangway" or item.Name == "Planter" then
             item.Material = Enum.Material.WoodPlanks
         elseif item.Name == "Glint" or item.Name == "Window" then
@@ -256,6 +260,31 @@ end
 orb(homeDetails, "Mossback tail", Vector3.new(-22, 3.8, 0), Vector3.new(7, 4, 5), palette.moss, Enum.Material.SmoothPlastic)
 orb(homeDetails, "Mossback snout", Vector3.new(27, 6.4, 0), Vector3.new(5.2, 3.8, 6.8), palette.mossLight, Enum.Material.SmoothPlastic)
 orb(homeDetails, "Nose", Vector3.new(29.5, 7.1, 0), Vector3.new(1.05, 0.8, 1.8), palette.ink, Enum.Material.SmoothPlastic)
+
+-- Harvestable materials are clearly readable on every personal island.
+local woodPile = homeIslandTemplate:FindFirstChild("WoodPile")
+if woodPile then
+    woodPile.Transparency = 1
+    for i = 1, 3 do
+        local log = cylinder(
+            homeDetails,
+            "Gatherable timber",
+            Vector3.new(12, 13.0 + (i % 2) * 0.42, -8 + (i - 2) * 0.55),
+            3.2,
+            0.68,
+            i % 2 == 0 and palette.barkLight or palette.bark,
+            Enum.Material.Wood
+        )
+        log.CFrame = CFrame.new(log.Position) * CFrame.Angles(0, math.rad(i * 34), 0)
+    end
+end
+local stonePile = homeIslandTemplate:FindFirstChild("StonePile")
+if stonePile then
+    stonePile.Transparency = 1
+    orb(homeDetails, "Gatherable stone", Vector3.new(11.1, 13.05, 7.8), Vector3.new(1.35, 1.05, 1.25), palette.stone, Enum.Material.Rock)
+    orb(homeDetails, "Gatherable stone", Vector3.new(12.6, 13.0, 8.3), Vector3.new(1.1, 0.9, 1.0), palette.stoneLight, Enum.Material.Rock)
+    orb(homeDetails, "Gatherable stone", Vector3.new(12.0, 13.65, 7.7), Vector3.new(0.9, 0.8, 0.9), palette.stone, Enum.Material.Rock)
+end
 for _, side in {-1, 1} do
     orb(homeDetails, "Cheek", Vector3.new(25.2, 5.7, side * 5.4), Vector3.new(2.3, 1.4, 1.2), Color3.fromRGB(151, 190, 143), Enum.Material.SmoothPlastic)
     orb(homeDetails, "Flipper toe", Vector3.new(13, -0.8, side * 14), Vector3.new(3.2, 1.7, 2.2), palette.mossLight, Enum.Material.SmoothPlastic)
