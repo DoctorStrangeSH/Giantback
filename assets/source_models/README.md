@@ -12,6 +12,10 @@ All OBJ/MTL files in this directory are original procedural source meshes create
 | home_island.obj | Home island terrain | organic island top and tapered cliff source |
 
 
+## Character art direction
+
+The fox is the first quality benchmark for all companion art. Follow [FOX_ART_BRIEF.md](FOX_ART_BRIEF.md) for its locked palette, silhouette, rig-group preservation and production acceptance gates. The concept reference is a direction target only; it is not a production mesh or texture atlas. Do not mark the fox complete until the geometry, UVs, textures and Roblox Studio import have been reviewed.
+
 ## Source axes and scale
 
 All six sources use Y-up coordinates. Dimensions and intended anchors are recorded in ASSET_MANIFEST.md and protected by CI scale-drift tests. The fox and cottage face toward -Z; the bridge segment runs along X and may need rotation when placed in the world. Keep the original source pivots on first import. In particular, the moth's positive minimum Y is a deliberate floating pose, not a ground-contact model.
