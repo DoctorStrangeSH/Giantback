@@ -819,7 +819,7 @@ end)
 
 prompt(workspace.Grove.Driftwood,"Коряга на берегу","Искать сухие ветви",function(player)
     if not player:GetAttribute("Flower") then return tip(player,"Сначала вырасти лунный цветок у дома.") end
-    if player:GetAttribute("Timber") then return tip(player,"Ветви уже собраны. Площадка рядом со штурвалом.") end
+    if player:GetAttribute("Timber") then return tip(player,"Ветви уже собраны. Площадка рядом с домом.") end
     if player:GetAttribute("Companion") ~= "Fox" then return tip(player,"Позови лисёнка. Он найдёт крепкие ветви.") end
     player:SetAttribute("Timber",true)
     tip(player,"Лисёнок нашёл ветви для садового фонаря!")
