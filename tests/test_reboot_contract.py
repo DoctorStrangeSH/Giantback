@@ -17,10 +17,18 @@ class RebootContractTests(unittest.TestCase):
         self.assertIn("строительство мостов", SPEC)
         self.assertIn("Первый вертикальный срез", SPEC)
 
-    def test_server_no_longer_moves_the_home_island(self):
+    def test_each_player_gets_a_static_home_island_clone(self):
+        self.assertIn('obj(server_storage, "Model", "HomeIslandTemplate")', BUILD)
+        self.assertIn('ServerStorage:WaitForChild("HomeIslandTemplate")', WORLD)
+        self.assertIn("homeIslandTemplate:Clone()", WORLD)
+        self.assertIn('homeIslandFolder.Name = "PlayerIslands"', WORLD)
+        self.assertIn('island.Name = "HomeIsland_" .. tostring(player.UserId)', WORLD)
+        self.assertNotIn("workspace.Mossback", WORLD)
+
+    def test_server_does_not_move_home_islands_or_switch_docks(self):
         self.assertNotIn("giant:PivotTo(frame)", WORLD)
         self.assertNotIn("atDusk", WORLD)
-        self.assertNotIn("local atDusk, sailing", WORLD)
+        self.assertNotIn("sailing", WORLD)
         self.assertNotIn('SetAttribute("Dock"', WORLD)
 
     def test_client_no_longer_teaches_sailing_or_dock_switching(self):
@@ -28,12 +36,15 @@ class RebootContractTests(unittest.TestCase):
         self.assertNotIn("Штурвал", CLIENT)
         self.assertNotIn("Колокольчик", CLIENT)
 
-    def test_static_bridges_are_generated_in_the_place(self):
+    def test_eight_permanent_bridges_are_generated_around_the_hub(self):
         self.assertIn('obj(w, "Model", "BridgeToGrove")', BUILD)
         self.assertIn('obj(w, "Model", "BridgeToDusk")', BUILD)
-        self.assertIn('"BridgeDeck"', BUILD)
-        self.assertIn('"BridgeRail"', BUILD)
-        self.assertIn('"BridgePost"', BUILD)
+        self.assertIn("for slot_index in range(8):", BUILD)
+        self.assertIn("HomeBridge{slot_index + 1:02d}", BUILD)
+        self.assertIn("add_radial_bridge", BUILD)
+        self.assertIn('\"BridgeDeck\"', BUILD)
+        self.assertIn('\"BridgeRail\"', BUILD)
+        self.assertIn('\"BridgePost\"', BUILD)
 
     def test_bridge_visuals_use_consistent_materials_and_lighting(self):
         self.assertIn('item.Name == "BridgeDeck"', VISUALS)
@@ -65,10 +76,11 @@ class RebootContractTests(unittest.TestCase):
         self.assertIn("gui.Enabled = false", CLIENT)
         self.assertIn('root / "HUD.client.luau"', BUILD)
 
-    def test_map_panel_uses_fixed_bridges(self):
+    def test_world_map_describes_the_fixed_bridge_hub(self):
         self.assertIn('workspace:FindFirstChild("BridgeToGrove")', HUD)
         self.assertIn('workspace:FindFirstChild("BridgeToDusk")', HUD)
-        self.assertIn("Острова остаются на своих местах", HUD)
+        self.assertIn("Все острова остаются на своих местах", HUD)
+        self.assertIn("восемь домашних островов", HUD.lower())
 
 
 if __name__ == "__main__":
