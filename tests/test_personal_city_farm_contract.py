@@ -71,10 +71,11 @@ class PersonalCityFarmContractTests(unittest.TestCase):
         self.assertIn("Resource_Carrot", CLIENT)
         self.assertIn("МАТЕРИАЛЫ И ФЕРМА", CLIENT)
 
-    def test_city_models_follow_the_shared_mossback_transform(self):
+    def test_city_models_remain_under_the_fixed_home_island(self):
         self.assertIn("cityModel.Parent = cityFolder", WORLD)
-        self.assertIn("local origin = giant:GetPivot()", WORLD)
-        self.assertIn("giant:PivotTo(frame)", WORLD)
+        self.assertIn("local giant = workspace.Mossback", WORLD)
+        self.assertNotIn("giant:PivotTo(frame)", WORLD)
+        self.assertNotIn("local atDusk, sailing", WORLD)
 
 
 if __name__ == "__main__":
