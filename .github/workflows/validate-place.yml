@@ -71,3 +71,11 @@ jobs:
 
           print(f"Validated Giantback.rbxlx: {len(names)} named instances, {len(sources)} scripts.")
           PY
+
+      - name: Upload generated Roblox place
+        uses: actions/upload-artifact@v4
+        with:
+          name: Giantback-visual-build
+          path: Giantback.rbxlx
+          if-no-files-found: error
+          retention-days: 14
