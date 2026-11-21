@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local Storage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local DataStoreService = game:GetService("DataStoreService")
+local ServerStorage = game:GetService("ServerStorage")
 local storeName = RunService:IsStudio() and "GiantbackAlbum_Studio_v1" or "GiantbackAlbum_v1"
 local storeOk, storeResult = pcall(function()
     return DataStoreService:GetDataStore(storeName)
@@ -13,7 +14,17 @@ end
 local event = Instance.new("RemoteEvent")
 event.Name = "AlbumAction"
 event.Parent = Storage
-local giant = workspace.Mossback
+local homeIslandTemplate = ServerStorage:WaitForChild("HomeIslandTemplate")
+local homeIslandFolder = workspace:FindFirstChild("PlayerIslands")
+if not homeIslandFolder then
+    homeIslandFolder = Instance.new("Folder")
+    homeIslandFolder.Name = "PlayerIslands"
+    homeIslandFolder.Parent = workspace
+end
+local HOME_ISLAND_SLOT_COUNT = 8
+local HOME_ISLAND_RADIUS = 240
+local HOME_WORLD_CENTER = Vector3.new(0, 0, -40)
+local occupiedHomeSlots = {}
 if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
@@ -36,6 +47,52 @@ local resourceNodeIds = {
 }
 local sessions = {}
 local createPersonalCity
+
+local function homeSlotCFrame(slotIndex)
+    local angle = math.pi * 2 * (slotIndex - 1) / HOME_ISLAND_SLOT_COUNT
+    local position = Vector3.new(
+        math.sin(angle) * HOME_ISLAND_RADIUS,
+        0,
+        HOME_WORLD_CENTER.Z - math.cos(angle) * HOME_ISLAND_RADIUS
+    )
+    return CFrame.new(position) * CFrame.Angles(0, math.pi - angle, 0)
+end
+
+local function allocateHomeIsland(player, session)
+    for slotIndex = 1, HOME_ISLAND_SLOT_COUNT do
+        if occupiedHomeSlots[slotIndex] == nil then
+            occupiedHomeSlots[slotIndex] = player.UserId
+            local island = homeIslandTemplate:Clone()
+            island.Name = "HomeIsland_" .. tostring(player.UserId)
+            island:SetAttribute("OwnerUserId", player.UserId)
+            island:SetAttribute("OwnerName", player.DisplayName)
+            island:SetAttribute("HomeIslandSlot", slotIndex)
+
+            local pivot = island:FindFirstChild("IslandPivot")
+            if pivot and pivot:IsA("BasePart") then
+                island.PrimaryPart = pivot
+            end
+            island.Parent = homeIslandFolder
+            island:PivotTo(homeSlotCFrame(slotIndex))
+
+            local homeSpawn = island:FindFirstChild("HomeSpawn")
+            if not homeSpawn or not homeSpawn:IsA("SpawnLocation") then
+                island:Destroy()
+                occupiedHomeSlots[slotIndex] = nil
+                warn("Home island template is missing its HomeSpawn SpawnLocation.")
+                return false
+            end
+
+            session.homeIsland = island
+            session.homeSpawn = homeSpawn
+            session.homeSlot = slotIndex
+            player:SetAttribute("HomeIslandSlot", slotIndex)
+            player.RespawnLocation = homeSpawn
+            return true
+        end
+    end
+    return false
+end
 
 local function tip(player, message)
     event:FireClient(player, message)
@@ -175,7 +232,7 @@ local function save(player)
                 for _, key in progress do
                     old[key] = old[key] == true or snapshot[key]
                 end
-                old.schemaVersion = 4
+                old.schemaVersion = 5
 
                 local savedInventory = type(old.inventory) == "table" and old.inventory or {}
                 for _, key in inventoryKeys do
@@ -195,16 +252,20 @@ local function save(player)
                 end
                 old.collectedNodes = savedCollected
 
-                local savedCity = type(old.city) == "table" and old.city or {}
-                savedCity.level = citySnapshot.level
-                local savedFarm = type(savedCity.farm) == "table" and savedCity.farm or {}
+                -- Schema v5 moves the old city payload into the permanent island record.
+                -- Keep this migration idempotent and preserve existing farm/building progress.
+                local savedIsland = type(old.island) == "table" and old.island
+                    or (type(old.city) == "table" and old.city or {})
+                savedIsland.level = citySnapshot.level
+                local savedFarm = type(savedIsland.farm) == "table" and savedIsland.farm or {}
                 savedFarm.level = citySnapshot.farm.level
                 savedFarm.plots = citySnapshot.farm.plots
-                savedCity.farm = savedFarm
-                if type(savedCity.buildings) ~= "table" then
-                    savedCity.buildings = {}
+                savedIsland.farm = savedFarm
+                if type(savedIsland.buildings) ~= "table" then
+                    savedIsland.buildings = {}
                 end
-                old.city = savedCity
+                old.island = savedIsland
+                old.city = nil
                 return old
             end)
         end)
@@ -227,12 +288,31 @@ local function init(player)
         collectedNodes = {},
         city = defaultCity(),
         cityModel = nil,
+        homeIsland = nil,
+        homeSpawn = nil,
+        homeSlot = nil,
         online = false,
     }
     for _, key in inventoryKeys do session.inventory[key] = 0 end
     session.inventory.CarrotSeed = 3
     sessions[player] = session
-    player.RespawnLocation = giant.HomeSpawn
+
+    local function placeCharacterAtHome(character)
+        task.spawn(function()
+            local root = character:WaitForChild("HumanoidRootPart", 12)
+            local deadline = os.clock() + 20
+            while player.Parent and not session.homeSpawn and os.clock() < deadline do
+                task.wait(0.1)
+            end
+            if root and session.homeSpawn and character.Parent and player.Character == character then
+                character:PivotTo(session.homeSpawn.CFrame + Vector3.new(0, 4, 0))
+            end
+        end)
+    end
+    session.characterConnection = player.CharacterAdded:Connect(placeCharacterAtHome)
+    if player.Character then
+        placeCharacterAtHome(player.Character)
+    end
 
     if store then
         local ok, data = pcall(function() return store:GetAsync(tostring(player.UserId)) end)
@@ -251,7 +331,7 @@ local function init(player)
                 end
                 session.inventory[key] = math.clamp(math.floor(amount), 0, 1000000)
             end
-            session.city = normalizeCity(data.city)
+            session.city = normalizeCity(type(data.island) == "table" and data.island or data.city)
 
             local savedCooldowns = type(data.resourceCooldowns) == "table" and data.resourceCooldowns or {}
             for nodeId, readyAt in savedCooldowns do
@@ -274,8 +354,22 @@ local function init(player)
 
     syncInventory(player)
     syncFarm(player)
+    if not allocateHomeIsland(player, session) then
+        sessions[player] = nil
+        player:Kick("На этом сервере заняты все 8 домашних островов. Попробуй другой сервер.")
+        return
+    end
     if createPersonalCity then
         createPersonalCity(player, session)
+    end
+    if player.Character then
+        task.defer(function()
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            if character and root and session.homeSpawn then
+                character:PivotTo(session.homeSpawn.CFrame + Vector3.new(0, 4, 0))
+            end
+        end)
     end
     player:SetAttribute("Ready", true)
 end
@@ -464,44 +558,23 @@ end
 
 createPersonalCity = function(player, session)
     local ownerUserId = player.UserId
-    local cityFolder = giant:FindFirstChild("PersonalCities")
-    if not cityFolder then
-        cityFolder = Instance.new("Folder")
-        cityFolder.Name = "PersonalCities"
-        cityFolder.Parent = giant
-    end
+    local homeIsland = session.homeIsland
+    if not homeIsland then return end
 
-    local cityName = "City_" .. tostring(player.UserId)
-    local previous = cityFolder:FindFirstChild(cityName)
+    local previous = homeIsland:FindFirstChild("PersonalCity")
     if previous then previous:Destroy() end
 
     local cityModel = Instance.new("Model")
-    cityModel.Name = cityName
+    cityModel.Name = "PersonalCity"
     cityModel:SetAttribute("OwnerUserId", ownerUserId)
     cityModel:SetAttribute("CityLevel", session.city.level)
     cityModel:SetAttribute("FarmLevel", session.city.farm.level)
-    cityModel.Parent = cityFolder
+    cityModel.Parent = homeIsland
 
-    local planter
-    local lanternBase
-    local personalPartNames = {
-        Cottage = true,
-        Roof = true,
-        Window = true,
-        Planter = true,
-        LanternBase = true,
-    }
-    for _, source in giant:GetChildren() do
-        if source:IsA("BasePart") and personalPartNames[source.Name] then
-            local clone = source:Clone()
-            clone.CanCollide = false
-            clone.CanTouch = false
-            clone.CastShadow = false
-            clone.Parent = cityModel
-            if clone.Name == "Planter" then planter = clone end
-            if clone.Name == "LanternBase" then lanternBase = clone end
-        end
-    end
+    -- The cloned island already owns its cottage, garden and lantern pad.
+    -- Only player-specific quest interactions and farm plots are created here.
+    local planter = homeIsland:FindFirstChild("Planter")
+    local lanternBase = homeIsland:FindFirstChild("LanternBase")
 
     if planter then
         prompt(planter, "Сад у дома", "Разбудить цветок", function(visitor)
@@ -529,7 +602,7 @@ createPersonalCity = function(player, session)
         end)
     end
 
-    local meadow = giant:FindFirstChild("Meadow")
+    local meadow = homeIsland:FindFirstChild("Meadow")
     if meadow then
         local plotPositions = {
             Plot01 = Vector3.new(-14.5, meadow.Size.Y / 2 + 0.22, 8.8),
@@ -834,9 +907,15 @@ Players.PlayerAdded:Connect(init)
 for _, player in Players:GetPlayers() do task.spawn(init, player) end
 Players.PlayerRemoving:Connect(function(player)
     save(player)
-    local cityFolder = giant:FindFirstChild("PersonalCities")
-    local cityModel = cityFolder and cityFolder:FindFirstChild("City_" .. tostring(player.UserId))
-    if cityModel then cityModel:Destroy() end
+    local session = sessions[player]
+    if session then
+        if session.homeIsland then
+            session.homeIsland:Destroy()
+        end
+        if session.homeSlot then
+            occupiedHomeSlots[session.homeSlot] = nil
+        end
+    end
     sessions[player] = nil
 end)
 game:BindToClose(function()
