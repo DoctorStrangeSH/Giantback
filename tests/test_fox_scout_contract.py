@@ -74,7 +74,7 @@ class FoxScoutContractTests(unittest.TestCase):
         self.assertIn('highlight.Name = "FoxCacheHighlight"', ALBUM)
         self.assertIn('highlight.Enabled = activeCacheId == cacheId', ALBUM)
         self.assertIn('player:GetAttributeChangedSignal("FoxCacheSpot")', ALBUM)
-        self.assertIn("Следуй за золотой меткой и забери находку.", ALBUM)
+        self.assertIn("Следуй по золотым следам лап и забери находку.", ALBUM)
 
     def test_album_displays_moon_seed_and_fox_scout_readiness(self):
         self.assertIn('"MoonSeed"', ALBUM)
@@ -87,6 +87,32 @@ class FoxScoutContractTests(unittest.TestCase):
         self.assertIn('part.Name == "Muzzle" and sniffing', ALBUM)
         self.assertIn("sniffing and 9 or 4.2", ALBUM)
         self.assertIn("sniffing and 0.16 or 0.055", ALBUM)
+
+
+    def test_fox_scent_trail_is_local_and_only_shown_for_the_equipped_fox(self):
+        self.assertIn('folder.Name = "FoxScentTrailLocal"', ALBUM)
+        self.assertIn("folder.Parent = workspace", ALBUM)
+        self.assertIn("updateFoxScentTrail(grove, activeCacheId, foxEquipped)", ALBUM)
+        self.assertIn('if not foxEquipped or type(activeCacheId) ~= "string" or activeCacheId == "" then', ALBUM)
+        self.assertIn("clearFoxScentTrail()", ALBUM)
+
+    def test_fox_scent_trail_contains_readable_paw_pads_and_four_toes(self):
+        self.assertIn('print.Name = "FoxScentPaw"', ALBUM)
+        self.assertIn('makeFoxScentPart(print, "Pad"', ALBUM)
+        self.assertIn('"Toe" .. tostring(toeIndex)', ALBUM)
+        self.assertIn("{x = -0.17, z = -0.11}", ALBUM)
+        self.assertIn("{x = 0.17, z = -0.11}", ALBUM)
+
+    def test_fox_scent_trail_connects_the_grove_tracks_to_the_active_cache(self):
+        self.assertIn('local trail = grove:FindFirstChild("Trail")', ALBUM)
+        self.assertIn("startPosition:Lerp(finishPosition, alpha)", ALBUM)
+        self.assertIn("math.floor(distance / 3.8)", ALBUM)
+        self.assertIn('"ScentMote" .. tostring(index)', ALBUM)
+
+    def test_hud_guides_players_by_the_fox_pawprint_trail(self):
+        self.assertIn("Следуй по золотым следам лап", ALBUM)
+        self.assertIn("Следуй по золотым следам лап в Солнечной роще", HUD)
+        self.assertIn("увидеть золотые следы", HUD)
 
     def test_hud_explains_the_fox_scout_ability_and_active_find(self):
         self.assertIn("Нюх следопыта открывает личные тайники", HUD)
