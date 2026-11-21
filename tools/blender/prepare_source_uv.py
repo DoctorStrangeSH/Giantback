@@ -11,13 +11,13 @@ Smart UV is a technical first pass, not final hand-authored UVs or painted textu
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import math
 import sys
 from pathlib import Path
 
 import bpy
+from obj_export_validation import sha256_file, validate_obj
 
 
 ASSETS = (
@@ -102,67 +102,6 @@ def unwrap_objects(objects: list) -> None:
 
 
 
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def validate_export(path: Path) -> dict:
-    vertex_count = 0
-    uv_count = 0
-    normal_count = 0
-    face_count = 0
-    uv_min = [float("inf"), float("inf")]
-    uv_max = [float("-inf"), float("-inf")]
-
-    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-        if line.startswith("v "):
-            vertex_count += 1
-        elif line.startswith("vt "):
-            values = [float(value) for value in line.split()[1:3]]
-            if len(values) != 2 or not all(math.isfinite(value) for value in values):
-                raise RuntimeError(f"{path.name}:{line_number}: invalid UV coordinate")
-            uv_count += 1
-            for axis in range(2):
-                uv_min[axis] = min(uv_min[axis], values[axis])
-                uv_max[axis] = max(uv_max[axis], values[axis])
-        elif line.startswith("vn "):
-            normal_count += 1
-        elif line.startswith("f "):
-            face_count += 1
-            tokens = line.split()[1:]
-            if len(tokens) < 3:
-                raise RuntimeError(f"{path.name}:{line_number}: face has fewer than 3 corners")
-            for token in tokens:
-                parts = token.split("/")
-                if len(parts) != 3 or not parts[1] or not parts[2]:
-                    raise RuntimeError(f"{path.name}:{line_number}: face is missing UV or normal data")
-                vertex_index, uv_index, normal_index = int(parts[0]), int(parts[1]), int(parts[2])
-                if vertex_index == 0 or abs(vertex_index) > vertex_count:
-                    raise RuntimeError(f"{path.name}:{line_number}: vertex index out of range")
-                if uv_index == 0 or abs(uv_index) > uv_count:
-                    raise RuntimeError(f"{path.name}:{line_number}: UV index out of range")
-                if normal_index == 0 or abs(normal_index) > normal_count:
-                    raise RuntimeError(f"{path.name}:{line_number}: normal index out of range")
-
-    if not vertex_count or not uv_count or not normal_count or not face_count:
-        raise RuntimeError(f"{path.name}: export is missing vertices, UVs, normals or faces")
-    if min(uv_min) < -1e-5 or max(uv_max) > 1.00001:
-        raise RuntimeError(f"{path.name}: exported UV atlas exceeds the 0-1 range")
-    return {
-        "vertices": vertex_count,
-        "uv_coordinates": uv_count,
-        "normals": normal_count,
-        "faces": face_count,
-        "uv_min": uv_min,
-        "uv_max": uv_max,
-        "sha256": sha256_file(path),
-    }
-
-
 def export_preview(objects: list, destination: Path) -> None:
     bpy.ops.object.select_all(action="DESELECT")
     for obj in objects:
@@ -226,7 +165,12 @@ def main() -> None:
         unwrap_objects(objects)
         destination = output_dir / f"{asset}.obj"
         export_preview(objects, destination)
-        export_stats = validate_export(destination)
+        material_file = destination.with_suffix(".mtl")
+        if not material_file.is_file():
+            raise RuntimeError(f"Material library was not exported for {asset}: {material_file}")
+        export_stats = validate_obj(destination)
+        if material_file.name not in export_stats["material_libraries"]:
+            raise RuntimeError(f"OBJ does not reference exported material library {material_file.name}")
         report["assets"].append(
             {
                 "name": asset,
