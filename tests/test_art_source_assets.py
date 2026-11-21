@@ -76,6 +76,17 @@ class OriginalMeshSourceTests(unittest.TestCase):
             self.assertRegex(by_name[left], r"(?m)^f ")
             self.assertRegex(by_name[right], r"(?m)^f ")
 
+    def test_fox_source_mesh_keeps_every_animated_limb_and_face_detail_separate(self):
+        fox = (ASSET_DIR / "fox_companion.obj").read_text(encoding="utf-8")
+        for name in (
+            "FoxBody", "FoxBelly", "FoxHead", "FoxMuzzle",
+            "FoxEarLeft", "FoxEarRight", "FoxEarInner",
+            "FoxLegFrontLeft", "FoxLegFrontRight",
+            "FoxLegBackLeft", "FoxLegBackRight",
+            "FoxTail", "FoxTailTip", "FoxEyes", "FoxEyeSparkles", "FoxNose",
+        ):
+            self.assertIn(f"o {name}", fox)
+
 
 if __name__ == "__main__":
     unittest.main()
