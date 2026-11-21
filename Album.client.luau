@@ -1111,46 +1111,60 @@ local function captureAnimation(model, id, isEncounter, isLocal)
     return state
 end
 
+local function aroundPoint(point, rotation)
+    return CFrame.new(point) * rotation * CFrame.new(-point)
+end
+
 local function animateModelParts(model, state, time, moving)
     local pivot = model:GetPivot()
     local now = os.clock()
     local sniffing = state.id == "Fox" and not state.isEncounter and now < foxSniffUntil
     local mothAbility = state.id == "Moth" and state.isLocal and now < mothAbilityUntil
+    local body = model:FindFirstChild("Body")
+    local bodyOffset = body and state.offsets[body]
+    local rigOrigin = bodyOffset and bodyOffset.Position or Vector3.zero
+
     for part, offset in state.offsets do
         if part.Parent then
             local transform = CFrame.new()
 
             if state.id == "Fox" then
                 if part.Name == "Muzzle" and sniffing then
-                    transform = CFrame.new(0, -0.14, 0) * CFrame.Angles(math.sin(time * 12) * 0.045, 0, 0)
-                elseif part.Name == "Tail" then
+                    transform = CFrame.new(0, -0.14, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 12) * 0.045, 0, 0))
+                elseif part.Name == "Tail" or part.Name == "Tail tip" then
                     local sway = math.sin(time * (sniffing and 9 or 4.2)) * (sniffing and 0.48 or 0.3)
-                    transform = CFrame.Angles(sway * 0.45, sway, sway * 0.2)
-                elseif part.Name == "Tail tip" then
-                    local sway = math.sin(time * (sniffing and 9 or 4.2) - 0.25) * (sniffing and 0.52 or 0.36)
-                    transform = CFrame.Angles(sway * 0.35, sway, 0)
-                elseif part.Name == "Paw" then
+                    local tailHinge = rigOrigin + Vector3.new(0, 0.25, 0.95)
+                    local tailRotation = part.Name == "Tail tip"
+                        and CFrame.Angles(sway * 0.35, sway * 0.8, 0)
+                        or CFrame.Angles(sway * 0.45, sway, sway * 0.2)
+                    transform = aroundPoint(tailHinge, tailRotation)
+                elseif part.Name == "Paw" or part.Name == "Paw toe" then
                     local stride = moving and 0.32 or sniffing and 0.16 or 0.055
                     local phase = (math.abs(offset.Position.X) + math.abs(offset.Position.Z)) * 1.8
                     local step = math.sin(time * (moving and 10 or sniffing and 8 or 2.4) + phase) * stride
-                    transform = CFrame.new(0, math.max(0, step) * 0.16, 0) * CFrame.Angles(step, 0, 0)
+                    transform = CFrame.new(0, math.max(0, step) * 0.16, 0)
+                        * aroundPoint(offset.Position, CFrame.Angles(step, 0, 0))
                 elseif part.Name == "Ear" or part.Name == "Inner ear" then
-                    local side = offset.Position.X >= 0 and 1 or -1
+                    local side = offset.Position.X >= rigOrigin.X and 1 or -1
                     local twitch = math.sin(time * (sniffing and 5 or 2.2) + side) * (sniffing and 0.09 or 0.055)
-                    transform = CFrame.Angles(0, 0, twitch * side)
+                    local earHinge = rigOrigin + Vector3.new(side * 0.8, 0.55, -0.4)
+                    transform = aroundPoint(earHinge, CFrame.Angles(0, 0, twitch * side))
                 end
             elseif state.id == "Moth" then
-                if part.Name == "Wing" or part.Name == "Wing tip" or part.Name == "Wing jewel" then
-                    local side = offset.Position.X >= 0 and 1 or -1
+                local side = offset.Position.X >= rigOrigin.X and 1 or -1
+                if part.Name == "Wing" or part.Name == "Wing lower" or part.Name == "Wing tip"
+                    or part.Name == "Wing lower tip" or part.Name == "Wing jewel" or part.Name == "Wing spot" then
                     local flapSpeed = mothAbility and 21 or 11.5
                     local flapStrength = mothAbility and 0.76 or 0.42
-                    local flap = math.sin(time * flapSpeed) * flapStrength
-                    transform = CFrame.Angles(0, 0, flap * side)
-                elseif part.Name == "Antenna" then
-                    local side = offset.Position.X >= 0 and 1 or -1
+                    local lowerPhase = string.find(part.Name, "lower") and 0.38 or 0
+                    local flap = math.sin(time * flapSpeed + lowerPhase) * flapStrength
+                    local wingHinge = rigOrigin + Vector3.new(side * 0.42, 0.28, 0)
+                    transform = aroundPoint(wingHinge, CFrame.Angles(0, 0, flap * side))
+                elseif part.Name == "Antenna" or part.Name == "Antenna tip" then
                     local twitchSpeed = mothAbility and 7 or 2.8
                     local twitchStrength = mothAbility and 0.14 or 0.07
-                    transform = CFrame.Angles(0, 0, math.sin(time * twitchSpeed + side) * twitchStrength)
+                    local antennaHinge = rigOrigin + Vector3.new(side * 0.34, 0.9, -0.55)
+                    transform = aroundPoint(antennaHinge, CFrame.Angles(0, 0, math.sin(time * twitchSpeed + side) * twitchStrength * side))
                 elseif part.Name == "Moonlight glow" then
                     local pulse = mothAbility and (1.15 + math.sin(time * 12) * 0.35) or 0.65
                     local light = part:FindFirstChildOfClass("PointLight")
@@ -1159,10 +1173,11 @@ local function animateModelParts(model, state, time, moving)
                         light.Range = mothAbility and 14 or 9
                     end
                     transform = CFrame.new(0, math.sin(time * (mothAbility and 9 or 2.8)) * (mothAbility and 0.12 or 0.035), 0)
+                        * aroundPoint(offset.Position, CFrame.Angles(0, 0, math.sin(time * 3.2) * 0.08))
                 end
             end
 
-            part.CFrame = pivot * offset * transform
+            part.CFrame = pivot * transform * offset
         end
     end
 end
