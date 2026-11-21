@@ -28,6 +28,7 @@ gui.IgnoreGuiInset = true
 gui.DisplayOrder = 20
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
+gui.Enabled = false -- Replaced by the unified GiantbackHUD; this script keeps companion and resource visuals.
 
 local function round(instance, radius)
     local corner = Instance.new("UICorner")
@@ -320,31 +321,14 @@ local lastTip = 0
 local function goal()
     local giant = workspace:FindFirstChild("Mossback")
     if not giant or not player:GetAttribute("Ready") then
-        return "Открываем альбом…"
-    end
-
-    local dock = giant:GetAttribute("Dock")
-    if dock == "Sailing" then
-        return "Мохоспин в пути. Скоро причалим!"
+        return "Загружаем твой остров…"
     end
 
     local cityFolder = giant:FindFirstChild("PersonalCities")
     local personalCity = cityFolder and cityFolder:FindFirstChild("City_" .. tostring(player.UserId))
-    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     for _, step in route do
         if player:GetAttribute(step.flag) then
             continue
-        end
-
-        for _, shore in {"Grove", "Dusk"} do
-            local island = workspace:FindFirstChild(shore)
-            local bank = island and island:FindFirstChild("Bank")
-            if root and bank and shore ~= dock and step.area ~= shore then
-                local localPosition = bank.CFrame:PointToObjectSpace(root.Position)
-                if math.abs(localPosition.X) <= bank.Size.X / 2 and math.abs(localPosition.Z) <= bank.Size.Z / 2 then
-                    return "Позвони в береговой колокольчик, чтобы вернуться домой.", island:FindFirstChild("CallBell"), "Колокольчик"
-                end
-            end
         end
 
         local area
@@ -353,21 +337,17 @@ local function goal()
         else
             area = workspace:FindFirstChild(step.area)
         end
-        local bank = area and area:FindFirstChild("Bank")
-        local onTargetShore = false
-        if root and bank then
-            local localPosition = bank.CFrame:PointToObjectSpace(root.Position)
-            onTargetShore = math.abs(localPosition.X) <= bank.Size.X / 2 and math.abs(localPosition.Z) <= bank.Size.Z / 2
-        end
 
-        if step.area ~= "Mossback" and step.area ~= dock and not onTargetShore then
-            local destination = step.area == "Grove" and "Солнечной роще" or "Лунной роще"
-            return "У штурвала задай курс к " .. destination .. ".", giant:FindFirstChild("Helm"), "Штурвал"
+        local target = area and area:FindFirstChild(step.part)
+        if step.area == "Grove" and not player:GetAttribute("Fox") then
+            return "Пройди по деревянному мосту в Солнечную рощу и найди лисёнка.", target, step.label
+        elseif step.area == "Dusk" and not player:GetAttribute("Moth") then
+            return "Перейди через рощу по мосту и познакомься с лунной молью.", target, step.label
         end
-        return step.hint, area and area:FindFirstChild(step.part), step.label
+        return step.hint, target, step.label
     end
 
-    return "Садовый фонарь горит • Коллекция 2/2"
+    return "Отлично! Теперь развивай свой остров и ферму."
 end
 
 local function applyPersonalCityVisibility(cityModel)
