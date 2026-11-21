@@ -140,7 +140,7 @@ jobs:
               "FoxCacheHighlight",
               "FoxCacheVisuals",
               "FoxScentTrailLocal",
-              "not bank or not bank:IsA(\\"BasePart\\")",
+              'not bank or not bank:IsA("BasePart")',
               "FoxScentPaw",
               "updateFoxScentTrail",
               "scentRouteOffsets",
