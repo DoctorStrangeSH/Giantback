@@ -61,7 +61,7 @@ jobs:
               for node in root.findall(".//ProtectedString[@name='Source']")
           ]
           if len(sources) < 4:
-              raise SystemExit(f"Expected at least 3 embedded scripts, found {len(sources)}")
+              raise SystemExit(f"Expected at least 4 embedded scripts, found {len(sources)}")
 
           required_markers = [
               "GiantbackAtmosphere",
