@@ -137,3 +137,8 @@ Fox orange and cream materials use restrained Noise Texture → Bump micro-relie
 ## Forelock silhouette pass
 
 The single forehead ellipsoid is replaced by three layered curved-plume tufts: a central swept lock and two smaller side locks. They follow the brow/crown transition and remain in FoxHead, preserving the existing 17-group rig contract. Front and three-quarter renders must confirm that the locks do not obscure the eyes or intersect the ears.
+
+
+## Paw readability pass
+
+Each of the four paws now has three shallow curved toe separators in a muted warm-brown material. The details are deliberately small and rounded (no claws), and are merged into the existing corresponding front/back leg groups, preserving the 17-group runtime contract. Review front/back-facing visibility, surface contact and readability at gameplay distance.
