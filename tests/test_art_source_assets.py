@@ -85,6 +85,30 @@ class OriginalMeshSourceTests(unittest.TestCase):
 
 
 
+
+    def test_companion_obj_groups_match_the_documented_rig_mapping(self):
+        expected = {
+            "fox_companion": {
+                "FoxBody", "FoxBelly", "FoxHead", "FoxMuzzle",
+                "FoxEarLeft", "FoxEarRight", "FoxEarInner",
+                "FoxLegFrontLeft", "FoxLegFrontRight",
+                "FoxLegBackLeft", "FoxLegBackRight",
+                "FoxTail", "FoxTailTip", "FoxEyes", "FoxEyeSparkles", "FoxNose",
+            },
+            "moth_companion": {
+                "MothBody", "MothHead",
+                "MothUpperWingLeft", "MothUpperWingRight", "MothUpperWingRoot",
+                "MothLowerWingLeft", "MothLowerWingRight", "MothLowerWingRoot",
+                "MothWingTipLeft", "MothWingTipRight",
+                "MothAntennaLeft", "MothAntennaRight",
+                "MothEyeLeft", "MothEyeRight", "MothGlowCore",
+            },
+        }
+        for stem, required_groups in expected.items():
+            content = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
+            actual_groups = set(re.findall(r"^o (.+)$", content, re.MULTILINE))
+            self.assertEqual(actual_groups, required_groups, f"{stem}: rig group mapping changed")
+
     def test_obj_faces_do_not_contain_zero_area_triangles(self):
         for stem in REQUIRED:
             content = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
