@@ -5,15 +5,19 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 CLIENT = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+BUILD = (ROOT / "build.py").read_text(encoding="utf-8")
 
 
 class PersonalCityFarmContractTests(unittest.TestCase):
-    def test_profile_schema_v4_persists_city_and_farm_plots(self):
-        self.assertIn("old.schemaVersion = 4", WORLD)
+    def test_profile_schema_v5_migrates_legacy_city_into_island(self):
+        self.assertIn("old.schemaVersion = 5", WORLD)
         self.assertIn("local function defaultCity()", WORLD)
         self.assertIn("local function normalizeCity(raw)", WORLD)
-        self.assertIn("session.city = normalizeCity(data.city)", WORLD)
-        self.assertIn("savedCity.level = citySnapshot.level", WORLD)
+        self.assertIn("normalizeCity(type(data.island) == \\"table\\" and data.island or data.city)", WORLD)
+        self.assertIn("local savedIsland = type(old.island) == \\"table\\" and old.island", WORLD)
+        self.assertIn("or (type(old.city) == \\"table\\" and old.city or {})", WORLD)
+        self.assertIn("old.island = savedIsland", WORLD)
+        self.assertIn("old.city = nil", WORLD)
         self.assertIn("savedFarm.plots = citySnapshot.farm.plots", WORLD)
 
     def test_legacy_profiles_receive_a_small_seed_starter_pack(self):
@@ -26,24 +30,50 @@ class PersonalCityFarmContractTests(unittest.TestCase):
         self.assertIn("local storeName = RunService:IsStudio()", WORLD)
         self.assertIn('player:SetAttribute("OfflineAlbum", true)', WORLD)
 
-    def test_personal_city_has_server_owned_identity(self):
+    def test_home_island_template_lives_in_serverstorage(self):
+        self.assertIn('obj(doc, "ServerStorage", "ServerStorage")', BUILD)
+        self.assertIn('obj(server_storage, "Model", "HomeIslandTemplate")', BUILD)
+        self.assertIn('ServerStorage:WaitForChild("HomeIslandTemplate")', WORLD)
+        self.assertIn('local pivot = island:FindFirstChild("IslandPivot")', WORLD)
+
+    def test_eight_home_islands_are_allocated_without_overlap(self):
+        self.assertIn("HOME_ISLAND_SLOT_COUNT = 8", WORLD)
+        self.assertIn("HOME_ISLAND_RADIUS = 240", WORLD)
+        self.assertIn("occupiedHomeSlots[slotIndex] == nil", WORLD)
+        self.assertIn("occupiedHomeSlots[slotIndex] = player.UserId", WORLD)
+        self.assertIn("homeIsland:PivotTo(homeSlotCFrame(slotIndex))", WORLD)
+        self.assertIn('player:SetAttribute("HomeIslandSlot", slotIndex)', WORLD)
+        self.assertIn('homeIslandFolder.Name = "PlayerIslands"', WORLD)
+
+    def test_home_island_has_server_owned_identity(self):
+        self.assertIn('island:SetAttribute("OwnerUserId", player.UserId)', WORLD)
         self.assertIn('cityModel:SetAttribute("OwnerUserId", ownerUserId)', WORLD)
         self.assertIn("if visitor.UserId ~= player.UserId then return end", WORLD)
         self.assertIn("if player.UserId ~= ownerUserId then return end", WORLD)
 
-    def test_personal_home_visuals_are_cloned_per_owner(self):
-        self.assertIn("PersonalCities", WORLD)
-        self.assertIn('local cityName = "City_" .. tostring(player.UserId)', WORLD)
-        self.assertIn("clone.Parent = cityModel", WORLD)
-        self.assertIn("Cottage = true", WORLD)
-        self.assertIn("Planter = true", WORLD)
-        self.assertIn("LanternBase = true", WORLD)
+    def test_personal_city_and_farm_plots_live_inside_the_owners_island(self):
+        self.assertIn('local homeIsland = session.homeIsland', WORLD)
+        self.assertIn('local previous = homeIsland:FindFirstChild("PersonalCity")', WORLD)
+        self.assertIn("cityModel.Parent = homeIsland", WORLD)
+        self.assertIn('local meadow = homeIsland:FindFirstChild("Meadow")', WORLD)
+        self.assertIn("plotModel.Parent = cityModel", WORLD)
+        self.assertNotIn("PersonalCities", WORLD)
 
-    def test_client_only_renders_its_own_city(self):
-        self.assertIn('cityFolder and cityFolder:FindFirstChild("City_" .. tostring(player.UserId))', CLIENT)
-        self.assertIn("LocalTransparencyModifier = visible and 0 or 1", CLIENT)
-        self.assertIn("descendant.Enabled = visible", CLIENT)
-        self.assertIn("sharedHomeParts[descendant.Name]", CLIENT)
+    def test_home_island_spawn_is_used_and_slot_is_released(self):
+        self.assertIn('player.RespawnLocation = publicSpawn', WORLD)
+        self.assertIn("player.RespawnLocation = homeSpawn", WORLD)
+        self.assertIn("character:PivotTo(session.homeSpawn.CFrame + Vector3.new(0, 4, 0))", WORLD)
+        self.assertIn("session.homeIsland:Destroy()", WORLD)
+        self.assertIn("occupiedHomeSlots[session.homeSlot] = nil", WORLD)
+
+    def test_client_resolves_its_own_island_without_hiding_other_cities(self):
+        self.assertIn('folder:FindFirstChild("HomeIsland_" .. tostring(player.UserId))', CLIENT)
+        self.assertIn('area = "HomeIsland"', CLIENT)
+        self.assertIn('waitForHomePart("Planter")', CLIENT)
+        self.assertIn('waitForHomePart("LanternBase")', CLIENT)
+        self.assertNotIn("PersonalCities", CLIENT)
+        self.assertNotIn("sharedHomeParts", CLIENT)
+        self.assertNotIn("findPersonalCityRoot", CLIENT)
 
     def test_four_plot_records_are_defined_and_unlock_by_farm_level(self):
         self.assertIn('local farmPlotIds = {"Plot01", "Plot02", "Plot03", "Plot04"}', WORLD)
@@ -70,12 +100,6 @@ class PersonalCityFarmContractTests(unittest.TestCase):
         self.assertIn("Resource_CarrotSeed", CLIENT)
         self.assertIn("Resource_Carrot", CLIENT)
         self.assertIn("МАТЕРИАЛЫ И ФЕРМА", CLIENT)
-
-    def test_city_models_remain_under_the_fixed_home_island(self):
-        self.assertIn("cityModel.Parent = cityFolder", WORLD)
-        self.assertIn("local giant = workspace.Mossback", WORLD)
-        self.assertNotIn("giant:PivotTo(frame)", WORLD)
-        self.assertNotIn("local atDusk, sailing", WORLD)
 
 
 if __name__ == "__main__":
