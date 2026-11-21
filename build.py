@@ -97,6 +97,12 @@ for label, center_x, center_z, bank_size, bank_color, canopy in island_specs:
         fx = center_x + rng.uniform(-bank_size[0] * 0.43, bank_size[0] * 0.43)
         fz = center_z + rng.uniform(-bank_size[2] * 0.42, bank_size[2] * 0.42)
         part(model, "Bloom", (fx, 11.9, fz), (0.8, 0.8, 0.8), rng.choice(["F6C975", "F6E6BB", "D48488"]), True)
+    if label == "Grove":
+        public_spawn = part(model, "PublicSpawn", (center_x, 12.15, center_z + 5), (5, 0.3, 5), "BDCD8C", cls="SpawnLocation")
+        prop(public_spawn, "bool", "Neutral", "true")
+        prop(public_spawn, "float", "Transparency", 1)
+        prop(public_spawn, "bool", "CanCollide", "false")
+        prop(public_spawn, "bool", "CanQuery", "false")
     part(model, "Trail", (center_x, 11.54, center_z + 9), (4, 0.08, 18), "CBBD93")
     part(model, "Nest", (center_x, 12, center_z), (5, 1, 4), "BE996C", True)
     if label == "Grove":
@@ -149,65 +155,6 @@ bridge_dusk = obj(w, "Model", "BridgeToDusk")
 add_radial_bridge(bridge_dusk, "MoonBridge", math.pi / 8, 73, 120)
 
 storage = obj(doc, "ReplicatedStorage", "ReplicatedStorage")
-g = obj(w, "Model", "Mossback")
-part(w, "Lagoon", (48, -6, 0), (460, 2, 300), "65BFC3")
-part(g, "Shell", (0, 4, 0), (39, 16, 32), "476F64", True)
-part(g, "Meadow", (0, 10, 0), (34, 4, 28), "89B979")
-part(g, "Head", (21, 7, 0), (14, 11, 13), "97C897", True)
-for side in (-1, 1):
-    part(g, "Eye", (24, 8.5, side * 5.4), (2.2, 2.4, 1.4), "233F46", True)
-    part(g, "Glint", (24.35, 9, side * 5.95), (0.65, 0.65, 0.45), "FFF2CD", True)
-    for x in (-11, 11):
-        part(g, "Flipper", (x, 0, side * 12), (10, 5, 13), "719F86", True)
-part(g, "Cottage", (-9, 15, -6), (9, 6, 7), "F3D299")
-for dx in (-1, 1):
-    part(g, "Roof", (-9 + dx * 2.65, 19, -6), (6.2, 0.8, 9), "BC6253", tilt=-dx * 25)
-part(g, "Window", (-9, 15, -2.46), (3, 2.3, 0.2), "FFC469")
-part(g, "Planter", (-8, 12.5, 5), (6, 1, 4), "805B48")
-spawn = part(g, "HomeSpawn", (0, 12.15, 1), (5, 0.3, 5), "BDCD8C", cls="SpawnLocation")
-prop(spawn, "bool", "Neutral", "true")
-part(g, "TownBoard", (10, 13.2, 0), (2.8, 2.4, 0.8), "CE9661")
-part(g, "LanternBase", (6, 12.35, 8), (3, 0.7, 3), "AA8964")
-part(g, "Gangway", (0, 11.5, -17), (6, 1, 8), "B98F65")
-
-rng = random.Random(143)
-for x, label, canopy in [(0, "Grove", "6DA878"), (100, "Dusk", "AA83B3")]:
-    model = obj(w, "Model", label)
-    part(model, "Bank", (x, 7, -40), (45, 9, 40), "91B883" if x == 0 else "ABAC92")
-    for _ in range(10):
-        tx = x + rng.choice([-1, 1]) * rng.uniform(8, 20)
-        tz = rng.uniform(-58, -33)
-        part(model, "Trunk", (tx, 15, tz), (1.8, 7, 1.8), "836851")
-        part(model, "Crown", (tx, 20, tz), (9, 8, 9), canopy, True)
-    for _ in range(20):
-        fx, fz = x + rng.uniform(-20, 20), rng.uniform(-58, -24)
-        part(model, "Bloom", (fx, 11.9, fz), (0.8, 0.8, 0.8), rng.choice(["F6C975", "F6E6BB", "D48488"]), True)
-    part(model, "Trail", (x, 11.54, -31), (4, 0.08, 18), "CBBD93")
-    part(model, "Nest", (x, 12, -40), (5, 1, 4), "BE996C", True)
-    if label == "Grove":
-        part(model, "Driftwood", (x + 10, 12.3, -32), (5, 1.6, 2), "A17B55", True)
-
-# Permanent wooden bridges replace the old moving-island travel loop.
-bridge_home = obj(w, "Model", "BridgeToGrove")
-for i, z in enumerate((-14.5, -17.5, -20.5)):
-    part(bridge_home, "BridgeDeck", (0, 12.0, z), (5.2, 0.48, 3.0), "A87950")
-for side in (-1, 1):
-    part(bridge_home, "BridgeRail", (side * 2.65, 13.0, -17.5), (0.35, 1.55, 9.0), "79583F")
-    for z in (-21.0, -17.5, -14.0):
-        part(bridge_home, "BridgePost", (side * 2.65, 13.1, z), (0.55, 2.0, 0.55), "936847")
-
-bridge_forest = obj(w, "Model", "BridgeToDusk")
-for i in range(15):
-    x = 25.0 + i * 3.55
-    part(bridge_forest, "BridgeDeck", (x, 12.0, -40), (3.35, 0.48, 5.3), "A87950")
-for side in (-1, 1):
-    part(bridge_forest, "BridgeRail", (50.0, 13.0, -40 + side * 2.65), (55.0, 0.35, 0.35), "79583F")
-    for i in range(8):
-        x = 25.0 + i * 7.1
-        part(bridge_forest, "BridgePost", (x, 13.1, -40 + side * 2.65), (0.55, 2.0, 0.55), "936847")
-for x in (27.0, 73.0):
-    part(bridge_forest, "BridgeLamp", (x, 14.0, -40), (0.55, 2.6, 0.55), "CE9661")
-
 storage = obj(doc, "ReplicatedStorage", "ReplicatedStorage")
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
