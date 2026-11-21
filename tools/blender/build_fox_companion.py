@@ -58,6 +58,7 @@ def make_palette():
         "dark": material("dark", (0.08, 0.06, 0.05), 0.28),
         "white": material("white", (1.0, 0.98, 0.87), 0.22),
         "nose": material("nose", (0.12, 0.07, 0.06), 0.24),
+        "expression": material("expression", (0.29, 0.12, 0.075), 0.58),
     }
 
 
@@ -210,12 +211,23 @@ def create_fox(p):
                  (0.038, 0.048, 0.018), p["white"], 20, 12)
     ellipsoid("FoxNose", (0, 1.47, -1.365), (0.105, 0.075, 0.065), p["nose"], 24, 16)
 
+    # Soft brows and a tiny curved smile add readable emotion without extra rig groups.
+    curved_plume("BrowLeft",
+        [(-0.39, 1.99, -1.075), (-0.29, 2.035, -1.105), (-0.17, 2.015, -1.105)],
+        [0.018, 0.027, 0.014], p["expression"], sides=12, steps_per_segment=5)
+    curved_plume("BrowRight",
+        [(0.17, 2.015, -1.105), (0.29, 2.035, -1.105), (0.39, 1.99, -1.075)],
+        [0.014, 0.027, 0.018], p["expression"], sides=12, steps_per_segment=5)
+    curved_plume("Smile",
+        [(-0.12, 1.345, -1.31), (0.0, 1.315, -1.345), (0.12, 1.345, -1.31)],
+        [0.012, 0.016, 0.012], p["expression"], sides=10, steps_per_segment=5)
+
     # Recreate exactly the rig-facing group names; detailed subforms stay in their group.
     grouped = {
         "FoxBody": ["FoxBody"],
         "FoxBelly": ["FoxBelly"],
-        "FoxHead": ["FoxHead", "ForeheadTuft"],
-        "FoxMuzzle": ["FoxMuzzle", "CheekFluff_L", "CheekFluff_R"],
+        "FoxHead": ["FoxHead", "ForeheadTuft", "BrowLeft", "BrowRight"],
+        "FoxMuzzle": ["FoxMuzzle", "CheekFluff_L", "CheekFluff_R", "Smile"],
         "FoxEarLeft": ["FoxEarLeft"],
         "FoxEarRight": ["FoxEarRight"],
         "FoxEarInnerLeft": ["FoxEarInner_L"],
