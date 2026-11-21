@@ -438,6 +438,24 @@ end
 decorateIsland(grove, false)
 decorateIsland(dusk, true)
 
+-- Camouflaged caches are always part of the forest; only the owner's Fox Scout
+-- highlight and local prompt reveal which one currently contains a find.
+local foxCacheVisuals = makeFolder(grove, "FoxCacheVisuals")
+local foxCacheAnchors = {"FoxCache01", "FoxCache02", "FoxCache03"}
+for index, cacheId in foxCacheAnchors do
+    local anchor = grove:FindFirstChild(cacheId)
+    if anchor then
+        local visual = Instance.new("Model")
+        visual.Name = "FoxCacheVisual" .. string.format("%02d", index)
+        visual.Parent = foxCacheVisuals
+
+        orb(visual, "Mossy cache mound", anchor.Position + Vector3.new(0, 0.22, 0), Vector3.new(2.8, 0.62, 2.5), palette.moss, Enum.Material.Grass)
+        orb(visual, "Leaf cover", anchor.Position + Vector3.new(0.48, 0.52, 0.22), Vector3.new(1.65, 0.28, 0.95), palette.leafLight, Enum.Material.Grass)
+        orb(visual, "Stone cover", anchor.Position + Vector3.new(-0.62, 0.32, -0.28), Vector3.new(0.92, 0.58, 0.84), palette.stone, Enum.Material.Rock)
+        orb(visual, "Buried glimmer", anchor.Position + Vector3.new(0, 0.62, 0), Vector3.new(0.16, 0.16, 0.16), palette.gold, Enum.Material.Neon, 0.78)
+    end
+end
+
 -- Small visual details for the collectible companions.
 local fox = ReplicatedStorage:FindFirstChild("Fox")
 if fox then
