@@ -905,8 +905,7 @@ prompt(workspace.Grove.Driftwood,"Коряга на берегу","Искать 
     tip(player,"Лисёнок нашёл ветви для садового фонаря!")
 end)
 
--- Islands are fixed. Players walk between them over permanent bridges.
--- The old helm/sailing and shore-call-bell loop is intentionally retired.
+-- All islands are fixed. Eight personal bridges lead into the shared Grove hub.
 
 -- Per-player city models overlap the shared prototype visually; the client renders
 -- only its owner's city while every interaction is validated against OwnerUserId.
