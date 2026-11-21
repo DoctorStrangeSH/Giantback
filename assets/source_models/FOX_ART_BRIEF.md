@@ -122,3 +122,8 @@ The ear generator now uses 25 profile rings and 32 cross-section sides, a broad 
 ## Eye expression pass
 
 Each eye now has a softly arched upper eyelid rim and a secondary catchlight. The eyelid meshes join the existing FoxEyes group; both catchlights join FoxEyeSparkles. This adds more readable expression without increasing the runtime rig group count. Render review is needed to validate placement, eye openness and readability at gameplay distance.
+
+
+## Cheek silhouette pass
+
+The paired cream cheek accents now use tapered curved-plume geometry, widening through the cheek and narrowing to soft tips. They follow the lower muzzle contour and remain inside FoxMuzzle, replacing the previous round ellipsoid add-ons. Check front and three-quarter renders for symmetry, overlap and readability before approval.
