@@ -42,8 +42,8 @@ class OriginalMeshSourceTests(unittest.TestCase):
         for stem in REQUIRED:
             obj = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
             mtl = (ASSET_DIR / f"{stem}.mtl").read_text(encoding="utf-8")
-            used = set(re.findall(r"^usemtl\\s+(\\S+)", obj, re.MULTILINE))
-            declared = set(re.findall(r"^newmtl\\s+(\\S+)", mtl, re.MULTILINE))
+            used = set(re.findall(r"^usemtl\s+(\S+)", obj, re.MULTILINE))
+            declared = set(re.findall(r"^newmtl\s+(\S+)", mtl, re.MULTILINE))
             self.assertTrue(used, stem)
             self.assertTrue(used.issubset(declared), f"{stem}: {used - declared}")
 
