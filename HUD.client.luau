@@ -218,6 +218,8 @@ corner(toast, 15)
 stroke(toast, palette.gold, 0.3, 1)
 local toastText = label(toast, "Text", "", UDim2.new(1, -24, 1, -8), UDim2.fromOffset(12, 4), 14, palette.white, Enum.Font.GothamBold)
 toastText.TextXAlignment = Enum.TextXAlignment.Center
+local toastGeneration = 0
+local toastTween = nil
 
 local function clearBody()
     for _, child in body:GetChildren() do
@@ -382,19 +384,29 @@ end)
 
 showToast = function(message)
     if type(message) ~= "string" or message == "" then return end
+    toastGeneration += 1
+    local currentGeneration = toastGeneration
+    if toastTween then
+        toastTween:Cancel()
+        toastTween = nil
+    end
     toastText.Text = message
     toast.Visible = true
-    toast.Size = UDim2.fromOffset(math.min(380, gui.AbsoluteSize.X - 32), 48)
+    toast.Size = UDim2.fromOffset(math.min(380, math.max(180, gui.AbsoluteSize.X - 32)), 48)
     toast.BackgroundTransparency = 0.08
     toast.Position = UDim2.new(0.5, 0, 1, -96)
-    TweenService:Create(toast, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    toastTween = TweenService:Create(toast, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         Position = UDim2.new(0.5, 0, 1, -106),
-    }):Play()
+    })
+    toastTween:Play()
     task.delay(3, function()
-        if toast.Parent then
-            TweenService:Create(toast, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
-            task.wait(0.22)
+        if currentGeneration ~= toastGeneration or not toast.Parent then return end
+        toastTween = TweenService:Create(toast, TweenInfo.new(0.2), {BackgroundTransparency = 1})
+        toastTween:Play()
+        task.wait(0.22)
+        if currentGeneration == toastGeneration and toast.Parent then
             toast.Visible = false
+            toastTween = nil
         end
     end)
 end
@@ -466,7 +478,7 @@ local function updateLayout()
         resources.Size = UDim2.fromOffset(math.max(170, width * 0.5), 58)
         objective.Size = UDim2.new(1, -32, 0, 78)
         objective.Position = UDim2.fromOffset(16, 84)
-        panel.Size = UDim2.new(1, -24, 0, math.min(430, height - 190))
+        panel.Size = UDim2.new(1, -24, 0, math.max(180, math.min(430, height - 150)))
         panel.Position = UDim2.new(0.5, 0, 0.5, -8)
         nav.Size = UDim2.new(1, -24, 0, 64)
         nav.Position = UDim2.new(0.5, 0, 1, -10)
