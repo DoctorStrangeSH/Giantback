@@ -100,6 +100,7 @@ jobs:
               "growthSeconds = 180",
               "Farm_Level",
               "МАТЕРИАЛЫ И ФЕРМА",
+              "GiantbackAlbum_Studio_v1",
           ]
           combined = "\n".join(sources)
           missing_markers = [marker for marker in required_markers if marker not in combined]
