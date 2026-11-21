@@ -70,7 +70,7 @@ Keep these source groups separate until the Roblox rig has been checked:
 | FoxEyeSparkles | eye catchlights |
 | FoxNose | nose |
 
-Runtime renaming is documented in README.md. Do not merge the left/right legs, ears, tail, or tail tip into the body/head mesh. If new cheek tufts are added, preserve them as a small number of clean, named objects and update the rig map and CI contract in the same change.
+Runtime renaming is documented in README.md. Do not merge the left/right legs, ears, tail, or tail tip into the body/head mesh. The original source OBJ keeps its legacy 16-group contract. The hero variant deliberately splits the inner-ear inserts into `FoxEarInnerLeft` and `FoxEarInnerRight` (17 groups total) so each insert can follow its corresponding animated ear. The hero generator also writes a source-space pivot sidecar because OBJ does not preserve object origins. If new cheek tufts are added, preserve them as a small number of clean, named objects and update the rig map and CI contract in the same change.
 
 ## 6. Production gates
 
@@ -82,7 +82,7 @@ A fox art pass is not complete until all of these are true:
 4. Hand-authored color/roughness details improve expression without noisy fur patterns.
 5. Eyes, nose, muzzle and chest read at a 375 px mobile viewport and at normal in-world follow distance.
 6. Tail and four legs remain independently animatable.
-7. Roblox Studio import preserves names, pivots, materials and silhouette; PC and mobile review is recorded in ASSET_MANIFEST.md.
+7. Roblox Studio import preserves names, uses `fox_companion_hero_rig.json` to restore source-space pivots, and preserves materials and silhouette; PC and mobile review is recorded in ASSET_MANIFEST.md.
 8. Only after those checks may the fox be marked [x] and used as the quality benchmark for the moth.
 
 ## 7. Explicit non-goals for this pass
