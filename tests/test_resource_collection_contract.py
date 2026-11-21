@@ -48,8 +48,12 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertEqual(WORLD.count('kind = "renewable"'), 4)
         self.assertEqual(WORLD.count("respawnSeconds = 300"), 4)
 
-    def test_resource_state_is_loaded_before_client_sync(self):
-        self.assertLess(WORLD.index('player:SetAttribute("Ready", true)'), WORLD.index('if action == "RequestResourceState" then'))
+    def test_remote_handshake_is_registered_before_player_initialization(self):
+        self.assertLess(WORLD.index("event.OnServerEvent:Connect"), WORLD.index("Players.PlayerAdded:Connect(init)"))
+
+    def test_concurrent_saves_are_serialized(self):
+        self.assertIn("session.saveAgain = true", WORLD)
+        self.assertIn("repeat task.wait() until not session.saving", WORLD)
 
 
 if __name__ == "__main__":
