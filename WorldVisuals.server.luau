@@ -644,31 +644,57 @@ if bank and gateTracks and gateRune and relicAnchor then
     end
 end
 
--- Small visual details for the collectible companions.
+-- Enriched, rig-friendly companion blockouts. Final OBJ imports remain pending Studio approval.
 local fox = ReplicatedStorage:FindFirstChild("Fox")
 if fox then
     local foxDetails = makeFolder(fox, "HandcraftedDetails")
+    orb(foxDetails, "Chest bib", Vector3.new(0, -0.48, -0.82), Vector3.new(1.18, 1.16, 0.34), palette.cream, Enum.Material.SmoothPlastic)
     for _, side in {-1, 1} do
         orb(foxDetails, "Inner ear", Vector3.new(side * 0.8, 1.2, -0.78), Vector3.new(0.32, 0.82, 0.22), Color3.fromRGB(246, 172, 151), Enum.Material.SmoothPlastic)
+        orb(foxDetails, "Cheek fluff", Vector3.new(side * 0.69, -0.12, -1.27), Vector3.new(0.48, 0.42, 0.34), palette.cream, Enum.Material.SmoothPlastic)
         orb(foxDetails, "Eye shine", Vector3.new(side * 0.62, 0.34, -1.43), Vector3.new(0.12, 0.12, 0.08), palette.cream, Enum.Material.Neon)
-        orb(foxDetails, "Paw", Vector3.new(side * 0.78, -0.85, -0.65), Vector3.new(0.72, 0.55, 0.82), palette.coral, Enum.Material.SmoothPlastic)
-        orb(foxDetails, "Paw", Vector3.new(side * 0.78, -0.85, 0.85), Vector3.new(0.72, 0.55, 0.82), palette.coral, Enum.Material.SmoothPlastic)
+
+        local frontPaw = Vector3.new(side * 0.78, -0.85, -0.65)
+        local backPaw = Vector3.new(side * 0.78, -0.85, 0.85)
+        orb(foxDetails, "Paw", frontPaw, Vector3.new(0.72, 0.55, 0.82), palette.coral, Enum.Material.SmoothPlastic)
+        orb(foxDetails, "Paw", backPaw, Vector3.new(0.72, 0.55, 0.82), palette.coral, Enum.Material.SmoothPlastic)
+        for toe = 1, 2 do
+            local toeOffset = (toe == 1 and -0.16 or 0.16)
+            orb(foxDetails, "Paw toe", frontPaw + Vector3.new(toeOffset, -0.06, -0.28), Vector3.new(0.2, 0.17, 0.25), palette.cream, Enum.Material.SmoothPlastic)
+            orb(foxDetails, "Paw toe", backPaw + Vector3.new(toeOffset, -0.06, -0.28), Vector3.new(0.2, 0.17, 0.25), palette.cream, Enum.Material.SmoothPlastic)
+        end
     end
+    orb(foxDetails, "Nose", Vector3.new(0, -0.23, -1.78), Vector3.new(0.25, 0.18, 0.18), Color3.fromRGB(55, 43, 42), Enum.Material.SmoothPlastic)
+    orb(foxDetails, "Nose shine", Vector3.new(0, -0.18, -1.88), Vector3.new(0.075, 0.055, 0.035), palette.cream, Enum.Material.Neon)
     orb(foxDetails, "Tail tip", Vector3.new(0, 0.3, 2.72), Vector3.new(1.15, 1.1, 0.9), palette.cream, Enum.Material.SmoothPlastic)
-    orb(foxDetails, "Leaf charm", Vector3.new(0, -0.85, -0.5), Vector3.new(0.8, 0.22, 0.55), palette.leafLight, Enum.Material.Grass)
+    orb(foxDetails, "Leaf charm", Vector3.new(0, -0.72, -0.92), Vector3.new(0.8, 0.22, 0.55), palette.leafLight, Enum.Material.Grass)
 end
 
 local moth = ReplicatedStorage:FindFirstChild("Moth")
 if moth then
     local mothDetails = makeFolder(moth, "HandcraftedDetails")
+    orb(mothDetails, "Moth head", Vector3.new(0, 0.72, -0.72), Vector3.new(0.88, 0.82, 0.82), palette.cream, Enum.Material.SmoothPlastic)
+    orb(mothDetails, "Abdomen band", Vector3.new(0, -0.34, -0.36), Vector3.new(0.58, 0.2, 0.36), palette.gold, Enum.Material.SmoothPlastic)
+    orb(mothDetails, "Abdomen tip", Vector3.new(0, -0.67, -0.28), Vector3.new(0.42, 0.22, 0.3), palette.coral, Enum.Material.SmoothPlastic)
+
     for _, side in {-1, 1} do
+        orb(mothDetails, "Wing lower", Vector3.new(side * 0.92, -0.52, 0.16), Vector3.new(1.55, 1.2, 0.46), Color3.fromRGB(221, 157, 202), Enum.Material.SmoothPlastic)
+        orb(mothDetails, "Wing lower tip", Vector3.new(side * 1.36, -0.72, -0.02), Vector3.new(0.46, 0.5, 0.22), palette.moon, Enum.Material.Neon)
         orb(mothDetails, "Wing jewel", Vector3.new(side * 1.3, 0.45, -0.43), Vector3.new(0.62, 0.62, 0.2), palette.gold, Enum.Material.Neon)
         orb(mothDetails, "Wing tip", Vector3.new(side * 1.85, 0.05, 0.08), Vector3.new(0.6, 0.7, 0.25), palette.lilacLight, Enum.Material.Neon)
+        orb(mothDetails, "Wing spot", Vector3.new(side * 1.12, 0.78, -0.46), Vector3.new(0.28, 0.34, 0.12), palette.moon, Enum.Material.Neon)
         cylinder(mothDetails, "Antenna", Vector3.new(side * 0.34, 1.12, -0.55), 0.8, 0.08, palette.cream, Enum.Material.SmoothPlastic, CFrame.Angles(0, 0, math.rad(side * 24)))
-        orb(mothDetails, "Eye shine", Vector3.new(side * 0.2, 0.2, -0.92), Vector3.new(0.13, 0.16, 0.08), palette.cream, Enum.Material.Neon)
+        orb(mothDetails, "Antenna tip", Vector3.new(side * 0.54, 1.55, -0.55), Vector3.new(0.18, 0.2, 0.18), palette.gold, Enum.Material.Neon)
+        orb(mothDetails, "Moth eye", Vector3.new(side * 0.22, 0.75, -1.1), Vector3.new(0.16, 0.18, 0.1), Color3.fromRGB(50, 43, 62), Enum.Material.SmoothPlastic)
+        orb(mothDetails, "Eye shine", Vector3.new(side * 0.2, 0.8, -1.17), Vector3.new(0.065, 0.075, 0.045), palette.cream, Enum.Material.Neon)
     end
-    local glow = orb(mothDetails, "Moonlight glow", Vector3.new(0, 0.1, 0), Vector3.new(0.18, 0.18, 0.18), palette.moon, Enum.Material.Neon)
+
+    local glow = orb(mothDetails, "Moonlight glow", Vector3.new(0, 0.1, -0.08), Vector3.new(0.2, 0.2, 0.2), palette.moon, Enum.Material.Neon)
     addLight(glow, palette.lilacLight, 9, 0.65)
+    for index = 1, 3 do
+        local angle = index * math.pi * 2 / 3
+        orb(mothDetails, "Glow mote", Vector3.new(math.cos(angle) * 0.58, 0.1 + index * 0.14, math.sin(angle) * 0.42), Vector3.new(0.11, 0.11, 0.11), palette.gold, Enum.Material.Neon, 0.12)
+    end
 end
 
 
