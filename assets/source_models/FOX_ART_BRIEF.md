@@ -142,3 +142,8 @@ The single forehead ellipsoid is replaced by three layered curved-plume tufts: a
 ## Paw readability pass
 
 Each of the four paws now has three shallow curved toe separators in a muted warm-brown material. The details are deliberately small and rounded (no claws), and are merged into the existing corresponding front/back leg groups, preserving the 17-group runtime contract. Review front/back-facing visibility, surface contact and readability at gameplay distance.
+
+
+## Tail tip transition pass
+
+The cream tip profile now begins at the exact terminal centerline and matching width/depth radii of FoxTail, then narrows through five elliptical profile stations. This is intended to remove the visible gap/step at the orange-to-cream join while retaining separate FoxTail and FoxTailTip rig groups. Render inspection is still required to confirm normals, shading continuity and silhouette.
