@@ -112,3 +112,8 @@ Front and rear leg meshes now use their own multi-section loft profiles, with na
 ## Plush tail silhouette pass
 
 FoxTail and FoxTailTip now use a dedicated swept elliptical mesh, with independent width/depth profiles along the centerline. This gives the tail a broader plush cross-section than a round tube while retaining separate animated base/tip groups and cream tip material. Render review is still required to validate silhouette, seams and body intersection.
+
+
+## Ear silhouette pass
+
+The ear generator now uses 25 profile rings and 32 cross-section sides, a broad lower section, tapered upper third, subtle outward sweep and convex front depth. Inner-ear forms remain separate so pink insets can be refined independently. Review front/side silhouettes and inner-ear intersections in Blender before treating the shape as approved.
