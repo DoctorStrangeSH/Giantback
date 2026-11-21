@@ -132,3 +132,8 @@ The paired cream cheek accents now use tapered curved-plume geometry, widening t
 ## Soft-fur material pass
 
 Fox orange and cream materials use restrained Noise Texture → Bump micro-relief (scale 34, strength 0.10, distance 0.022) to break the overly plastic highlight while preserving a clean stylized silhouette. Facial glossy materials are intentionally unchanged. Validate under neutral studio lighting and at gameplay distance; this is a subtle surface treatment, not painted fur strands.
+
+
+## Forelock silhouette pass
+
+The single forehead ellipsoid is replaced by three layered curved-plume tufts: a central swept lock and two smaller side locks. They follow the brow/crown transition and remain in FoxHead, preserving the existing 17-group rig contract. Front and three-quarter renders must confirm that the locks do not obscure the eyes or intersect the ears.
