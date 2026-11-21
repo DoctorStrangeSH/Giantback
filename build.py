@@ -74,6 +74,10 @@ part(g, "Planter", (-8, 12.5, 5), (6, 1, 4), "805B48")
 spawn = part(g, "HomeSpawn", (0, 12.15, 1), (5, 0.3, 5), "BDCD8C", cls="SpawnLocation")
 prop(spawn, "bool", "Neutral", "true")
 part(g, "TownBoard", (10, 13.2, 0), (2.8, 2.4, 0.8), "CE9661")
+wood_pile = part(g, "WoodPile", (12, 12.5, -8), (4, 1.2, 2), "A17B55")
+stone_pile = part(g, "StonePile", (12, 12.5, 8), (3, 1.4, 2), "7D7E80")
+for source in (wood_pile, stone_pile):
+    prop(source, "bool", "CanCollide", "false")
 part(g, "LanternBase", (6, 12.35, 8), (3, 0.7, 3), "AA8964")
 part(g, "Gangway", (0, 11.5, -17), (6, 1, 8), "B98F65")
 
@@ -116,7 +120,15 @@ def radial_point(radius, angle):
         -40.0 - math.cos(angle) * radius,
     )
 
-def add_radial_bridge(parent, name, angle, start_radius, end_radius):
+def set_bridge_piece_state(piece, built):
+    if built:
+        return
+    prop(piece, "float", "Transparency", 0.62)
+    for key in ("CanCollide", "CanTouch", "CanQuery"):
+        prop(piece, "bool", key, "false")
+
+
+def add_radial_bridge(parent, name, angle, start_radius, end_radius, built=True):
     bridge = obj(parent, "Model", name)
     start_x, start_z = radial_point(start_radius, angle)
     end_x, end_z = radial_point(end_radius, angle)
@@ -128,27 +140,31 @@ def add_radial_bridge(parent, name, angle, start_radius, end_radius):
     for index in range(segments):
         t = (index + 0.5) / segments
         x, z = start_x + dx * t, start_z + dz * t
-        part(bridge, "BridgeDeck", (x, 12.0, z), (5.2, 0.48, plank_length), "A87950", yaw=yaw)
+        piece = part(bridge, "BridgeDeck", (x, 12.0, z), (5.2, 0.48, plank_length), "A87950", yaw=yaw)
+        set_bridge_piece_state(piece, built)
     midpoint_x, midpoint_z = (start_x + end_x) / 2, (start_z + end_z) / 2
     local_x = (math.cos(math.radians(yaw)), -math.sin(math.radians(yaw)))
     for side in (-1, 1):
         rx = midpoint_x + local_x[0] * side * 2.65
         rz = midpoint_z + local_x[1] * side * 2.65
-        part(bridge, "BridgeRail", (rx, 13.0, rz), (0.35, 1.55, length), "79583F", yaw=yaw)
+        rail = part(bridge, "BridgeRail", (rx, 13.0, rz), (0.35, 1.55, length), "79583F", yaw=yaw)
+        set_bridge_piece_state(rail, built)
         for index in range(0, segments + 1, max(1, math.ceil(segments / 7))):
             t = index / segments
             x, z = start_x + dx * t, start_z + dz * t
             px = x + local_x[0] * side * 2.65
             pz = z + local_x[1] * side * 2.65
-            part(bridge, "BridgePost", (px, 13.1, pz), (0.55, 2.0, 0.55), "936847")
+            post = part(bridge, "BridgePost", (px, 13.1, pz), (0.55, 2.0, 0.55), "936847")
+            set_bridge_piece_state(post, built)
     for t in (0.28, 0.72):
         x, z = start_x + dx * t, start_z + dz * t
-        part(bridge, "BridgeLamp", (x, 14.0, z), (0.55, 2.6, 0.55), "CE9661")
+        lamp = part(bridge, "BridgeLamp", (x, 14.0, z), (0.55, 2.6, 0.55), "CE9661")
+        set_bridge_piece_state(lamp, built)
 
 bridge_home = obj(w, "Model", "BridgeToGrove")
 for slot_index in range(8):
     angle = math.pi * 2 * slot_index / 8
-    add_radial_bridge(bridge_home, f"HomeBridge{slot_index + 1:02d}", angle, 219, 73)
+    add_radial_bridge(bridge_home, f"HomeBridge{slot_index + 1:02d}", angle, 219, 73, built=False)
 
 # The Moon Grove is a small side-island connected to the shared forest hub.
 bridge_dusk = obj(w, "Model", "BridgeToDusk")
