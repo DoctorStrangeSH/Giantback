@@ -10,6 +10,22 @@
 | home_island.obj | pending import | pending | pending | no | cliff/grass material split |
 
 
+
+## Source-space dimensions and import anchors
+
+Dimensions below are measured from the editable OBJ vertex bounds in source units (X, Y, Z). They are regression guardrails, not Roblox avatar-scale acceptance.
+
+| Source | X | Y | Z | Import anchor / orientation |
+|---|---:|---:|---:|---|
+| fox_companion.obj | 1.36 | 2.65 | 3.54 | feet near Y=0; face points toward -Z |
+| moth_companion.obj | 3.18 | 1.97 | 1.11 | body centered near X=0; wings span ±X; hovering source pose |
+| home_cottage.obj | 12.55 | 11.38 | 13.85 | foundation floor at Y=0; front door faces -Z |
+| farm_bed.obj | 7.51 | 1.39 | 4.85 | bottom near Y=0; long side along X |
+| bridge_segment.obj | 6.20 | 2.50 | 5.50 | centered around X/Z=0; deck top at Y=0.375 |
+| home_island.obj | 68.73 | 20.95 | 52.86 | grass surface around Y=4.7–4.95; cliff extends downward |
+
+Coordinate convention: Y is up. The fox and cottage front faces point toward -Z. Bridge length is along X in the source file; rotate the segment for the required world direction after import. Preserve the source pivots until Studio scale and placement are reviewed. The moth's positive minimum Y is intentional in its floating source pose; align its runtime follower offset in Studio rather than editing the OBJ pivot blindly.
+
 ## Source geometry snapshot
 
 The current editable OBJ sources were measured in Git (not imported Roblox MeshParts):
