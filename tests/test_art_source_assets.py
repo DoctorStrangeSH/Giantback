@@ -23,6 +23,24 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
         source = script_path.read_text(encoding="utf-8")
         compile(source, str(script_path), "exec")
 
+    def test_blender_uv_preview_protects_sources_and_existing_previews(self):
+        source = (ROOT / "tools" / "blender" / "prepare_source_uv.py").read_text(encoding="utf-8")
+        self.assertIn("input_dir == output_dir", source)
+        self.assertIn("if existing and not args.overwrite_previews", source)
+        self.assertIn("--overwrite-previews", source)
+        self.assertIn("FileExistsError", source)
+        self.assertIn("source_sha256", source)
+
+    def test_blender_uv_preview_validates_exported_uvs_normals_and_face_indices(self):
+        source = (ROOT / "tools" / "blender" / "prepare_source_uv.py").read_text(encoding="utf-8")
+        validator = source.split("def validate_export", 1)[1].split("def export_preview", 1)[0]
+        self.assertIn('line.startswith("vt ")', validator)
+        self.assertIn('line.startswith("vn ")', validator)
+        self.assertIn('line.startswith("f ")', validator)
+        self.assertIn("UV index out of range", validator)
+        self.assertIn("normal index out of range", validator)
+        self.assertIn("export_stats = validate_export(destination)", source)
+
     def test_blender_uv_preview_is_non_destructive_and_exports_uv_normals(self):
         source = (ROOT / "tools" / "blender" / "prepare_source_uv.py").read_text(encoding="utf-8")
         self.assertIn("bpy.ops.uv.smart_project(", source)
