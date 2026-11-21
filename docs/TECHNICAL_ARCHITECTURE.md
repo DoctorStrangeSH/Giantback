@@ -189,3 +189,14 @@ The moving-island loop and overlapping PersonalCities approach are retired. The 
 - Later cache rewards follow a deterministic rotation: 2 SunPetals, 2 Wood, then 1 CarrotSeed. There are no paid random rewards.
 - A successful collection starts a 120-second scout cooldown. The active cache ID, cooldown timestamp and completed search count are saved under \`profile.foxScout\`.
 - An active cache survives reconnects; the player can re-equip the Fox and finish the find. The client never decides reward amounts or cooldown state.
+
+
+## 15. Moth Lunar Glow and personal MoonBloom discovery
+
+- \`MoonBloom\` is a persistent progress flag in the existing profile progress map; no inventory schema migration is required.
+- The Dusk island contains one invisible, non-collidable, queryable \`MoonBloom\` interaction anchor and a decorative \`MoonBloomVisual\` model.
+- The visual model is hidden per client until the player equips Moth or has already discovered the flower. Its PointLight is enabled locally only while revealed.
+- The client creates a local-only Highlight and ProximityPrompt. Other players without Moth cannot see or interact with the discovery.
+- The client sends only \`CollectMoonBloom\`; the server checks Ready/session state, equipped Moth, the personal \`MoonBloom\` flag, anchor existence and a 10-stud interaction distance.
+- A successful first discovery sets \`MoonBloom=true\`, grants MoonPetal ×2, synchronizes inventory and saves progress. Repeat requests grant nothing.
+- The discovery is placed after meeting the Moth and before waking the home Moonflower, making the companion ability part of the first expedition rather than a cosmetic toggle.
