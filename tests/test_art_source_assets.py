@@ -33,8 +33,8 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
         self.assertIn('"final_art_approved": False', source)
         self.assertIn("destination = args.output / f\"{asset}.obj\"", source)
         main_block = source.split("def main()", 1)[1]
-        self.assertIn("source = args.input / f\\\"{asset}.obj\\\"", main_block)
-        self.assertIn("destination = args.output / f\\\"{asset}.obj\\\"", main_block)
+        self.assertIn('source = args.input / f"{asset}.obj"', main_block)
+        self.assertIn('destination = args.output / f"{asset}.obj"', main_block)
         self.assertIn("export_preview(objects, destination)", main_block)
 
 
