@@ -109,6 +109,14 @@ class FoxScoutContractTests(unittest.TestCase):
         self.assertIn("math.floor(distance / 3.8)", ALBUM)
         self.assertIn('"ScentMote" .. tostring(index)', ALBUM)
 
+
+    def test_fox_scent_routes_use_cache_specific_waypoints_around_grove_trees(self):
+        self.assertIn("local scentRouteOffsets = {", ALBUM)
+        self.assertIn("FoxCache02 = {", ALBUM)
+        self.assertIn("FoxCache03 = {", ALBUM)
+        self.assertIn("groveCenter.X + offset.X", ALBUM)
+        self.assertIn("for segmentIndex = 1, #routePoints - 1 do", ALBUM)
+
     def test_hud_guides_players_by_the_fox_pawprint_trail(self):
         self.assertIn("Следуй по золотым следам лап", ALBUM)
         self.assertIn("Следуй по золотым следам лап в Солнечной роще", HUD)
@@ -116,7 +124,7 @@ class FoxScoutContractTests(unittest.TestCase):
 
     def test_hud_explains_the_fox_scout_ability_and_active_find(self):
         self.assertIn("Нюх следопыта открывает личные тайники", HUD)
-        self.assertIn("Следуй за золотой меткой в Солнечной роще", HUD)
+        self.assertIn("Следуй по золотым следам лап в Солнечной роще", HUD)
         self.assertIn("найдёт лунное семя", HUD)
 
 
