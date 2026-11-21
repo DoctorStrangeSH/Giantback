@@ -125,7 +125,7 @@ Run with Blender 4.2.x:
 blender --background --python tools/blender/build_fox_companion.py -- --output-dir build/fox_hero
 ```
 
-Outputs are isolated in the selected build folder: `fox_companion_hero.obj`, `fox_companion_hero.mtl`, `fox_companion_hero.blend` and `fox_companion_hero.png`. The generator refuses a non-empty output folder unless `--overwrite` is explicit. The original `fox_companion.obj/.mtl` are not modified.
+Outputs are isolated in the selected build folder: `fox_companion_hero.obj`, `fox_companion_hero.mtl`, `fox_companion_hero.blend` and `fox_companion_hero_three_quarter.png`, `fox_companion_hero_front.png`, `fox_companion_hero_side.png` and `fox_companion_hero_back.png`. The generator refuses a non-empty output folder unless `--overwrite` is explicit. It renders a consistent orthographic three-quarter, front, side and back review set with a neutral studio floor and contact shadows, so silhouette and paw placement can be compared before artistic acceptance. The original `fox_companion.obj/.mtl` are not modified.
 
 This is the first sculpted-form silhouette/material blockout, not finished production art. Smart UV is only an automatic unwrap; hand-painted fur detail, seam/overlap review, animation pivots, Blender 4.2 runtime render and Roblox Studio acceptance are still required. Preserve the sixteen documented rig group names when evaluating the exported OBJ.
 
