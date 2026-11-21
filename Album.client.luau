@@ -142,7 +142,7 @@ local panel = Instance.new("Frame")
 panel.Name = "CollectionPanel"
 panel.AnchorPoint = Vector2.new(1, 0)
 panel.Position = UDim2.new(1, -20, 0, 84)
-panel.Size = UDim2.fromOffset(294, 330)
+panel.Size = UDim2.fromOffset(294, 380)
 panel.BackgroundColor3 = palette.deep
 panel.Visible = false
 panel.Parent = gui
@@ -214,7 +214,7 @@ createCompanionCard("Moth", 2)
 local resourceHeader = label(
     panel,
     "ResourceHeader",
-    "НАЙДЕННЫЕ МАТЕРИАЛЫ",
+    "МАТЕРИАЛЫ И ФЕРМА",
     UDim2.new(1, -28, 0, 18),
     UDim2.fromOffset(16, 235),
     Enum.Font.GothamBold,
@@ -259,6 +259,20 @@ local moonResourceCount = resourceChip(
     "✧",
     UDim2.new(0.5, 7, 0, 258),
     palette.lilac
+)
+local carrotSeedCount = resourceChip(
+    "CarrotSeed",
+    "Семена моркови",
+    "❀",
+    UDim2.fromOffset(14, 318),
+    palette.mint
+)
+local carrotCount = resourceChip(
+    "Carrot",
+    "Морковь",
+    "◆",
+    UDim2.new(0.5, 7, 0, 318),
+    palette.gold
 )
 
 toggle.Activated:Connect(function()
@@ -314,6 +328,8 @@ local function goal()
         return "Мохоспин в пути. Скоро причалим!"
     end
 
+    local cityFolder = giant:FindFirstChild("PersonalCities")
+    local personalCity = cityFolder and cityFolder:FindFirstChild("City_" .. tostring(player.UserId))
     local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     for _, step in route do
         if player:GetAttribute(step.flag) then
@@ -331,7 +347,12 @@ local function goal()
             end
         end
 
-        local area = workspace:FindFirstChild(step.area)
+        local area
+        if step.area == "Mossback" then
+            area = personalCity or giant
+        else
+            area = workspace:FindFirstChild(step.area)
+        end
         local bank = area and area:FindFirstChild("Bank")
         local onTargetShore = false
         if root and bank then
@@ -348,6 +369,80 @@ local function goal()
 
     return "Садовый фонарь горит • Коллекция 2/2"
 end
+
+local function applyPersonalCityVisibility(cityModel)
+    local visible = cityModel:GetAttribute("OwnerUserId") == player.UserId
+    for _, descendant in cityModel:GetDescendants() do
+        if descendant:IsA("BasePart") then
+            descendant.LocalTransparencyModifier = visible and 0 or 1
+        elseif descendant:IsA("ProximityPrompt") then
+            descendant.Enabled = visible
+        end
+    end
+end
+
+local function findPersonalCityRoot(instance)
+    local giant = workspace:FindFirstChild("Mossback")
+    local folder = giant and giant:FindFirstChild("PersonalCities")
+    local current = instance
+    while current and current ~= giant do
+        if current:IsA("Model") and current.Parent == folder then
+            return current
+        end
+        current = current.Parent
+    end
+    return nil
+end
+
+local function hideSharedHomeParts()
+    local giant = workspace:FindFirstChild("Mossback")
+    if not giant then return end
+    local sharedParts = {
+        Cottage = true,
+        Roof = true,
+        Window = true,
+        Planter = true,
+        LanternBase = true,
+    }
+    for _, descendant in giant:GetChildren() do
+        if descendant:IsA("BasePart") and sharedParts[descendant.Name] then
+            descendant.LocalTransparencyModifier = 1
+        end
+    end
+end
+
+workspace.DescendantAdded:Connect(function(descendant)
+    local cityModel = findPersonalCityRoot(descendant)
+    if not cityModel then return end
+
+    local visible = cityModel:GetAttribute("OwnerUserId") == player.UserId
+    if descendant:IsA("BasePart") then
+        descendant.LocalTransparencyModifier = visible and 0 or 1
+    elseif descendant:IsA("ProximityPrompt") then
+        descendant.Enabled = visible
+    elseif descendant == cityModel then
+        task.defer(applyPersonalCityVisibility, cityModel)
+    end
+end)
+
+task.spawn(function()
+    local giant = workspace:WaitForChild("Mossback", 12)
+    if not giant then return end
+    hideSharedHomeParts()
+    local folder = giant:WaitForChild("PersonalCities", 12)
+    if folder then
+        for _, cityModel in folder:GetChildren() do
+            if cityModel:IsA("Model") then
+                applyPersonalCityVisibility(cityModel)
+            end
+        end
+        folder.ChildAdded:Connect(function(cityModel)
+            if cityModel:IsA("Model") then
+                task.defer(applyPersonalCityVisibility, cityModel)
+            end
+        end)
+    end
+end)
 
 local function refresh()
     local found = 0
@@ -366,6 +461,9 @@ local function refresh()
     panelTitle.Text = "ТВОЯ КОЛЛЕКЦИЯ  •  " .. tostring(found) .. "/2"
     sunResourceCount.Text = tostring(player:GetAttribute("Resource_SunPetal") or 0) .. " шт."
     moonResourceCount.Text = tostring(player:GetAttribute("Resource_MoonPetal") or 0) .. " шт."
+    carrotSeedCount.Text = tostring(player:GetAttribute("Resource_CarrotSeed") or 0) .. " шт."
+    carrotCount.Text = tostring(player:GetAttribute("Resource_Carrot") or 0) .. " шт."
+    resourceHeader.Text = "МАТЕРИАЛЫ И ФЕРМА • УР. " .. tostring(player:GetAttribute("Farm_Level") or 1)
 end
 
 local function updateRoute()
@@ -497,7 +595,7 @@ local function updateLayout()
         toggle.Size = UDim2.fromOffset(144, 48)
         panel.AnchorPoint = Vector2.new(0, 0)
         panel.Position = UDim2.fromOffset(16, 174)
-        panel.Size = UDim2.fromOffset(math.min(gui.AbsoluteSize.X - 32, 294), 330)
+        panel.Size = UDim2.fromOffset(math.min(gui.AbsoluteSize.X - 32, 294), 380)
     else
         quest.Position = UDim2.fromOffset(20, 20)
         quest.Size = UDim2.fromOffset(370, 104)
@@ -506,7 +604,7 @@ local function updateLayout()
         toggle.Size = UDim2.fromOffset(156, 54)
         panel.AnchorPoint = Vector2.new(1, 0)
         panel.Position = UDim2.new(1, -20, 0, 84)
-        panel.Size = UDim2.fromOffset(294, 330)
+        panel.Size = UDim2.fromOffset(294, 380)
     end
 end
 
