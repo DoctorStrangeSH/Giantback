@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 
 import bpy
+import bmesh
 from mathutils import Vector
 from fox_rig_contract import validate_rig_payload
 
@@ -380,12 +381,28 @@ def write_mesh_quality_report(output, objects):
             raise RuntimeError(f"{obj.name}: missing UV layer")
         if not obj.data.materials or any(mat is None for mat in obj.data.materials):
             raise RuntimeError(f"{obj.name}: missing material assignment")
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        zero_area_faces = sum(1 for face in bm.faces if face.calc_area() <= 1e-10)
+        non_manifold_edges = sum(1 for edge in bm.edges if not edge.is_manifold)
+        if zero_area_faces:
+            bm.free()
+            raise RuntimeError(f"{obj.name}: {zero_area_faces} zero-area faces")
+        if non_manifold_edges:
+            bm.free()
+            raise RuntimeError(f"{obj.name}: {non_manifold_edges} non-manifold edges")
+        bm.to_mesh(obj.data)
+        bm.free()
         bounds = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
         minimum = [min(point[i] for point in bounds) for i in range(3)]
         maximum = [max(point[i] for point in bounds) for i in range(3)]
         parts[obj.name] = {
             "vertices": len(obj.data.vertices),
             "faces": len(obj.data.polygons),
+            "zero_area_faces": 0,
+            "non_manifold_edges": 0,
+            "normals": "recalculated_outward",
             "uv_layers": len(obj.data.uv_layers),
             "materials": [mat.name for mat in obj.data.materials],
             "bounds": {"min": minimum, "max": maximum},
