@@ -375,38 +375,175 @@ task.spawn(function()
     end
 end)
 
--- Companion followers are local visual models, so every player sees their own collection.
+-- Companion followers are local visual models. The wild encounter remains available
+-- to other players, but is hidden locally once this player has adopted that companion.
 local models = {}
+local animationStates = {}
+local encounterLocations = {
+    Fox = "Grove",
+    Moth = "Dusk",
+}
+
+local function captureAnimation(model, id, isEncounter)
+    local pivot = model:GetPivot()
+    local offsets = {}
+    for _, part in model:GetDescendants() do
+        if part:IsA("BasePart") then
+            offsets[part] = pivot:ToObjectSpace(part.CFrame)
+        end
+    end
+
+    local state = {
+        id = id,
+        origin = pivot,
+        offsets = offsets,
+        isEncounter = isEncounter == true,
+    }
+    animationStates[model] = state
+    return state
+end
+
+local function animateModelParts(model, state, time, moving)
+    local pivot = model:GetPivot()
+    for part, offset in state.offsets do
+        if part.Parent then
+            local transform = CFrame.new()
+
+            if state.id == "Fox" then
+                if part.Name == "Tail" then
+                    local sway = math.sin(time * 4.2) * 0.3
+                    transform = CFrame.Angles(sway * 0.45, sway, sway * 0.2)
+                elseif part.Name == "Tail tip" then
+                    local sway = math.sin(time * 4.2 - 0.25) * 0.36
+                    transform = CFrame.Angles(sway * 0.35, sway, 0)
+                elseif part.Name == "Paw" then
+                    local stride = moving and 0.32 or 0.055
+                    local phase = (math.abs(offset.Position.X) + math.abs(offset.Position.Z)) * 1.8
+                    local step = math.sin(time * (moving and 10 or 2.4) + phase) * stride
+                    transform = CFrame.new(0, math.max(0, step) * 0.16, 0) * CFrame.Angles(step, 0, 0)
+                elseif part.Name == "Ear" or part.Name == "Inner ear" then
+                    local side = offset.Position.X >= 0 and 1 or -1
+                    local twitch = math.sin(time * 2.2 + side) * 0.055
+                    transform = CFrame.Angles(0, 0, twitch * side)
+                end
+            elseif state.id == "Moth" then
+                if part.Name == "Wing" or part.Name == "Wing tip" or part.Name == "Wing jewel" then
+                    local side = offset.Position.X >= 0 and 1 or -1
+                    local flap = math.sin(time * 11.5) * 0.42
+                    transform = CFrame.Angles(0, 0, flap * side)
+                elseif part.Name == "Antenna" then
+                    local side = offset.Position.X >= 0 and 1 or -1
+                    transform = CFrame.Angles(0, 0, math.sin(time * 2.8 + side) * 0.07)
+                end
+            end
+
+            part.CFrame = pivot * offset * transform
+        end
+    end
+end
+
+local function updateEncounterVisibility(id)
+    local islandName = encounterLocations[id]
+    local island = islandName and workspace:FindFirstChild(islandName)
+    if not island then return end
+
+    local owned = player:GetAttribute(id) == true
+    local encounter = island:FindFirstChild(id .. "Encounter")
+    if encounter then
+        for _, part in encounter:GetDescendants() do
+            if part:IsA("BasePart") then
+                part.LocalTransparencyModifier = owned and 1 or 0
+            end
+        end
+    end
+
+    local nest = island:FindFirstChild("Nest")
+    local prompt = nest and nest:FindFirstChildOfClass("ProximityPrompt")
+    if prompt then
+        prompt.Enabled = not owned
+    end
+end
+
+for id in encounterLocations do
+    player:GetAttributeChangedSignal(id):Connect(function()
+        updateEncounterVisibility(id)
+    end)
+    updateEncounterVisibility(id)
+end
+
+workspace.DescendantAdded:Connect(function(instance)
+    if instance.Name == "FoxEncounter" or instance.Name == "MothEncounter" or instance:IsA("ProximityPrompt") then
+        task.defer(function()
+            updateEncounterVisibility("Fox")
+            updateEncounterVisibility("Moth")
+        end)
+    end
+end)
 
 local function follow(dt)
+    local now = workspace:GetServerTimeNow()
+
     for _, owner in Players:GetPlayers() do
-        local root = owner.Character and owner.Character:FindFirstChild("HumanoidRootPart")
+        local character = owner.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
         local id = owner:GetAttribute("Companion")
         local model = models[owner]
 
         if model and (model.Name ~= id or not root) then
+            animationStates[model] = nil
             model:Destroy()
             models[owner] = nil
             model = nil
         end
 
         if root and names[id] then
-            local bob = math.sin(workspace:GetServerTimeNow() * 3) * 0.22
-            local target = root.CFrame * CFrame.new(2.8, (id == "Fox" and -1.6 or 1) + bob, 2)
+            local phase = now + (owner.UserId % 19) * 0.17
+            local bob = math.sin(phase * 2.8) * 0.14
+            local target = root.CFrame
+                * CFrame.new(2.8, (id == "Fox" and -1.35 or 1.05) + bob, 2.1)
+                * CFrame.Angles(0, math.sin(phase * 1.6) * 0.06, 0)
+
             if not model then
                 model = storage[id]:Clone()
-                model:PivotTo(target)
+                model.Name = id
                 model.Parent = workspace
+                model:PivotTo(target)
                 models[owner] = model
+                captureAnimation(model, id, false)
             else
-                model:PivotTo(model:GetPivot():Lerp(target, 1 - math.exp(-10 * dt)))
+                model:PivotTo(model:GetPivot():Lerp(target, 1 - math.exp(-9 * dt)))
             end
+
+            local state = animationStates[model]
+            if state then
+                animateModelParts(model, state, phase, humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.08)
+            end
+        end
+    end
+
+    -- Wild companions gently idle at their nests. They remain visible to players
+    -- who have not met them, while owners see only their own following companion.
+    for id, islandName in encounterLocations do
+        local island = workspace:FindFirstChild(islandName)
+        local encounter = island and island:FindFirstChild(id .. "Encounter")
+        if encounter then
+            local state = animationStates[encounter] or captureAnimation(encounter, id, true)
+            local phase = now + (id == "Fox" and 0 or 1.7)
+            local bob = math.sin(phase * 2.5) * (id == "Fox" and 0.11 or 0.18)
+            encounter:PivotTo(
+                state.origin
+                * CFrame.new(0, bob, 0)
+                * CFrame.Angles(0, math.sin(phase * 0.7) * 0.045, math.sin(phase * 1.4) * 0.025)
+            )
+            animateModelParts(encounter, state, phase, false)
         end
     end
 end
 
 Players.PlayerRemoving:Connect(function(owner)
     if models[owner] then
+        animationStates[models[owner]] = nil
         models[owner]:Destroy()
         models[owner] = nil
     end
