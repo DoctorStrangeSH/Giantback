@@ -128,6 +128,17 @@ for label, center_x, center_z, bank_size, bank_color, canopy in island_specs:
         prop(moon_bloom, "bool", "CanCollide", "false")
         prop(moon_bloom, "bool", "CanTouch", "false")
         prop(moon_bloom, "bool", "CanQuery", "true")
+        moon_gate_specs = [
+            ("MoonGateTracks", (center_x - 10, 12.05, center_z - 10)),
+            ("MoonGateRune", (center_x, 12.05, center_z - 19)),
+            ("MoonRelic", (center_x, 12.05, center_z - 24)),
+        ]
+        for anchor_name, anchor_position in moon_gate_specs:
+            anchor = part(model, anchor_name, anchor_position, (1.1, 0.25, 1.1), "ABAC92")
+            prop(anchor, "float", "Transparency", "1")
+            prop(anchor, "bool", "CanCollide", "false")
+            prop(anchor, "bool", "CanTouch", "false")
+            prop(anchor, "bool", "CanQuery", "true")
 
 # Eight fixed home islands surround a shared forest hub. Every island has its
 # own permanent bridge; all bridges meet the same public Grove without crossing.
