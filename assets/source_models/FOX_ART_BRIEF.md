@@ -107,3 +107,8 @@ FoxBody and FoxBelly are now separate organic Y-axis loft meshes with shaped cro
 ## Organic limb pass
 
 Front and rear leg meshes now use their own multi-section loft profiles, with narrower ankle transitions and fuller upper limbs. They remain inside the existing four limb rig groups. Separate paw-end forms are retained for silhouette and material contrast. This is still procedural geometry and requires render-based proportion review.
+
+
+## Plush tail silhouette pass
+
+FoxTail and FoxTailTip now use a dedicated swept elliptical mesh, with independent width/depth profiles along the centerline. This gives the tail a broader plush cross-section than a round tube while retaining separate animated base/tip groups and cream tip material. Render review is still required to validate silhouette, seams and body intersection.
