@@ -13,6 +13,7 @@ local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная мол
 local progress = {"Fox", "Moth", "Seed", "Flower", "Timber", "Lantern", "Lit"}
 local sessions = {}
 local atDusk, sailing = false, false
+giant:SetAttribute("Dock", "Grove")
 local homePivot = giant:GetPivot()
 
 local function tip(player, message)
@@ -141,6 +142,7 @@ local helm
 helm = prompt(giant.Helm,"Мохоспин","К Лунной роще",function()
     if sailing then return end
     sailing = true
+    giant:SetAttribute("Dock", "Sailing")
     helm.Enabled = false
     local origin = giant:GetPivot()
     local deck = giant.Meadow
@@ -168,6 +170,7 @@ helm = prompt(giant.Helm,"Мохоспин","К Лунной роще",function(
     end
     for root in riders do if root.Parent then root.Anchored = false end end
     atDusk = not atDusk
+    giant:SetAttribute("Dock", atDusk and "Dusk" or "Grove")
     helm.ActionText = atDusk and "К Солнечной роще" or "К Лунной роще"
     sailing = false
     helm.Enabled = true

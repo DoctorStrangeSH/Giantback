@@ -3273,6 +3273,7 @@ local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная мол
 local progress = {"Fox", "Moth", "Seed", "Flower", "Timber", "Lantern", "Lit"}
 local sessions = {}
 local atDusk, sailing = false, false
+giant:SetAttribute("Dock", "Grove")
 local homePivot = giant:GetPivot()
 
 local function tip(player, message)
@@ -3401,6 +3402,7 @@ local helm
 helm = prompt(giant.Helm,"Мохоспин","К Лунной роще",function()
     if sailing then return end
     sailing = true
+    giant:SetAttribute("Dock", "Sailing")
     helm.Enabled = false
     local origin = giant:GetPivot()
     local deck = giant.Meadow
@@ -3428,6 +3430,7 @@ helm = prompt(giant.Helm,"Мохоспин","К Лунной роще",function(
     end
     for root in riders do if root.Parent then root.Anchored = false end end
     atDusk = not atDusk
+    giant:SetAttribute("Dock", atDusk and "Dusk" or "Grove")
     helm.ActionText = atDusk and "К Солнечной роще" or "К Лунной роще"
     sailing = false
     helm.Enabled = true
@@ -3505,14 +3508,54 @@ for i,id in {"Fox","Moth"} do
         if player:GetAttribute(id) then event:FireServer(id) end
     end)
 end
+local route = {
+    {flag="Fox", area="Grove", part="Nest", label="Лисёнок", hint="Подружись с лисёнком у гнезда в Солнечной роще."},
+    {flag="Seed", area="Grove", part="Trail", label="Следы на тропе", hint="Позови лисёнка и попроси его обыскать тропу."},
+    {flag="Moth", area="Dusk", part="Nest", label="Лунная моль", hint="Подружись с молью у гнезда в Лунной роще."},
+    {flag="Flower", area="Mossback", part="Planter", label="Клумба", hint="Позови моль к клумбе возле дома."},
+    {flag="Timber", area="Grove", part="Driftwood", label="Коряга", hint="Возьми лисёнка к коряге за ветвями для фонаря."},
+    {flag="Lantern", area="Mossback", part="LanternBase", label="Площадка", hint="Собери фонарь из ветвей рядом со штурвалом."},
+    {flag="Lit", area="Mossback", part="LanternBase", label="Садовый фонарь", hint="Позови моль и зажги садовый фонарь."},
+}
+local marker = Instance.new("BillboardGui")
+marker.Size = UDim2.fromOffset(140, 26)
+marker.StudsOffsetWorldSpace = Vector3.new(0, 5, 0)
+marker.AlwaysOnTop = true
+marker.Enabled = false
+marker.Parent = gui
+local caption = card("TextLabel", marker, "", UDim2.fromScale(0,0), UDim2.fromScale(1,1))
+
 local function goal()
-    if not player:GetAttribute("Fox") then return "Перейди мостик в Солнечную рощу. У гнезда ждёт лисёнок." end
-    if not player:GetAttribute("Seed") then return "Возьми лисёнка на тропу рядом с гнездом. Он чует семя!" end
-    if not player:GetAttribute("Moth") then return "У штурвала плыви к Лунной роще. Найди моль у гнезда." end
-    if not player:GetAttribute("Flower") then return "Позови моль и подойди к клумбе возле дома." end
-    if not player:GetAttribute("Timber") then return "Возьми лисёнка к коряге в Солнечной роще за ветвями для фонаря." end
-    if not player:GetAttribute("Lantern") then return "Построй фонарь на площадке рядом со штурвалом." end
-    if not player:GetAttribute("Lit") then return "Позови моль и зажги садовый фонарь на площадке." end
+    local giant = workspace:FindFirstChild("Mossback")
+    if not giant or not player:GetAttribute("Ready") then return "Открываем альбом…" end
+    local dock = giant:GetAttribute("Dock")
+    if dock == "Sailing" then return "Мохоспин в пути. Скоро причалим!" end
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    for _, step in route do
+        if player:GetAttribute(step.flag) then continue end
+        for _, shore in {"Grove", "Dusk"} do
+            local island = workspace:FindFirstChild(shore)
+            local bank = island and island:FindFirstChild("Bank")
+            if root and bank and shore ~= dock and step.area ~= shore then
+                local pos = bank.CFrame:PointToObjectSpace(root.Position)
+                if math.abs(pos.X) &lt;= bank.Size.X/2 and math.abs(pos.Z) &lt;= bank.Size.Z/2 then
+                    return "Позвони в береговой колокольчик, чтобы вернуться домой.", island:FindFirstChild("CallBell"), "Колокольчик"
+                end
+            end
+        end
+        local area = workspace:FindFirstChild(step.area)
+        local onTargetShore = false
+        local bank = area and area:FindFirstChild("Bank")
+        if root and bank then
+            local pos = bank.CFrame:PointToObjectSpace(root.Position)
+            onTargetShore = math.abs(pos.X) &lt;= bank.Size.X/2 and math.abs(pos.Z) &lt;= bank.Size.Z/2
+        end
+        if step.area ~= "Mossback" and step.area ~= dock and not onTargetShore then
+            local destination = step.area == "Grove" and "Солнечной роще" or "Лунной роще"
+            return "У штурвала задай курс к " .. destination .. ".", giant:FindFirstChild("Helm"), "Штурвал"
+        end
+        return step.hint, area and area:FindFirstChild(step.part), step.label
+    end
     return "Садовый фонарь горит • Коллекция 2/2"
 end
 local lastTip = 0
@@ -3522,17 +3565,29 @@ local function refresh()
         local equipped = player:GetAttribute("Companion") == id
         row.Text = names[id] .. "\n" .. (equipped and "✓ Рядом" or owned and "Позвать" or "Ещё не найден")
     end
+end
+local function updateRoute()
+    local hint, target, label = goal()
+    marker.Adornee = target
+    marker.Enabled = target ~= nil
+    caption.Text = label or ""
     if os.clock() &gt;= lastTip then
-        status.Text = (player:GetAttribute("OfflineAlbum") and "Без сохранения • " or "") .. goal()
+        status.Text = (player:GetAttribute("OfflineAlbum") and "Без сохранения • " or "") .. hint
     end
 end
 event.OnClientEvent:Connect(function(message)
     lastTip = os.clock()+3.5
     status.Text = message
-    task.delay(3.6,refresh)
+    task.delay(3.6,updateRoute)
 end)
 player.AttributeChanged:Connect(refresh)
 refresh()
+task.spawn(function()
+    while gui.Parent do
+        updateRoute()
+        task.wait(0.3)
+    end
+end)
 
 local models = {}
 local function follow(dt)
