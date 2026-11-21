@@ -58,6 +58,29 @@ class MothLunarGlowContractTests(unittest.TestCase):
         self.assertIn('mothBloomHighlight.Name = "MoonBloomHighlight"', ALBUM)
         self.assertIn("mothBloomHighlight.Enabled = mothEquipped and not found", ALBUM)
 
+
+    def test_moth_ability_milestones_trigger_a_local_lunar_spark_burst(self):
+        self.assertIn('burst.Name = "MothAbilityBurstLocal"', ALBUM)
+        self.assertIn('mote.Name = "LunarSpark"', ALBUM)
+        self.assertIn("for index = 1, 12 do", ALBUM)
+        self.assertIn("Debris:AddItem(burst, 1.0)", ALBUM)
+        self.assertIn('GetAttributeChangedSignal("MoonBloom")', ALBUM)
+        self.assertIn('GetAttributeChangedSignal("MoonGateOpen")', ALBUM)
+
+    def test_local_moth_ability_has_faster_wings_and_a_brighter_pulsing_glow(self):
+        self.assertIn("isLocal = isLocal == true", ALBUM)
+        self.assertIn("state.isLocal and now < mothAbilityUntil", ALBUM)
+        self.assertIn("mothAbility and 21 or 11.5", ALBUM)
+        self.assertIn("mothAbility and 0.76 or 0.42", ALBUM)
+        self.assertIn("light.Brightness = pulse", ALBUM)
+        self.assertIn("light.Range = mothAbility and 14 or 9", ALBUM)
+
+    def test_moth_ability_burst_is_created_only_for_the_local_players_own_companion(self):
+        self.assertIn("if player:GetAttribute(\\"Companion\\") ~= \\"Moth\\" then return end", ALBUM)
+        self.assertIn("captureAnimation(model, id, false, owner == player)", ALBUM)
+        self.assertIn("owner == player and id == \\"Moth\\" and pendingMothBurst", ALBUM)
+        self.assertIn("pendingMothBurst = false", ALBUM)
+
     def test_first_expedition_visits_moonbloom_after_meeting_the_moth(self):
         moth = ALBUM.index('{flag = "Moth",')
         moon_bloom = ALBUM.index('{flag = "MoonBloom",')
