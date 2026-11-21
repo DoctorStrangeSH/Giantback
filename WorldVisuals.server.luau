@@ -3,9 +3,10 @@
 
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 local TweenService = game:GetService("TweenService")
 
-local giant = workspace:WaitForChild("Mossback")
+local homeIslandTemplate = ServerStorage:WaitForChild("HomeIslandTemplate")
 local grove = workspace:WaitForChild("Grove")
 local dusk = workspace:WaitForChild("Dusk")
 
@@ -181,7 +182,11 @@ if terrain then
 end
 
 -- Give the prototype geometry consistent materials and remove collision from foliage.
+local visualParts = homeIslandTemplate:GetDescendants()
 for _, item in workspace:GetDescendants() do
+    table.insert(visualParts, item)
+end
+for _, item in visualParts do
     if item:IsA("BasePart") then
         if item.Name == "Meadow" then
             item.Material = Enum.Material.Grass
@@ -228,8 +233,8 @@ end
 
 local details = makeFolder(workspace, "GiantbackWorldDetails")
 
--- Give the giant a recognisable silhouette and a lived-in home.
-local giantDetails = makeFolder(giant, "HandcraftedDetails")
+-- Give the homeIslandTemplate a recognisable silhouette and a lived-in home.
+local homeDetails = makeFolder(homeIslandTemplate, "HandcraftedDetails")
 local shellColors = {
     Color3.fromRGB(104, 151, 117),
     Color3.fromRGB(119, 163, 127),
@@ -241,23 +246,23 @@ local shellPlates = {
     Vector3.new(-12, 12.35, 5), Vector3.new(0, 12.65, 5), Vector3.new(12, 12.35, 5),
 }
 for i, position in shellPlates do
-    orb(giantDetails, "Shell mosaic", position, Vector3.new(8.2, 1.15, 8.1), shellColors[(i - 1) % #shellColors + 1], Enum.Material.Grass)
+    orb(homeDetails, "Shell mosaic", position, Vector3.new(8.2, 1.15, 8.1), shellColors[(i - 1) % #shellColors + 1], Enum.Material.Grass)
 end
 for i = 1, 12 do
     local angle = (math.pi * 2 * i / 12)
     local position = Vector3.new(math.cos(angle) * 17.5, 6.1, math.sin(angle) * 14)
-    orb(giantDetails, "Shell moss", position, Vector3.new(3.2, 1.2, 3.2), i % 2 == 0 and palette.mossLight or palette.moss, Enum.Material.Grass)
+    orb(homeDetails, "Shell moss", position, Vector3.new(3.2, 1.2, 3.2), i % 2 == 0 and palette.mossLight or palette.moss, Enum.Material.Grass)
 end
-orb(giantDetails, "Mossback tail", Vector3.new(-22, 3.8, 0), Vector3.new(7, 4, 5), palette.moss, Enum.Material.SmoothPlastic)
-orb(giantDetails, "Mossback snout", Vector3.new(27, 6.4, 0), Vector3.new(5.2, 3.8, 6.8), palette.mossLight, Enum.Material.SmoothPlastic)
-orb(giantDetails, "Nose", Vector3.new(29.5, 7.1, 0), Vector3.new(1.05, 0.8, 1.8), palette.ink, Enum.Material.SmoothPlastic)
+orb(homeDetails, "Mossback tail", Vector3.new(-22, 3.8, 0), Vector3.new(7, 4, 5), palette.moss, Enum.Material.SmoothPlastic)
+orb(homeDetails, "Mossback snout", Vector3.new(27, 6.4, 0), Vector3.new(5.2, 3.8, 6.8), palette.mossLight, Enum.Material.SmoothPlastic)
+orb(homeDetails, "Nose", Vector3.new(29.5, 7.1, 0), Vector3.new(1.05, 0.8, 1.8), palette.ink, Enum.Material.SmoothPlastic)
 for _, side in {-1, 1} do
-    orb(giantDetails, "Cheek", Vector3.new(25.2, 5.7, side * 5.4), Vector3.new(2.3, 1.4, 1.2), Color3.fromRGB(151, 190, 143), Enum.Material.SmoothPlastic)
-    orb(giantDetails, "Flipper toe", Vector3.new(13, -0.8, side * 14), Vector3.new(3.2, 1.7, 2.2), palette.mossLight, Enum.Material.SmoothPlastic)
+    orb(homeDetails, "Cheek", Vector3.new(25.2, 5.7, side * 5.4), Vector3.new(2.3, 1.4, 1.2), Color3.fromRGB(151, 190, 143), Enum.Material.SmoothPlastic)
+    orb(homeDetails, "Flipper toe", Vector3.new(13, -0.8, side * 14), Vector3.new(3.2, 1.7, 2.2), palette.mossLight, Enum.Material.SmoothPlastic)
 end
 
 -- Cottage details: door, shutters, porch, chimney and warm windows.
-local cottage = makeFolder(giantDetails, "CottageDetails")
+local cottage = makeFolder(homeDetails, "CottageDetails")
 makePart(cottage, "Front door", Vector3.new(1.8, 4.2, 0.3), CFrame.new(-12.2, 14.2, -2.25), Color3.fromRGB(121, 83, 63), Enum.Material.WoodPlanks)
 makePart(cottage, "Door inset", Vector3.new(1.1, 2.6, 0.12), CFrame.new(-12.2, 14.2, -2.08), Color3.fromRGB(153, 108, 75), Enum.Material.Wood)
 orb(cottage, "Door handle", Vector3.new(-11.55, 14.2, -1.98), Vector3.new(0.22, 0.22, 0.22), palette.gold, Enum.Material.Metal)
@@ -276,7 +281,7 @@ local windowGlow = orb(cottage, "Window glow", Vector3.new(-9, 15, -2.25), Vecto
 addLight(windowGlow, palette.gold, 9, 0.65)
 
 -- A clear, welcoming deck with small details that make the home feel inhabited.
-local deck = makeFolder(giantDetails, "DeckDetails")
+local deck = makeFolder(homeDetails, "DeckDetails")
 for i = -2, 2 do
     local z = i * 4.6
     makePart(deck, "Garden stepping stone", Vector3.new(2.6, 0.18, 2.2), CFrame.new(3, 12.08, z), Color3.fromRGB(191, 183, 145), Enum.Material.Slate)
@@ -301,16 +306,31 @@ addLight(deckLantern, palette.gold, 13, 0.8)
 -- Turn the two simple banks into distinct little places.
 local function decorateIsland(island, isDusk)
     local islandDetails = makeFolder(island, "HandcraftedDetails")
-    local centerX = island.Bank.Position.X
+    local bank = island:WaitForChild("Bank")
+    local centerX, centerZ = bank.Position.X, bank.Position.Z
     local groundColor = isDusk and Color3.fromRGB(154, 143, 177) or Color3.fromRGB(143, 181, 126)
-    makePart(islandDetails, "Soft ground cover", Vector3.new(43.5, 0.18, 38.5), CFrame.new(centerX, 11.62, -40), groundColor, Enum.Material.Grass)
+    makePart(
+        islandDetails,
+        "Soft ground cover",
+        Vector3.new(bank.Size.X - 3, 0.18, bank.Size.Z - 3),
+        CFrame.new(centerX, bank.Position.Y + bank.Size.Y / 2 + 0.12, centerZ),
+        groundColor,
+        Enum.Material.Grass
+    )
 
-    -- Rock shelves soften the rectangular island silhouette.
-    for i = 1, 9 do
-        local angle = i * math.pi * 2 / 9
-        local x = centerX + math.cos(angle) * 20
-        local z = -40 + math.sin(angle) * 16
-        orb(islandDetails, "Weathered cliff rock", Vector3.new(x, 4.1, z), Vector3.new(7, 5.5, 6), isDusk and Color3.fromRGB(104, 97, 132) or palette.stone, Enum.Material.Rock)
+    -- A ring of rock shelves gives both shared islands a soft, organic coastline.
+    for i = 1, 12 do
+        local angle = i * math.pi * 2 / 12
+        local x = centerX + math.cos(angle) * bank.Size.X * 0.43
+        local z = centerZ + math.sin(angle) * bank.Size.Z * 0.43
+        orb(
+            islandDetails,
+            "Weathered cliff rock",
+            Vector3.new(x, 4.1, z),
+            Vector3.new(7, 5.5, 6),
+            isDusk and Color3.fromRGB(104, 97, 132) or palette.stone,
+            Enum.Material.Rock
+        )
     end
 
     -- Extra foliage makes the existing trees read as a canopy rather than single spheres.
@@ -331,55 +351,57 @@ local function decorateIsland(island, isDusk)
         end
     end
 
-    -- Stone pavers make the route readable without turning it into a straight corridor.
-    for i = 1, 7 do
-        local z = -29 - i * 2.8
+    -- Stone pavers lead from the home-bridge landing into the shared biome.
+    for i = 1, 9 do
+        local z = centerZ + 9 - i * 2.8
         local x = centerX + math.sin(i * 0.8) * 1.6
-        local stone = orb(islandDetails, "Trail paver", Vector3.new(x, 11.78, z), Vector3.new(2.3, 0.22, 1.7), Color3.fromRGB(205, 193, 157), Enum.Material.Slate)
+        local stone = orb(islandDetails, "Trail paver", Vector3.new(x, bank.Position.Y + bank.Size.Y / 2 + 0.28, z), Vector3.new(2.3, 0.22, 1.7), Color3.fromRGB(205, 193, 157), Enum.Material.Slate)
         stone.Shape = Enum.PartType.Block
-        stone.CFrame = CFrame.new(x, 11.78, z) * CFrame.Angles(0, math.rad(i * 9), 0)
+        stone.CFrame = CFrame.new(x, bank.Position.Y + bank.Size.Y / 2 + 0.28, z) * CFrame.Angles(0, math.rad(i * 9), 0)
     end
 
-    local treePositions = {
-        Vector3.new(centerX - 17, 11.7, -53),
-        Vector3.new(centerX + 17, 11.7, -54),
-        Vector3.new(centerX - 19, 11.7, -39),
-        Vector3.new(centerX + 19, 11.7, -39),
-    }
-    for i, position in treePositions do
+    local treeCount = isDusk and 6 or 14
+    for i = 1, treeCount do
+        local angle = i * math.pi * 2 / treeCount
+        local x = centerX + math.cos(angle) * bank.Size.X * 0.31
+        local z = centerZ + math.sin(angle) * bank.Size.Z * 0.31
+        local position = Vector3.new(x, bank.Position.Y + bank.Size.Y / 2 + 0.2, z)
         local leaves = isDusk and (i % 2 == 0 and palette.lilac or palette.lilacLight) or (i % 2 == 0 and palette.leaf or palette.leafLight)
-        addTree(islandDetails, position, i % 2 == 0 and 0.82 or 0.68, leaves, 400 + i + (isDusk and 20 or 0))
+        addTree(islandDetails, position, isDusk and 0.72 or 0.82, leaves, 400 + i + (isDusk and 20 or 0))
     end
 
-    for i = 1, 12 do
-        local x = centerX + math.sin(i * 2.1) * 16
-        local z = -31 - i * 2.05
+    for i = 1, 18 do
+        local angle = i * 2.399
+        local radius = isDusk and 18 or 54
+        local x = centerX + math.cos(angle) * radius
+        local z = centerZ + math.sin(angle) * radius
         local color = isDusk and (i % 2 == 0 and palette.lilacLight or palette.moon) or (i % 2 == 0 and palette.gold or palette.coral)
-        addFlower(islandDetails, Vector3.new(x, 11.7, z), color, 0.48 + (i % 3) * 0.08, 700 + i)
+        addFlower(islandDetails, Vector3.new(x, bank.Position.Y + bank.Size.Y / 2 + 0.22, z), color, 0.48 + (i % 3) * 0.08, 700 + i)
     end
 
     if isDusk then
         for i = 1, 7 do
-            local x = centerX + math.cos(i * 1.4) * 16
-            local z = -33 - i * 3.1
-            addMushroom(islandDetails, Vector3.new(x, 11.7, z), i % 2 == 0 and palette.lilac or palette.moon, 0.8 + (i % 2) * 0.18, true)
+            local angle = i * 1.4
+            local x = centerX + math.cos(angle) * 17
+            local z = centerZ + math.sin(angle) * 17
+            addMushroom(islandDetails, Vector3.new(x, bank.Position.Y + bank.Size.Y / 2 + 0.2, z), i % 2 == 0 and palette.lilac or palette.moon, 0.8 + (i % 2) * 0.18, true)
         end
         for i = 1, 5 do
             local x = centerX + (i - 3) * 5
-            local crystal = makePart(islandDetails, "Moon crystal", Vector3.new(0.7, 3.1 + (i % 2), 0.7), CFrame.new(x, 13.2, -55 + (i % 2) * 2) * CFrame.Angles(0, 0, math.rad((i % 2 == 0 and 10 or -12))), palette.lilacLight, Enum.Material.Neon)
+            local crystal = makePart(islandDetails, "Moon crystal", Vector3.new(0.7, 3.1 + (i % 2), 0.7), CFrame.new(x, 13.2, centerZ - 15 + (i % 2) * 2) * CFrame.Angles(0, 0, math.rad((i % 2 == 0 and 10 or -12))), palette.lilacLight, Enum.Material.Neon)
             addLight(crystal, palette.lilacLight, 10, 0.5)
         end
         for i = 1, 8 do
-            addFirefly(islandDetails, Vector3.new(centerX + math.sin(i * 1.8) * 15, 14 + (i % 3), -34 - i * 2.4), palette.gold, 900 + i)
+            addFirefly(islandDetails, Vector3.new(centerX + math.sin(i * 1.8) * 15, 14 + (i % 3), centerZ + 6 - i * 2.4), palette.gold, 900 + i)
         end
     else
         for i = 1, 5 do
-            addMushroom(islandDetails, Vector3.new(centerX + (i - 3) * 5.2, 11.7, -51 + (i % 2) * 3), palette.coral, 0.72, false)
+            addMushroom(islandDetails, Vector3.new(centerX + (i - 3) * 5.2, bank.Position.Y + bank.Size.Y / 2 + 0.2, centerZ - 11 + (i % 2) * 3), palette.coral, 0.72, false)
         end
         for i = 1, 5 do
             local x = centerX + (i - 3) * 5
-            local bell = cylinder(islandDetails, "Wayfinder bell", Vector3.new(x, 12.8, -27), 2.2, 0.35, palette.gold, Enum.Material.Metal)
-            orb(islandDetails, "Bell clapper", Vector3.new(x, 11.6, -27), Vector3.new(0.65, 0.65, 0.65), palette.coral, Enum.Material.Metal)
+            cylinder(islandDetails, "Wayfinder bell", Vector3.new(x, 12.8, centerZ + 13), 2.2, 0.35, palette.gold, Enum.Material.Metal)
+            orb(islandDetails, "Bell clapper", Vector3.new(x, 11.6, centerZ + 13), Vector3.new(0.65, 0.65, 0.65), palette.coral, Enum.Material.Metal)
         end
     end
 end
