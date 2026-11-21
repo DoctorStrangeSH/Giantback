@@ -1,10 +1,14 @@
 from pathlib import Path
 import re
+import sys
+import tempfile
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSET_DIR = ROOT / "assets" / "source_models"
+sys.path.insert(0, str(ROOT / "tools" / "blender"))
+from obj_export_validation import validate_obj
 REQUIRED = (
     "fox_companion",
     "moth_companion",
@@ -31,16 +35,95 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
         self.assertIn("FileExistsError", source)
         self.assertIn("source_sha256", source)
 
-    def test_blender_uv_preview_validates_exported_uvs_normals_and_face_indices(self):
+    def test_blender_uv_preview_uses_tested_obj_validator_and_checks_material_library(self):
         source = (ROOT / "tools" / "blender" / "prepare_source_uv.py").read_text(encoding="utf-8")
-        validator = source.split("def validate_export", 1)[1].split("def export_preview", 1)[0]
-        self.assertIn('line.startswith("vt ")', validator)
-        self.assertIn('line.startswith("vn ")', validator)
-        self.assertIn('line.startswith("f ")', validator)
-        self.assertIn("vertex index out of range", validator)
-        self.assertIn("UV index out of range", validator)
-        self.assertIn("normal index out of range", validator)
-        self.assertIn("export_stats = validate_export(destination)", source)
+        self.assertIn("from obj_export_validation import sha256_file, validate_obj", source)
+        self.assertIn("export_stats = validate_obj(destination)", source)
+        self.assertIn("material_file = destination.with_suffix(\".mtl\")", source)
+        self.assertIn("material_file.name not in export_stats[\"material_libraries\"]", source)
+
+
+class BlenderObjExportValidationTests(unittest.TestCase):
+    def _write_obj(self, directory: Path, content: str) -> Path:
+        path = directory / "preview.obj"
+        path.write_text(content, encoding="utf-8")
+        return path
+
+    def test_valid_obj_with_uv_normals_and_material_reference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._write_obj(Path(directory), """mtllib preview.mtl
+v 0 0 0
+v 1 0 0
+v 0 1 0
+vt 0 0
+vt 1 0
+vt 0 1
+vn 0 0 1
+usemtl fur
+f 1/1/1 2/2/1 3/3/1
+""")
+            result = validate_obj(path)
+            self.assertEqual(result["vertices"], 3)
+            self.assertEqual(result["uv_coordinates"], 3)
+            self.assertEqual(result["normals"], 1)
+            self.assertEqual(result["faces"], 1)
+            self.assertEqual(result["material_libraries"], ["preview.mtl"])
+            self.assertEqual(result["material_uses"], 1)
+            self.assertEqual(len(result["sha256"]), 64)
+
+    def test_valid_obj_supports_negative_relative_indices(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._write_obj(Path(directory), """v 0 0 0
+v 1 0 0
+v 0 1 0
+vt 0 0
+vt 1 0
+vt 0 1
+vn 0 0 1
+f -3/-3/-1 -2/-2/-1 -1/-1/-1
+""")
+            self.assertEqual(validate_obj(path)["faces"], 1)
+
+    def test_invalid_vertex_uv_and_normal_indices_are_rejected(self):
+        fixtures = (
+            ("v 0 0 0\nv 1 0 0\nv 0 1 0\nvt 0 0\nvt 1 0\nvt 0 1\nvn 0 0 1\nf 1/1/1 2/2/1 4/3/1\n", "vertex index out of range"),
+            ("v 0 0 0\nv 1 0 0\nv 0 1 0\nvt 0 0\nvt 1 0\nvt 0 1\nvn 0 0 1\nf 1/1/1 2/2/1 3/4/1\n", "UV index out of range"),
+            ("v 0 0 0\nv 1 0 0\nv 0 1 0\nvt 0 0\nvt 1 0\nvt 0 1\nvn 0 0 1\nf 1/1/1 2/2/1 3/3/2\n", "normal index out of range"),
+        )
+        for content, message in fixtures:
+            with self.subTest(message=message), tempfile.TemporaryDirectory() as directory:
+                path = self._write_obj(Path(directory), content)
+                with self.assertRaisesRegex(RuntimeError, message):
+                    validate_obj(path)
+
+    def test_uv_coordinates_outside_atlas_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._write_obj(Path(directory), """v 0 0 0
+v 1 0 0
+v 0 1 0
+vt 0 0
+vt 1.2 0
+vt 0 1
+vn 0 0 1
+f 1/1/1 2/2/1 3/3/1
+""")
+            with self.assertRaisesRegex(RuntimeError, "exceeds the 0-1 range"):
+                validate_obj(path)
+
+    def test_faces_without_uv_or_normal_data_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._write_obj(Path(directory), """v 0 0 0
+v 1 0 0
+v 0 1 0
+vt 0 0
+vt 1 0
+vt 0 1
+vn 0 0 1
+f 1//1 2//1 3//1
+""")
+            with self.assertRaisesRegex(RuntimeError, "missing vertex, UV or normal"):
+                validate_obj(path)
+
 
     def test_blender_uv_preview_is_non_destructive_and_exports_uv_normals(self):
         source = (ROOT / "tools" / "blender" / "prepare_source_uv.py").read_text(encoding="utf-8")
