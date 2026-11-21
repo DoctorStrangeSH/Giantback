@@ -388,7 +388,8 @@ local function updateFoxScentTrail(grove, activeCacheId, foxEquipped)
 
     local anchor = grove:FindFirstChild(activeCacheId)
     local trail = grove:FindFirstChild("Trail")
-    if not anchor or not anchor:IsA("BasePart") or not trail or not trail:IsA("BasePart") then
+    local bank = grove:FindFirstChild("Bank")
+    if not anchor or not anchor:IsA("BasePart") or not trail or not trail:IsA("BasePart") or not bank or not bank:IsA("BasePart") then
         clearFoxScentTrail()
         return
     end
@@ -403,9 +404,8 @@ local function updateFoxScentTrail(grove, activeCacheId, foxEquipped)
     foxScentTrailFolder = folder
     foxScentTrailCacheId = activeCacheId
 
-    local bank = grove:FindFirstChild("Bank")
-    local groundY = bank and bank.Position.Y + bank.Size.Y / 2 + 0.13 or trail.Position.Y + trail.Size.Y / 2 + 0.08
-    local groveCenter = bank and bank.Position or Vector3.new(trail.Position.X, 0, trail.Position.Z)
+    local groundY = bank.Position.Y + bank.Size.Y / 2 + 0.13
+    local groveCenter = bank.Position
     local startPosition = Vector3.new(trail.Position.X, groundY, trail.Position.Z + math.min(6, trail.Size.Z * 0.35))
     local finishPosition = Vector3.new(anchor.Position.X, groundY, anchor.Position.Z)
     local scentRouteOffsets = {
@@ -581,7 +581,7 @@ local function refresh()
             local activeCacheId = player:GetAttribute("FoxCacheSpot")
             local readyAt = tonumber(player:GetAttribute("FoxSearchReadyAt")) or 0
             if type(activeCacheId) == "string" and activeCacheId ~= "" then
-                entry.description.Text = "Тайник найден! " .. (equipped and "Следуй за золотой меткой." or "Позови лисёнка и забери находку.")
+                entry.description.Text = "Тайник найден! " .. (equipped and "Следуй по золотым следам лап." or "Позови лисёнка и забери находку.")
             elseif readyAt > os.time() then
                 entry.description.Text = "Нюх отдыхает. Скоро снова будет готов."
             else
