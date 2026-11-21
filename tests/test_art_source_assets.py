@@ -137,6 +137,7 @@ class OriginalMeshSourceTests(unittest.TestCase):
         for stem in REQUIRED:
             content = (ASSET_DIR / f"{stem}.obj").read_text(encoding="utf-8")
             normals = []
+            corner_count = 0
             face_count = 0
             for line in content.splitlines():
                 if line.startswith("vn "):
@@ -150,13 +151,15 @@ class OriginalMeshSourceTests(unittest.TestCase):
                     tokens = line.split()[1:]
                     self.assertGreaterEqual(len(tokens), 3, stem)
                     for token in tokens:
+                        corner_count += 1
                         parts = token.split("/")
                         self.assertEqual(len(parts), 3, f"{stem}: face lacks explicit normal")
                         self.assertEqual(parts[1], "", f"{stem}: unexpected unreviewed UV index")
                         normal_index = int(parts[2])
                         self.assertGreater(normal_index, 0, stem)
                         self.assertLessEqual(normal_index, len(normals), stem)
-            self.assertEqual(len(normals), face_count, f"{stem}: expected one flat normal per face")
+            self.assertEqual(len(normals), corner_count, f"{stem}: expected a crease-aware normal per face corner")
+            self.assertGreater(len(normals), face_count, f"{stem}: corner normals were not generated")
 
     def test_obj_faces_do_not_contain_zero_area_triangles(self):
         for stem in REQUIRED:
