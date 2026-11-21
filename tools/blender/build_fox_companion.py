@@ -81,6 +81,73 @@ def ellipsoid(name, center, scale, mat, segments=32, rings=20):
     return smooth(obj, mat, name)
 
 
+
+def sculpted_head(name, center, scale, mat, segments=64, rings=40):
+    """Build an organic fox head surface by deforming a dense parametric quad shell.
+
+    The lower hemisphere gains cheek volume while the chin and crown taper gently;
+    this is deliberately not a stock sphere primitive.
+    """
+    cx, cy, cz = center
+    sx, sy, sz = scale
+    verts, faces = [], []
+    for row in range(rings + 1):
+        theta = math.pi * row / rings
+        vertical = math.cos(theta)
+        radial = math.sin(theta)
+        for side in range(segments):
+            phi = 2.0 * math.pi * side / segments
+            x = math.cos(phi) * radial
+            z = math.sin(phi) * radial
+            cheek = 1.0 + 0.16 * math.exp(-((vertical + 0.24) / 0.30) ** 2)
+            jaw_taper = 1.0 - 0.20 * max(0.0, -vertical - 0.42)
+            brow_width = 1.0 + 0.055 * max(0.0, vertical)
+            px = x * sx * cheek * jaw_taper * brow_width
+            py = vertical * sy
+            # Slightly fuller rear skull, with the face remaining toward -Z.
+            pz = z * sz * (1.0 + 0.045 * max(0.0, vertical))
+            verts.append((cx + px, cy + py, cz + pz))
+    for row in range(rings):
+        for side in range(segments):
+            a = row * segments + side
+            b = row * segments + (side + 1) % segments
+            faces.append((a, b, b + segments, a + segments))
+    faces.append(tuple(range(segments - 1, -1, -1)))
+    faces.append(tuple(rings * segments + side for side in range(segments)))
+    mesh = bpy.data.meshes.new(name + "Mesh")
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    return smooth(obj, mat, name)
+
+
+def lofted_muzzle(name, profiles, mat, sides=48):
+    """Create a tapered muzzle from hand-shaped elliptical cross sections along Z."""
+    verts, faces = [], []
+    for z, center_y, radius_x, radius_y in profiles:
+        for side in range(sides):
+            angle = 2.0 * math.pi * side / sides
+            verts.append((
+                math.cos(angle) * radius_x,
+                center_y + math.sin(angle) * radius_y,
+                z,
+            ))
+    for row in range(len(profiles) - 1):
+        for side in range(sides):
+            a = row * sides + side
+            b = row * sides + (side + 1) % sides
+            faces.append((a, b, b + sides, a + sides))
+    faces.append(tuple(range(sides - 1, -1, -1)))
+    faces.append(tuple((len(profiles) - 1) * sides + side for side in range(sides)))
+    mesh = bpy.data.meshes.new(name + "Mesh")
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    return smooth(obj, mat, name)
+
+
 def leaf_mesh(name, center, width, height, depth, mat, facing=-1.0):
     """A softly pointed ear/tuft leaf with a rounded cross-section."""
     cx, cy, cz = center
@@ -169,8 +236,8 @@ def create_fox(p):
     ellipsoid("FoxBelly", (0, 0.91, -0.48), (0.43, 0.54, 0.31), p["cream"])
 
     # Head silhouette: broad forehead, soft cheeks and a shorter, friendlier muzzle.
-    ellipsoid("FoxHead", (0, 1.73, -0.62), (0.62, 0.61, 0.56), p["fox_orange"], 40, 28)
-    ellipsoid("FoxMuzzle", (0, 1.42, -1.055), (0.39, 0.25, 0.32), p["cream"])
+    sculpted_head("FoxHead", (0, 1.73, -0.62), (0.62, 0.61, 0.56), p["fox_orange"], 64, 40)
+    lofted_muzzle("FoxMuzzle", [(-1.385, 1.42, 0.075, 0.065), (-1.33, 1.42, 0.20, 0.13), (-1.23, 1.43, 0.31, 0.19), (-1.11, 1.44, 0.36, 0.215), (-1.015, 1.45, 0.29, 0.17), (-0.985, 1.45, 0.18, 0.11)], p["cream"])
     ellipsoid("CheekFluff_L", (-0.43, 1.48, -0.87), (0.22, 0.18, 0.19), p["cream"], 24, 16)
     ellipsoid("CheekFluff_R", (0.43, 1.48, -0.87), (0.22, 0.18, 0.19), p["cream"], 24, 16)
     ellipsoid("ForeheadTuft", (0, 2.22, -0.59), (0.16, 0.20, 0.18), p["fox_orange"], 24, 16)
