@@ -75,6 +75,7 @@ def make_palette():
         "white": material("white", (1.0, 0.98, 0.87), 0.22),
         "nose": material("nose", (0.12, 0.07, 0.06), 0.24),
         "expression": material("expression", (0.29, 0.12, 0.075), 0.58),
+        "paw_detail": material("paw_detail", (0.66, 0.34, 0.22), 0.78),
     }
 
 
@@ -392,6 +393,20 @@ def create_fox(p):
                  (0.22, 0.13, 0.25), p["cream"], 24, 16)
         ellipsoid("PawBack" + suffix, (side*0.34, 0.12, 0.61),
                  (0.24, 0.13, 0.27), p["cream"], 24, 16)
+        # Three shallow toe separators add a readable paw silhouette without claws.
+        for toe, offset in enumerate((-0.085, 0.0, 0.085)):
+            curved_plume("PawToeFront" + suffix + str(toe),
+                [(side*0.34 + offset - 0.018, 0.145, -0.842),
+                 (side*0.34 + offset, 0.175, -0.858),
+                 (side*0.34 + offset + 0.018, 0.145, -0.842)],
+                [0.003, 0.008, 0.003], p["paw_detail"],
+                sides=8, steps_per_segment=4)
+            curved_plume("PawToeBack" + suffix + str(toe),
+                [(side*0.34 + offset - 0.018, 0.145, 0.842),
+                 (side*0.34 + offset, 0.175, 0.858),
+                 (side*0.34 + offset + 0.018, 0.145, 0.842)],
+                [0.003, 0.008, 0.003], p["paw_detail"],
+                sides=8, steps_per_segment=4)
 
     # Big plush tail sweeps up behind the body; cream tip remains separately riggable.
     plush_tail("FoxTail",
@@ -446,10 +461,10 @@ def create_fox(p):
         "FoxEarRight": ["FoxEarRight"],
         "FoxEarInnerLeft": ["FoxEarInner_L"],
         "FoxEarInnerRight": ["FoxEarInner_R"],
-        "FoxLegFrontLeft": ["FoxLegFrontLeft", "PawFrontLeft"],
-        "FoxLegFrontRight": ["FoxLegFrontRight", "PawFrontRight"],
-        "FoxLegBackLeft": ["FoxLegBackLeft", "PawBackLeft"],
-        "FoxLegBackRight": ["FoxLegBackRight", "PawBackRight"],
+        "FoxLegFrontLeft": ["FoxLegFrontLeft", "PawFrontLeft", "PawToeFrontLeft0", "PawToeFrontLeft1", "PawToeFrontLeft2"],
+        "FoxLegFrontRight": ["FoxLegFrontRight", "PawFrontRight", "PawToeFrontRight0", "PawToeFrontRight1", "PawToeFrontRight2"],
+        "FoxLegBackLeft": ["FoxLegBackLeft", "PawBackLeft", "PawToeBackLeft0", "PawToeBackLeft1", "PawToeBackLeft2"],
+        "FoxLegBackRight": ["FoxLegBackRight", "PawBackRight", "PawToeBackRight0", "PawToeBackRight1", "PawToeBackRight2"],
         "FoxTail": ["FoxTail"],
         "FoxTailTip": ["FoxTailTip"],
         "FoxEyes": ["EyeBaseLeft", "EyeBaseRight", "EyePupilLeft", "EyePupilRight", "EyeLidUpperLeft", "EyeLidUpperRight"],
