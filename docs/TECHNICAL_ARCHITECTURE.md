@@ -143,7 +143,7 @@
 - Уникальные сюжетные и коллекционные находки сохраняют постоянный флаг collectedNodes и больше не доступны тому же игроку.
 - Клиент запрашивает персональное состояние после загрузки профиля; сервер отправляет cooldowns и collected, не принимая эти значения от клиента.
 - Повторный вход восстанавливает локальную видимость из сохранённого профиля.
-- Инвентарь, cooldowns и unique claims сохраняются через UpdateAsync; schemaVersion текущего прототипа — 4.
+- Инвентарь, cooldowns и unique claims сохраняются через UpdateAsync; schemaVersion текущего прототипа — 5.
 - Клиент отображает счётчик, полученный из серверного профиля; локальная модель UI не является источником инвентаря.
 - Сохранение использует версию схемы и миграции, чтобы старые профили не теряли прогресс.
 
@@ -157,19 +157,21 @@
 - Клиентские эффекты попаданий и анимации не могут сами выдавать награды или изменять здоровье.
 
 
-## 13. Legacy prototype: personal city and farm (not target architecture)
+## 13. Fixed home islands and farm prototype
 
-- Внутри модели Mossback создаётся папка PersonalCities; на каждого игрока создаётся модель City_<UserId> с атрибутом OwnerUserId.
-- Домашние визуальные детали и четыре модели грядок клонируются в персональную модель. Клиент локально показывает только город своего владельца и скрывает общие прототипные детали.
-- Локальная прозрачность и отключение чужих ProximityPrompt — только UX-слой. Каждый серверный callback дополнительно проверяет UserId владельца.
-- Изначально модели были привязаны к перемещающемуся Mossback. Reboot отключил перемещение; overlap-based PersonalCities теперь legacy и должны быть заменены непересекающимися фиксированными участками.
-- Профиль schemaVersion 4 содержит city.level, city.farm.level и city.farm.plots. Для старых профилей отсутствующее состояние города нормализуется в стартовый город и одну открытую грядку.
-- Plot01 открыта на уровне фермы 1; Plot02/Plot03 открываются на уровне 2; Plot04 — на уровне 3.
-- Первый серверный цикл культуры — Carrot: 3 стартовых семени, 180 секунд роста, затем сбор одной моркови. plantedAt и readyAt сохраняются, поэтому рост продолжается офлайн.
-- В Studio используется отдельный DataStore GiantbackAlbum_Studio_v1, чтобы тестовые профили не пересекались с живыми игроками. Для проверки сохранений в Studio нужно включить Enable Studio Access to API Services; при недоступном DataStore игра остаётся в offline-режиме.
-- Этот срез не является завершённой системой строительства или гостевых разрешений. Следующий шаг — серверный FarmService/CityService, улучшение уровня фермы и полный набор культур.
-
+- `HomeIslandTemplate` is stored in ServerStorage. WorldVisuals decorates the template before World.server clones it.
+- Each server has eight fixed home-island slots arranged around the shared Grove hub. The slot radius is 240 studs; all islands face inward toward their permanent bridge.
+- A joining player receives a clone named `HomeIsland_<UserId>` inside Workspace.PlayerIslands, with OwnerUserId, OwnerName and HomeIslandSlot attributes.
+- Each island has its own HomeSpawn, cottage, planter, lantern pad and PersonalCity container. Four farm plots are created inside that player's island; they no longer overlap or depend on client-side hiding.
+- Eight radial bridges connect the personal islands to the shared Grove. A separate fixed bridge connects Grove to Dusk.
+- A temporary PublicSpawn in Grove is used while the profile loads. The player is then moved to their own HomeSpawn, which is also used for respawns.
+- Slot occupancy is server-local and released when the player leaves. The slot number is not persisted; the island's gameplay state is stored in the player's profile.
+- Profile schemaVersion 5 migrates the old `city` payload into `island`, preserves farm/building data, removes the legacy field and accepts old profiles idempotently.
+- Plot01 is open at farm level 1; Plot02/Plot03 open at level 2; Plot04 opens at level 3.
+- The first crop is Carrot: 3 starter seeds, 180 seconds of growth, then one carrot harvest. plantedAt and readyAt persist so growth continues offline.
+- Studio uses a separate DataStore, GiantbackAlbum_Studio_v1. Enable Studio Access to API Services to test saves; if DataStore is unavailable the session is marked offline and is not saved.
+- This is a playable architecture prototype, not a finished build mode or guest-permissions system. The Roblox place should be configured for a maximum of eight players until additional slots are implemented.
 
 ## Reboot decision (2026-11-21)
 
-Целевая архитектура и причины отказа от moving-island loop описаны в docs/REBOOT_ARCHITECTURE.md. Текущий код Mossback/Grove/Dusk и overlap-based PersonalCities считается legacy. Не расширять его новыми механиками. Следующая миграция профиля — schema v5, с переносом полезного прогресса в постоянный домашний остров.
+The moving-island loop and overlapping PersonalCities approach are retired. The current implementation uses static turtle-shaped personal home islands, eight server-assigned slots and a shared bridge-connected adventure hub. See docs/REBOOT_ARCHITECTURE.md. CI validates the place source and profile migration; Studio multiplayer, persistence and mobile acceptance remain open.
