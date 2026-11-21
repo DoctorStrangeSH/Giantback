@@ -39,21 +39,37 @@ def parse_args():
     return parser.parse_args(argv)
 
 
-def material(name, color, roughness=0.72, metallic=0.0):
+def material(name, color, roughness=0.72, metallic=0.0, soft_fur=False):
     mat = bpy.data.materials.new(name)
     mat.diffuse_color = (*color, 1.0)
     mat.use_nodes = True
-    shader = mat.node_tree.nodes.get("Principled BSDF")
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    shader = nodes.get("Principled BSDF")
     shader.inputs["Base Color"].default_value = (*color, 1.0)
     shader.inputs["Roughness"].default_value = roughness
     shader.inputs["Metallic"].default_value = metallic
+    if soft_fur:
+        # Restrained procedural micro-relief: broad enough to read as soft groomed fur,
+        # not noisy scales. Keep bump subtle so the low-poly silhouette stays clean.
+        noise = nodes.new("ShaderNodeTexNoise")
+        noise.name = name + "_SoftFurNoise"
+        noise.inputs["Scale"].default_value = 34.0
+        noise.inputs["Detail"].default_value = 2.0
+        noise.inputs["Roughness"].default_value = 0.62
+        bump = nodes.new("ShaderNodeBump")
+        bump.name = name + "_SoftFurBump"
+        bump.inputs["Strength"].default_value = 0.10
+        bump.inputs["Distance"].default_value = 0.022
+        links.new(noise.outputs["Fac"], bump.inputs["Height"])
+        links.new(bump.outputs["Normal"], shader.inputs["Normal"])
     return mat
 
 
 def make_palette():
     return {
-        "fox_orange": material("fox_orange", (0.91, 0.36, 0.13), 0.82),
-        "cream": material("cream", (0.98, 0.86, 0.66), 0.88),
+        "fox_orange": material("fox_orange", (0.91, 0.36, 0.13), 0.82, soft_fur=True),
+        "cream": material("cream", (0.98, 0.86, 0.66), 0.88, soft_fur=True),
         "ear_pink": material("ear_pink", (0.82, 0.39, 0.35), 0.9),
         "dark": material("dark", (0.08, 0.06, 0.05), 0.28),
         "white": material("white", (1.0, 0.98, 0.87), 0.22),
