@@ -283,6 +283,9 @@ def add_review_camera(objects):
     bpy.ops.mesh.primitive_plane_add(size=200, location=(center.x, -0.035, center.z))
     floor = bpy.context.object
     floor.name = "REVIEW_ONLY_Ground"
+    # Blender planes are created in XY (normal +Z); the character uses Y-up.
+    # Rotate the floor into XZ so paws actually rest on a horizontal surface.
+    floor.rotation_euler.x = math.radians(90.0)
     floor.data.materials.append(floor_mat)
 
     world = bpy.data.worlds.new("FoxHeroReviewWorld") if not bpy.data.worlds else bpy.data.worlds[0]
