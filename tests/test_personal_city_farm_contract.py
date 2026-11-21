@@ -20,6 +20,12 @@ class PersonalCityFarmContractTests(unittest.TestCase):
         self.assertIn("session.inventory.CarrotSeed = 3", WORLD)
         self.assertIn('if key == "CarrotSeed" and savedAmount == nil then', WORLD)
 
+    def test_studio_uses_a_separate_datastore_from_live_profiles(self):
+        self.assertIn('"GiantbackAlbum_Studio_v1"', WORLD)
+        self.assertIn('"GiantbackAlbum_v1"', WORLD)
+        self.assertIn("local storeName = RunService:IsStudio()", WORLD)
+        self.assertIn('player:SetAttribute("OfflineAlbum", true)', WORLD)
+
     def test_personal_city_has_server_owned_identity(self):
         self.assertIn('cityModel:SetAttribute("OwnerUserId", ownerUserId)', WORLD)
         self.assertIn("if visitor.UserId ~= player.UserId then return end", WORLD)
