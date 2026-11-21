@@ -15,6 +15,22 @@ class RebootContractTests(unittest.TestCase):
 
 
 
+
+    def test_mobile_topbar_geometry_fits_minimum_supported_viewports(self):
+        # Mirror the compact HUD sizing rules at the supported 375 px minimum.
+        for viewport_width in (375, 390, 409, 410, 430, 699):
+            top_bar_width = viewport_width - 32
+            usable_width = max(0, top_bar_width - 8)
+            brand_width = int(usable_width * 0.42)
+            resources_width = 166 if viewport_width < 410 else usable_width - brand_width
+            self.assertGreaterEqual(brand_width, 1, f"{viewport_width}px brand")
+            self.assertGreaterEqual(resources_width, 1, f"{viewport_width}px resources")
+            self.assertLessEqual(
+                brand_width + resources_width,
+                top_bar_width,
+                f"{viewport_width}px top bar overlaps",
+            )
+
     def test_compact_topbar_reserves_a_gap_without_overlapping_brand_and_resources(self):
         self.assertIn("local topBarUsableWidth = math.max(0, topBar.AbsoluteSize.X - 8)", HUD)
         self.assertIn("local brandWidth = math.floor(topBarUsableWidth * 0.42)", HUD)
