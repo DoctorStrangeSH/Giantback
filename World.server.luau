@@ -93,9 +93,14 @@ end
 local function encounter(id, island, height)
     local nest = island.Nest
     local model = Storage[id]:Clone()
+    model.Name = id .. "Encounter"
+    model:SetAttribute("CompanionId", id)
     model.Parent = island
     model:PivotTo(CFrame.new(nest.Position + Vector3.new(0,height,0)) * CFrame.Angles(0,math.pi,0))
     prompt(nest,pets[id],"Подружиться",function(player)
+        if player:GetAttribute(id) then
+            return tip(player, "Вы уже познакомились с " .. pets[id] .. ". Найти её повторно не нужно.")
+        end
         player:SetAttribute(id,true)
         player:SetAttribute("Companion",id)
         tip(player,pets[id] .. " теперь с тобой!")
