@@ -64,6 +64,11 @@ class MothLunarGlowContractTests(unittest.TestCase):
         self.assertIn('mote.Name = "LunarSpark"', ALBUM)
         self.assertIn("for index = 1, 12 do", ALBUM)
         self.assertIn("Debris:AddItem(burst, 1.0)", ALBUM)
+        self.assertIn("mote.CanCollide = false", ALBUM)
+        self.assertIn("mote.CanTouch = false", ALBUM)
+        self.assertIn("mote.CanQuery = false", ALBUM)
+        self.assertIn("mote.CastShadow = false", ALBUM)
+        self.assertIn("TweenInfo.new(0.82, Enum.EasingStyle.Quad", ALBUM)
         self.assertIn('GetAttributeChangedSignal("MoonBloom")', ALBUM)
         self.assertIn('GetAttributeChangedSignal("MoonGateOpen")', ALBUM)
 
