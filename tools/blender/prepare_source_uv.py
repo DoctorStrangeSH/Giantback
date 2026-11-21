@@ -140,7 +140,9 @@ def validate_export(path: Path) -> dict:
                 parts = token.split("/")
                 if len(parts) != 3 or not parts[1] or not parts[2]:
                     raise RuntimeError(f"{path.name}:{line_number}: face is missing UV or normal data")
-                uv_index, normal_index = int(parts[1]), int(parts[2])
+                vertex_index, uv_index, normal_index = int(parts[0]), int(parts[1]), int(parts[2])
+                if vertex_index == 0 or abs(vertex_index) > vertex_count:
+                    raise RuntimeError(f"{path.name}:{line_number}: vertex index out of range")
                 if uv_index == 0 or abs(uv_index) > uv_count:
                     raise RuntimeError(f"{path.name}:{line_number}: UV index out of range")
                 if normal_index == 0 or abs(normal_index) > normal_count:
