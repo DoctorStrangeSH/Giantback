@@ -412,9 +412,9 @@ getObjective = function()
     local activeCacheId = player:GetAttribute("FoxCacheSpot")
     if type(activeCacheId) == "string" and activeCacheId ~= "" then
         if player:GetAttribute("Companion") ~= "Fox" then
-            return "Позови лисёнка, чтобы забрать найденный тайник."
+            return "Позови лисёнка, чтобы увидеть золотые следы и забрать тайник."
         end
-        return "Лисёнок нашёл тайник! Следуй за золотой меткой в Солнечной роще."
+        return "Лисёнок нашёл тайник! Следуй по золотым следам лап в Солнечной роще."
     end
     if not player:GetAttribute("Fox") then return "Пройди по деревянному мосту в Солнечную рощу и найди лисёнка." end
     if not player:GetAttribute("Seed") then return "Позови лисёнка у следов на тропе: он найдёт лунное семя." end
