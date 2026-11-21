@@ -147,3 +147,8 @@ Each of the four paws now has three shallow curved toe separators in a muted war
 ## Tail tip transition pass
 
 The cream tip profile now begins at the exact terminal centerline and matching width/depth radii of FoxTail, then narrows through five elliptical profile stations. This is intended to remove the visible gap/step at the orange-to-cream join while retaining separate FoxTail and FoxTailTip rig groups. Render inspection is still required to confirm normals, shading continuity and silhouette.
+
+
+## Automated Blender visual review
+
+A dedicated GitHub Actions workflow now runs the hero generator with Blender 4.2.3 and publishes four PNG review angles (front, side, back, three-quarter), the .blend source, OBJ, rig metadata and mesh-quality report. CI verifies output completeness and the 17-part rig contract. This is a reproducible technical review package, not an artistic sign-off: a human must inspect the images for silhouette, intersections, shading and appeal.
