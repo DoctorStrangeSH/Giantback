@@ -437,7 +437,7 @@ local function interactFarmPlot(player, ownerUserId, plotId)
     local now = os.time()
     if state.cropId == "" then
         if (session.inventory.CarrotSeed or 0) < 1 then
-            return tip(player, "Семена закончились. Найди или купи новые у торговца.")
+            return tip(player, "Семена закончились. Новые семена появятся у торговца позже.")
         end
         session.inventory.CarrotSeed -= 1
         state.cropId = "Carrot"
