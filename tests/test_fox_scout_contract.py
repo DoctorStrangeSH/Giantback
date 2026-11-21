@@ -110,6 +110,13 @@ class FoxScoutContractTests(unittest.TestCase):
         self.assertIn('"ScentMote" .. tostring(moteIndex)', ALBUM)
 
 
+
+    def test_fox_scent_trail_waits_for_streamed_grove_parts_before_rendering(self):
+        self.assertIn('local bank = grove:FindFirstChild("Bank")', ALBUM)
+        self.assertIn('not bank or not bank:IsA("BasePart")', ALBUM)
+        self.assertIn('descendant.Name == "Bank"', ALBUM)
+        self.assertIn('descendant.Name == "Trail"', ALBUM)
+
     def test_fox_scent_routes_use_cache_specific_waypoints_around_grove_trees(self):
         self.assertIn("local scentRouteOffsets = {", ALBUM)
         self.assertIn("FoxCache02 = {", ALBUM)
