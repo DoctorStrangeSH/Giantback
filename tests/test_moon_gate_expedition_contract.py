@@ -87,6 +87,18 @@ class MoonGateExpeditionContractTests(unittest.TestCase):
         self.assertIn("traceFound and mothEquipped and not gateOpen", ALBUM)
         self.assertIn("gateOpen and not relicCollected", ALBUM)
 
+
+    def test_locked_gate_uses_a_local_collision_barrier_that_opens_for_its_owner(self):
+        self.assertIn('moonGateBarrier.Name = "MoonGateLocalBarrier"', ALBUM)
+        self.assertIn("moonGateBarrier.CanCollide = true", ALBUM)
+        self.assertIn("if gateOpen or not runeAnchor", ALBUM)
+        self.assertIn("moonGateBarrier:Destroy()", ALBUM)
+        self.assertIn("updateMoonGateBarrier(runeAnchor, gateOpen)", ALBUM)
+
+    def test_fox_gate_search_is_unlocked_only_after_the_moth_and_moonbloom(self):
+        self.assertIn('if not player:GetAttribute("Moth") or not player:GetAttribute("MoonBloom") then', WORLD)
+        self.assertIn('foxEquipped and player:GetAttribute("MoonBloom") == true and not traceFound', ALBUM)
+
     def test_relic_visual_disappears_only_after_the_player_claims_it(self):
         self.assertIn('descendant.Name == "MoonRelicGem"', ALBUM)
         self.assertIn("descendant.LocalTransparencyModifier = relicCollected and 1 or 0", ALBUM)
