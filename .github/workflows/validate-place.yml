@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run resource collection contract tests
+      - name: Run gameplay and world contract tests
         run: python -m unittest discover -s tests -v
 
       - name: Build Roblox place
@@ -43,7 +43,8 @@ jobs:
                   names.add(name.text)
 
           required = {
-              "Mossback",
+              "HomeIslandTemplate",
+              "ServerStorage",
               "Grove",
               "Dusk",
               "ReplicatedStorage",
@@ -88,14 +89,24 @@ jobs:
               "ResourcePicked",
               "p.MaxActivationDistance + 1",
               "kind = \"renewable\"",
-              "old.schemaVersion = 4",
+              "old.schemaVersion = 5",
               "old.resourceCooldowns = savedCooldowns",
               "old.collectedNodes = savedCollected",
               "LocalTransparencyModifier = visible and 0 or 1",
               "local function normalizeCity(raw)",
-              "PersonalCities",
+              "PlayerIslands",
+              "HomeIsland_",
+              "HOME_ISLAND_SLOT_COUNT = 8",
+              "HomeIslandSlot",
+              "homeIslandTemplate:Clone()",
+              "old.island = savedIsland",
+              "old.city = nil",
+              "HomeSpawn",
               "OwnerUserId",
               "savedFarm.plots = citySnapshot.farm.plots",
+              "type(data.island) == \\"table\\" and data.island or data.city",
+              "player.RespawnLocation = homeSpawn",
+              "occupiedHomeSlots[session.homeSlot] = nil",
               "CarrotSeed",
               "Carrot",
               "growthSeconds = 180",
