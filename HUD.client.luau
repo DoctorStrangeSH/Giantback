@@ -125,8 +125,8 @@ resources.BackgroundColor3 = palette.paper
 resources.Parent = topBar
 corner(resources, 18)
 stroke(resources, palette.paperDark, 0.1, 1)
-local seedLabel = label(resources, "Seeds", "🌱  Семена  0", UDim2.new(0.5, -8, 1, 0), UDim2.fromOffset(10, 0), 13, palette.ink, Enum.Font.GothamBold)
-local cropLabel = label(resources, "Harvest", "🥕  Урожай  0", UDim2.new(0.5, -8, 1, 0), UDim2.new(0.5, 2, 0, 0), 13, palette.ink, Enum.Font.GothamBold)
+local woodLabel = label(resources, "Wood", "🪵  Дерево  0", UDim2.new(0.5, -8, 1, 0), UDim2.fromOffset(10, 0), 13, palette.ink, Enum.Font.GothamBold)
+local stoneLabel = label(resources, "Stone", "🪨  Камень  0", UDim2.new(0.5, -8, 1, 0), UDim2.new(0.5, 2, 0, 0), 13, palette.ink, Enum.Font.GothamBold)
 
 local objective = Instance.new("Frame")
 objective.Name = "ObjectiveCard"
@@ -266,6 +266,9 @@ local function renderCity()
     addInfo("Добро пожаловать домой!", "Это твой отдельный постоянный остров. Соседи видят его, но не могут менять твои постройки.", 84)
     addInfo("Домашний остров №" .. tostring(homeSlot), "На сервере восемь отдельных островов. Твой дом и ферма не накладываются на чужие участки.", 76)
     addInfo("Уровень города: " .. tostring(cityLevel), "Развивай остров, собирай материалы и открывай новые территории мостами.", 76)
+    local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
+    local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
+    addInfo("Материалы для моста", "🪵 Дерево: " .. tostring(wood) .. " / 5    •    🪨 Камень: " .. tostring(stone) .. " / 3", 66)
     addInfo("Ферма: уровень " .. tostring(farmLevel), "У тебя есть четыре места для грядок. Открой вкладку «Ферма», чтобы посмотреть их состояние.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
 end
@@ -312,8 +315,9 @@ local function renderWorld()
     local bridgeHome = workspace:FindFirstChild("BridgeToGrove")
     local bridgeForest = workspace:FindFirstChild("BridgeToDusk")
     addInfo("Домашний остров", "Твой отдельный дом и ферма. Соседи могут прийти в гости, но не могут менять твои вещи.", 68)
-    addInfo("Солнечная роща", bridgeHome and "Восемь постоянных мостов ведут с домашних островов в общий лес." or "Мосты пока не построены.", 68)
-    addInfo("Лунная роща", bridgeForest and "От Солнечной рощи ведёт отдельный мост к волшебному острову." or "Мост пока закрыт.", 68)
+    local homeBridgeBuilt = player:GetAttribute("Bridge_HomeToGrove") == true
+    addInfo("Солнечная роща", bridgeHome and (homeBridgeBuilt and "Твой мост восстановлен. Можно идти в общий лес." or "Твой мост пока ждёт ремонта: нужно дерево ×5 и камень ×3.") or "Мосты пока не построены.", 68)
+    addInfo("Лунная роща", bridgeForest and "От Солнечной рощи ведёт отдельный постоянный мост к волшебному острову." or "Мост пока закрыт.", 68)
     addInfo("Скоро новые земли", "Каменный кряж, древние руины и кристальная пещера станут следующими большими открытиями.", 78)
 end
 
@@ -397,6 +401,14 @@ end
 
 getObjective = function()
     if not player:GetAttribute("Ready") then return "Загружаем твой остров…" end
+    if not player:GetAttribute("Bridge_HomeToGrove") then
+        local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
+        local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
+        if wood < 5 or stone < 3 then
+            return "Собери дерево и камень у дома. Для моста нужно 5 дерева и 3 камня."
+        end
+        return "Материалы готовы! Подойди к деревянному мосту и восстанови его."
+    end
     if not player:GetAttribute("Fox") then return "Пройди по деревянному мосту в Солнечную рощу и найди лисёнка." end
     if not player:GetAttribute("Seed") then return "Попроси лисёнка поискать следы на лесной тропе." end
     if not player:GetAttribute("Moth") then return "Перейди через лесной мост в Лунную рощу и найди моль." end
@@ -408,8 +420,8 @@ getObjective = function()
 end
 
 local function refresh()
-    seedLabel.Text = "🌱  Семена  " .. tostring(player:GetAttribute("Resource_CarrotSeed") or 0)
-    cropLabel.Text = "🥕  Урожай  " .. tostring(player:GetAttribute("Resource_Carrot") or 0)
+    woodLabel.Text = "🪵  Дерево  " .. tostring(player:GetAttribute("Resource_Wood") or 0)
+    stoneLabel.Text = "🪨  Камень  " .. tostring(player:GetAttribute("Resource_Stone") or 0)
     objectiveText.Text = getObjective()
     brandSubtitle.Text = "УРОВЕНЬ ГОРОДА " .. tostring(player:GetAttribute("City_Level") or 1)
     if panel.Visible and activeTab and renderers[activeTab] then
@@ -466,8 +478,8 @@ local function updateLayout()
     end
     if width < 410 then
         resources.Size = UDim2.fromOffset(166, 58)
-        seedLabel.TextSize = 11
-        cropLabel.TextSize = 11
+        woodLabel.TextSize = 11
+        stoneLabel.TextSize = 11
     end
 end
 
