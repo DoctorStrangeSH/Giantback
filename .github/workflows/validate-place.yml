@@ -109,6 +109,10 @@ jobs:
               "МОЯ ФЕРМА",
               "МОИ ПИТОМЦЫ",
               "КАРТА МИРА",
+              "ТВОЙ МИР",
+              "BridgeDeck",
+              "BridgeRail",
+              "BridgePost",
           ]
           combined = "\n".join(sources)
           missing_markers = [marker for marker in required_markers if marker not in combined]
