@@ -9,6 +9,9 @@ local event = Instance.new("RemoteEvent")
 event.Name = "AlbumAction"
 event.Parent = Storage
 local giant = workspace.Mossback
+if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
+    warn("Giantback visual layer did not finish in time; continuing with base models.")
+end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "Flower", "Timber", "Lantern", "Lit"}
 local sessions = {}
