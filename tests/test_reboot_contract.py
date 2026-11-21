@@ -14,6 +14,13 @@ SPEC = (ROOT / "PROJECT_SPEC.md").read_text(encoding="utf-8")
 class RebootContractTests(unittest.TestCase):
 
 
+
+    def test_compact_topbar_reserves_a_gap_without_overlapping_brand_and_resources(self):
+        self.assertIn("local topBarUsableWidth = math.max(0, topBar.AbsoluteSize.X - 8)", HUD)
+        self.assertIn("local brandWidth = math.floor(topBarUsableWidth * 0.42)", HUD)
+        self.assertIn("local resourcesWidth = topBarUsableWidth - brandWidth", HUD)
+        self.assertIn("resources.Size = UDim2.fromOffset(resourcesWidth, 58)", HUD)
+
     def test_hud_callbacks_are_forward_declared_before_renderers_use_them(self):
         toast_decl = HUD.index("local showToast")
         objective_decl = HUD.index("local getObjective")
