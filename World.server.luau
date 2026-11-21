@@ -297,6 +297,13 @@ local function init(player)
     session.inventory.CarrotSeed = 3
     sessions[player] = session
 
+    -- Spawn safely in the public hub while the private island profile is loading.
+    local grove = workspace:FindFirstChild("Grove")
+    local publicSpawn = grove and grove:FindFirstChild("PublicSpawn")
+    if publicSpawn and publicSpawn:IsA("SpawnLocation") then
+        player.RespawnLocation = publicSpawn
+    end
+
     local function placeCharacterAtHome(character)
         task.spawn(function()
             local root = character:WaitForChild("HumanoidRootPart", 12)
