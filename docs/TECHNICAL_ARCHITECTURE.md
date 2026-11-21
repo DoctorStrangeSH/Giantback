@@ -219,3 +219,12 @@ The moving-island loop and overlapping PersonalCities approach are retired. The 
 - The local Moth follower temporarily flaps its wings faster, moves its antennae more actively and pulses its existing Moonlight glow for 2.4 seconds.
 - The effect is cosmetic feedback only. It is driven by the player's saved progress attributes and never grants items or changes server gameplay.
 - Spark parts are non-collidable, non-queryable and cleaned up by Debris after one second. Other players' followers and wild encounters retain their calm idle animation.
+
+
+## 18. Companion rig blockout pass
+
+- The current runtime Fox and Moth remain Parts-based blockout rigs. The original OBJ/MTL source meshes are stored in assets/source_models but are not referenced by the place until imported and published as Roblox MeshParts in Studio.
+- Fox detail pass adds a chest bib, cheek tufts, nose, inner ears, toe details and a leaf charm. Tail/tail-tip and ear/inner-ear animation now rotates around explicit root pivots rather than each part's own center.
+- Moth detail pass adds a head and face, abdomen bands, upper/lower wing layers, wing markings, antenna tips and glow motes. All wing details share a root hinge; lower wings use a small phase offset for a layered flutter.
+- The common client follower loop still drives every companion. Only the local player's Moth receives the temporary ability animation and lunar burst; remote companions and wild encounters keep their calm idle state.
+- All added details are anchored, non-collidable, non-touchable and non-queryable. Roblox Studio import, scale, pivot, animation and mobile acceptance remain required before the source OBJ meshes replace the blockout.
