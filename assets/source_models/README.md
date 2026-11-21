@@ -20,7 +20,7 @@ OBJ files now include generated per-face normals, but no UV coordinates. Treat t
 
 ## Generated source normals (preliminary)
 
-Each polygon now has an explicit normalized face normal in OBJ (v//vn). These are generated flat-shading normals, not a hand-authored smoothing pass. They make face orientation explicit for importers and avoid relying on automatic normal generation, but curved companion surfaces may look faceted. Final smooth/weighted normals and a visual shading review remain part of the artist pass in a DCC tool and Roblox Studio.
+Each face corner now has an explicit normalized, crease-aware smoothing normal in OBJ (v//vn). Normals are angle-weighted across adjacent faces sharing a source vertex, with a 50-degree crease threshold to retain hard edges. This is a procedural source-art improvement, not a substitute for artist review: curved companion surfaces and tiny details still need visual inspection and possible hand-tuned smoothing in a DCC tool and Roblox Studio.
 
 UV coordinates are still intentionally absent. Do not interpret the material colors as finished textures or the meshes as final production art. Proper UV unwrap, texture painting, eye/face polish, and Studio import acceptance remain open.
 
