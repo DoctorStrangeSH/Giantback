@@ -100,15 +100,12 @@ def ellipsoid(name, center, scale, mat, segments=32, rings=20):
 
 
 def sculpted_head(name, center, scale, mat, segments=64, rings=40):
-    """Build an organic fox head surface by deforming a dense parametric quad shell.
-
-    The lower hemisphere gains cheek volume while the chin and crown taper gently;
-    this is deliberately not a stock sphere primitive.
-    """
+    """Build an organic fox head shell with true single-vertex poles and clean topology."""
     cx, cy, cz = center
     sx, sy, sz = scale
-    verts, faces = [], []
-    for row in range(rings + 1):
+    verts, faces = [(cx, cy + sy, cz)], []
+    # Interior latitude rings exclude both poles so no duplicate coincident vertices exist.
+    for row in range(1, rings):
         theta = math.pi * row / rings
         vertical = math.cos(theta)
         radial = math.sin(theta)
@@ -121,23 +118,32 @@ def sculpted_head(name, center, scale, mat, segments=64, rings=40):
             brow_width = 1.0 + 0.055 * max(0.0, vertical)
             px = x * sx * cheek * jaw_taper * brow_width
             py = vertical * sy
-            # Slightly fuller rear skull, with the face remaining toward -Z.
             pz = z * sz * (1.0 + 0.045 * max(0.0, vertical))
             verts.append((cx + px, cy + py, cz + pz))
-    for row in range(rings):
+    bottom = len(verts)
+    verts.append((cx, cy - sy, cz))
+    first_ring = 1
+    last_ring = rings - 2
+    for side in range(segments):
+        nxt = (side + 1) % segments
+        faces.append((0, first_ring + side, first_ring + nxt))
+    for row in range(rings - 2):
+        ring_a = 1 + row * segments
+        ring_b = ring_a + segments
         for side in range(segments):
-            a = row * segments + side
-            b = row * segments + (side + 1) % segments
+            nxt = (side + 1) % segments
+            a, b = ring_a + side, ring_a + nxt
             faces.append((a, b, b + segments, a + segments))
-    faces.append(tuple(range(segments - 1, -1, -1)))
-    faces.append(tuple(rings * segments + side for side in range(segments)))
+    last_start = 1 + last_ring * segments
+    for side in range(segments):
+        nxt = (side + 1) % segments
+        faces.append((last_start + side, bottom, last_start + nxt))
     mesh = bpy.data.meshes.new(name + "Mesh")
     mesh.from_pydata(verts, [], faces)
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     return smooth(obj, mat, name)
-
 
 
 def organic_torso(name, center, profile, mat, sides=64):
