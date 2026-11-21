@@ -473,10 +473,16 @@ local function updateLayout()
     local height = gui.AbsoluteSize.Y
     local compact = width < 700
     if compact then
-        brand.Size = UDim2.fromOffset(math.max(132, width * 0.42), 58)
+        -- Keep a real gap between the brand and resource tray on narrow screens.
+        local topBarUsableWidth = math.max(0, topBar.AbsoluteSize.X - 8)
+        local brandWidth = math.floor(topBarUsableWidth * 0.42)
+        local resourcesWidth = topBarUsableWidth - brandWidth
+        brand.Size = UDim2.fromOffset(brandWidth, 58)
         brandTitle.TextSize = 16
         brandSubtitle.TextSize = 8
-        resources.Size = UDim2.fromOffset(math.max(170, width * 0.5), 58)
+        resources.Size = UDim2.fromOffset(resourcesWidth, 58)
+        woodLabel.TextSize = 10
+        stoneLabel.TextSize = 10
         objective.Size = UDim2.new(1, -32, 0, 78)
         objective.Position = UDim2.fromOffset(16, 84)
         panel.Size = UDim2.new(1, -24, 0, math.max(180, math.min(430, height - 150)))
