@@ -515,13 +515,13 @@ local gateTracks = dusk:FindFirstChild("MoonGateTracks")
 local gateRune = dusk:FindFirstChild("MoonGateRune")
 local relicAnchor = dusk:FindFirstChild("MoonRelic")
 if bank and gateTracks and gateRune and relicAnchor then
-    local groundY = bank.Position.Y + bank.Size.Y / 2 + 0.2
-    local gatePosition = gateRune.Position + Vector3.new(0, 0, -2.2)
+    local groundY = bank.Position.Y + bank.Size.Y / 2 + 0.13
+    local gatePosition = Vector3.new(gateRune.Position.X, groundY, gateRune.Position.Z - 2.2)
 
     local tracks = Instance.new("Model")
     tracks.Name = "MoonGateTracksVisual"
     tracks.Parent = moonGateVisuals
-    local trackStart = gateTracks.Position
+    local trackStart = Vector3.new(gateTracks.Position.X, groundY, gateTracks.Position.Z)
     local trackFinish = gatePosition + Vector3.new(0, 0, 3)
     for index = 1, 7 do
         local alpha = index / 8
@@ -575,7 +575,7 @@ if bank and gateTracks and gateRune and relicAnchor then
     local seal = Instance.new("Model")
     seal.Name = "MoonGateSeal"
     seal.Parent = moonGateVisuals
-    orb(seal, "Sealed stone", gatePosition + Vector3.new(0, 2.8, -0.05), Vector3.new(6.7, 5.1, 1.25), Color3.fromRGB(79, 84, 103), Enum.Material.Rock)
+    orb(seal, "Sealed stone", gatePosition + Vector3.new(0, 2.55, -0.05), Vector3.new(6.7, 5.1, 1.25), Color3.fromRGB(79, 84, 103), Enum.Material.Rock)
     for index = 1, 3 do
         local rune = makePart(
             seal,
@@ -609,16 +609,17 @@ if bank and gateTracks and gateRune and relicAnchor then
     local clearing = Instance.new("Model")
     clearing.Name = "MoonGateClearingVisual"
     clearing.Parent = moonGateVisuals
-    local relicPosition = relicAnchor.Position + Vector3.new(0, 1.25, 0)
+    local relicBase = Vector3.new(relicAnchor.Position.X, groundY, relicAnchor.Position.Z)
+    local relicPosition = relicBase + Vector3.new(0, 1.9, 0)
     for index = 1, 8 do
         local angle = index * math.pi / 4
-        local stonePosition = relicAnchor.Position + Vector3.new(math.cos(angle) * 5.0, 0.18, math.sin(angle) * 4.2)
+        local stonePosition = relicBase + Vector3.new(math.cos(angle) * 5.0, 0.18, math.sin(angle) * 4.2)
         orb(clearing, "Clearing moonstone", stonePosition, Vector3.new(1.15, 0.48, 1.0), palette.stone, Enum.Material.Rock)
-        local flowerPosition = relicAnchor.Position + Vector3.new(math.cos(angle) * 3.3, 0.25, math.sin(angle) * 2.8)
+        local flowerPosition = relicBase + Vector3.new(math.cos(angle) * 3.3, 0.25, math.sin(angle) * 2.8)
         addFlower(clearing, flowerPosition, index % 2 == 0 and palette.lilacLight or palette.moon, 0.72, 1200 + index)
     end
-    cylinder(clearing, "Relic pedestal", relicAnchor.Position + Vector3.new(0, 0.45, 0), 0.9, 2.0, palette.stone, Enum.Material.Slate)
-    cylinder(clearing, "Pedestal gold ring", relicAnchor.Position + Vector3.new(0, 0.94, 0), 0.16, 1.65, palette.gold, Enum.Material.Metal)
+    cylinder(clearing, "Relic pedestal", relicBase + Vector3.new(0, 0.45, 0), 0.9, 2.0, palette.stone, Enum.Material.Slate)
+    cylinder(clearing, "Pedestal gold ring", relicBase + Vector3.new(0, 0.94, 0), 0.16, 1.65, palette.gold, Enum.Material.Metal)
     local relic = makePart(
         clearing,
         "MoonRelicGem",
