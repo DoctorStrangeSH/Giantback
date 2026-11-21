@@ -397,7 +397,7 @@ getObjective = function()
     if not player:GetAttribute("Ready") then return "Загружаем твой остров…" end
     if not player:GetAttribute("Fox") then return "Найди лисёнка в Солнечной роще и подружись с ним." end
     if not player:GetAttribute("Seed") then return "Попроси лисёнка поискать следы на лесной тропе." end
-    if not player:GetAttribute("Moth") then return "Отыщи лунную моль в волшебной роще." end
+    if not player:GetAttribute("Moth") then return "Перейди через лесной мост в Лунную рощу и найди моль." end
     if not player:GetAttribute("Flower") then return "Позови лунную моль к клумбе возле дома." end
     if not player:GetAttribute("Timber") then return "Возьми лисёнка к коряге и найди крепкие ветви." end
     if not player:GetAttribute("Lantern") then return "Заверши постройку садового фонаря у дома." end
