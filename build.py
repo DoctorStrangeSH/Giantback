@@ -155,7 +155,6 @@ bridge_dusk = obj(w, "Model", "BridgeToDusk")
 add_radial_bridge(bridge_dusk, "MoonBridge", math.pi / 8, 73, 120)
 
 storage = obj(doc, "ReplicatedStorage", "ReplicatedStorage")
-storage = obj(doc, "ReplicatedStorage", "ReplicatedStorage")
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
     if name == "Fox":
