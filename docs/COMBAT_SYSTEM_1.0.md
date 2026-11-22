@@ -10,7 +10,7 @@ This document translates sections 8–9 of `PROJECT_SPEC.md` and the combat requ
 
 Combat should be readable and forgiving: the player sees an enemy telegraph, understands the safe response, performs an attack/block/dodge, and receives clear feedback. A companion may help, but must never be required to win.
 
-The first playable slice is deliberately small: one weapon (sword + shield), one enemy, one compact encounter arena, and one guaranteed reward. Add weapon classes only after this loop is stable.
+The first playable slice is deliberately small: one weapon (sword + shield), one compact encounter arena, two readable enemy archetypes, and guaranteed first-clear rewards. Add weapon classes only after this loop is stable.
 
 ## 2. Non-negotiable authority rules
 
@@ -125,14 +125,14 @@ The server callback now captures all RemoteEvent trailing arguments with varargs
 
 Implemented in `Combat.server.luau`:
 - Server-tagged combat volumes (`GiantbackCombatRegion`) with allow-listed `RegionId` values; the player must physically be inside the volume.
-- Server-tagged enemy Models (`GiantbackEnemy`) must contain a Humanoid and HumanoidRootPart and declare an allow-listed `EncounterId` and `RegionId`.
+- Server-tagged enemy Models (`GiantbackEnemy`) must contain a Humanoid and HumanoidRootPart and declare an allow-listed `EncounterId` and `RegionId`. Each enemy may define bounded server-read attributes for aggro range, attack range, damage, cooldown, telegraph duration and path refresh; clients cannot change these values.
 - Server-owned sword hitbox, range, facing check, damage and attack cooldown. Client requests contain only the action name.
 - Enemy AI loop with idle/approach/telegraph/recover states, a telegraphed melee attack, and server-side range revalidation before damage.
 - Server-held block state reduces only frontal enemy damage; server-timed dodge grants a short invulnerability window and bounded impulse.
 - Enemy death resolves the reward through the profile-owned BindableFunction. The profile stores completed encounter IDs and inventory rewards idempotently (schema v10); failed profile saves roll back the in-session grant.
 - `Combat.client.luau` binds mouse/keyboard, gamepad and ContextActionService touch buttons for attack, held block and dodge; it sends action names only.
 - Leaving the tagged arena automatically clears held block; `BlockEnd` is always accepted for a ready player so a lost focus/input release cannot leave a stale guard state.
-- `WorldVisuals.server.luau` now generates a connected training glade beyond the Grove, tags its combat volume, and creates a complete R6-style `Корневой страж` NPC with 100 health, bark crown, glowing eyes and a rootwood club. The approach bridge, stone ring, lanterns and arena are generated in a fresh place build; no manual Studio tagging or placeholder rig import is required.
+- `WorldVisuals.server.luau` now generates a connected training glade beyond the Grove, tags its combat volume, and creates two R6-style enemies: a 100-health `Корневой страж` guardian and a faster 65-health `Мшистый разведчик` with a shorter warning window, lighter damage and a distinct mint-green telegraph. The approach bridge, stone ring, lanterns and arena are generated in a fresh place build; no manual Studio tagging or placeholder rig import is required.
 - A visible `БЕРЕГИСЬ!` warning, temporary highlight and raised club pose appear during the server's 0.85-second enemy telegraph; the swing pose plays during recovery. The NPC is oriented toward the arena entrance and keeps server network ownership.
 - The client displays concise Russian feedback for successful hits and rejected actions (cooldowns, arena boundary, load state and request rate) without exposing server-owned values.
 - Studio acceptance is still required: verify that the NPC walks and attacks reliably, the hitbox aligns, rewards persist after reconnect, and two or more players cannot duplicate the reward.
