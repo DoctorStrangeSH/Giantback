@@ -663,6 +663,7 @@ local function performCompanionSkill(player, state, now)
     remote:FireClient(player, "CompanionSkillUsed", {
         companionId = "Moth",
         healedCount = #healedPlayers,
+        healedUserIds = healedPlayers,
         healAmount = MOTH_HEAL_AMOUNT,
     })
 end
