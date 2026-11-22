@@ -1823,6 +1823,55 @@ local seedHalo = orb(
 )
 seedHalo.Transparency = 0.35
 
+local wispNest = makePart(
+    echoChamber, "CrystalWispNest", Vector3.new(4.8, 0.45, 4.8),
+    CFrame.new(echoCenter + Vector3.new(-8, 0.35, 2)), palette.lilac, Enum.Material.Neon, Enum.PartType.Cylinder
+)
+wispNest.Transparency = 0.24
+addLight(wispNest, palette.lilacLight, 13, 0.8)
+for index = 1, 4 do
+    local angle = math.pi * 2 * index / 4
+    local shard = makePart(
+        echoChamber, "WispNestShard", Vector3.new(0.55, 2.4, 0.55),
+        CFrame.new(wispNest.Position + Vector3.new(math.cos(angle) * 2.1, 1.15, math.sin(angle) * 2.1)) * CFrame.Angles(0, 0, math.rad((index % 2 == 0 and 1 or -1) * 12)),
+        palette.lilacLight, Enum.Material.Neon
+    )
+    addLight(shard, palette.lilacLight, 5, 0.25)
+end
+
+-- Procedural companion model shared by the wild encounter and owner followers.
+local oldWisp = ReplicatedStorage:FindFirstChild("CrystalWisp")
+if oldWisp then oldWisp:Destroy() end
+local wispModel = Instance.new("Model")
+wispModel.Name = "CrystalWisp"
+wispModel.Parent = ReplicatedStorage
+local wispBody = orb(wispModel, "Body", Vector3.new(0, 0, 0), Vector3.new(1.7, 1.95, 1.55), palette.lilacLight, Enum.Material.Neon)
+wispBody.Transparency = 0.08
+wispModel.PrimaryPart = wispBody
+orb(wispModel, "Core", Vector3.new(0, -0.05, -0.72), Vector3.new(0.82, 0.92, 0.35), palette.water, Enum.Material.Neon)
+orb(wispModel, "EyeLeft", Vector3.new(-0.31, 0.16, -0.88), Vector3.new(0.12, 0.18, 0.08), palette.ink, Enum.Material.SmoothPlastic)
+orb(wispModel, "EyeRight", Vector3.new(0.31, 0.16, -0.88), Vector3.new(0.12, 0.18, 0.08), palette.ink, Enum.Material.SmoothPlastic)
+orb(wispModel, "CheekLeft", Vector3.new(-0.49, -0.13, -0.83), Vector3.new(0.2, 0.12, 0.08), palette.coral, Enum.Material.Neon)
+orb(wispModel, "CheekRight", Vector3.new(0.49, -0.13, -0.83), Vector3.new(0.2, 0.12, 0.08), palette.coral, Enum.Material.Neon)
+for index = 1, 3 do
+    local angle = (index - 1) * math.pi * 2 / 3
+    local shard = orb(wispModel, "OrbitCrystal" .. tostring(index), Vector3.new(math.cos(angle) * 0.95, 0.38 + (index % 2) * 0.18, math.sin(angle) * 0.58), Vector3.new(0.36, 0.72, 0.36), index == 2 and palette.gold or palette.water, Enum.Material.Neon)
+    shard.CFrame *= CFrame.Angles(0, 0, math.rad(index * 18))
+end
+addLight(wispBody, palette.lilacLight, 12, 1.1)
+local wispParticles = Instance.new("ParticleEmitter")
+wispParticles.Name = "WispSparkles"
+wispParticles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+wispParticles.Color = ColorSequence.new(palette.lilacLight, palette.water)
+wispParticles.LightEmission = 0.9
+wispParticles.Rate = 7
+wispParticles.Lifetime = NumberRange.new(0.45, 0.9)
+wispParticles.Speed = NumberRange.new(0.1, 0.45)
+wispParticles.SpreadAngle = Vector2.new(180, 180)
+wispParticles.Size = NumberSequence.new(0.18, 0)
+wispParticles.Parent = wispBody
+
+
 local crystalHeart = makePart(crystalGrotto, "CrystalGrottoHeart", Vector3.new(2.2, 2.2, 2.2), CFrame.new(grottoCenter + Vector3.new(0, 2.3, 8)), palette.lilacLight, Enum.Material.Neon, Enum.PartType.Ball)
 crystalHeart.CanCollide = false
 local heartGlow = Instance.new("PointLight")
