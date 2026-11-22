@@ -1588,6 +1588,18 @@ local vaultEntrance = makePart(
 vaultEntrance.CanCollide = false
 placeTrialPrompt(vaultEntrance, "Хранилище корней", "Войти")
 
+local vaultArrival = makePart(
+    entryRoom,
+    "RootvaultArrival",
+    Vector3.new(2, 0.5, 2),
+    CFrame.new(entryRoomCenter + Vector3.new(0, 0.6, 0)),
+    palette.lilacLight,
+    Enum.Material.Neon,
+    nil,
+    1
+)
+vaultArrival.CanCollide = false
+
 local vaultReturn = makePart(
     entryRoom,
     "RootvaultReturn",
@@ -1620,6 +1632,19 @@ local leverHandle = makePart(
 )
 setSolid(leverHandle)
 placeTrialPrompt(leverBase, "Древний механизм", "Потянуть рычаг")
+
+local mechanismExit = makePart(
+    mechanismRoom,
+    "RootvaultMechanismExit",
+    Vector3.new(2, 0.5, 2),
+    CFrame.new(mechanismRoomCenter + Vector3.new(-10, 0.6, -8)),
+    palette.moon,
+    Enum.Material.Neon,
+    nil,
+    1
+)
+mechanismExit.CanCollide = false
+placeTrialPrompt(mechanismExit, "Начало хранилища", "Вернуться к входу")
 
 local sealedDoor = makePart(
     mechanismRoom,
