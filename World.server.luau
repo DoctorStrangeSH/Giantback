@@ -455,6 +455,33 @@ local function submitCompanionPlayInput(player, payload)
     end
 end
 
+local function petCompanion(player, companionId)
+    if companionId ~= "Fox" and companionId ~= "Moth" then return end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") or player:GetAttribute(companionId) ~= true then return end
+    if player:GetAttribute("Companion") ~= companionId then
+        return tip(player, "Сначала позови питомца, которого хочешь погладить.")
+    end
+
+    session.companionPetReadyAt = session.companionPetReadyAt or {}
+    local now = os.clock()
+    local readyAt = session.companionPetReadyAt[companionId] or 0
+    if now < readyAt then
+        return tip(player, "Питомец уже получил ласку. Побудь рядом ещё немного!")
+    end
+
+    session.companionPetReadyAt[companionId] = now + 18
+    local progressData = session.companionProgress[companionId]
+    progressData.bond = math.clamp((progressData.bond or 0) + 5, 0, 1000)
+    setCompanionMood(player, companionId, "Радость")
+    syncCompanionProgress(player)
+    event:FireClient(player, "CompanionPetted", {companionId = companionId})
+    tip(player, pets[companionId] .. " довольно прижался к тебе. Дружба +5.")
+    if session.online and not save(player) then
+        warn("Companion petting save will be retried:", player.UserId, companionId)
+    end
+end
+
 local function feedCompanion(player, companionId)
     if companionId ~= "Fox" and companionId ~= "Moth" then return end
     local session = sessions[player]
@@ -836,6 +863,7 @@ local function init(player)
         companionProgress = normalizeCompanionProgress(nil),
         companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth},
         companionFeedReadyAt = {},
+        companionPetReadyAt = {},
         companionPlayReadyAt = {},
         companionPlay = nil,
         online = false,
@@ -1215,6 +1243,11 @@ end
 
 event.OnServerEvent:Connect(function(player, action, payload)
     if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
+
+    if action == "PetCompanion" then
+        petCompanion(player, payload)
+        return
+    end
 
     if action == "FeedCompanion" then
         feedCompanion(player, payload)
