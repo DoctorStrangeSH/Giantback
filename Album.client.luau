@@ -1658,6 +1658,7 @@ end)
 -- to other players, but is hidden locally once this player has adopted that companion.
 local models = {}
 local animationStates = {}
+local companionActivity = {}
 local encounterLocations = {
     Fox = "Grove",
     Moth = "Dusk",
@@ -1743,7 +1744,7 @@ local function aroundPoint(point, rotation)
     return CFrame.new(point) * rotation * CFrame.new(-point)
 end
 
-local function animateModelParts(model, state, time, moving)
+local function animateModelParts(model, state, time, moving, resting)
     local pivot = model:GetPivot()
     local now = os.clock()
     local sniffing = state.id == "Fox" and not state.isEncounter and now < foxSniffUntil
@@ -1760,18 +1761,20 @@ local function animateModelParts(model, state, time, moving)
             if state.id == "Fox" then
                 if part.Name == "Body" and petting then
                     transform = CFrame.new(0, math.sin(time * 8) * 0.075, 0)
+                elseif part.Name == "Body" and resting then
+                    transform = CFrame.new(0, math.sin(time * 1.8) * 0.035, 0)
                 elseif part.Name == "Muzzle" and sniffing then
                     transform = CFrame.new(0, -0.14, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 12) * 0.045, 0, 0))
                 elseif part.Name == "Tail" or part.Name == "Tail tip" then
-                    local sway = math.sin(time * (petting and 10.5 or sniffing and 9 or 4.2))
-                        * (petting and 0.72 or sniffing and 0.48 or 0.3)
+                    local sway = math.sin(time * (petting and 10.5 or sniffing and 9 or resting and 1.6 or 4.2))
+                        * (petting and 0.72 or sniffing and 0.48 or resting and 0.12 or 0.3)
                     local tailHinge = rigOrigin + Vector3.new(0, 0.25, 0.95)
                     local tailRotation = part.Name == "Tail tip"
                         and CFrame.Angles(sway * 0.35, sway * 0.8, 0)
                         or CFrame.Angles(sway * 0.45, sway, sway * 0.2)
                     transform = aroundPoint(tailHinge, tailRotation)
                 elseif part.Name == "Paw" or part.Name == "Paw toe" then
-                    local stride = moving and 0.32 or sniffing and 0.16 or 0.055
+                    local stride = resting and 0 or moving and 0.32 or sniffing and 0.16 or 0.055
                     local phase = (math.abs(offset.Position.X) + math.abs(offset.Position.Z)) * 1.8
                     local step = math.sin(time * (moving and 10 or sniffing and 8 or 2.4) + phase) * stride
                     transform = CFrame.new(0, math.max(0, step) * 0.16, 0)
@@ -1787,8 +1790,8 @@ local function animateModelParts(model, state, time, moving)
                 local side = offset.Position.X >= rigOrigin.X and 1 or -1
                 if part.Name == "Wing" or part.Name == "Wing lower" or part.Name == "Wing tip"
                     or part.Name == "Wing lower tip" or part.Name == "Wing jewel" or part.Name == "Wing spot" then
-                    local flapSpeed = mothAbility and 21 or 11.5
-                    local flapStrength = mothAbility and 0.76 or 0.42
+                    local flapSpeed = mothAbility and 21 or resting and 3.2 or 11.5
+                    local flapStrength = mothAbility and 0.76 or resting and 0.13 or 0.42
                     if petting and not mothAbility then
                         flapSpeed = 17
                         flapStrength = 0.62
@@ -1798,12 +1801,12 @@ local function animateModelParts(model, state, time, moving)
                     local wingHinge = rigOrigin + Vector3.new(side * 0.42, 0.28, 0)
                     transform = aroundPoint(wingHinge, CFrame.Angles(0, 0, flap * side))
                 elseif part.Name == "Antenna" or part.Name == "Antenna tip" then
-                    local twitchSpeed = mothAbility and 7 or 2.8
-                    local twitchStrength = mothAbility and 0.14 or 0.07
+                    local twitchSpeed = mothAbility and 7 or resting and 1.1 or 2.8
+                    local twitchStrength = mothAbility and 0.14 or resting and 0.025 or 0.07
                     local antennaHinge = rigOrigin + Vector3.new(side * 0.34, 0.9, -0.55)
                     transform = aroundPoint(antennaHinge, CFrame.Angles(0, 0, math.sin(time * twitchSpeed + side) * twitchStrength * side))
                 elseif part.Name == "Moonlight glow" then
-                    local pulse = mothAbility and (1.15 + math.sin(time * 12) * 0.35) or 0.65
+                    local pulse = mothAbility and (1.15 + math.sin(time * 12) * 0.35) or resting and 0.38 or 0.65
                     if petting and not mothAbility then
                         pulse = 0.95 + math.sin(time * 8) * 0.2
                     end
@@ -1952,9 +1955,20 @@ local function follow(dt)
                 playCompanionPettingBurst(model, id)
             end
 
+            local activity = companionActivity[owner]
+            if not activity or activity.companionId ~= id then
+                activity = {companionId = id, idleSince = now}
+                companionActivity[owner] = activity
+            end
+            local moving = humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.08
+            if moving then
+                activity.idleSince = now
+            end
+            local resting = not moving and now - activity.idleSince >= 12
+
             local state = animationStates[model]
             if state then
-                animateModelParts(model, state, phase, humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.08)
+                animateModelParts(model, state, phase, moving, resting)
             end
         end
     end
@@ -1973,7 +1987,7 @@ local function follow(dt)
                 * CFrame.new(0, bob, 0)
                 * CFrame.Angles(0, math.sin(phase * 0.7) * 0.045, math.sin(phase * 1.4) * 0.025)
             )
-            animateModelParts(encounter, state, phase, false)
+            animateModelParts(encounter, state, phase, false, false)
         end
     end
 end
@@ -1991,6 +2005,7 @@ player:GetAttributeChangedSignal("Companion"):Connect(function()
 end)
 
 Players.PlayerRemoving:Connect(function(owner)
+    companionActivity[owner] = nil
     if models[owner] then
         animationStates[models[owner]] = nil
         models[owner]:Destroy()
