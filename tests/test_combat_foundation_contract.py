@@ -364,5 +364,22 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('ContextActionService:BindAction(', CLIENT)
 
 
+    def test_combat_reward_retries_transient_persistence_failures(self):
+        self.assertIn("for attempt = 1, 5 do", COMBAT)
+        self.assertIn("rewardFunction:Invoke(contributor, entry.encounterId)", COMBAT)
+        self.assertIn("task.wait(0.75 * (2 ^ (attempt - 1)))", COMBAT)
+        self.assertIn("Combat reward retries exhausted:", COMBAT)
+        self.assertIn("if contributor.Parent ~= Players then break end", COMBAT)
+
+    def test_repeated_combat_reward_delivery_is_idempotent_success(self):
+        self.assertIn(
+            "if session.completedCombatEncounters[encounterId] then return true end",
+            WORLD,
+        )
+        self.assertIn("if session.online and not save(player) then", WORLD)
+        self.assertIn("session.completedCombatEncounters[encounterId] = nil", WORLD)
+        self.assertIn("return false", WORLD)
+
+
 if __name__ == "__main__":
     unittest.main()
