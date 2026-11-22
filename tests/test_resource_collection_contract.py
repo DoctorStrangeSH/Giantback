@@ -15,6 +15,8 @@ class ResourceCollectionContractTests(unittest.TestCase):
         registry = set(re.findall(r"^\s*([A-Za-z0-9_]+)\s*=\s*true,", registry_section, re.MULTILINE))
         definitions = set(re.findall(r'^\s*key = "([^"]+)"', WORLD, re.MULTILINE))
         self.assertEqual(registry, definitions)
+        self.assertIn("DuskIron01", registry)
+        self.assertIn("DuskIron02", registry)
 
     def test_each_player_has_an_independent_cooldown(self):
         self.assertIn("session.resourceCooldowns[def.key] = nextReadyAt", WORLD)
@@ -152,9 +154,26 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('"ResourcePicked"', CLIENT)
         self.assertIn('event:FireServer("RequestResourceState")', CLIENT)
 
+    def test_iron_ore_is_a_persistent_pickaxe_resource_with_distinct_visual(self):
+        self.assertIn('"IronOre"', WORLD.split("local inventoryKeys =", 1)[1].split("\n", 1)[0])
+        self.assertIn("DuskIron01 = true", WORLD)
+        self.assertIn("DuskIron02 = true", WORLD)
+        self.assertEqual(WORLD.count('itemId = "IronOre"'), 2)
+        self.assertEqual(WORLD.count('visual = "ironOre"'), 2)
+        self.assertIn('verb = "Добыть железную руду"', WORLD)
+        self.assertIn('hitsRequired = 5', WORLD)
+        self.assertIn('respawnSeconds = 420', WORLD)
+        self.assertIn('makePart("IronVeinA"', WORLD)
+        self.assertIn('makePart("IronVeinB"', WORLD)
+        self.assertIn('makePart("IronVeinC"', WORLD)
+        self.assertIn('glow.Parent = glint', WORLD)
+        self.assertIn('player:GetAttribute("Resource_IronOre")', HUD)
+        self.assertIn("Железная жила", HUD)
+
     def test_renewable_nodes_have_explicit_personal_cooldowns(self):
-        self.assertEqual(WORLD.count('kind = "renewable"'), 8)
+        self.assertEqual(WORLD.count('kind = "renewable"'), 10)
         self.assertEqual(WORLD.count("respawnSeconds = 300"), 8)
+        self.assertEqual(WORLD.count("respawnSeconds = 420"), 2)
 
     def test_remote_handshake_is_registered_before_player_initialization(self):
         self.assertLess(WORLD.index("event.OnServerEvent:Connect"), WORLD.index("Players.PlayerAdded:Connect(init)"))
