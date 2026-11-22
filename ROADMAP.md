@@ -1,3 +1,13 @@
+## Lunar Moth — fourth visual correction pass
+
+- [x] Artifact #56 passed Blender technical gates and generated front/side/back/three-quarter views.
+- [x] Review #56 manually: body still too tapered/narrow, legs too wire-like, crescents too small at gameplay framing.
+- [x] Shorten and widen thorax profile into a compact plush body; enlarge head and eyes.
+- [x] Shorten leg reach, thicken curves/feet and enlarge/reposition crescent motifs inward.
+- [ ] Run new Blender artifact; verify four views and all mesh/UV/material gates.
+- [ ] Accept silhouette at gameplay scale before Studio import.
+- [ ] Roblox Studio import, scale/pivot check and runtime wing animation — not done.
+
 ## Lunar Moth — third visual correction pass
 
 - [x] Artifact #51 generated four real Blender views and passed technical geometry/UV/material package validation.
