@@ -37,16 +37,6 @@ Recursive tree/blob comparison across all five branches found:
 - Current `tests/test_resource_collection_contract.py` explicitly expects schema 6; V2 tests expect schema 10. Tests must be consolidated to validate the final migration path and old-profile fixtures, not merely string-replaced.
 - PR #4 description has been corrected to reflect the actual divergence and required migration work. It remains Draft and unmergeable.
 
-## Forward-compatible profile safety patch — 2026-11-22
-
-- The current schema-v6 save path previously assigned `old.schemaVersion = 6` unconditionally. That could downgrade a profile previously written by the V2 schema-v10 branch.
-- Updated the write to `math.max(tonumber(old.schemaVersion) or 0, 6)`, preserving a newer version marker rather than decreasing it.
-- Added `IronOre` and `IronIngot` to the current inventory key registry so these V2 inventory values are loaded, exposed to attributes, and included in the existing inventory snapshot rather than being omitted.
-- Added regression assertions in resource collection tests; updated fox-scout and farm schema tests for monotonic schema versioning.
-- Updated generated-place workflow marker to assert the new forward-compatible schema expression.
-- CI run #1204: contract tests and Roblox place build passed, but generated-place marker validation failed because the workflow still expected the old literal schema-v6 assignment. That stale marker has now been corrected in commit `bc95193`; a fresh run is required before marking this patch green.
-- This is a preservation patch only. It does not yet implement V2 tools, resource hit state, smelting or combat.
-
 ## Recommended consolidation order
 
 1. Keep feat/cozy-world-visual-pass as canonical reboot/world base. It has the latest farm UI and four-crop implementation.
@@ -54,6 +44,16 @@ Recursive tree/blob comparison across all five branches found:
 3. Resolve World.server.luau, Album.client.luau and HUD.client.luau deliberately; reconcile PROJECT_SPEC.md, ROADMAP.md, tests/test_resource_collection_contract.py and .github/workflows/validate-place.yml.
 4. Run full Python contract tests, Roblox place build, embedded-script validation and Studio acceptance before updating main.
 5. After consolidated PR is merged and verified, close superseded PRs and delete obsolete branches only after confirming their unique commits are preserved.
+
+## Incremental integration slice — PR #5
+
+- Created `integration/giantback-consolidation` from the latest cozy-world HEAD.
+- Imported only additive client-side harvesting feedback from V2 into `Album.client.luau`: local tool swing, hit progress/crack overlays, impact particles, final break feedback, reward pickup and optional camera shake.
+- Left `World.server.luau`, `HUD.client.luau`, farm logic, profile schema and world visuals untouched. The client can display V2 `ResourceHit`/resource-state events, but the current server has not yet been ported to emit multi-hit events; the complete harvesting feature is not yet live.
+- Added the consolidation branch to the push validation matrix and added it as an allowed PR target in the base workflow.
+- Draft PR #5 opened against `feat/cozy-world-visual-pass`.
+- Validation run #1198 on the consolidation branch passed: Python contract tests, Roblox place build, generated-place/embedded-script validation and artifact upload.
+- This is a deliberately isolated client visual slice, not the complete gameplay merge and not ready to merge into `main`.
 
 ## Current status
 
@@ -70,3 +70,14 @@ Recursive tree/blob comparison across all five branches found:
 ## Why merge/deletion was not forced
 
 Both open PRs currently report dirty merge states. The audit commit and latest cozy-world branch checks are green (#1195, #314, #95). Integration v2's own CI run #1182 is also green, but a passing branch build does not resolve its 85-commit divergence or shared-file conflicts. Integration v2 is materially behind the current cozy-world branch, and shared gameplay files diverged. Blind merging or branch deletion could discard newer farm/world work or the only copy of gameplay changes. The safe next action is a conflict-resolved integration commit followed by CI, not force-merging or deleting refs.
+
+
+## Fresh-base harvesting feedback port — PR #6 (2026-11-22)
+
+- The canonical `feat/cozy-world-visual-pass` advanced after the first consolidation branch was cut. The old `integration/giantback-consolidation` head is now 37 commits behind that canonical branch and must not be merged as-is.
+- Rechecked the canonical server implementation: it already contains persistent Axe/Pickaxe ownership and levels, server-validated equipped tools, multi-hit wood/stone/iron harvesting, personal cooldowns, workbench upgrades, and persisted personal smelting. The old audit note saying the server protocol still needed to be ported is superseded by the current canonical branch and ROADMAP.
+- Reapplied the client-only harvesting presentation onto a fresh branch from the latest canonical HEAD: `feat/harvesting-feedback-on-latest`.
+- PR #6 changes only `Album.client.luau`, `ROADMAP.md`, and the validation workflow. It adds local swing, hit cracks/progress, impact particles, reward pickup, final break and regrowth feedback; no server/profile/farm/pet/island implementation is replaced.
+- Added the new branch to push validation and the canonical branch as a PR validation target. GitHub Actions run #45007978624 passed: gameplay/world contract tests, Roblox place build, generated-place/embedded-script validation and artifact upload.
+- PR #6 remains Draft pending Roblox Studio acceptance (R6/R15 animation, impact alignment, resource break/regrowth, local-only behavior and mobile readability). It is not merged to `main`.
+- PR #5 is superseded by this fresh-base port. Keep the old integration branch until PR #6 is merged and all remaining unique audit/history content is confirmed preserved.
