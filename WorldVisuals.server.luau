@@ -1700,6 +1700,73 @@ for _, center in {entryRoomCenter, mechanismRoomCenter, rewardRoomCenter} do
     end
 end
 
+-- Crystal Grotto: an optional moonlit side-cave reached from the Dusk shoreline.
+local crystalGrotto = Instance.new("Model")
+crystalGrotto.Name = "CrystalGrotto"
+crystalGrotto.Parent = combatGlade
+local grottoCenter = Vector3.new(150, 0, 470)
+local grottoFloor = makePart(crystalGrotto, "CrystalGrottoFloor", Vector3.new(46, 2, 42), CFrame.new(grottoCenter), palette.stoneLight, Enum.Material.Slate)
+setSolid(grottoFloor)
+
+for _, wallSpec in {
+    {name = "NorthWall", size = Vector3.new(46, 15, 2), offset = Vector3.new(0, 7.5, -21)},
+    {name = "SouthWall", size = Vector3.new(46, 15, 2), offset = Vector3.new(0, 7.5, 21)},
+    {name = "WestWall", size = Vector3.new(2, 15, 42), offset = Vector3.new(-23, 7.5, 0)},
+    {name = "EastWall", size = Vector3.new(2, 15, 42), offset = Vector3.new(23, 7.5, 0)},
+} do
+    local wall = makePart(crystalGrotto, "CrystalGrotto" .. wallSpec.name, wallSpec.size, CFrame.new(grottoCenter + wallSpec.offset), palette.stone, Enum.Material.Rock)
+    setSolid(wall)
+end
+
+local grottoArrival = makePart(crystalGrotto, "CrystalGrottoArrival", Vector3.new(2, 0.5, 2), CFrame.new(grottoCenter + Vector3.new(0, 0.6, -15)), palette.moon, Enum.Material.Neon)
+grottoArrival.Transparency = 1
+grottoArrival.CanCollide = false
+local grottoReturn = makePart(crystalGrotto, "CrystalGrottoReturn", Vector3.new(4.5, 5.5, 1.2), CFrame.new(grottoCenter + Vector3.new(0, 3, -18)), palette.moon, Enum.Material.ForceField)
+grottoReturn.CanCollide = false
+placeTrialPrompt(grottoReturn, "Сумеречная долина", "Вернуться")
+
+local crystalHeart = makePart(crystalGrotto, "CrystalGrottoHeart", Vector3.new(2.2, 2.2, 2.2), CFrame.new(grottoCenter + Vector3.new(0, 2.3, 8)), palette.lilacLight, Enum.Material.Neon, Enum.PartType.Ball)
+crystalHeart.CanCollide = false
+local heartGlow = Instance.new("PointLight")
+heartGlow.Color = palette.lilacLight
+heartGlow.Range = 20
+heartGlow.Brightness = 1.2
+heartGlow.Parent = crystalHeart
+placeTrialPrompt(crystalHeart, "Сердце кристальной пещеры", "Собрать осколок")
+
+for index = 1, 12 do
+    local angle = index * math.pi * 2 / 12
+    local radius = index % 2 == 0 and 15 or 18
+    local position = grottoCenter + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+    local height = 3.5 + (index % 3) * 1.4
+    local crystal = makePart(
+        crystalGrotto, "CrystalGrottoCluster" .. tostring(index),
+        Vector3.new(1.7, height, 1.7),
+        CFrame.new(position + Vector3.new(0, height / 2, 0)) * CFrame.Angles(math.rad((index % 2 == 0 and 1 or -1) * 9), angle, math.rad((index % 3 - 1) * 8)),
+        index % 3 == 0 and palette.moon or palette.lilacLight,
+        Enum.Material.Neon
+    )
+    crystal.CanCollide = false
+    local glow = Instance.new("PointLight")
+    glow.Color = crystal.Color
+    glow.Range = 9
+    glow.Brightness = 0.45
+    glow.Parent = crystal
+end
+
+local grottoEntrance = makePart(
+    workspace.Dusk, "CrystalGrottoEntrance", Vector3.new(5.5, 6.5, 1.5),
+    CFrame.new(83, 15, -190), palette.lilacLight, Enum.Material.ForceField
+)
+grottoEntrance.CanCollide = false
+grottoEntrance.Transparency = 0.22
+placeTrialPrompt(grottoEntrance, "Запечатанная кристальная пещера", "Исследовать")
+local entranceGlow = Instance.new("PointLight")
+entranceGlow.Color = palette.lilacLight
+entranceGlow.Range = 14
+entranceGlow.Brightness = 0.8
+entranceGlow.Parent = grottoEntrance
+
 -- Rootvault is its own combat region; players do not need to stand in the Grove arena.
 local rootvaultRegion = makePart(
     rootvault,
