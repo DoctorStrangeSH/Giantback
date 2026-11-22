@@ -154,7 +154,7 @@ jobs:
               "companionPetReadyAt",
               "CompanionPetted",
               "CompanionPettingBurstLocal",
-              "local companionActivity = {}",
+              "local companionActivity = setmetatable({}, {__mode = \"k\"})",
               "activity.idleSince = now",
               "flapSpeed = 3.2",
               "resting and 0.38",
