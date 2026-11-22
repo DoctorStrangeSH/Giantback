@@ -87,9 +87,9 @@ class MothLunarGlowContractTests(unittest.TestCase):
         self.assertIn("pendingMothBurst = false", ALBUM)
 
     def test_first_expedition_visits_moonbloom_after_meeting_the_moth(self):
-        moth = ALBUM.index('{flag = "Moth",')
-        moon_bloom = ALBUM.index('{flag = "MoonBloom",')
-        flower = ALBUM.index('{flag = "Flower",')
+        moth = HUD.index('{key = "Moth",')
+        moon_bloom = HUD.index('{key = "MoonBloom",')
+        flower = HUD.index('{key = "Flower",')
         self.assertLess(moth, moon_bloom)
         self.assertLess(moon_bloom, flower)
         self.assertIn('if not player:GetAttribute("MoonBloom") then', HUD)
