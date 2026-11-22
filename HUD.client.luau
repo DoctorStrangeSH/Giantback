@@ -359,7 +359,7 @@ local function renderPets()
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
         local equipped = player:GetAttribute("Companion") == pet.id
-        local item = card(body, pet.id .. "Card", 136)
+        local item = card(body, pet.id .. "Card", 168)
         local icon = label(item, "Icon", pet.icon, UDim2.fromOffset(58, 58), UDim2.fromOffset(10, 24), 34, palette.ink)
         icon.TextXAlignment = Enum.TextXAlignment.Center
         label(item, "Name", pet.name .. " • " .. pet.role, UDim2.new(1, -210, 0, 24), UDim2.fromOffset(76, 8), 14, palette.ink, Enum.Font.GothamBold)
@@ -410,6 +410,19 @@ local function renderPets()
         play.Activated:Connect(function()
             if owned and equipped then
                 event:FireServer("StartCompanionPlay", pet.id)
+            end
+        end)
+
+        local petButton = button(item, "Pet", owned and (equipped and "ПОГЛАДИТЬ" or "ПОЗОВИ") or "НЕТ ПИТОМЦА",
+            UDim2.fromOffset(108, 28), UDim2.new(1, -120, 0, 116), palette.lilac)
+        petButton.TextColor3 = palette.ink
+        petButton.TextSize = 9
+        petButton.Active = owned and equipped
+        petButton.AutoButtonColor = petButton.Active
+        petButton.BackgroundTransparency = petButton.Active and 0 or 0.35
+        petButton.Activated:Connect(function()
+            if owned and equipped then
+                event:FireServer("PetCompanion", pet.id)
             end
         end)
     end
