@@ -62,6 +62,45 @@ def sphere(name, location, scale, material, segments=32, rings=20):
     return obj
 
 
+def crescent(name, center, side, material):
+    # A filled crescent silhouette (not overlapping oval discs), mirrored per wing.
+    cx, cy, cz = center
+    outer_radius, inner_radius, inner_offset = 0.145, 0.128, 0.078
+    points = []
+    for step in range(25):
+        angle = math.radians(60 + step * 240 / 24)
+        points.append((
+            cx + side * outer_radius * math.cos(angle),
+            cy + outer_radius * math.sin(angle),
+            cz,
+        ))
+    for step in range(25):
+        angle = math.radians(-90 + step * 180 / 24)
+        points.append((
+            cx + side * (inner_offset + inner_radius * math.cos(angle)),
+            cy + inner_radius * math.sin(angle),
+            cz,
+        ))
+    mesh = bpy.data.meshes.new(name + "Mesh")
+    mesh.from_pydata(points, [], [tuple(range(len(points)))])
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    mesh.materials.append(material)
+    uv = mesh.uv_layers.new(name="MoonUV")
+    for polygon in mesh.polygons:
+        polygon.use_smooth = False
+        for loop_index in polygon.loop_indices:
+            vertex = mesh.vertices[mesh.loops[loop_index].vertex_index].co
+            uv.data[loop_index].uv = (vertex.x - cx + 0.5, vertex.y - cy + 0.5)
+    solidify = obj.modifiers.new("Moon inlay thickness", "SOLIDIFY")
+    solidify.thickness = 0.018
+    bevel = obj.modifiers.new("Soft moon edge", "BEVEL")
+    bevel.width = 0.008
+    bevel.segments = 2
+    return obj
+
+
 def wing(name, side, upper, materials):
     # Four individually pivoted, thick, scalloped wing shells. X is span, Y is lift.
     span = 1.42 if upper else 1.04
@@ -196,6 +235,10 @@ def mesh_report(objects, output):
             return name
         if name.startswith("MothWingLower"):
             return name
+        if name.startswith("WingMoonUpper"):
+            return "MothWingUpper" + ("Left" if name.endswith("Left") else "Right")
+        if name.startswith("WingMoonLower"):
+            return "MothWingLower" + ("Left" if name.endswith("Left") else "Right")
         if name.startswith("MothAntennaLeft"):
             return "MothAntennaLeft"
         if name.startswith("MothAntennaRight"):
@@ -274,13 +317,13 @@ def main():
             t = 0.57
             mark_x = root_x + side * t * span
             mark_y = root_y + t * length + 0.055
-            mark_z = root_z + 0.20 * t * t + 0.025
-            # Gold crescent inlay: an outer moon disc and a lilac offset inset.
-            parts.append(sphere("WingMoonGold"+wing_name+suffix,
-                (mark_x,mark_y,mark_z),(0.105,0.145,0.026),gold,24,16))
-            parts.append(sphere("WingMoonInset"+wing_name+suffix,
-                (mark_x+side*0.035,mark_y+0.035,mark_z-0.035),
-                (0.083,0.122,0.018),lilac,24,16))
+            mark_z = root_z + 0.20 * t * t + 0.10 - 0.055 - 0.012
+            parts.append(crescent(
+                "WingMoon" + wing_name + suffix,
+                (mark_x, mark_y, mark_z),
+                side,
+                gold
+            ))
     # Every required rig group is represented by one or more named mesh objects.
     rig={"version":1,"character":"LunarMothHero","forward_axis":"-Z","up_axis":"+Y",
          "parts":list(GROUPS),"wing_groups":["MothWingUpperLeft","MothWingUpperRight","MothWingLowerLeft","MothWingLowerRight"],
