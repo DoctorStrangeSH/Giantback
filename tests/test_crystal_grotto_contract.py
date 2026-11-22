@@ -7,6 +7,7 @@ WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 VISUALS = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 COMBAT = (ROOT / "Combat.server.luau").read_text(encoding="utf-8")
 COMBAT_CLIENT = (ROOT / "Combat.client.luau").read_text(encoding="utf-8")
 
@@ -180,8 +181,8 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('data.companionId == "CrystalWisp"', COMBAT_CLIENT)
         self.assertIn('КРИСТАЛЬНЫЙ СВЕТЛЯК · ПРИЗМЕННОЕ ЧУТЬЁ', COMBAT_CLIENT)
         self.assertIn('Призменное чутьё: скрытые жилы на ', HUD)
-        self.assertIn('local prismSenseActive = state.id == "CrystalWisp"', ALBUM)
-        self.assertIn('^OrbitCrystal', ALBUM)
+        self.assertIn('local prismSenseActive = state.id == "CrystalWisp"', ANIMATION)
+        self.assertIn('^OrbitCrystal', ANIMATION)
 
     def test_crystal_wisp_is_in_expedition_journal(self):
         self.assertIn('{key = "CrystalWisp", title = "Подружиться с кристальным светляком"', HUD)
