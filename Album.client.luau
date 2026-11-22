@@ -1387,7 +1387,8 @@ local function refresh()
         if owned and type(mutationName) == "string" and mutationName ~= "" then
             entry.name.Text = names[id] .. " ✦ " .. mutationName
             entry.name.TextSize = 10
-            entry.name.TextColor3 = mutationRarity == "Эпический" and palette.lilac
+            entry.name.TextColor3 = mutationRarity == "Легендарный" and palette.gold
+                or mutationRarity == "Эпический" and palette.lilac
                 or mutationRarity == "Редкий" and palette.gold or palette.mint
         else
             entry.name.Text = names[id]
@@ -2151,6 +2152,8 @@ local companionMutationVisuals = {
     Moonveil = {color = Color3.fromRGB(151, 169, 255), outline = Color3.fromRGB(205, 215, 255)},
     Stardust = {color = Color3.fromRGB(177, 145, 255), outline = Color3.fromRGB(224, 204, 255)},
     Aurora = {color = Color3.fromRGB(117, 235, 215), outline = Color3.fromRGB(205, 255, 240)},
+    Elderwood = {color = Color3.fromRGB(116, 194, 112), outline = Color3.fromRGB(225, 255, 173), legendary = true},
+    Eclipse = {color = Color3.fromRGB(79, 62, 132), outline = Color3.fromRGB(255, 222, 151), legendary = true},
 }
 local mutationOriginalColors = setmetatable({}, {__mode = "k"})
 
@@ -2173,6 +2176,8 @@ local function applyCompanionMutation(model, owner, companionId)
 
     local highlight = model:FindFirstChild("CompanionMutationHighlight")
     if highlight then highlight:Destroy() end
+    local oldAura = model:FindFirstChild("LegendaryMutationAttachment", true)
+    if oldAura then oldAura:Destroy() end
 
     if visual then
         for _, descendant in model:GetDescendants() do
@@ -2195,6 +2200,45 @@ local function applyCompanionMutation(model, owner, companionId)
         highlight.OutlineTransparency = 0.18
         highlight.DepthMode = Enum.HighlightDepthMode.Occluded
         highlight.Parent = model
+
+        if visual.legendary then
+            local auraPart = model.PrimaryPart
+            if not auraPart then
+                for _, descendant in model:GetDescendants() do
+                    if descendant:IsA("BasePart") then
+                        auraPart = descendant
+                        break
+                    end
+                end
+            end
+            if auraPart then
+                local attachment = Instance.new("Attachment")
+                attachment.Name = "LegendaryMutationAttachment"
+                attachment.Parent = auraPart
+
+                local particles = Instance.new("ParticleEmitter")
+                particles.Name = "LegendaryMutationParticles"
+                particles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+                particles.Color = ColorSequence.new(visual.color, visual.outline)
+                particles.LightEmission = 0.8
+                particles.Rate = 4
+                particles.Lifetime = NumberRange.new(0.8, 1.4)
+                particles.Speed = NumberRange.new(0.25, 0.65)
+                particles.SpreadAngle = Vector2.new(180, 180)
+                particles.Rotation = NumberRange.new(0, 360)
+                particles.RotSpeed = NumberRange.new(-45, 45)
+                particles.Size = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.12),
+                    NumberSequenceKeypoint.new(0.55, 0.2),
+                    NumberSequenceKeypoint.new(1, 0),
+                })
+                particles.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.12),
+                    NumberSequenceKeypoint.new(1, 1),
+                })
+                particles.Parent = attachment
+            end
+        end
     end
     model:SetAttribute("AppliedMutation", normalizedId)
 end
