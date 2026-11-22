@@ -235,3 +235,12 @@ This is a first-pass PvE tuning baseline, not final balance. Contract tests and 
 The third sword strike now applies a server-authoritative impulse to each enemy hit. Standard enemies receive the full push; bosses receive 28% of the impulse to preserve encounter positioning and phase mechanics. The impulse is derived from the attacker's server-observed facing direction and the enemy assembly mass. Clients cannot request knockback or choose its strength.
 
 A source-contract test and generated-place validation markers cover the behavior. Studio acceptance must tune the impulse against each enemy rig, check collisions/ledge safety, verify boss positioning and confirm that repeated hits do not create physics instability.
+
+
+## 29. Charged sword attack
+
+The sword supports a hold-and-release charged strike. The server records the start timestamp; clients send only `ChargeStart` and `ChargeRelease`, never charge duration, damage or target data. A valid charge lasts at least 0.45s and caps at 1.6s. Server-calculated damage scales linearly from 30 to 52, with a 1.35s attack recovery and a larger forward hit volume (8×6×7, 9-stud reach). Successful hits apply a stronger server-owned impulse; bosses receive 20% of that impulse to preserve encounter positioning.
+
+The action is available on keyboard (R), gamepad (ButtonX) and ContextActionService touch controls. A charge expires after four seconds if abandoned, and blocking, dodging, respawning or starting a normal attack cannot preserve or bypass the charge state. A too-short charge is rejected. Contract tests and generated-place markers cover the server timing, input mapping and cancellation rules.
+
+This is a first tuning pass. Roblox Studio playtests must validate the touch button's hold behavior, charge readability, latency, hit volume, boss displacement, animation/VFX timing and whether the risk/reward feels fair.
