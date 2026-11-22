@@ -1,5 +1,8 @@
 ## Asset Pipeline 1.0 — Studio import and asset staging
 
+- [x] Retire disabled GiantbackJournal UI and its old quest polling; migrate companion collection (including CrystalWisp), levels/XP, growth, mutation names, talents, scout readiness and rare material counters into active GiantbackHUD.
+- [x] Keep active Album client-only animation, harvesting effects, local prompts and follower logic intact, with automated regression contracts.
+- [x] Fix missing ore, ingot and smelter-local values in active Tools UI rendering.
 - [x] Organize the repository asset catalogue by editable sources, imported model exports, textures, icons, audio, animation sources and references.
 - [x] Validate six original OBJ/MTL source pairs and source manifest in GitHub Actions.
 - [x] Add a Roblox Studio Command Bar organizer for already imported models with dry-run mode, duplicate prevention and explicit destinations.
