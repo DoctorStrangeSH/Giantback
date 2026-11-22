@@ -34,7 +34,7 @@ class CompanionPersonalityContractTests(unittest.TestCase):
         self.assertIn('"_BondStage", bondStage', WORLD)
 
     def test_higher_bond_changes_fox_and_moth_idle_behavior(self):
-        self.assertIn('owner:GetAttribute("Companion_" .. id .. "_BondStage")', ALBUM)
+        self.assertIn('owner:GetAttribute("Companion_" .. id .. "_BondStage")', ACTIVITY)
         self.assertIn('window[1] - bondStage * 1.5', ACTIVITY)
         self.assertIn('window[2] - bondStage * 2', ACTIVITY)
         self.assertIn('personalityRadius - bondStage * 0.035', ALBUM)
@@ -47,7 +47,7 @@ class CompanionPersonalityContractTests(unittest.TestCase):
         self.assertIn('["Озорной"] = {6, 11}', ACTIVITY)
         self.assertIn('["Смелый"] = {9, 15}', ACTIVITY)
         self.assertIn('["Застенчивый"] = {15, 23}', ACTIVITY)
-        self.assertIn('owner:GetAttribute("Companion_Fox_Personality")', ALBUM)
+        self.assertIn('owner:GetAttribute("Companion_Fox_Personality")', ACTIVITY)
 
     def test_moth_orbit_and_stardust_depend_on_personality(self):
         self.assertIn('["Любопытный"] = 0.9', ALBUM)
