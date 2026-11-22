@@ -344,12 +344,14 @@ local function renderTools()
         local equipped = player:GetAttribute("Tool_Equipped") == tool.id
         local owned = player:GetAttribute(tool.owned) == true
         local levelAttribute = tool.id == "Axe" and "Tool_AxeLevel" or "Tool_PickaxeLevel"
-        local level = math.clamp(tonumber(player:GetAttribute(levelAttribute)) or 1, 1, 2)
-        local item = card(body, tool.id .. "Card", 112)
+        local level = math.clamp(tonumber(player:GetAttribute(levelAttribute)) or 1, 1, 3)
+        local item = card(body, tool.id .. "Card", 124)
         local icon = label(item, "Icon", tool.icon, UDim2.fromOffset(52, 52), UDim2.fromOffset(10, 16), 30, palette.ink)
         icon.TextXAlignment = Enum.TextXAlignment.Center
-        label(item, "Title", tool.title .. (level >= 2 and " • Усиленный" or ""), UDim2.new(1, -160, 0, 24), UDim2.fromOffset(72, 8), 13, palette.ink, Enum.Font.GothamBold)
-        label(item, "Detail", tool.detail .. (level >= 2 and " На один удар меньше." or ""), UDim2.new(1, -160, 0, 42), UDim2.fromOffset(72, 32), 10, palette.muted)
+        local tierName = level >= 3 and " • Кристальный" or (level == 2 and " • Железный" or "")
+        label(item, "Title", tool.title .. tierName, UDim2.new(1, -160, 0, 24), UDim2.fromOffset(72, 8), 13, palette.ink, Enum.Font.GothamBold)
+        local speedDetail = level >= 3 and " На два удара меньше." or (level == 2 and " На один удар меньше." or "")
+        label(item, "Detail", tool.detail .. speedDetail, UDim2.new(1, -160, 0, 42), UDim2.fromOffset(72, 32), 10, palette.muted)
         local action = button(item, "Equip", owned and (equipped and "В РУКАХ" or "ВЗЯТЬ") or "ЗАКРЫТО", UDim2.fromOffset(106, 30), UDim2.new(1, -118, 0, 8), equipped and palette.gold or palette.forest)
         action.TextSize = 11
         action.TextColor3 = equipped and palette.ink or palette.white
@@ -368,12 +370,13 @@ local function renderTools()
                 end)
             end
         end)
-        local upgrade = button(item, "Upgrade", level >= 2 and "УЛУЧШЕН" or "УСИЛИТЬ", UDim2.fromOffset(106, 28), UDim2.new(1, -118, 0, 68), level >= 2 and palette.gold or palette.coral)
-        upgrade.TextSize = 10
-        upgrade.TextColor3 = level >= 2 and palette.ink or palette.white
+        local upgradeLabel = level >= 3 and "МАКС. УРОВЕНЬ" or (level == 2 and "КУЗНИЦА • УР. 3" or "УЛУЧШИТЬ • УР. 2")
+        local upgrade = button(item, "Upgrade", upgradeLabel, UDim2.fromOffset(106, 34), UDim2.new(1, -118, 0, 76), level >= 3 and palette.gold or palette.coral)
+        upgrade.TextSize = 9
+        upgrade.TextColor3 = level >= 3 and palette.ink or palette.white
         upgrade.Activated:Connect(function()
-            if level >= 2 then
-                showToast("Инструмент уже максимального уровня.")
+            if level >= 3 then
+                showToast("Инструмент уже достиг максимального уровня.")
             else
                 event:FireServer("UpgradeTool", tool.id)
                 task.delay(0.2, function()
@@ -385,7 +388,6 @@ local function renderTools()
             end
         end)
     end
-    local ironOre = tonumber(player:GetAttribute("Resource_IronOre")) or 0
     local ironOre = tonumber(player:GetAttribute("Resource_IronOre")) or 0
     local ironIngot = tonumber(player:GetAttribute("Resource_IronIngot")) or 0
     local smelterReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
@@ -414,7 +416,7 @@ local function renderTools()
         end)
     end)
     addInfo("Запас железа", "Сейчас у тебя " .. tostring(ironOre) .. " ед. руды и " .. tostring(ironIngot) .. " железных слитков.", 62)
-    addInfo("Мастерская", "Подойди к верстаку на своём острове. Усиление топора стоит дерево ×8 и камень ×6; усиление кирки — дерево ×6 и камень ×8. Улучшенный инструмент сокращает добычу на один удар.", 94)
+    addInfo("Кузница • развитие инструментов", "Уровень 2: топор — дерево ×8 + камень ×6; кирка — дерево ×6 + камень ×8. Уровень 3: топор — дерево ×12 + камень ×10 + слитки ×2; кирка — дерево ×10 + камень ×12 + слитки ×2. Кристальный инструмент сокращает добычу ещё на один удар. Все улучшения выполняются у твоего верстака.", 112)
     addInfo("Новая находка: железная руда", "В Лунной роще ищи тёмные жилы с рыжими металлическими прожилками. Для добычи нужна кирка. В запасе: " .. tostring(ironOre) .. " шт. Руда пригодится для будущей плавильни.", 82)
     addInfo("Как работает добыча", "Подойди к дереву с топором, к каменной или железной жиле — с киркой. Каждый узел выдаёт ресурсы отдельно для твоего профиля и восстанавливается со временем.", 78)
 
