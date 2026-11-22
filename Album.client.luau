@@ -1204,8 +1204,35 @@ local function playResourceBreakAnimation(nodeId)
     end
 end
 
+local function playResourceRegrowthBurst(model)
+    local anchor = model.PrimaryPart or model:FindFirstChild("PromptAnchor")
+    if not anchor or not anchor:IsA("BasePart") then return end
+    local emitter = Instance.new("ParticleEmitter")
+    emitter.Name = "LocalResourceRegrowth"
+    emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+    emitter.Rate = 0
+    emitter.Lifetime = NumberRange.new(0.35, 0.7)
+    emitter.Speed = NumberRange.new(1.2, 2.8)
+    emitter.SpreadAngle = Vector2.new(180, 180)
+    emitter.RotSpeed = NumberRange.new(-70, 70)
+    emitter.LightEmission = 0.7
+    emitter.Color = string.find(model.Name, "Wood", 1, true)
+        and ColorSequence.new(Color3.fromRGB(145, 207, 123), Color3.fromRGB(226, 231, 153))
+        or ColorSequence.new(Color3.fromRGB(155, 193, 205), Color3.fromRGB(221, 226, 215))
+    emitter.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.16),
+        NumberSequenceKeypoint.new(1, 0),
+    })
+    emitter.Parent = anchor
+    emitter:Emit(12)
+    task.delay(1.1, function()
+        if emitter.Parent then emitter:Destroy() end
+    end)
+end
+
 local function restoreResourceGrowth(model)
     local saved = captureResourceGeometry(model)
+    playResourceRegrowthBurst(model)
     for part, geometry in saved do
         if part.Parent then
             part.Size = geometry.size * 0.12
