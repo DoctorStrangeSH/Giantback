@@ -256,25 +256,56 @@ local function addInfo(titleText, description, height)
     return item
 end
 
+local cropCatalog = {
+    {id = "Carrot", name = "Морковь", seed = "CarrotSeed", glyph = "🥕", grow = "5 мин", color = palette.gold},
+    {id = "Strawberry", name = "Клубника", seed = "StrawberrySeed", glyph = "🍓", grow = "12 мин · повторный сбор 8 мин", color = palette.coral},
+    {id = "Pumpkin", name = "Тыква", seed = "PumpkinSeed", glyph = "🎃", grow = "30 мин", color = palette.gold},
+    {id = "Cabbage", name = "Капуста", seed = "CabbageSeed", glyph = "🥬", grow = "20 мин", color = palette.mint},
+}
+local cropById = {}
+for _, crop in cropCatalog do cropById[crop.id] = crop end
+
+local function addSeedChoice(crop, selectedCrop)
+    local seeds = tonumber(player:GetAttribute("Resource_" .. crop.seed)) or 0
+    local selected = selectedCrop == crop.id
+    local item = card(body, "Seed_" .. crop.id, 66)
+    item.BackgroundColor3 = selected and Color3.fromRGB(235, 241, 218) or palette.paper
+    local icon = label(item, "Icon", crop.glyph, UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 12), 25, crop.color, Enum.Font.GothamBold)
+    icon.TextXAlignment = Enum.TextXAlignment.Center
+    label(item, "Name", crop.name, UDim2.new(1, -166, 0, 22), UDim2.fromOffset(60, 7), 15, palette.ink, Enum.Font.GothamBold)
+    label(item, "Details", crop.grow .. "  •  семян: " .. tostring(seeds), UDim2.new(1, -166, 0, 27), UDim2.fromOffset(60, 31), 11, palette.muted)
+    local choose = button(item, "Choose", selected and "ВЫБРАНО" or "ВЫБРАТЬ", UDim2.fromOffset(94, 34), UDim2.new(1, -106, 0.5, -17), selected and palette.gold or palette.forest)
+    choose.TextSize = 10
+    choose.Activated:Connect(function()
+        if seeds < 1 then
+            showToast("Семена закончились. Найди или получи новые семена.")
+            return
+        end
+        event:FireServer("SelectCrop", crop.id)
+    end)
+end
+
 local function addPlot(plotId, index)
     local unlocked = player:GetAttribute("Farm_" .. plotId .. "_Unlocked") == true
     local cropId = player:GetAttribute("Farm_" .. plotId .. "_CropId") or ""
     local readyAt = tonumber(player:GetAttribute("Farm_" .. plotId .. "_ReadyAt")) or 0
+    local crop = cropById[cropId]
     local stateText
     if not unlocked then
         stateText = "Закрыта — откроется после улучшения фермы"
     elseif cropId == "" then
-        stateText = "Свободна — можно посадить семена"
+        local selected = cropById[player:GetAttribute("Farm_SelectedCrop") or "Carrot"]
+        stateText = "Свободна — выбрано: " .. (selected and selected.name or "морковь")
     elseif readyAt <= os.time() then
-        stateText = "Урожай готов! Подойди и собери его"
+        stateText = (crop and crop.name or "Растение") .. ": урожай готов! Подойди и собери"
     else
         local remaining = math.max(0, readyAt - os.time())
         local minutes = math.floor(remaining / 60)
         local seconds = remaining % 60
-        stateText = string.format("Морковь растёт — осталось %02d:%02d", minutes, seconds)
+        stateText = string.format("%s растёт — осталось %02d:%02d", crop and crop.name or "Растение", minutes, seconds)
     end
     local item = card(body, "Plot" .. tostring(index), 66)
-    local icon = label(item, "Icon", unlocked and (cropId == "" and "＋" or "🥕") or "🔒", UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 12), 23, palette.forest, Enum.Font.GothamBlack)
+    local icon = label(item, "Icon", not unlocked and "🔒" or (crop and crop.glyph or "＋"), UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 12), 23, palette.forest, Enum.Font.GothamBlack)
     icon.TextXAlignment = Enum.TextXAlignment.Center
     label(item, "Title", "Грядка " .. tostring(index), UDim2.new(1, -72, 0, 22), UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
     label(item, "State", stateText, UDim2.new(1, -72, 0, 30), UDim2.fromOffset(60, 31), 12, palette.muted)
@@ -299,10 +330,18 @@ end
 
 local function renderFarm()
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
-    local seeds = tonumber(player:GetAttribute("Resource_CarrotSeed")) or 0
-    local carrots = tonumber(player:GetAttribute("Resource_Carrot")) or 0
-    addInfo("Ферма • уровень " .. tostring(farmLevel), "Семена: " .. tostring(seeds) .. "   •   Собрано моркови: " .. tostring(carrots), 70)
-    addInfo("Как работает ферма", "Подойди к свободной грядке и нажми «Посадить». Когда морковь вырастет, вернись и нажми «Собрать». Растения не пропадают, пока тебя нет.", 94)
+    local selectedCrop = player:GetAttribute("Farm_SelectedCrop") or "Carrot"
+    local totalSeeds = 0
+    local harvestSummary = {}
+    for _, crop in cropCatalog do
+        totalSeeds += tonumber(player:GetAttribute("Resource_" .. crop.seed)) or 0
+        local amount = tonumber(player:GetAttribute("Resource_" .. crop.id)) or 0
+        if amount > 0 then table.insert(harvestSummary, crop.name .. " ×" .. tostring(amount)) end
+    end
+    addInfo("Ферма • уровень " .. tostring(farmLevel), "Семян всего: " .. tostring(totalSeeds) .. ( #harvestSummary > 0 and "   •   Урожай: " .. table.concat(harvestSummary, ", ") or "   •   Урожай пока не собран"), 78)
+    addInfo("1. Выбери семена", "Нажми «Выбрать» у культуры. Выбор применяется ко всем свободным грядкам.", 64)
+    for _, crop in cropCatalog do addSeedChoice(crop, selectedCrop) end
+    addInfo("2. Посади и собери", "Подойди к свободной грядке и нажми «Посадить». Вернись после созревания и нажми «Собрать». Рост продолжается, даже когда ты вышел из игры.", 86)
     for index = 1, 4 do
         addPlot(string.format("Plot%02d", index), index)
     end
