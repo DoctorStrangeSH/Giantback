@@ -230,7 +230,7 @@ local function createCompanionCard(id, index)
             event:FireServer(id)
         end
     end)
-    companionButtons[id] = {button = card, state = state, action = action, description = description, level = level, xpFill = xpFill}
+    companionButtons[id] = {button = card, state = state, action = action, description = description, name = name, level = level, xpFill = xpFill}
 end
 
 createCompanionCard("Fox", 1)
@@ -1382,6 +1382,18 @@ local function refresh()
             or "МАЛЫШ"
         entry.level.Text = levelValue >= 5 and (growthStage .. " · УР. 5")
             or (growthStage .. " · УР. " .. tostring(levelValue) .. " · " .. tostring(xpValue) .. "/" .. tostring(xpNeeded))
+        local mutationName = player:GetAttribute("Companion_" .. id .. "_MutationName")
+        local mutationRarity = player:GetAttribute("Companion_" .. id .. "_MutationRarity")
+        if owned and type(mutationName) == "string" and mutationName ~= "" then
+            entry.name.Text = names[id] .. " ✦ " .. mutationName
+            entry.name.TextSize = 10
+            entry.name.TextColor3 = mutationRarity == "Эпический" and palette.lilac
+                or mutationRarity == "Редкий" and palette.gold or palette.mint
+        else
+            entry.name.Text = names[id]
+            entry.name.TextSize = 12
+            entry.name.TextColor3 = palette.cream
+        end
         entry.xpFill.Size = UDim2.fromScale(xpNeeded > 0 and math.clamp(xpValue / xpNeeded, 0, 1) or 1, 1)
         entry.button.BackgroundColor3 = equipped and palette.surfaceLight or palette.surface
         entry.state.TextColor3 = equipped and palette.gold or owned and palette.mint or palette.muted
