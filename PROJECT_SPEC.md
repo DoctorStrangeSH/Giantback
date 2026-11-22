@@ -367,3 +367,11 @@ The current working branch adds two Dusk-island iron veins requiring a Pickaxe a
 - A 25-second per-companion cooldown and an 18-second challenge timeout prevent remote spam and abandoned sessions.
 - No streaks, daily requirement, energy depletion, punishment for failure or paid retry. This is a short cooperative-feeling interaction, not an obligation.
 - This first pass uses shared symbol controls with pet-specific presentation. Unique animations, sound cues and richer play toys remain later polish.
+
+
+### Companion personality and mood 1.0
+
+- Fox has a curious explorer personality; Moth has a calm, light-guardian personality. The Pets tab shows both the companion's personality description and its current mood.
+- Mood is event-driven: Fox starts Curious, Moth starts Calm; successful feeding changes mood to Content; a completed play session changes mood to Happy; equipping a companion restores its personality baseline.
+- Mood is session flavor, not a survival or progression system. It does not decay, block abilities, consume resources, or punish the player for leaving. It resets to each companion's baseline on a fresh session.
+- The server owns mood state and synchronizes it through companion-specific player attributes. The first pass changes the album presentation only; unique animation/audio reactions remain NOT DONE.
