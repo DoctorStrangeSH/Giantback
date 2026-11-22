@@ -22,6 +22,18 @@
 - [x] Обнаружить и зафиксировать критический gap: UV coordinates = 0. Исходник остаётся BLOCKOUT, не финальный текстурируемый asset.
 - [ ] В новой Hero-модели создать UV unwrap, толщину/чистые кромки крыльев и painted motifs; оригинальный OBJ не перезаписывать.
 
+## Lunar Moth Hero — first generation pass
+
+- [x] Добавить отдельный Blender 4.2 generator `tools/blender/build_moth_companion.py`; legacy `moth_companion.obj/.mtl` не перезаписываются.
+- [x] Создать четыре отдельных thickened wing mesh: upper/lower × left/right, каждому назначена UV-развёртка и отдельное имя для будущей анимации.
+- [x] Создать body/head/abdomen, antennae, moon-gold accents, moon-cyan core и согласованную lilac/rose/cyan palette.
+- [x] Зафиксировать 10 стабильных rig groups и пять планируемых состояний (idle_hover/follow/reveal_secret/ability_burst/rest); текущий JSON — контракт, не готовый Roblox rig.
+- [x] Добавить отдельный CI workflow `.github/workflows/lunar-moth-visual-review.yml`: BLEND/OBJ/MTL, rig JSON, mesh report, четыре ракурса, UV/geometry/material gates и artifact upload.
+- [x] Добавить source-contract tests `tests/test_lunar_moth_hero_workflow.py`.
+- [ ] Дождаться реального Blender run и устранить возможные геометрические/рендерные ошибки.
+- [ ] Вручную принять силуэт/материалы по четырём ракурсам; при необходимости исправить и повторить render.
+- [ ] Импортировать в Roblox Studio; проверить масштаб, pivots, крылья, mobile readability и runtime animation.
+
 ## Следующий production-фокус — Lunar Moth
 
 - [x] Создать `assets/source_models/MOTH_ART_BRIEF.md`: зафиксированы роль питомца, лунная палитра, четыре независимых крыла, силуэт, wing art, rig-группы, idle/follow/reveal/burst анимации и визуальные/технические acceptance gates.
