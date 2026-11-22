@@ -80,6 +80,25 @@ jobs:
           if missing:
               raise SystemExit(f"Missing instances in generated place: {sorted(missing)}")
 
+          def item_name(item):
+              return item.findtext("./Properties/string[@name='Name']", default="")
+
+          services = {item_name(item): item for item in root.findall("./Item")}
+          for service_name, categories in (
+              ("ServerStorage", {"Buildings", "Environment"}),
+              ("ReplicatedStorage", {"Companions"}),
+          ):
+              service = services[service_name]
+              library = next((item for item in service.findall("./Item") if item_name(item) == "AssetLibrary"), None)
+              if library is None:
+                  raise SystemExit(f"Missing {service_name}/AssetLibrary")
+              models = next((item for item in library.findall("./Item") if item_name(item) == "Models"), None)
+              if models is None:
+                  raise SystemExit(f"Missing {service_name}/AssetLibrary/Models")
+              category_names = {item_name(item) for item in models.findall("./Item")}
+              if not categories <= category_names:
+                  raise SystemExit(f"Missing asset categories under {service_name}: {sorted(categories - category_names)}")
+
           sources = [
               node.text or ""
               for node in root.findall(".//ProtectedString[@name='Source']")
