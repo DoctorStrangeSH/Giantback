@@ -19,6 +19,9 @@ class TutorialProgressHudTests(unittest.TestCase):
         self.assertIn('progressFill.Size = UDim2.fromScale(math.clamp(completed / total, 0, 1), 1)', HUD)
         self.assertIn('progressCount.Text = tostring(completed) .. " / " .. tostring(total)', HUD)
         self.assertIn('objective.Size = UDim2.new(1, -32, 0, 94)', HUD)
+        self.assertIn('objective.Size = UDim2.fromOffset(352, 94)', HUD)
+        self.assertIn("TweenService:Create(progressFill", HUD)
+        self.assertIn("progressTween:Play()", HUD)
 
     def test_progress_uses_existing_server_attributes_without_client_mutation(self):
         self.assertIn('player:GetAttribute(milestone.key) == true', HUD)
