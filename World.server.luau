@@ -1121,6 +1121,15 @@ local function init(player)
         player:SetAttribute("OfflineAlbum", true)
     end
 
+    session.companionOwnershipConnections = {}
+    for _, companionId in COMPANION_IDS do
+        table.insert(session.companionOwnershipConnections, player:GetAttributeChangedSignal(companionId):Connect(function()
+            if sessions[player] ~= session or player:GetAttribute(companionId) ~= true then return end
+            ensureCompanionMutation(player, companionId)
+            syncCompanionProgress(player)
+        end))
+    end
+
     syncInventory(player)
     syncFarm(player)
     syncBridge(player)
