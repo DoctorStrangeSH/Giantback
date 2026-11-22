@@ -51,7 +51,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('reject(player, "NoServerEquippedWeapon")', COMBAT)
 
     def test_c1_uses_server_owned_enemy_damage_and_never_client_values(self):
-        self.assertIn("entry.humanoid:TakeDamage(PLAYER_DAMAGE)", COMBAT)
+        self.assertIn("entry.humanoid:TakeDamage(COMBO_DAMAGE[comboStep])", COMBAT)
         self.assertIn("currentHumanoid:TakeDamage(damage)", COMBAT)
         self.assertNotIn("payload.damage", COMBAT.lower())
         self.assertNotIn("payload.reward", COMBAT.lower())
@@ -64,7 +64,8 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn("entry.regionId == getPlayerRegion(player)", COMBAT)
 
     def test_melee_hitbox_range_facing_and_cooldown_are_server_owned(self):
-        self.assertIn("PLAYER_ATTACK_COOLDOWN = 0.65", COMBAT)
+        self.assertIn("COMBO_COOLDOWN = {0.48, 0.48, 0.72}", COMBAT)
+        self.assertIn("state.attackReadyAt = now + COMBO_COOLDOWN[comboStep]", COMBAT)
         self.assertIn("Workspace:GetPartBoundsInBox(hitCFrame, PLAYER_ATTACK_BOX, overlap)", COMBAT)
         self.assertIn("root.CFrame.LookVector:Dot(offset.Unit) >= 0.25", COMBAT)
 
