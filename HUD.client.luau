@@ -394,6 +394,19 @@ local function renderPets()
                 event:FireServer("FeedCompanion", pet.id)
             end
         end)
+
+        local play = button(item, "Play", owned and (equipped and "ИГРАТЬ" or "ПОЗОВИ") or "НЕТ ПИТОМЦА",
+            UDim2.fromOffset(108, 28), UDim2.new(1, -120, 0, 80), palette.gold)
+        play.TextColor3 = palette.ink
+        play.TextSize = 10
+        play.Active = owned and equipped
+        play.AutoButtonColor = play.Active
+        play.BackgroundTransparency = play.Active and 0 or 0.35
+        play.Activated:Connect(function()
+            if owned and equipped then
+                event:FireServer("StartCompanionPlay", pet.id)
+            end
+        end)
     end
 end
 
@@ -615,7 +628,114 @@ local function refresh()
     end
 end
 
+local playOverlay = Instance.new("Frame")
+playOverlay.Name = "CompanionPlayOverlay"
+playOverlay.AnchorPoint = Vector2.new(0.5, 0.5)
+playOverlay.Position = UDim2.fromScale(0.5, 0.5)
+playOverlay.Size = UDim2.fromOffset(340, 210)
+playOverlay.BackgroundColor3 = palette.paper
+playOverlay.BorderSizePixel = 0
+playOverlay.Visible = false
+playOverlay.ZIndex = 50
+playOverlay.Parent = gui
+corner(playOverlay, 20)
+stroke(playOverlay, palette.gold, 0.12, 2)
+
+local playTitle = label(playOverlay, "Title", "ИГРА С ПИТОМЦЕМ", UDim2.new(1, -28, 0, 28), UDim2.fromOffset(14, 12), 17, palette.ink, Enum.Font.GothamBlack)
+playTitle.TextXAlignment = Enum.TextXAlignment.Center
+playTitle.ZIndex = 51
+local playHint = label(playOverlay, "Hint", "Запомни огоньки!", UDim2.new(1, -28, 0, 48), UDim2.fromOffset(14, 44), 14, palette.muted, Enum.Font.GothamBold)
+playHint.TextXAlignment = Enum.TextXAlignment.Center
+playHint.ZIndex = 51
+
+local playSymbols = {"🐾", "🍃", "✨"}
+local playButtons = {}
+local activePlay = nil
+local playNextIndex = 1
+
+for index, symbol in playSymbols do
+    local playButton = button(playOverlay, "Symbol" .. tostring(index), symbol,
+        UDim2.fromOffset(88, 58), UDim2.fromOffset(24 + (index - 1) * 108, 126), index == 1 and palette.gold or index == 2 and palette.mint or palette.lilac)
+    playButton.TextColor3 = palette.ink
+    playButton.TextSize = 25
+    playButton.ZIndex = 51
+    playButton.Active = false
+    playButton.AutoButtonColor = false
+    playButtons[index] = playButton
+    playButton.Activated:Connect(function()
+        if not activePlay or not activePlay.inputEnabled then return end
+        local expected = activePlay.sequence[playNextIndex]
+        event:FireServer("CompanionPlayInput", {
+            token = activePlay.token,
+            index = playNextIndex,
+            symbol = index,
+        })
+        if expected ~= index then
+            activePlay.inputEnabled = false
+            playHint.Text = "Ой! Попробуй ещё раз."
+            for _, item in playButtons do item.Active = false end
+            return
+        end
+        playNextIndex += 1
+        if playNextIndex > #activePlay.sequence then
+            activePlay.inputEnabled = false
+            playHint.Text = "Ура! Проверяем результат..."
+            for _, item in playButtons do item.Active = false end
+        else
+            playHint.Text = "Верно! Ещё " .. tostring(#activePlay.sequence - playNextIndex + 1) .. "!"
+        end
+    end)
+end
+
+local function beginCompanionPlay(payload)
+    if type(payload) ~= "table" or type(payload.token) ~= "string"
+        or type(payload.sequence) ~= "table" or type(payload.symbols) ~= "table" then return end
+    activePlay = {
+        token = payload.token,
+        sequence = payload.sequence,
+        inputEnabled = false,
+    }
+    playNextIndex = 1
+    local sequenceText = {}
+    for _, symbolIndex in payload.sequence do
+        local symbol = payload.symbols[symbolIndex]
+        if type(symbol) ~= "string" then return end
+        table.insert(sequenceText, symbol)
+    end
+    playTitle.Text = payload.companionId == "Fox" and "СЛЕДЫ ЛИСЁНКА" or "ЛУННЫЕ ОГОНЬКИ"
+    playHint.Text = "Запомни: " .. table.concat(sequenceText, "  ")
+    playOverlay.Visible = true
+    for _, item in playButtons do
+        item.Active = false
+        item.AutoButtonColor = false
+    end
+    task.delay(1.8, function()
+        if not activePlay or activePlay.token ~= payload.token or not playOverlay.Parent then return end
+        playHint.Text = "Теперь повтори последовательность!"
+        activePlay.inputEnabled = true
+        for _, item in playButtons do
+            item.Active = true
+            item.AutoButtonColor = true
+        end
+    end)
+end
+
+local function finishCompanionPlay(payload)
+    playOverlay.Visible = false
+    activePlay = nil
+    if type(payload) == "table" and type(payload.message) == "string" then
+        showToast(payload.message)
+    end
+end
+
 event.OnClientEvent:Connect(function(message, payload)
+    if message == "CompanionPlayStarted" then
+        beginCompanionPlay(payload)
+        return
+    elseif message == "CompanionPlayFinished" then
+        finishCompanionPlay(payload)
+        return
+    end
     if type(message) == "string" and message ~= "ResourceState" and message ~= "ResourcePicked" then
         showToast(message)
     end
