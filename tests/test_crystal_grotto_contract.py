@@ -104,6 +104,33 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('crystalFallRandom:NextNumber(-16, 16)', WORLD)
         self.assertIn('crystalFallRandom:NextNumber(-13, 13)', WORLD)
 
+    def test_echo_chamber_requires_the_persistent_cache_sigil(self):
+        self.assertIn('local crystalEchoGate = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoGate")', WORLD)
+        self.assertIn('if not player:GetAttribute("CrystalCache") or (session.inventory.CrystalSigil or 0) < 1 then', WORLD)
+        self.assertIn('crystalEchoInside[player] = true', WORLD)
+        self.assertIn('player:SetAttribute("CrystalEchoDiscovered", true)', WORLD)
+
+    def test_echo_chamber_has_a_return_route_and_cleans_player_state(self):
+        self.assertIn('local crystalEchoReturn = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoReturn")', WORLD)
+        self.assertIn('crystalEchoInside[player] = nil', WORLD)
+        self.assertIn('character:PivotTo(crystalEchoGate.CFrame', WORLD)
+        self.assertIn('crystalEchoInside[player] = nil', WORLD)
+
+    def test_prism_seed_is_a_unique_persistent_server_reward(self):
+        self.assertIn('"PrismSeed"}', WORLD.split("local toolIds")[0])
+        self.assertIn('if player:GetAttribute("PrismSeedFound") then', WORLD)
+        self.assertIn('player:SetAttribute("PrismSeedFound", true)', WORLD)
+        self.assertIn('session.inventory.PrismSeed = (session.inventory.PrismSeed or 0) + 1', WORLD)
+        self.assertIn('syncInventory(player)', WORLD)
+
+    def test_echo_chamber_and_prism_seed_are_present_in_world_visuals(self):
+        self.assertIn('echoChamber.Name = "CrystalEchoChamber"', VISUALS)
+        self.assertIn('"CrystalEchoFloor"', VISUALS)
+        self.assertIn('"CrystalEchoGate"', VISUALS)
+        self.assertIn('"CrystalEchoReturn"', VISUALS)
+        self.assertIn('"PrismSeed"', VISUALS)
+
+
     def test_expedition_journal_tracks_both_grotto_milestones(self):
         self.assertIn('{key = "CrystalGrottoDiscovered"', HUD)
         self.assertIn('{key = "CrystalHeart"', HUD)
