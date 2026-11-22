@@ -67,6 +67,12 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertEqual(WORLD.count('requiredTool = "Axe"'), 2)
         self.assertEqual(WORLD.count('requiredTool = "Pickaxe"'), 2)
         self.assertIn('session.equippedTool ~= def.requiredTool', WORLD)
+        self.assertIn('findPlayerTool(player, def.requiredTool)', WORLD)
+        self.assertIn('equippedTool.Parent ~= player.Character', WORLD)
+        self.assertIn('Возьми топор в руки', WORLD)
+        self.assertIn('resourceHitCooldowns = {}', WORLD)
+        self.assertIn('session.resourceHitCooldowns[def.key] = hitNow', WORLD)
+        self.assertIn('hitNow - lastHitAt < 0.4', WORLD)
         self.assertIn('event:FireServer("EquipTool", tool.id)', CLIENT)
 
     def test_wood_and_stone_require_multiple_server_validated_hits(self):
