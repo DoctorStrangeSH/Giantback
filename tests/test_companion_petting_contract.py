@@ -33,7 +33,8 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn("pettingUntil", ALBUM)
         self.assertIn("playCompanionPettingBurst(model, id)", ALBUM)
         self.assertIn("petting and 10.5", ALBUM)
-        self.assertIn("petting and 17", ALBUM)
+        self.assertIn("if petting and not mothAbility then", ALBUM)
+        self.assertIn("flapSpeed = 17", ALBUM)
         self.assertIn("CompanionPettingBurstLocal", ALBUM)
 
 
