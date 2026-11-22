@@ -89,7 +89,8 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('dummy:GetAttribute("OwnerUserId") ~= player.UserId', sword)
         self.assertIn("session.combatReadyAt = now + 0.8", sword)
         self.assertIn("humanoid.Health = humanoid.MaxHealth", sword)
-        self.assertIn('(root.Position - dummyRoot.Position).Magnitude > 10', sword)
+        self.assertIn("local distance = (root.Position - dummyRoot.Position).Magnitude", sword)
+        self.assertIn("distance > 10", sword)
 
     def test_training_dummy_has_live_health_bar_and_owner_safe_raycast_combat(self):
         dummy = WORLD.split("local function createTrainingDummy(session)", 1)[1].split("local function createHarvestTool", 1)[0]
