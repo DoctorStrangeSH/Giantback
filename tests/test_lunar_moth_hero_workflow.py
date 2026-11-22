@@ -42,8 +42,12 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn('def moth_leg(name, side, start_y, end_y, material):', source)
         self.assertIn('MothThoraxLeg', source)
         self.assertIn('return "MothThorax"', source)
-        self.assertIn('(0,0.72+i*0.19,-0.145)', source)
-        self.assertIn('parts.append(sphere("MothThorax",(0,1.20,0),(0.30,0.72,0.27)', source)
+        self.assertIn('def tapered_body(name, profile, material, segments=40):', source)
+        self.assertIn('parts.append(tapered_body("MothThorax",body_profile,ivory))', source)
+        self.assertIn('def abdomen_band(name, y, rx, rz, material, segments=40):', source)
+        self.assertIn('parts.append(abdomen_band(f"AbdomenBand{band_index}"', source)
+        self.assertIn('(side * 0.24, start_y, -0.31)', source)
+        self.assertIn('(side * 0.12, 2.12, -0.59)', source)
         self.assertNotIn('parts.append(sphere("MothAbdomen"', source)
 
     def test_mesh_report_uses_stable_ten_group_contract(self):
