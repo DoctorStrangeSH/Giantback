@@ -305,3 +305,8 @@ Giantback должен быть понятен ребёнку, но давать
 ## 17. Правило изменений
 
 PROJECT_SPEC.md — источник требований версии 1.0. ROADMAP.md — фактический статус. Новые идеи записываются в backlog и не увеличивают scope автоматически. В каждом PR обновляются статусы и проверки.
+
+
+## Harvesting 2.0 — current implementation status
+
+The current working branch now includes persistent starter Axe/Pickaxe tools, a dedicated Tools panel, a personal owner-only workbench for upgrades, and server-authoritative multi-hit gathering for forest wood and dusk stone. Tool ownership, level and selected tool are persisted under profile schema v8. The client displays per-node hit progress locally. Iron ore, smelting, combat and final tool animations remain planned and are not considered complete.
