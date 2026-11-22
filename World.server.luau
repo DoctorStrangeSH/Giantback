@@ -32,6 +32,9 @@ local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная мол
 local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard"}
 local toolIds = {Axe = true, Pickaxe = true}
+local combatRewardDefinitions = {
+    GroveGrunt01 = {itemId = "Wood", amount = 3},
+}
 local toolUpgradeCosts = {Axe = {Wood = 8, Stone = 6}, Pickaxe = {Wood = 6, Stone = 8}}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCacheIdSet = {}
@@ -424,6 +427,12 @@ local function save(player)
             readyAt = math.max(0, math.floor(tonumber(session.foxSearchReadyAt) or 0)),
             searchCount = math.max(0, math.floor(tonumber(session.foxSearchCount) or 0)),
         }
+        local completedCombatSnapshot = {}
+        for encounterId, completed in session.completedCombatEncounters do
+            if type(encounterId) == "string" and #encounterId <= 64 and completed == true then
+                completedCombatSnapshot[encounterId] = true
+            end
+        end
 
         local ok, err = pcall(function()
             store:UpdateAsync(tostring(player.UserId), function(old)
@@ -432,7 +441,7 @@ local function save(player)
                     old[key] = old[key] == true or snapshot[key]
                 end
                 -- Never downgrade a profile written by a newer feature branch.
-                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 9)
+                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 10)
 
                 local savedTools = type(old.tools) == "table" and old.tools or {}
                 savedTools.Axe = toolsSnapshot.Axe
@@ -471,6 +480,12 @@ local function save(player)
                 savedFoxScout.readyAt = math.max(tonumber(savedFoxScout.readyAt) or 0, foxScoutSnapshot.readyAt)
                 savedFoxScout.searchCount = math.max(tonumber(savedFoxScout.searchCount) or 0, foxScoutSnapshot.searchCount)
                 old.foxScout = savedFoxScout
+
+                local savedCombatEncounters = type(old.completedCombatEncounters) == "table" and old.completedCombatEncounters or {}
+                for encounterId, completed in completedCombatSnapshot do
+                    if completed then savedCombatEncounters[encounterId] = true end
+                end
+                old.completedCombatEncounters = savedCombatEncounters
 
                 -- Schema v5 moves the old city payload into the permanent island record.
                 -- Schema v6 adds persistent companion scouting and the MoonSeed inventory item.
@@ -526,6 +541,7 @@ local function init(player)
         foxCacheActiveId = nil,
         foxSearchReadyAt = 0,
         foxSearchCount = 0,
+        completedCombatEncounters = {},
         online = false,
         selectedCropId = defaultCropId,
         farmActionBusy = {},
@@ -640,6 +656,13 @@ local function init(player)
             end
             session.foxSearchReadyAt = math.max(0, math.floor(tonumber(savedFoxScout.readyAt) or 0))
             session.foxSearchCount = math.max(0, math.floor(tonumber(savedFoxScout.searchCount) or 0))
+
+            local savedCombatEncounters = type(data.completedCombatEncounters) == "table" and data.completedCombatEncounters or {}
+            for encounterId, completed in savedCombatEncounters do
+                if combatRewardDefinitions[encounterId] and completed == true then
+                    session.completedCombatEncounters[encounterId] = true
+                end
+            end
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     else
@@ -670,6 +693,37 @@ local function init(player)
     player:SetAttribute("Ready", true)
     syncTools(player)
 end
+local combatRewardFunction = ServerStorage:FindFirstChild("GiantbackGrantCombatReward")
+if combatRewardFunction and not combatRewardFunction:IsA("BindableFunction") then
+    combatRewardFunction:Destroy()
+    combatRewardFunction = nil
+end
+if not combatRewardFunction then
+    combatRewardFunction = Instance.new("BindableFunction")
+    combatRewardFunction.Name = "GiantbackGrantCombatReward"
+    combatRewardFunction.Parent = ServerStorage
+end
+
+combatRewardFunction.OnInvoke = function(player, encounterId)
+    if not player or not player:IsA("Player") or type(encounterId) ~= "string" then return false end
+    local session = sessions[player]
+    local reward = combatRewardDefinitions[encounterId]
+    if not session or not player:GetAttribute("Ready") or not reward then return false end
+    if session.completedCombatEncounters[encounterId] then return false end
+
+    session.completedCombatEncounters[encounterId] = true
+    session.inventory[reward.itemId] = (session.inventory[reward.itemId] or 0) + reward.amount
+    syncInventory(player)
+    if session.online and not save(player) then
+        session.completedCombatEncounters[encounterId] = nil
+        session.inventory[reward.itemId] = math.max(0, (session.inventory[reward.itemId] or 0) - reward.amount)
+        syncInventory(player)
+        return false
+    end
+    tip(player, "Победа! Получено: " .. reward.itemId .. " ×" .. tostring(reward.amount))
+    return true
+end
+
 local function collectFoxCache(player, cacheId)
     if typeof(cacheId) ~= "string" or not foxCacheIdSet[cacheId] then return end
     local session = sessions[player]
