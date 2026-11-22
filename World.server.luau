@@ -352,6 +352,155 @@ local function createTrainingDummy(session)
     return model
 end
 
+local function createMossling()
+    local grove = workspace:FindFirstChild("Grove")
+    local bank = grove and grove:FindFirstChild("Bank")
+    if not grove or not bank then
+        warn("Giantback: Grove bank missing; Mossling was not spawned.")
+        return
+    end
+    local folder = grove:FindFirstChild("WildCreatures")
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = "WildCreatures"
+        folder.Parent = grove
+    end
+    if folder:FindFirstChild("Mossling") then return end
+    local spawnPosition = bank.Position + Vector3.new(0, bank.Size.Y / 2 + 2, 0)
+    local function spawn()
+        if not folder.Parent or folder:FindFirstChild("Mossling") then return end
+        local model = Instance.new("Model")
+        model.Name = "Mossling"
+        model:SetAttribute("GiantbackEnemy", true)
+        model:SetAttribute("EnemyId", "Mossling")
+        model:SetAttribute("DisplayName", "Моховик")
+        local function part(name, size, offset, color, shape)
+            local item = Instance.new("Part")
+            item.Name = name
+            item.Size = size
+            item.Shape = shape or Enum.PartType.Block
+            item.Color = color
+            item.Material = Enum.Material.SmoothPlastic
+            item.Anchored = true
+            item.CanCollide = false
+            item.CanTouch = false
+            item.CanQuery = true
+            item.Position = spawnPosition + offset
+            item.Parent = model
+            return item
+        end
+        local root = part("HumanoidRootPart", Vector3.new(1.8, 2.2, 1.8), Vector3.new(0, 0, 0), Color3.fromRGB(67, 93, 66), Enum.PartType.Ball)
+        root.Transparency = 1
+        model.PrimaryPart = root
+        part("MossBody", Vector3.new(2.7, 2.2, 2.4), Vector3.new(0, 0.1, 0), Color3.fromRGB(91, 137, 86), Enum.PartType.Ball)
+        part("Belly", Vector3.new(1.6, 1.15, 0.3), Vector3.new(0, -0.25, -1.05), Color3.fromRGB(173, 177, 119), Enum.PartType.Ball)
+        part("Head", Vector3.new(1.65, 1.45, 1.55), Vector3.new(0, 1.05, -0.35), Color3.fromRGB(111, 158, 91), Enum.PartType.Ball)
+        part("EyeLeft", Vector3.new(0.22, 0.28, 0.12), Vector3.new(-0.38, 1.18, -1.08), Color3.fromRGB(255, 225, 151), Enum.PartType.Ball)
+        part("EyeRight", Vector3.new(0.22, 0.28, 0.12), Vector3.new(0.38, 1.18, -1.08), Color3.fromRGB(255, 225, 151), Enum.PartType.Ball)
+        part("MossCap", Vector3.new(2.1, 0.48, 1.9), Vector3.new(0, 1.78, -0.28), Color3.fromRGB(61, 112, 68), Enum.PartType.Ball)
+        part("ArmLeft", Vector3.new(0.65, 1.25, 0.7), Vector3.new(-1.35, -0.15, -0.05), Color3.fromRGB(76, 120, 75), Enum.PartType.Ball)
+        part("ArmRight", Vector3.new(0.65, 1.25, 0.7), Vector3.new(1.35, -0.15, -0.05), Color3.fromRGB(76, 120, 75), Enum.PartType.Ball)
+        part("FootLeft", Vector3.new(0.85, 0.5, 1.0), Vector3.new(-0.65, -1.05, -0.05), Color3.fromRGB(71, 93, 63), Enum.PartType.Ball)
+        part("FootRight", Vector3.new(0.85, 0.5, 1.0), Vector3.new(0.65, -1.05, -0.05), Color3.fromRGB(71, 93, 63), Enum.PartType.Ball)
+        local humanoid = Instance.new("Humanoid")
+        humanoid.Name = "Humanoid"
+        humanoid.DisplayName = "Моховик"
+        humanoid.MaxHealth = 80
+        humanoid.Health = 80
+        humanoid.Parent = model
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "HealthDisplay"
+        billboard.Adornee = root
+        billboard.Size = UDim2.fromOffset(150, 34)
+        billboard.StudsOffset = Vector3.new(0, 2.8, 0)
+        billboard.AlwaysOnTop = true
+        billboard.MaxDistance = 65
+        billboard.Parent = root
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.fromScale(1, 1)
+        label.BackgroundTransparency = 1
+        label.Font = Enum.Font.GothamBold
+        label.TextColor3 = Color3.fromRGB(255, 245, 221)
+        label.TextStrokeTransparency = 0.35
+        label.TextSize = 13
+        label.Text = "Моховик • 80 / 80"
+        label.Parent = billboard
+        humanoid.HealthChanged:Connect(function(health)
+            label.Text = health > 0 and ("Моховик • " .. tostring(math.ceil(health)) .. " / 80") or "Моховик повержен"
+        end)
+        model.Parent = folder
+        model:PivotTo(CFrame.new(spawnPosition))
+        local alive = true
+        humanoid.Died:Connect(function()
+            alive = false
+            local userId = model:GetAttribute("LastHitUserId")
+            local killer = userId and Players:GetPlayerByUserId(userId)
+            local session = killer and sessions[killer]
+            if session and killer:GetAttribute("Ready") then
+                session.inventory.Wood = (session.inventory.Wood or 0) + 2
+                session.inventory.SunPetal = (session.inventory.SunPetal or 0) + 1
+                syncInventory(killer)
+                tip(killer, "Моховик побеждён! Получено: древесина ×2 и солнечный лепесток ×1.")
+                if session.online and not save(killer) then
+                    warn("Mossling reward save will be retried:", killer.UserId)
+                end
+            end
+            task.delay(12, function()
+                if folder.Parent then
+                    if model.Parent then model:Destroy() end
+                    spawn()
+                end
+            end)
+        end)
+        task.spawn(function()
+            local lastAttack = 0
+            local lastWander = 0
+            while alive and model.Parent and humanoid.Health > 0 do
+                local now = os.clock()
+                local targetRoot, closestDistance = nil, 48
+                for _, candidate in Players:GetPlayers() do
+                    if candidate:GetAttribute("Ready") then
+                        local character = candidate.Character
+                        local candidateRoot = character and character:FindFirstChild("HumanoidRootPart")
+                        local candidateHumanoid = character and character:FindFirstChildOfClass("Humanoid")
+                        if candidateRoot and candidateHumanoid and candidateHumanoid.Health > 0 then
+                            local distance = (candidateRoot.Position - root.Position).Magnitude
+                            if distance < closestDistance then
+                                targetRoot, closestDistance = candidateRoot, distance
+                            end
+                        end
+                    end
+                end
+                if targetRoot then
+                    local delta = targetRoot.Position - root.Position
+                    local flat = Vector3.new(delta.X, 0, delta.Z)
+                    if flat.Magnitude > 4.2 then
+                        local step = math.min(8 * 0.2, flat.Magnitude - 4.2)
+                        local nextPosition = root.Position + flat.Unit * step
+                        model:PivotTo(CFrame.lookAt(nextPosition, Vector3.new(targetRoot.Position.X, nextPosition.Y, targetRoot.Position.Z)))
+                    elseif now - lastAttack >= 1.8 then
+                        lastAttack = now
+                        local character = targetRoot.Parent
+                        local targetHumanoid = character and character:FindFirstChildOfClass("Humanoid")
+                        if targetHumanoid and targetHumanoid.Health > 0 then
+                            targetHumanoid:TakeDamage(8)
+                            local victim = Players:GetPlayerFromCharacter(character)
+                            if victim then tip(victim, "Моховик ударил тебя! Урон: 8.") end
+                        end
+                    end
+                elseif now - lastWander >= 2.5 then
+                    lastWander = now
+                    local angle = math.random() * math.pi * 2
+                    local nextPosition = spawnPosition + Vector3.new(math.cos(angle) * 5, 0, math.sin(angle) * 5)
+                    model:PivotTo(CFrame.lookAt(nextPosition, spawnPosition))
+                end
+                task.wait(0.2)
+            end
+        end)
+    end
+    spawn()
+end
+
 local function createHarvestTool(toolId, level)
     level = math.clamp(math.floor(tonumber(level) or 1), 1, 3)
     local isAxe = toolId == "Axe"
@@ -413,11 +562,17 @@ local function createHarvestTool(toolId, level)
             local dummyRoot = dummy and dummy:FindFirstChild("HumanoidRootPart")
             if not root or not dummy or not dummy.Parent or not humanoid or not dummyRoot then return end
             local distance = (root.Position - dummyRoot.Position).Magnitude
-            if dummy:GetAttribute("OwnerUserId") ~= player.UserId or distance > 10 then
-                return tip(player, "Подойди к своему тренировочному манекену.")
+            local isTrainingDummy = dummy:GetAttribute("GiantbackTrainingDummy") == true
+            local isWildEnemy = dummy:GetAttribute("GiantbackEnemy") == true
+            if not isTrainingDummy and not isWildEnemy then return end
+            if isTrainingDummy and dummy:GetAttribute("OwnerUserId") ~= player.UserId then
+                return tip(player, "Это не твой тренировочный манекен.")
+            end
+            if distance > (isWildEnemy and 12 or 10) then
+                return tip(player, "Подойди ближе к цели.")
             end
             if humanoid.Health <= 0 then
-                return tip(player, "Манекен восстанавливается. Подожди немного.")
+                return tip(player, "Цель уже повержена. Подожди восстановления.")
             end
 
             local rayOrigin = root.Position + Vector3.new(0, 1.2, 0)
@@ -432,12 +587,14 @@ local function createHarvestTool(toolId, level)
             end
 
             session.combatReadyAt = now + 0.8
+            if isWildEnemy then dummy:SetAttribute("LastHitUserId", player.UserId) end
             humanoid:TakeDamage(20)
             event:FireClient(player, "SwordHit", {
                 health = math.max(0, math.floor(humanoid.Health)),
                 maxHealth = humanoid.MaxHealth,
+                target = dummy:GetAttribute("DisplayName") or (isTrainingDummy and "Манекен" or "Противник"),
             })
-            if humanoid.Health <= 0 then
+            if isTrainingDummy and humanoid.Health <= 0 then
                 tip(player, "Отлично! Манекен повержен. Он восстановится через 3 секунды.")
                 task.delay(3, function()
                     if dummy.Parent and humanoid.Parent == dummy and humanoid.Health <= 0 then
@@ -2059,6 +2216,7 @@ end
 for _, definition in resourceDefinitions do
     spawnResource(definition)
 end
+createMossling()
 
 prompt(workspace.Grove.Trail,"Следы в траве","Попросить лисёнка искать",startFoxSearch)
 
