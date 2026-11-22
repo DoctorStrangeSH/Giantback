@@ -336,7 +336,7 @@ The current working branch adds two Dusk-island iron veins requiring a Pickaxe a
 - XP thresholds increase by level: 100, 175, 250 and 325 XP. Level 5 is the cap; excess XP is discarded rather than banked.
 - Fox's combat skill gains +3 damage per level (24 at level 1, 36 at level 5). Moth's healing gains +2 HP per level (18 at level 1, 26 at level 5). Server remains authoritative for all values.
 - Collection cards show level, current/required XP and a progress bar. No paid XP boosts or paid progression gates are required.
-- New companion species, passive traits, cosmetic variants and care interactions are later expansion scope, not part of this first progression slice.
+- New companion species, cosmetic variants and visual evolution remain later expansion scope. Passive traits and basic feeding/friendship are now covered by the companion expansion slices.
 
 
 ### Companion passive talents 1.0
@@ -346,3 +346,13 @@ The current working branch adds two Dusk-island iron veins requiring a Pickaxe a
 - Passive effects are calculated by the server from saved companion levels. Client attributes are display-only and cannot select or amplify a passive.
 - The collection card explains the currently unlocked passive or the next level milestone.
 - This progression is deterministic and gameplay-earned. No hunger decay, missed-day penalties or paid stat boosts.
+
+
+### Companion friendship and feeding 1.0
+
+- Each owned companion stores an independent friendship score from 0 to 1000 inside its existing companion profile. Legacy profiles default to 0 without a destructive migration.
+- Feeding is available only for the currently equipped, owned companion. The server selects one harvested crop from inventory in this order: Pumpkin (+25 friendship), Strawberry (+20), Cabbage (+18), Carrot (+15).
+- One harvested food item is consumed per feed. A per-companion 8-second server cooldown prevents rapid remote spam. Inventory and friendship are saved together through the existing profile save path.
+- Friendship ranks: Знакомство (0–99), Знакомцы (100–299), Друзья (300–599), Лучшие друзья (600–899), Родственные души (900–1000).
+- Friendship never decays. No hunger meter, absence penalty, daily login requirement, paid friendship boost or paid food.
+- The Pets tab displays friendship and offers feeding when the companion is equipped and harvested food is available. This first slice does not yet include play interactions, mood simulation, pet animations or visual evolution.
