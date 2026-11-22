@@ -262,6 +262,20 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('DisplayName = "Страж печатей"', VISUALS)
         self.assertIn('SealCore', VISUALS)
 
+    def test_seal_keeper_uses_telegraphed_server_owned_ground_slam_in_later_phases(self):
+        self.assertIn('entry.attackSequence = (entry.attackSequence or 0) + 1', COMBAT)
+        self.assertIn('entry.isBoss and entry.bossPhase >= 2 and entry.attackSequence % 2 == 0', COMBAT)
+        self.assertIn('enemy:SetAttribute("BossAttack", "GroundSlam")', COMBAT)
+        self.assertIn('enemy:SetAttribute("CombatState", "BossSlamTelegraph")', COMBAT)
+        self.assertIn('tonumber(enemy:GetAttribute(phasePrefix .. "SlamRadius"))', COMBAT)
+        self.assertIn('tonumber(enemy:GetAttribute(phasePrefix .. "SlamDamage"))', COMBAT)
+        self.assertIn('for _, player in Players:GetPlayers() do', COMBAT)
+        self.assertIn('if not dodging then', COMBAT)
+        self.assertIn('Phase2SlamRadius", 15', VISUALS)
+        self.assertIn('Phase2SlamDamage", 16', VISUALS)
+        self.assertIn('Phase3SlamRadius", 19', VISUALS)
+        self.assertIn('Phase3SlamDamage", 22', VISUALS)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
