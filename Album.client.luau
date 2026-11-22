@@ -1766,8 +1766,17 @@ local function animateModelParts(model, state, time, moving, resting)
                 elseif part.Name == "Muzzle" and sniffing then
                     transform = CFrame.new(0, -0.14, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 12) * 0.045, 0, 0))
                 elseif part.Name == "Tail" or part.Name == "Tail tip" then
-                    local sway = math.sin(time * (petting and 10.5 or sniffing and 9 or resting and 1.6 or 4.2))
-                        * (petting and 0.72 or sniffing and 0.48 or resting and 0.12 or 0.3)
+                    local swaySpeed = sniffing and 9 or 4.2
+                    local swayStrength = sniffing and 0.48 or 0.3
+                    if resting then
+                        swaySpeed = 1.6
+                        swayStrength = 0.12
+                    end
+                    if petting then
+                        swaySpeed = 10.5
+                        swayStrength = 0.72
+                    end
+                    local sway = math.sin(time * swaySpeed) * swayStrength
                     local tailHinge = rigOrigin + Vector3.new(0, 0.25, 0.95)
                     local tailRotation = part.Name == "Tail tip"
                         and CFrame.Angles(sway * 0.35, sway * 0.8, 0)
@@ -1790,8 +1799,12 @@ local function animateModelParts(model, state, time, moving, resting)
                 local side = offset.Position.X >= rigOrigin.X and 1 or -1
                 if part.Name == "Wing" or part.Name == "Wing lower" or part.Name == "Wing tip"
                     or part.Name == "Wing lower tip" or part.Name == "Wing jewel" or part.Name == "Wing spot" then
-                    local flapSpeed = mothAbility and 21 or resting and 3.2 or 11.5
-                    local flapStrength = mothAbility and 0.76 or resting and 0.13 or 0.42
+                    local flapSpeed = mothAbility and 21 or 11.5
+                    local flapStrength = mothAbility and 0.76 or 0.42
+                    if resting and not mothAbility then
+                        flapSpeed = 3.2
+                        flapStrength = 0.13
+                    end
                     if petting and not mothAbility then
                         flapSpeed = 17
                         flapStrength = 0.62
