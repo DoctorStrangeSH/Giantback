@@ -383,3 +383,11 @@ The current working branch adds two Dusk-island iron veins requiring a Pickaxe a
 - A successful pet adds +5 friendship (capped at 1000), changes mood to Happy, synchronizes the album state and saves through the existing profile save path.
 - The owning client plays a short species-specific response: Fox swishes its tail and perks its ears; Moth flaps its wings faster and brightens its core. A small local heart/sparkle burst confirms the interaction.
 - Petting consumes no resources and has no decay, failure penalty, daily requirement or paid shortcut. The current action is an album button; direct world-touch interaction and hand/arm contact animation remain NOT DONE.
+
+
+### Companion ambient rest 1.0
+
+- When the owner remains still for 12 seconds, their equipped companion enters a visual-only resting state. Movement immediately returns the companion to its normal follow/idle animation.
+- Fox rests with subtle breathing, a relaxed tail sway and still paws. Moth slows and softens its wing beats, antenna movement and core glow.
+- Resting does not consume energy, change friendship or mood, disable abilities, affect XP, or impose any penalty. It is not an AFK detector and does not alter player rewards.
+- Activity state is client-local and is cleared when the owner leaves. This first pass does not include a dedicated sleep pose, Z particles, or hand-authored animation clips.
