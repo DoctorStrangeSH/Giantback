@@ -13,7 +13,7 @@ class CompanionRestContractTests(unittest.TestCase):
         self.assertIn("local companionActivity = setmetatable({}, {__mode = \"k\"})", ACTIVITY)
         self.assertIn("idleSince = now", ACTIVITY)
         self.assertIn("idleSeconds >= 12", ACTIVITY)
-        self.assertIn("if moving then", ALBUM)
+        self.assertIn("if moving then", ACTIVITY)
         self.assertIn("activity.idleSince = now", ACTIVITY)
 
     def test_fox_uses_soft_breathing_and_relaxed_tail_and_paws(self):
