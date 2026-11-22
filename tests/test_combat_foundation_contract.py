@@ -336,6 +336,19 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('showMinionAwakening(enemy)', CLIENT)
         self.assertIn('CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(function(enemy)', CLIENT)
 
+    def test_enemy_rigs_have_local_state_driven_procedural_animation(self):
+        self.assertIn('local animatedEnemies = {}', CLIENT)
+        self.assertIn('local function bindEnemyProceduralAnimation(enemy)', CLIENT)
+        self.assertIn('RunService.RenderStepped:Connect(function()', CLIENT)
+        self.assertIn('state == "BossSlamTelegraph"', CLIENT)
+        self.assertIn('state == "Telegraph"', CLIENT)
+        self.assertIn('state == "Recover"', CLIENT)
+        self.assertIn('state == "PhaseTransition"', CLIENT)
+        self.assertIn('entry.humanoid.MoveDirection.Magnitude > 0.08', CLIENT)
+        self.assertIn('setJointPose(rightLeg, -swing * 0.58', CLIENT)
+        self.assertIn('bindEnemyProceduralAnimation(enemy)', CLIENT)
+        self.assertIn('joint.Transform = CFrame.identity', CLIENT)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
