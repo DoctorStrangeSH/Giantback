@@ -81,6 +81,9 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('enemy:SetAttribute("CombatState", "Telegraph")', COMBAT)
         self.assertIn("task.wait(ENEMY_TELEGRAPH_SECONDS)", COMBAT)
         self.assertIn("ENEMY_TELEGRAPH_SECONDS = 0.85", COMBAT)
+        self.assertIn("PathfindingService:CreatePath(ENEMY_PATH_AGENT)", COMBAT)
+        self.assertIn("path:ComputeAsync(root.Position, targetRoot.Position)", COMBAT)
+        self.assertIn("ENEMY_PATH_REFRESH_SECONDS = 1.15", COMBAT)
 
     def test_rewards_are_persistent_and_idempotent(self):
         self.assertIn('ServerStorage:WaitForChild("GiantbackGrantCombatReward"', COMBAT)
@@ -121,7 +124,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('enemyHumanoid.DisplayName = "Корневой страж"', VISUALS)
         self.assertIn("enemyHumanoid.MaxHealth = 100", VISUALS)
         self.assertIn("enemyRoot.Massless = false", VISUALS)
-        self.assertIn("CFrame.lookAt(enemySpawn, enemySpawn + Vector3.new(0, 0, 1))", VISUALS)
+        self.assertIn("CFrame.lookAt(enemySpawn, enemySpawn + Vector3.new(0, 0, -1))", VISUALS)
         self.assertIn('enemyHighlight.Name = "CombatTelegraphHighlight"', VISUALS)
         self.assertIn('warningBillboard.Name = "CombatTelegraphWarning"', VISUALS)
         self.assertIn('warningText.Text = "БЕРЕГИСЬ!"', VISUALS)
