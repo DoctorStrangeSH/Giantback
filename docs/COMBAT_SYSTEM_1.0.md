@@ -180,3 +180,9 @@ Each contributor receives a persistent `RootvaultSigil` on first defeat. The Roo
 In phases 2 and 3, every second boss attack becomes a server-authoritative area ground slam. The boss publishes `BossAttack=GroundSlam` and `CombatState=BossSlamTelegraph` during the warning window, then checks every ready player inside the Rootvault combat region. Players outside the configured radius are safe; a correctly timed dodge avoids the hit; facing the boss while blocking applies the existing block reduction. Phase 2 uses radius 15 and 16 damage; phase 3 uses radius 19 and 22 damage. The client cannot provide target, radius, damage, or timing values.
 
 The server exposes the slam state through replicated attributes. The client now renders a local expanding neon floor warning ring, raycast-aligned to the arena floor. Impact animation, phase-specific boss animations, and Studio balance pass remain NOT DONE.
+
+## 19. Seal Keeper phase-three summons
+
+At the 25% health transition, the server awakens two prebuilt dormant Seal Fragments in the Rootvault reward chamber. They are registered into the existing server combat loop only once, have 52 HP, 13 movement speed, 6 damage and a 0.55-second attack warning. The minions use a known encounter ID but are deliberately excluded from the reward allowlist: defeating them cannot grant the boss sigil or any duplicate first-clear reward. The boss records the number activated in its replicated `SummonedMinions` attribute.
+
+The dormant rigs are authored as part of the generated place; they do not pursue or attack before phase three. Studio testing is still required for their spawn clearance, rig movement, and multi-target combat balance.
