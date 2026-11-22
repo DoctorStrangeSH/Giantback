@@ -273,6 +273,8 @@ jobs:
               "R15 names do not",
               "joints.rightshoulder",
               "joints.lefthip",
+              "joints.rootjoint or joints.root",
+              "joints.waist",
               "completedCombatEncounters",
               "GroveGrunt01",
               "GroveScout02",
