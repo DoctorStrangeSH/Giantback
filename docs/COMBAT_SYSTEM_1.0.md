@@ -179,4 +179,4 @@ Each contributor receives a persistent `RootvaultSigil` on first defeat. The Roo
 
 In phases 2 and 3, every second boss attack becomes a server-authoritative area ground slam. The boss publishes `BossAttack=GroundSlam` and `CombatState=BossSlamTelegraph` during the warning window, then checks every ready player inside the Rootvault combat region. Players outside the configured radius are safe; a correctly timed dodge avoids the hit; facing the boss while blocking applies the existing block reduction. Phase 2 uses radius 15 and 16 damage; phase 3 uses radius 19 and 22 damage. The client cannot provide target, radius, damage, or timing values.
 
-The current visual signal is exposed through replicated attributes for later animation/VFX binding. A dedicated expanding floor decal/ring, impact animation, and Studio balance pass remain NOT DONE.
+The server exposes the slam state through replicated attributes. The client now renders a local expanding neon floor warning ring, raycast-aligned to the arena floor. Impact animation, phase-specific boss animations, and Studio balance pass remain NOT DONE.
