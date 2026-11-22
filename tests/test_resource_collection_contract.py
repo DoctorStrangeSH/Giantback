@@ -32,28 +32,28 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("for nodeId, collected in savedCollected do", WORLD)
 
     def test_profile_schema_and_migration_compatible_fields(self):
-        self.assertIn("old.schemaVersion = 8", WORLD)
+        self.assertIn("old.schemaVersion = 9", WORLD)
         self.assertIn("data.resourceCooldowns", WORLD)
         self.assertIn("data.collectedNodes", WORLD)
 
     def test_tool_level_migration_defaults_old_profiles_and_clamps_saved_values(self):
         self.assertIn('local savedLevels = type(savedTools.levels) == "table" and savedTools.levels or {}', WORLD)
-        self.assertIn('Axe = math.clamp(math.floor(tonumber(savedLevels.Axe) or 1), 1, 2)', WORLD)
-        self.assertIn('Pickaxe = math.clamp(math.floor(tonumber(savedLevels.Pickaxe) or 1), 1, 2)', WORLD)
+        self.assertIn('Axe = math.clamp(math.floor(tonumber(savedLevels.Axe) or 1), 1, 3)', WORLD)
+        self.assertIn('Pickaxe = math.clamp(math.floor(tonumber(savedLevels.Pickaxe) or 1), 1, 3)', WORLD)
         self.assertIn('savedTools.levels = toolsSnapshot.levels', WORLD)
         self.assertIn('old.schemaVersion = 8', WORLD)
 
     def test_workshop_upgrade_is_server_validated_and_charged_once(self):
         upgrade = WORLD.split('if action == "UpgradeTool" then', 1)[1].split('if action == "EquipTool" then', 1)[0]
         self.assertIn('session.tools[payload] ~= true', upgrade)
-        self.assertIn('session.toolLevels[payload] >= 2', upgrade)
+        self.assertIn('currentLevel >= 3', upgrade)
+        self.assertIn('local nextLevel = currentLevel + 1', upgrade)
         self.assertIn('station:FindFirstChild("PromptAnchor")', upgrade)
         self.assertIn('(root.Position - anchor.Position).Magnitude > 14', upgrade)
-        self.assertIn('(session.inventory.Wood or 0) < woodCost', upgrade)
-        self.assertIn('(session.inventory.Stone or 0) < stoneCost', upgrade)
-        self.assertIn('session.inventory.Wood -= woodCost', upgrade)
-        self.assertIn('session.inventory.Stone -= stoneCost', upgrade)
-        self.assertIn('session.toolLevels[payload] = 2', upgrade)
+        self.assertIn('local cost = toolUpgradeCosts[payload][nextLevel]', upgrade)
+        self.assertIn('for itemId, amount in cost do', upgrade)
+        self.assertIn('session.inventory[itemId] -= amount', upgrade)
+        self.assertIn('session.toolLevels[payload] = nextLevel', upgrade)
 
     def test_harvest_tools_have_crafted_grips_and_level_two_visual_identity(self):
         tools = WORLD.split("local function createHarvestTool(toolId, level)", 1)[1].split("local function findPlayerTool", 1)[0]
