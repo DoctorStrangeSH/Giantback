@@ -62,10 +62,74 @@ def sphere(name, location, scale, material, segments=32, rings=20):
     return obj
 
 
+def tapered_body(name, profile, material, segments=40):
+    # One continuous tapered thorax/abdomen silhouette instead of stacked spheres.
+    vertices = []
+    faces = []
+    for y, rx, rz in profile:
+        for index in range(segments):
+            angle = math.tau * index / segments
+            vertices.append((rx * math.cos(angle), y, rz * math.sin(angle)))
+    for ring in range(len(profile) - 1):
+        for index in range(segments):
+            nxt = (index + 1) % segments
+            a = ring * segments + index
+            b = ring * segments + nxt
+            c = (ring + 1) * segments + nxt
+            d = (ring + 1) * segments + index
+            faces.append((a, b, c, d))
+    faces.append(tuple(range(segments - 1, -1, -1)))
+    faces.append(tuple((len(profile) - 1) * segments + i for i in range(segments)))
+    mesh = bpy.data.meshes.new(name + "Mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    mesh.materials.append(material)
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    uv = mesh.uv_layers.new(name="BodyUV")
+    for polygon in mesh.polygons:
+        for loop_index in polygon.loop_indices:
+            vertex_index = mesh.loops[loop_index].vertex_index
+            ring_index = vertex_index // segments
+            segment_index = vertex_index % segments
+            uv.data[loop_index].uv = (segment_index / segments, ring_index / (len(profile) - 1))
+    return obj
+
+
+def abdomen_band(name, y, rx, rz, material, segments=40):
+    # A narrow raised ring follows the tapered body's elliptical cross-section.
+    vertices = []
+    half_height = 0.022
+    for band_y in (y - half_height, y + half_height):
+        for index in range(segments):
+            angle = math.tau * index / segments
+            vertices.append(((rx + 0.012) * math.cos(angle), band_y, (rz + 0.012) * math.sin(angle)))
+    faces = []
+    for index in range(segments):
+        nxt = (index + 1) % segments
+        faces.append((index, nxt, nxt + segments, index + segments))
+    mesh = bpy.data.meshes.new(name + "Mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    mesh.materials.append(material)
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    uv = mesh.uv_layers.new(name="BandUV")
+    for polygon in mesh.polygons:
+        for loop_index in polygon.loop_indices:
+            vertex_index = mesh.loops[loop_index].vertex_index
+            uv.data[loop_index].uv = (vertex_index % segments / segments, vertex_index // segments)
+    return obj
+
+
 def crescent(name, center, side, material):
     # A filled crescent silhouette (not overlapping oval discs), mirrored per wing.
     cx, cy, cz = center
-    outer_radius, inner_radius, inner_offset = 0.145, 0.128, 0.078
+    outer_radius, inner_radius, inner_offset = 0.22, 0.185, 0.105
     points = []
     for step in range(25):
         angle = math.radians(60 + step * 240 / 24)
@@ -171,9 +235,9 @@ def moth_leg(name, side, start_y, end_y, material):
     spline = curve.splines.new("BEZIER")
     spline.bezier_points.add(2)
     coords = [
-        (side * 0.22, start_y, -0.10),
-        (side * 0.39, (start_y + end_y) * 0.5, -0.16),
-        (side * 0.56, end_y, -0.12),
+        (side * 0.24, start_y, -0.31),
+        (side * 0.42, (start_y + end_y) * 0.5, -0.34),
+        (side * 0.58, end_y, -0.32),
     ]
     for point, co in zip(spline.bezier_points, coords):
         point.co = co
@@ -182,7 +246,7 @@ def moth_leg(name, side, start_y, end_y, material):
     obj = bpy.data.objects.new(name, curve)
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(material)
-    foot = sphere(name + "Foot", coords[-1], (0.075, 0.045, 0.07), material, 16, 10)
+    foot = sphere(name + "Foot", coords[-1], (0.075, 0.045, 0.055), material, 16, 10)
     return [obj, foot]
 
 
@@ -196,10 +260,10 @@ def antenna(name, side, material):
     spline = curve.splines.new("BEZIER")
     spline.bezier_points.add(3)
     coords = [
-        (side * 0.12, 2.12, -0.43),
-        (side * 0.16, 2.31, -0.40),
-        (side * 0.31, 2.43, -0.35),
-        (side * 0.43, 2.34, -0.30),
+        (side * 0.12, 2.12, -0.59),
+        (side * 0.16, 2.31, -0.60),
+        (side * 0.31, 2.43, -0.61),
+        (side * 0.43, 2.34, -0.62),
     ]
     for point, co in zip(spline.bezier_points, coords):
         point.co = co
@@ -325,18 +389,25 @@ def main():
     plum=mat("deep_plum",(0.12,0.075,0.17),0.35)
     glow=mat("moon_core",(0.48,0.88,0.88),0.28,emission=1.2)
     parts=[]
-    parts.append(sphere("MothThorax",(0,1.20,0),(0.30,0.72,0.27),ivory,48,32))
+    body_profile = [
+        (0.34,0.075,0.085),
+        (0.46,0.13,0.145),
+        (0.62,0.18,0.19),
+        (0.82,0.22,0.225),
+        (1.04,0.255,0.25),
+        (1.27,0.275,0.265),
+        (1.48,0.255,0.245),
+        (1.66,0.19,0.19),
+        (1.78,0.12,0.13),
+    ]
+    parts.append(tapered_body("MothThorax",body_profile,ivory))
     parts.append(sphere("MothHead",(0,1.91,-0.20),(0.40,0.37,0.34),ivory,40,28))
-    
-    for i in range(3):
-        parts.append(sphere(
-            f"AbdomenBand{i}",
-            (0,0.72+i*0.19,-0.145),
-            (0.235,0.025,0.045),
-            gold,
-            24,
-            12
-        ))
+    for band_index, (band_y, band_rx, band_rz) in enumerate((
+        (0.58,0.17,0.18),
+        (0.78,0.215,0.22),
+        (0.98,0.245,0.245),
+    )):
+        parts.append(abdomen_band(f"AbdomenBand{band_index}",band_y,band_rx,band_rz,gold))
     for side,suffix in [(-1,"Left"),(1,"Right")]:
         parts.append(sphere("MothEye"+suffix,(side*0.20,1.97,-0.493),(0.075,0.095,0.035),plum,24,16))
         parts.extend(antenna("MothAntenna"+suffix,side,gold))
