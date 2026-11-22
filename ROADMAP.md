@@ -5,6 +5,7 @@
 - [x] Server checks furnace ownership and interaction distance; no client-side reward grants.
 - [x] Persist pending smelting state so progress survives reconnects and offline time.
 - [x] Show ore, ingot counts and smelting status in the Tools panel.
+- [x] Validate all 189 automated tests, Roblox place build, generated-place validation and artifact upload in GitHub Actions run #1235.
 - [ ] Studio playtest: verify ore placement, furnace access, timer, reconnect, collection and duplicate-claim prevention.
 - [ ] Add multiple recipes, fuel choices and furnace upgrades after the first smelting loop is playtested.
 
