@@ -217,6 +217,30 @@ local function registerEnemy(enemy)
         pathRefreshSeconds = math.clamp(tonumber(enemy:GetAttribute("PathRefreshSeconds")) or ENEMY_PATH_REFRESH_SECONDS, 0.5, 3),
     }
     enemies[enemy] = entry
+    entry.isBoss = enemy:GetAttribute("IsBoss") == true
+    entry.bossPhase = 1
+    if entry.isBoss then
+        enemy:SetAttribute("BossPhase", 1)
+        humanoid.HealthChanged:Connect(function(health)
+            enemy:SetAttribute("CombatHealth", math.max(0, health))
+            local ratio = health / math.max(1, humanoid.MaxHealth)
+            local nextPhase = ratio <= 0.25 and 3 or (ratio <= 0.6 and 2 or 1)
+            if nextPhase <= entry.bossPhase or not isEnemyAlive(enemy) then return end
+            entry.bossPhase = nextPhase
+            local prefix = "Phase" .. tostring(nextPhase)
+            humanoid.WalkSpeed = math.clamp(tonumber(enemy:GetAttribute(prefix .. "WalkSpeed")) or humanoid.WalkSpeed, 4, 20)
+            entry.attackDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute(prefix .. "AttackDamage")) or entry.attackDamage), 1, 30)
+            entry.attackCooldown = math.clamp(tonumber(enemy:GetAttribute(prefix .. "AttackCooldown")) or entry.attackCooldown, 1, 8)
+            entry.telegraphSeconds = math.clamp(tonumber(enemy:GetAttribute(prefix .. "TelegraphSeconds")) or entry.telegraphSeconds, 0.35, 2)
+            entry.pathRefreshSeconds = math.clamp(tonumber(enemy:GetAttribute(prefix .. "PathRefreshSeconds")) or entry.pathRefreshSeconds, 0.5, 3)
+            enemy:SetAttribute("BossPhase", nextPhase)
+            enemy:SetAttribute("CombatState", "PhaseTransition")
+        end)
+    else
+        humanoid.HealthChanged:Connect(function(health)
+            enemy:SetAttribute("CombatHealth", math.max(0, health))
+        end)
+    end
     humanoid.Died:Connect(function()
         resolveEnemyReward(enemy, entry)
         enemy:SetAttribute("CombatState", "Defeated")
