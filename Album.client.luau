@@ -1763,8 +1763,8 @@ local function animateModelParts(model, state, time, moving)
                 elseif part.Name == "Muzzle" and sniffing then
                     transform = CFrame.new(0, -0.14, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 12) * 0.045, 0, 0))
                 elseif part.Name == "Tail" or part.Name == "Tail tip" then
-                    local sway = math.sin(time * (sniffing and 9 or petting and 10.5 or 4.2))
-                        * (sniffing and 0.48 or petting and 0.72 or 0.3)
+                    local sway = math.sin(time * (petting and 10.5 or sniffing and 9 or 4.2))
+                        * (petting and 0.72 or sniffing and 0.48 or 0.3)
                     local tailHinge = rigOrigin + Vector3.new(0, 0.25, 0.95)
                     local tailRotation = part.Name == "Tail tip"
                         and CFrame.Angles(sway * 0.35, sway * 0.8, 0)
@@ -1787,8 +1787,12 @@ local function animateModelParts(model, state, time, moving)
                 local side = offset.Position.X >= rigOrigin.X and 1 or -1
                 if part.Name == "Wing" or part.Name == "Wing lower" or part.Name == "Wing tip"
                     or part.Name == "Wing lower tip" or part.Name == "Wing jewel" or part.Name == "Wing spot" then
-                    local flapSpeed = mothAbility and 21 or petting and 17 or 11.5
-                    local flapStrength = mothAbility and 0.76 or petting and 0.62 or 0.42
+                    local flapSpeed = mothAbility and 21 or 11.5
+                    local flapStrength = mothAbility and 0.76 or 0.42
+                    if petting and not mothAbility then
+                        flapSpeed = 17
+                        flapStrength = 0.62
+                    end
                     local lowerPhase = string.find(part.Name, "lower") and 0.38 or 0
                     local flap = math.sin(time * flapSpeed + lowerPhase) * flapStrength
                     local wingHinge = rigOrigin + Vector3.new(side * 0.42, 0.28, 0)
@@ -1799,8 +1803,10 @@ local function animateModelParts(model, state, time, moving)
                     local antennaHinge = rigOrigin + Vector3.new(side * 0.34, 0.9, -0.55)
                     transform = aroundPoint(antennaHinge, CFrame.Angles(0, 0, math.sin(time * twitchSpeed + side) * twitchStrength * side))
                 elseif part.Name == "Moonlight glow" then
-                    local pulse = mothAbility and (1.15 + math.sin(time * 12) * 0.35)
-                        or petting and (0.95 + math.sin(time * 8) * 0.2) or 0.65
+                    local pulse = mothAbility and (1.15 + math.sin(time * 12) * 0.35) or 0.65
+                    if petting and not mothAbility then
+                        pulse = 0.95 + math.sin(time * 8) * 0.2
+                    end
                     local light = part:FindFirstChildOfClass("PointLight")
                     if light then
                         light.Brightness = pulse
