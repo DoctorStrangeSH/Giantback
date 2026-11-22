@@ -767,6 +767,87 @@ player:GetAttributeChangedSignal("Companion"):Connect(updateMoonGatePuzzle)
 player:GetAttributeChangedSignal("MoonGateTrace"):Connect(updateMoonGatePuzzle)
 player:GetAttributeChangedSignal("MoonGateOpen"):Connect(updateMoonGatePuzzle)
 player:GetAttributeChangedSignal("MoonRelic"):Connect(updateMoonGatePuzzle)
+local resourceHitBillboards = {}
+
+local function showResourceHitFeedback(payload)
+    if type(payload.nodeId) ~= "string" then return end
+    local node
+    for _, descendant in workspace:GetDescendants() do
+        if descendant:IsA("Model") and descendant:GetAttribute("ResourceNodeId") == payload.nodeId then
+            node = descendant
+            break
+        end
+    end
+    local anchor = node and (node.PrimaryPart or node:FindFirstChild("PromptAnchor"))
+    if not anchor or not anchor:IsA("BasePart") then return end
+
+    local billboard = resourceHitBillboards[payload.nodeId]
+    if not billboard or not billboard.Parent then
+        billboard = Instance.new("BillboardGui")
+        billboard.Name = "LocalHarvestProgress"
+        billboard.Size = UDim2.fromOffset(150, 38)
+        billboard.StudsOffset = Vector3.new(0, 4.8, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Adornee = anchor
+        billboard.Parent = player:WaitForChild("PlayerGui")
+        local back = Instance.new("Frame")
+        back.Name = "Back"
+        back.Size = UDim2.fromScale(1, 1)
+        back.BackgroundColor3 = palette.deep
+        back.BackgroundTransparency = 0.08
+        back.BorderSizePixel = 0
+        back.Parent = billboard
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 10)
+        corner.Parent = back
+        local fill = Instance.new("Frame")
+        fill.Name = "Fill"
+        fill.Size = UDim2.fromScale(0, 1)
+        fill.BackgroundColor3 = palette.gold
+        fill.BorderSizePixel = 0
+        fill.Parent = back
+        local fillCorner = Instance.new("UICorner")
+        fillCorner.CornerRadius = UDim.new(0, 10)
+        fillCorner.Parent = fill
+        local text = Instance.new("TextLabel")
+        text.Name = "ProgressText"
+        text.BackgroundTransparency = 1
+        text.Size = UDim2.fromScale(1, 1)
+        text.Font = Enum.Font.GothamBold
+        text.TextColor3 = palette.cream
+        text.TextSize = 13
+        text.TextStrokeTransparency = 0.7
+        text.Parent = back
+        resourceHitBillboards[payload.nodeId] = billboard
+    end
+
+    local back = billboard:FindFirstChild("Back")
+    local fill = back and back:FindFirstChild("Fill")
+    local text = back and back:FindFirstChild("ProgressText")
+    local hits = math.max(0, tonumber(payload.hits) or 0)
+    local maximum = math.max(1, tonumber(payload.maxHits) or 1)
+    if fill then
+        TweenService:Create(fill, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.fromScale(math.clamp(hits / maximum, 0, 1), 1),
+        }):Play()
+    end
+    if text then text.Text = "УДАР  " .. tostring(hits) .. " / " .. tostring(maximum) end
+
+    local current = billboard
+    task.delay(2.2, function()
+        if resourceHitBillboards[payload.nodeId] == current then
+            current:Destroy()
+            resourceHitBillboards[payload.nodeId] = nil
+        end
+    end)
+end
+
+local function clearResourceHitFeedback(nodeId)
+    local billboard = resourceHitBillboards[nodeId]
+    resourceHitBillboards[nodeId] = nil
+    if billboard then billboard:Destroy() end
+end
+
 workspace.DescendantAdded:Connect(function(descendant)
     if descendant.Name == "FoxCache01" or descendant.Name == "FoxCache02" or descendant.Name == "FoxCache03" or descendant.Name == "FoxCacheVisuals" or descendant.Name == "FoxCacheVisual01" or descendant.Name == "FoxCacheVisual02" or descendant.Name == "FoxCacheVisual03" or descendant.Name == "Trail" or descendant.Name == "Bank" then
         task.defer(updateFoxCacheMarkers)
@@ -968,7 +1049,11 @@ event.OnClientEvent:Connect(function(message, payload)
         end
         return
     elseif message == "ResourcePicked" and type(payload) == "table" then
+        clearResourceHitFeedback(payload.nodeId)
         applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
+        return
+    elseif message == "ResourceHit" and type(payload) == "table" then
+        showResourceHitFeedback(payload)
         return
     end
 
