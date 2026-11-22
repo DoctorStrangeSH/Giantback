@@ -323,6 +323,10 @@ local function renderCity()
     addInfo("Уровень города: " .. tostring(cityLevel), "Развивай остров, собирай материалы и открывай новые территории мостами.", 76)
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
     local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
+    local ore = tonumber(player:GetAttribute("Resource_IronOre")) or 0
+    local ingots = tonumber(player:GetAttribute("Resource_IronIngot")) or 0
+    local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
+    local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
     addInfo("Материалы для моста", "🪵 Дерево: " .. tostring(wood) .. " / 5    •    🪨 Камень: " .. tostring(stone) .. " / 3", 66)
     addInfo("Ферма: уровень " .. tostring(farmLevel), "У тебя есть четыре места для грядок. Открой вкладку «Ферма», чтобы посмотреть их состояние.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
@@ -377,7 +381,9 @@ local function renderTools()
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
     local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
     addInfo("Инструменты путешественника", "Выбирай инструмент кнопкой или через панель быстрого доступа. Для добычи нужен правильный инструмент в руках.", 78)
-    addInfo("Материалы", "🪵 Дерево: " .. tostring(wood) .. "   •   🪨 Камень: " .. tostring(stone), 58)
+    addInfo("Материалы", "🪵 Дерево: " .. tostring(wood) .. "   •   🪨 Камень: " .. tostring(stone) .. "   •   ⛏ Руда: " .. tostring(ore) .. "   •   🔩 Слитки: " .. tostring(ingots), 72)
+    local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
+    addInfo("Плавильня на острове", smeltStatus, 58)
     local catalog = {
         {id = "Axe", name = "Топор путешественника", glyph = "🪓", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
         {id = "Pickaxe", name = "Кирка путешественника", glyph = "⛏️", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
@@ -406,7 +412,7 @@ local function renderTools()
             end
         end)
     end
-    addInfo("Как добывать", "Подойди к дереву или каменной жиле и нажимай действие несколько раз. Усиленный инструмент требует на один удар меньше.", 76)
+    addInfo("Как добывать", "Подойди к дереву, камню или железной жиле и нажимай действие несколько раз. У железа больше прочность. У плавильни запускай переплавку и возвращайся за слитком через минуту.", 76)
 end
 
 local function renderWorld()
