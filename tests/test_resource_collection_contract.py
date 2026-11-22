@@ -85,6 +85,25 @@ class ResourceCollectionContractTests(unittest.TestCase):
         tool_swing = CLIENT.split("local function playHarvestToolSwing(nodeId)", 1)[1].split("local function ensureHarvestDamageOverlay", 1)[0]
         self.assertIn("playHarvestCharacterSwing(character, nodeId, generation)", tool_swing)
 
+    def test_camera_shake_is_local_short_and_user_toggleable(self):
+        shake = CLIENT.split("local function playHarvestCameraShake(intensity)", 1)[1].split("local function playHarvestCharacterSwing", 1)[0]
+        self.assertIn('player:GetAttribute("HarvestCameraShakeEnabled") == false', shake)
+        self.assertIn("RunService:BindToRenderStep(cameraShakeBinding", shake)
+        self.assertIn("Enum.RenderPriority.Camera.Value + 1", shake)
+        self.assertIn("local duration = 0.13", shake)
+        self.assertIn("RunService:UnbindFromRenderStep(cameraShakeBinding)", shake)
+        feedback = CLIENT.split("local function showResourceHitFeedback(payload)", 1)[1].split("local function clearResourceHitFeedback(nodeId)", 1)[0]
+        self.assertIn("playHarvestCameraShake(", feedback)
+        picked = CLIENT.split('elseif message == "ResourcePicked"', 1)[1].split('elseif message == "ResourceHit"', 1)[0]
+        self.assertIn("playHarvestCameraShake(0.58)", picked)
+
+    def test_harvest_camera_shake_setting_is_visible_in_tools_panel(self):
+        tools = HUD.split("local function renderTools()", 1)[1].split("local function renderWorld()", 1)[0]
+        self.assertIn('card(body, "HarvestFeedbackSettings"', tools)
+        self.assertIn('player:GetAttribute("HarvestCameraShakeEnabled") ~= false', tools)
+        self.assertIn('player:SetAttribute("HarvestCameraShakeEnabled", nextEnabled)', tools)
+        self.assertIn('showToast(nextEnabled and "Вибрация камеры включена." or "Вибрация камеры отключена.")', tools)
+
     def test_final_harvest_hit_has_distinct_local_break_burst(self):
         burst = CLIENT.split("local function playResourceFinalBreakBurst(anchor, nodeId)", 1)[1].split("local function playResourceBreakFeedback(nodeId)", 1)[0]
         self.assertIn('ring.Name = "LocalHarvestFinalBurst"', burst)
