@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 COMBAT = (ROOT / "Combat.server.luau").read_text(encoding="utf-8")
 BUILD = (ROOT / "build.py").read_text(encoding="utf-8")
+WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 WORKFLOW = (ROOT / ".github/workflows/validate-place.yml").read_text(encoding="utf-8")
 
 
@@ -47,11 +48,42 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('reject(player, "CombatRegionRequired")', COMBAT)
         self.assertIn('reject(player, "NoServerEquippedWeapon")', COMBAT)
 
-    def test_c0_never_applies_client_requested_damage_or_rewards(self):
-        self.assertIn('reject(player, "CombatNotEnabled")', COMBAT)
-        self.assertNotIn("TakeDamage", COMBAT)
-        self.assertNotIn("Health =", COMBAT)
-        self.assertNotIn('FireClient(player, "Reward"', COMBAT)
+    def test_c1_uses_server_owned_enemy_damage_and_never_client_values(self):
+        self.assertIn("entry.humanoid:TakeDamage(PLAYER_DAMAGE)", COMBAT)
+        self.assertIn("entry.humanoid:TakeDamage(damage)", COMBAT)
+        self.assertNotIn("payload.damage", COMBAT.lower())
+        self.assertNotIn("payload.reward", COMBAT.lower())
+        self.assertNotIn("payload.target", COMBAT.lower())
+
+    def test_enemy_targets_are_server_registered_and_alive(self):
+        self.assertIn('CollectionService:GetTagged("GiantbackEnemy")', COMBAT)
+        self.assertIn("local function isEnemyModel(instance)", COMBAT)
+        self.assertIn("local function isEnemyAlive(enemy)", COMBAT)
+        self.assertIn("entry.regionId == getPlayerRegion(player)", COMBAT)
+
+    def test_melee_hitbox_range_facing_and_cooldown_are_server_owned(self):
+        self.assertIn("PLAYER_ATTACK_COOLDOWN = 0.65", COMBAT)
+        self.assertIn("Workspace:GetPartBoundsInBox(hitCFrame, PLAYER_ATTACK_BOX, overlap)", COMBAT)
+        self.assertIn("root.CFrame.LookVector:Dot(offset.Unit) >= 0.25", COMBAT)
+
+    def test_block_and_dodge_are_server_timed(self):
+        self.assertIn("DODGE_DURATION = 0.45", COMBAT)
+        self.assertIn("DODGE_COOLDOWN = 1.5", COMBAT)
+        self.assertIn("state.dodgingUntil = now + DODGE_DURATION", COMBAT)
+        self.assertIn("playerState.blocking", COMBAT)
+        self.assertIn("BLOCK_DAMAGE_MULTIPLIER = 0.25", COMBAT)
+
+    def test_enemy_telegraphs_before_server_damage(self):
+        self.assertIn('enemy:SetAttribute("CombatState", "Telegraph")', COMBAT)
+        self.assertIn("task.wait(ENEMY_TELEGRAPH_SECONDS)", COMBAT)
+        self.assertIn("ENEMY_TELEGRAPH_SECONDS = 0.85", COMBAT)
+
+    def test_rewards_are_persistent_and_idempotent(self):
+        self.assertIn('ServerStorage:WaitForChild("GiantbackGrantCombatReward"', COMBAT)
+        self.assertIn("rewardFunction:Invoke(entry.lastHitBy, entry.encounterId)", COMBAT)
+        self.assertIn("completedCombatEncounters", WORLD)
+        self.assertIn("old.completedCombatEncounters = savedCombatEncounters", WORLD)
+        self.assertIn("GroveGrunt01", WORLD)
 
     def test_transient_state_is_cleared_on_death_respawn_and_leave(self):
         self.assertIn("local function clearTransientState(player)", COMBAT)
