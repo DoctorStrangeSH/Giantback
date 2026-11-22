@@ -340,6 +340,7 @@ local function save(player)
                 savedIsland.level = citySnapshot.level
                 local savedFarm = type(savedIsland.farm) == "table" and savedIsland.farm or {}
                 savedFarm.level = citySnapshot.farm.level
+                savedFarm.selectedCropId = citySnapshot.farm.selectedCropId
                 savedFarm.plots = citySnapshot.farm.plots
                 savedIsland.farm = savedFarm
                 savedIsland.bridges = type(savedIsland.bridges) == "table" and savedIsland.bridges or {}
