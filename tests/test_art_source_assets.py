@@ -82,8 +82,8 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
 
     def test_fox_hero_palette_and_layered_chest_ruff_are_present(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
-        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.055, 0.004), 0.90, soft_fur=True)', source)
-        self.assertIn('"cream": material("cream", (0.82, 0.56, 0.28), 0.92, soft_fur=True)', source)
+        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.20, 0.025), 0.90, soft_fur=True)', source)
+        self.assertIn('"cream": material("cream", (0.92, 0.72, 0.48), 0.92, soft_fur=True)', source)
         self.assertIn('curved_plume("ChestRuffCenter"', source)
         self.assertIn('curved_plume("ChestRuffLeft"', source)
         self.assertIn('curved_plume("ChestRuffRight"', source)
@@ -211,8 +211,8 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('bump.inputs["Distance"].default_value = 0.002', source)
         self.assertIn('"giantback_surface_profile"] = "soft_fur"', source)
         self.assertIn('"material_profiles": {', source)
-        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.055, 0.004), 0.90, soft_fur=True)', source)
-        self.assertIn('"cream": material("cream", (0.82, 0.56, 0.28), 0.92, soft_fur=True)', source)
+        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.20, 0.025), 0.90, soft_fur=True)', source)
+        self.assertIn('"cream": material("cream", (0.92, 0.72, 0.48), 0.92, soft_fur=True)', source)
         self.assertIn("true single-vertex poles and clean topology", source)
         self.assertIn("verts, faces = [(cx, cy + sy, cz)], []", source)
         self.assertIn("bottom = len(verts)", source)
