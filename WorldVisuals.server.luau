@@ -1527,7 +1527,7 @@ end
 local rootvault = Instance.new("Model")
 rootvault.Name = "RootvaultDungeon"
 rootvault.Parent = combatGlade
-local vaultFloorY = 10.8
+local vaultFloorY = 0
 local function vaultRoom(name, center, size)
     local room = Instance.new("Model")
     room.Name = name
