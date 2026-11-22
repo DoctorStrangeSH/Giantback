@@ -6,6 +6,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 CLIENT = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 
 class ResourceCollectionContractTests(unittest.TestCase):
@@ -82,9 +83,9 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('resourceHitCooldowns = {}', WORLD)
         self.assertIn('session.resourceHitCooldowns[def.key] = hitNow', WORLD)
         self.assertIn('hitNow - lastHitAt < 0.4', WORLD)
-        self.assertIn('event:FireServer("EquipTool", tool.id)', CLIENT)
-        self.assertIn('event:FireServer("UpgradeTool", tool.id)', CLIENT)
-        self.assertIn('message == "ToolUpgraded"', CLIENT)
+        self.assertIn('event:FireServer("EquipTool", tool.id)', HUD)
+        self.assertIn('event:FireServer("UpgradeTool", tool.id)', HUD)
+        self.assertIn('message == "ToolUpgraded"', HUD)
         self.assertIn('tool:GetAttribute("PetKingdomsToolLevel") ~= level', WORLD)
         self.assertIn('FindFirstChild("Workshop")', WORLD)
         self.assertIn('event:FireClient(visitor, "OpenWorkshop")', WORLD)
