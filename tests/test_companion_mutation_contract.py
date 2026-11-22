@@ -32,6 +32,25 @@ class CompanionMutationContractTests(unittest.TestCase):
         self.assertIn('"Companion_" .. companionId .. "_MutationRarity"', WORLD)
         self.assertIn('entry.name.Text = names[id] .. " ✦ " .. mutationName', ALBUM)
 
+    def test_legendary_mutations_have_half_percent_weight_and_biome_identity(self):
+        self.assertIn('id = "Elderwood", name = "Древесный дух", rarity = "Легендарный", weight = 1, biome = "Grove"', WORLD)
+        self.assertIn('id = "Eclipse", name = "Затмение", rarity = "Легендарный", weight = 1, biome = "Dusk"', WORLD)
+        self.assertIn('weight = 140, biome = "Grove"', WORLD)
+        self.assertIn('weight = 48, biome = "Grove"', WORLD)
+        self.assertIn('weight = 11, biome = "Grove"', WORLD)
+        self.assertIn('weight = 140, biome = "Dusk"', WORLD)
+        self.assertIn('weight = 48, biome = "Dusk"', WORLD)
+        self.assertIn('weight = 11, biome = "Dusk"', WORLD)
+        self.assertIn('"_MutationBiome"', WORLD)
+
+    def test_legendary_mutations_receive_separate_particle_aura(self):
+        self.assertIn('Elderwood = {color =', ALBUM)
+        self.assertIn('Eclipse = {color =', ALBUM)
+        self.assertIn('if visual.legendary then', ALBUM)
+        self.assertIn('LegendaryMutationAttachment', ALBUM)
+        self.assertIn('LegendaryMutationParticles', ALBUM)
+        self.assertIn('mutationRarity == "Легендарный"', ALBUM)
+
     def test_visual_mutations_restore_base_colors_and_apply_bounded_tint(self):
         self.assertIn("local function applyCompanionMutation(model, owner, companionId)", ALBUM)
         self.assertIn("mutationOriginalColors", ALBUM)
