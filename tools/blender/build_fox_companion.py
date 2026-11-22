@@ -61,13 +61,13 @@ def material(name, color, roughness=0.72, metallic=0.0, soft_fur=False):
         # not noisy scales. Keep bump subtle so the low-poly silhouette stays clean.
         noise = nodes.new("ShaderNodeTexNoise")
         noise.name = name + "_SoftFurNoise"
-        noise.inputs["Scale"].default_value = 16.0
-        noise.inputs["Detail"].default_value = 2.0
+        noise.inputs["Scale"].default_value = 10.0
+        noise.inputs["Detail"].default_value = 1.0
         noise.inputs["Roughness"].default_value = 0.62
         bump = nodes.new("ShaderNodeBump")
         bump.name = name + "_SoftFurBump"
-        bump.inputs["Strength"].default_value = 0.004
-        bump.inputs["Distance"].default_value = 0.002
+        bump.inputs["Strength"].default_value = 0.002
+        bump.inputs["Distance"].default_value = 0.001
         links.new(noise.outputs["Fac"], bump.inputs["Height"])
         links.new(bump.outputs["Normal"], shader.inputs["Normal"])
     else:
@@ -86,7 +86,7 @@ def make_palette():
         "white": material("white", (1.0, 0.98, 0.87), 0.22),
         "nose": material("nose", (0.12, 0.07, 0.06), 0.24),
         "expression": material("expression", (0.29, 0.12, 0.075), 0.58),
-        "paw_detail": material("paw_detail", (0.66, 0.34, 0.22), 0.78),
+        "paw_detail": material("paw_detail", (0.78, 0.43, 0.25), 0.82),
     }
 
 
@@ -413,23 +413,23 @@ def create_fox(p):
             (-0.10, 0.22, 0.25, 0.00), (0.12, 0.21, 0.24, 0.00),
             (0.31, 0.17, 0.19, 0.00), (0.41, 0.11, 0.13, 0.00),
         ], p["fox_orange"], sides=40)
-        ellipsoid("PawFront" + suffix, (side*0.34, 0.12, -0.61),
-                 (0.22, 0.13, 0.25), p["cream"], 24, 16)
-        ellipsoid("PawBack" + suffix, (side*0.34, 0.12, 0.61),
-                 (0.24, 0.13, 0.27), p["cream"], 24, 16)
+        ellipsoid("PawFront" + suffix, (side*0.34, 0.13, -0.61),
+                 (0.205, 0.115, 0.225), p["fox_orange"], 32, 20)
+        ellipsoid("PawBack" + suffix, (side*0.34, 0.13, 0.61),
+                 (0.22, 0.115, 0.24), p["fox_orange"], 32, 20)
         # Three shallow toe separators add a readable paw silhouette without claws.
         for toe, offset in enumerate((-0.085, 0.0, 0.085)):
             curved_plume("PawToeFront" + suffix + str(toe),
                 [(side*0.34 + offset - 0.018, 0.145, -0.842),
                  (side*0.34 + offset, 0.175, -0.858),
                  (side*0.34 + offset + 0.018, 0.145, -0.842)],
-                [0.003, 0.008, 0.003], p["paw_detail"],
+                [0.002, 0.005, 0.002], p["paw_detail"],
                 sides=8, steps_per_segment=4)
             curved_plume("PawToeBack" + suffix + str(toe),
                 [(side*0.34 + offset - 0.018, 0.145, 0.842),
                  (side*0.34 + offset, 0.175, 0.858),
                  (side*0.34 + offset + 0.018, 0.145, 0.842)],
-                [0.003, 0.008, 0.003], p["paw_detail"],
+                [0.002, 0.005, 0.002], p["paw_detail"],
                 sides=8, steps_per_segment=4)
 
     # Big plush tail sweeps up behind the body; cream tip remains separately riggable.
