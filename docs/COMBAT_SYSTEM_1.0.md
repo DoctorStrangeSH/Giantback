@@ -130,4 +130,6 @@ Implemented in `Combat.server.luau`:
 - Enemy AI loop with idle/approach/telegraph/recover states, a telegraphed melee attack, and server-side range revalidation before damage.
 - Server-held block state reduces only frontal enemy damage; server-timed dodge grants a short invulnerability window and bounded impulse.
 - Enemy death resolves the reward through the profile-owned BindableFunction. The profile stores completed encounter IDs and inventory rewards idempotently (schema v10); failed profile saves roll back the in-session grant.
+- `Combat.client.luau` binds mouse/keyboard, gamepad and ContextActionService touch buttons for attack, held block and dodge; it sends action names only.
+- Leaving the tagged arena automatically clears held block; `BlockEnd` is always accepted for a ready player so a lost focus/input release cannot leave a stale guard state.
 - This code does not create the arena or enemy model. Studio setup must add one tagged training volume and one tagged enemy model for `GroveGrunt01`. No C1 release acceptance is claimed until this is configured and multiplayer-tested.
