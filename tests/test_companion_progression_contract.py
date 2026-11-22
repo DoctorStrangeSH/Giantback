@@ -26,7 +26,7 @@ class CompanionProgressionContractTests(unittest.TestCase):
         self.assertIn("if progressData.level >= COMPANION_MAX_LEVEL then progressData.xp = 0 end", WORLD)
 
     def test_progression_requires_owned_companion_and_only_accepts_known_ids(self):
-        self.assertIn('if companionId ~= "Fox" and companionId ~= "Moth" then return false, "InvalidCompanion" end', WORLD)
+        self.assertIn('if table.find(COMPANION_IDS, companionId) == nil then return false, "InvalidCompanion" end', WORLD)
         self.assertIn('player:GetAttribute(companionId) ~= true', WORLD)
         self.assertIn('if not session or not player:GetAttribute("Ready")', WORLD)
         self.assertIn('companionXpFunction.OnInvoke = function(player, companionId, amount)', WORLD)
@@ -39,7 +39,7 @@ class CompanionProgressionContractTests(unittest.TestCase):
         self.assertIn('player:GetAttribute("Companion_" .. id .. "_XP")', ALBUM)
         self.assertIn('player:GetAttribute("Companion_" .. id .. "_XPToNext")', ALBUM)
         self.assertIn('entry.xpFill.Size = UDim2.fromScale', ALBUM)
-        self.assertIn('growthStage .. " · УР. 5" .. " · МАКСИМУМ"', ALBUM)
+        self.assertIn('ВЗРОСЛЫЙ · УР. 5 · МАКСИМУМ', ALBUM)
 
     def test_verified_exploration_milestones_award_the_matching_companion(self):
         self.assertIn('awardCompanionXp(player, "Fox", 30)', WORLD)
