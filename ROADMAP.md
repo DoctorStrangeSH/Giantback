@@ -1,3 +1,14 @@
+## Repository consolidation — profile safety
+
+- [x] Prevent schema-v6 saves from downgrading a newer profile schema marker.
+- [x] Include IronOre and IronIngot in the current inventory load/sync/save registry so existing V2 values are not silently omitted.
+- [x] Update contract tests for monotonic schema versions and preserved island-building payload.
+- [x] Update generated-place validation marker for the forward-compatible schema assignment.
+- [ ] Confirm the fresh Validate Giantback run after the validator update.
+- [ ] Port V2 tool ownership/equipment and server-authoritative multi-hit resource gathering.
+- [ ] Port smelter state/actions and tool upgrade/crafting systems with unified profile migration.
+- [ ] Port combat only after tool and server resource contracts are integrated and tested.
+
 ## Farming 2.0 — Four-crop server foundation
 
 - [x] Expand server-owned crop registry to Carrot, Strawberry, Pumpkin and Cabbage with growth duration, seed item, harvest item and reward.
