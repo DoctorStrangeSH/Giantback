@@ -2040,7 +2040,14 @@ local function attachMothStardust(model)
     emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
     emitter.Color = ColorSequence.new(palette.lilacLight, palette.moon)
     emitter.LightEmission = 0.8
-    emitter.Rate = 7
+    local personality = player:GetAttribute("Companion_Moth_Personality")
+    local personalityRates = {
+        ["Любопытный"] = 9,
+        ["Озорной"] = 12,
+        ["Смелый"] = 7,
+        ["Застенчивый"] = 4,
+    }
+    emitter.Rate = personalityRates[personality] or 7
     emitter.Lifetime = NumberRange.new(0.28, 0.55)
     emitter.Speed = NumberRange.new(0.12, 0.42)
     emitter.SpreadAngle = Vector2.new(150, 150)
@@ -2081,11 +2088,19 @@ local function follow(dt)
             local bob = math.sin(phase * 2.8) * 0.14
             local followOffset
             if id == "Moth" and owner == player then
-                local orbitAngle = phase * 0.72
+                local personality = owner:GetAttribute("Companion_Moth_Personality")
+                local orbitSpeeds = {
+                    ["Любопытный"] = 0.9,
+                    ["Озорной"] = 1.18,
+                    ["Смелый"] = 0.78,
+                    ["Застенчивый"] = 0.52,
+                }
+                local orbitAngle = phase * (orbitSpeeds[personality] or 0.72)
+                local orbitRadius = personality == "Застенчивый" and 0.24 or personality == "Озорной" and 0.52 or 0.38
                 followOffset = CFrame.new(
-                    2.25 + math.cos(orbitAngle) * 0.38,
-                    1.05 + bob + math.sin(orbitAngle * 1.35) * 0.16,
-                    1.75 + math.sin(orbitAngle) * 0.42
+                    2.25 + math.cos(orbitAngle) * orbitRadius,
+                    1.05 + bob + math.sin(orbitAngle * 1.35) * (personality == "Застенчивый" and 0.09 or 0.16),
+                    1.75 + math.sin(orbitAngle) * orbitRadius * 1.1
                 )
             else
                 followOffset = CFrame.new(2.8, (id == "Fox" and -1.35 or 1.05) + bob, 2.1)
@@ -2121,10 +2136,18 @@ local function follow(dt)
 
             local activity = companionActivity[owner]
             if not activity or activity.companionId ~= id then
+                local personality = owner:GetAttribute("Companion_" .. id .. "_Personality")
+                local curiosityWindows = {
+                    ["Любопытный"] = {5, 10},
+                    ["Озорной"] = {6, 11},
+                    ["Смелый"] = {9, 15},
+                    ["Застенчивый"] = {15, 23},
+                }
+                local window = curiosityWindows[personality] or {7, 14}
                 activity = {
                     companionId = id,
                     idleSince = now,
-                    nextCuriosityAt = now + math.random(7, 14),
+                    nextCuriosityAt = now + math.random(window[1], window[2]),
                 }
                 companionActivity[owner] = activity
             end
@@ -2134,7 +2157,15 @@ local function follow(dt)
                 activity.nextCuriosityAt = now + math.random(9, 16)
             elseif owner == player and id == "Fox" and now >= (activity.nextCuriosityAt or now + 10) then
                 foxSniffUntil = os.clock() + 2.2
-                activity.nextCuriosityAt = now + math.random(13, 23)
+                local personality = owner:GetAttribute("Companion_Fox_Personality")
+                local curiosityWindows = {
+                    ["Любопытный"] = {7, 12},
+                    ["Озорной"] = {8, 14},
+                    ["Смелый"] = {12, 18},
+                    ["Застенчивый"] = {20, 29},
+                }
+                local window = curiosityWindows[personality] or {13, 23}
+                activity.nextCuriosityAt = now + math.random(window[1], window[2])
             end
             local idleSeconds = now - activity.idleSince
             local resting = not moving and idleSeconds >= 12
