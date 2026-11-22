@@ -30,6 +30,7 @@ local CHARGE_COOLDOWN = 1.35
 local CHARGE_ATTACK_BOX = Vector3.new(8, 6, 7)
 local CHARGE_ATTACK_RANGE = 9
 local COMPANION_SKILL_COOLDOWN = 14
+local PRISM_SENSE_COOLDOWN = 45
 local FOX_SKILL_DAMAGE = 24
 local FOX_SKILL_RANGE = 18
 local MOTH_HEAL_AMOUNT = 18
@@ -594,7 +595,7 @@ end
 
 local function performCompanionSkill(player, state, now)
     local companionId = player:GetAttribute("Companion")
-    if companionId ~= "Fox" and companionId ~= "Moth" then
+    if companionId ~= "Fox" and companionId ~= "Moth" and companionId ~= "CrystalWisp" then
         reject(player, "CompanionRequired")
         return
     end
@@ -612,8 +613,80 @@ local function performCompanionSkill(player, state, now)
     end
 
     local playerHumanoid, playerRoot = getCharacterParts(player)
+    if not playerHumanoid or not playerRoot then return end
+
+    if companionId == "CrystalWisp" then
+        local grotto = Workspace:FindFirstChild("CombatTrainingGlade")
+        grotto = grotto and grotto:FindFirstChild("CrystalGrotto")
+        local floor = grotto and grotto:FindFirstChild("CrystalGrottoFloor")
+        local horizontalDistance = floor and (Vector3.new(playerRoot.Position.X, 0, playerRoot.Position.Z) - Vector3.new(floor.Position.X, 0, floor.Position.Z)).Magnitude or math.huge
+        if player:GetAttribute("InCrystalGrotto") ~= true or not floor or horizontalDistance > 42 then
+            reject(player, "PrismSenseRequiresGrotto")
+            return
+        end
+
+        local companionLevel = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_CrystalWisp_Level")) or 1), 1, 5)
+        local revealDuration = 16 + (companionLevel - 1) * 3
+        local revealUntil = os.clock() + revealDuration
+        player:SetAttribute("PrismSenseUntil", revealUntil)
+        state.companionSkillReadyAt = now + PRISM_SENSE_COOLDOWN
+        player:SetAttribute("CompanionSkillReadyAt", state.companionSkillReadyAt)
+
+        local nodes = grotto:FindFirstChild("ResourceNodes")
+        if nodes then
+            for _, node in nodes:GetChildren() do
+                if node:GetAttribute("PrismSenseHidden") == true then
+                    for _, descendant in node:GetDescendants() do
+                        if descendant:IsA("BasePart") then
+                            local original = tonumber(descendant:GetAttribute("PrismSenseOriginalTransparency"))
+                            if original ~= nil then descendant.Transparency = original end
+                        end
+                        local prompt = descendant:FindFirstChildOfClass("ProximityPrompt")
+                        if prompt then prompt.Enabled = true end
+                    end
+                end
+            end
+        end
+
+        local sharedRevealUntil = math.max(tonumber(Workspace:GetAttribute("PrismSenseRevealUntil")) or 0, revealUntil)
+        Workspace:SetAttribute("PrismSenseRevealUntil", sharedRevealUntil)
+        local function hideExpiredVeins()
+            local remaining = (tonumber(Workspace:GetAttribute("PrismSenseRevealUntil")) or 0) - os.clock()
+            if remaining > 0 then
+                task.delay(remaining, hideExpiredVeins)
+                return
+            end
+            local activeGrotto = Workspace:FindFirstChild("CombatTrainingGlade")
+            activeGrotto = activeGrotto and activeGrotto:FindFirstChild("CrystalGrotto")
+            local activeNodes = activeGrotto and activeGrotto:FindFirstChild("ResourceNodes")
+            if not activeNodes then return end
+            for _, node in activeNodes:GetChildren() do
+                if node:GetAttribute("PrismSenseHidden") == true then
+                    for _, descendant in node:GetDescendants() do
+                        if descendant:IsA("BasePart") then descendant.Transparency = 1 end
+                        local prompt = descendant:FindFirstChildOfClass("ProximityPrompt")
+                        if prompt then prompt.Enabled = false end
+                    end
+                end
+            end
+        end
+        task.delay(revealDuration, hideExpiredVeins)
+
+        if companionXpFunction then
+            task.spawn(function()
+                pcall(function() companionXpFunction:Invoke(player, "CrystalWisp", 8) end)
+            end)
+        end
+        remote:FireClient(player, "CompanionSkillUsed", {
+            companionId = "CrystalWisp",
+            duration = revealDuration,
+            level = companionLevel,
+        })
+        return
+    end
+
     local regionId = getPlayerRegion(player)
-    if not playerHumanoid or not playerRoot or not regionId then return end
+    if not regionId then return end
 
     if companionId == "Fox" then
         local target, targetEntry
