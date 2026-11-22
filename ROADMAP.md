@@ -1,5 +1,7 @@
 ## Asset Pipeline 1.0 — Studio import and asset staging
 
+- [x] Require imported Fox/Moth Body and animated Tail/Wing MeshParts to be direct children compatible with current procedural animation; keep fallback when incomplete.
+- [x] Deduplicate Moth stardust particle-rate calculation and refresh particles on personality changes as well as friendship-stage changes, with regression tests.
 - [x] Retire disabled GiantbackJournal UI and its old quest polling; migrate companion collection (including CrystalWisp), levels/XP, growth, mutation names, talents, scout readiness and rare material counters into active GiantbackHUD.
 - [x] Keep active Album client-only animation, harvesting effects, local prompts and follower logic intact, with automated regression contracts.
 - [x] Fix missing ore, ingot and smelter-local values in active Tools UI rendering.
