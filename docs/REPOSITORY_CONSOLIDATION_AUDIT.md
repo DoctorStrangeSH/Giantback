@@ -93,3 +93,38 @@ Decision: these four main-only commits are **functionally superseded**, not miss
 - PR #6 was closed without merging because its complete changes are included in consolidated PR #7.
 - PR #7 now targets `feat/cozy-world-visual-pass` directly and contains harvesting feedback plus Combat C0. Its automated contract tests and generated-place validation passed.
 - Roblox Studio acceptance remains outstanding for harvesting interaction and combat setup.
+
+
+
+## Canonical branch and PR audit — 2026-11-22 (latest)
+
+Canonical development remains `feat/cozy-world-visual-pass`. It is the source of truth for active work; `main` remains the eventual release line and is not a safe merge target yet.
+
+### Consolidated PR #7
+
+- PR #7 (`feat/combat-c0-contract` → `feat/cozy-world-visual-pass`) is open, Draft, and now reports `mergeable=true` / `mergeable_state=clean`.
+- Latest head: `2aa259738c00953efe19f7a4fa08a989126b2c08`.
+- Latest GitHub Actions run #45009463762 completed successfully: 189 contract tests, Roblox place build, embedded-script validation and artifact upload.
+- The PR combines harvesting presentation feedback with the dedicated server-owned Combat C0 request protocol and its tests. C0 is intentionally non-playable: no damage, enemy health mutation or reward granting.
+- Keep PR #7 Draft until Roblox Studio acceptance covers R6/R15 tool animation, hit alignment, resource break/regrowth, local-only feedback, mobile readability and multiplayer. Do not merge based on CI alone.
+
+### Current branch divergence against canonical
+
+The following figures are from GitHub compare against `feat/cozy-world-visual-pass`:
+
+| Branch | Ahead | Behind | Decision |
+|---|---:|---:|---|
+| `feat/harvesting-feedback-on-latest` | 7 | 9 | PR #6 is closed/superseded by PR #7; retain as recovery ref until PR #7 is accepted |
+| `feat/world-resource-harvesting` | 68 | 206 | PR #2 is closed; historical harvesting source, do not merge wholesale |
+| `integration/giantback-consolidation` | 3 | 46 | PR #5 is closed; historical integration snapshot |
+| `integration/harvesting-on-cozy-world` | 9 | 140 | PR #3 is closed; historical integration snapshot |
+| `integration/harvesting-on-cozy-world-v2` | 74 | 133 | PR #4 is closed archive; preserve V2 city/sword/progression as selective migration source |
+| `main` | 4 | 753 | release history; canonical is far ahead and must not be force-synced |
+
+### Cleanup decision
+
+- Active development branches: only `feat/cozy-world-visual-pass` and the short-lived PR #7 head `feat/combat-c0-contract`.
+- PRs #2–#6 are closed. PR #1 remains a Draft release PR to historical `main`; it is not ready to merge.
+- The old refs are not active development lines. They remain recovery/archive refs until their unique commits have been verified as preserved or deliberately archived.
+- No branch was deleted and no history was rewritten during this audit. The connected GitHub actions available in this session support branch listing/comparison and file/PR updates, but do not expose a branch-ref deletion operation. Do not claim the refs were removed.
+- Do not merge any of the divergent integration branches wholesale. Port only a reviewed unique feature onto the canonical branch, then run CI and Studio acceptance.
