@@ -280,3 +280,12 @@ The first companion progression slice is server-owned and persisted in profile s
 - Collection cards show the companion's level, XP/threshold and progress bar. Level-up notifications are server-generated.
 - Combat cooldown is committed before the asynchronous XP persistence call, preventing a yielding DataStore write from opening a repeat-skill window.
 - Contract tests cover schema migration, normalization, server validation, milestone rewards, scaling and UI binding. Studio acceptance must still verify persistence/reconnect, combat balance, mobile readability and co-op behavior.
+
+
+## 33. Level-gated companion passive talents
+
+- Fox cache scouting cooldown is now level-aware: 120 seconds at levels 1–2, 90 seconds at levels 3–4, and 60 seconds at level 5. The server calculates the cooldown when a cache is successfully collected.
+- Moth healing radius is 14 studs at levels 1–2, 16 studs at levels 3–4, and 18 studs at level 5. Healing still targets only ready, living allies in the same combat region who are missing health.
+- The server derives both passive effects from the saved companion-level attributes. The client only displays the unlocked talent description in the album.
+- No passive effect decays over time and no player is punished for taking a break.
+- Contract coverage checks both level thresholds, server calculations and the album descriptions. Roblox Studio balance and co-op acceptance remain outstanding.
