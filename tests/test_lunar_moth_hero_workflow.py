@@ -54,8 +54,11 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn('(oh, ohn, ihn, ih)', source)
         self.assertIn('(ol, il, iln, oln)', source)
         self.assertIn('parts.append(abdomen_band(f"AbdomenBand{band_index}"', source)
-        self.assertIn('(side * 0.24, start_y, -0.31)', source)
-        self.assertIn('(side * 0.12, 2.12, -0.59)', source)
+        self.assertIn('(0.98,0.355,0.30)', source)
+        self.assertIn('(1.20,0.37,0.315)', source)
+        self.assertIn('(0.43,0.40,0.36)', source)
+        self.assertIn('((1.05,0.88),(0.84,0.68),(0.64,0.50))', source)
+        self.assertIn('outer_radius, inner_radius, inner_offset = 0.39, 0.325, 0.19', source)
         self.assertNotIn('parts.append(sphere("MothAbdomen"', source)
 
     def test_mesh_report_uses_stable_ten_group_contract(self):
