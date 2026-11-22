@@ -44,6 +44,17 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn("local affectionateNod = math.sin(time * 7)", ALBUM)
         self.assertIn('part.Name == "Moth head" and petting', ALBUM)
 
+    def test_fox_has_periodic_idle_curiosity_and_moth_has_local_orbit_stardust(self):
+        self.assertIn("nextCuriosityAt = now + math.random(7, 14)", ALBUM)
+        self.assertIn("foxSniffUntil = os.clock() + 2.2", ALBUM)
+        self.assertIn("activity.nextCuriosityAt = now + math.random(13, 23)", ALBUM)
+        self.assertIn("local function attachMothStardust(model)", ALBUM)
+        self.assertIn('emitter.Name = "CompanionStardust"', ALBUM)
+        self.assertIn("emitter.Rate = 7", ALBUM)
+        self.assertIn('id == "Moth" and owner == player', ALBUM)
+        self.assertIn("local orbitAngle = phase * 0.72", ALBUM)
+        self.assertIn("attachMothStardust(model)", ALBUM)
+
     def test_client_plays_species_specific_reaction_and_visual_feedback(self):
         self.assertIn('message == "CompanionPetted"', ALBUM)
         self.assertIn("pettingUntil", ALBUM)
