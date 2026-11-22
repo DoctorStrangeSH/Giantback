@@ -273,6 +273,14 @@ local function createHarvestTool(toolId, level)
     end
 
     tool.Grip = CFrame.new(0, -0.8, -0.45) * CFrame.Angles(math.rad(-90), 0, math.rad(90))
+    tool.Equipped:Connect(function()
+        local character = tool.Parent
+        local player = Players:GetPlayerFromCharacter(character)
+        local session = player and sessions[player]
+        if not player or not session or session.tools[toolId] ~= true or not player:GetAttribute("Ready") then return end
+        session.equippedTool = toolId
+        player:SetAttribute("Tool_Equipped", toolId)
+    end)
     return tool
 end
 
@@ -1274,6 +1282,35 @@ createPersonalCity = function(player, session)
 
     local meadow = homeIsland:FindFirstChild("Meadow")
     if meadow then
+        local workshop = Instance.new("Model")
+        workshop.Name = "Workshop"
+        workshop:SetAttribute("OwnerUserId", ownerUserId)
+        workshop.Parent = cityModel
+        local benchFrame = meadow.CFrame * CFrame.new(4, meadow.Size.Y / 2 + 0.72, -10)
+        makeFarmVisualPart(workshop, "WorkbenchTop", Vector3.new(4.8, 0.38, 2.4), benchFrame, Color3.fromRGB(126, 83, 53), Enum.PartType.Block, Enum.Material.Wood)
+        for _, offset in {
+            Vector3.new(-2.0, -0.78, -0.85), Vector3.new(2.0, -0.78, -0.85),
+            Vector3.new(-2.0, -0.78, 0.85), Vector3.new(2.0, -0.78, 0.85),
+        } do
+            makeFarmVisualPart(workshop, "WorkbenchLeg", Vector3.new(0.32, 1.2, 0.32), benchFrame * CFrame.new(offset), Color3.fromRGB(91, 61, 43), Enum.PartType.Block, Enum.Material.Wood)
+        end
+        makeFarmVisualPart(workshop, "AnvilBase", Vector3.new(1.15, 0.42, 0.72), benchFrame * CFrame.new(0, 0.42, 0), Color3.fromRGB(75, 83, 86), Enum.PartType.Block, Enum.Material.Metal)
+        makeFarmVisualPart(workshop, "AnvilTop", Vector3.new(1.65, 0.3, 0.8), benchFrame * CFrame.new(0, 0.78, 0), Color3.fromRGB(137, 151, 151), Enum.PartType.Block, Enum.Material.Metal)
+        local workshopAnchor = Instance.new("Part")
+        workshopAnchor.Name = "PromptAnchor"
+        workshopAnchor.Size = Vector3.new(0.5, 0.5, 0.5)
+        workshopAnchor.Transparency = 1
+        workshopAnchor.Anchored = true
+        workshopAnchor.CanCollide = false
+        workshopAnchor.CanTouch = false
+        workshopAnchor.CanQuery = true
+        workshopAnchor.CFrame = benchFrame * CFrame.new(0, 2.0, 0)
+        workshopAnchor.Parent = workshop
+        prompt(workshopAnchor, "Мастерская", "Улучшить инструменты", function(visitor)
+            if visitor.UserId ~= ownerUserId then return end
+            tip(visitor, "Открой вкладку «Инструменты», чтобы улучшить топор или кирку.")
+        end)
+
         local plotPositions = {
             Plot01 = Vector3.new(-14.5, meadow.Size.Y / 2 + 0.22, 8.8),
             Plot02 = Vector3.new(-10.5, meadow.Size.Y / 2 + 0.22, 8.8),
