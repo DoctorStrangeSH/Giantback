@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local CollectionService = game:GetService("CollectionService")
 local Workspace = game:GetService("Workspace")
+local PathfindingService = game:GetService("PathfindingService")
 
 local ACTION_RATE_WINDOW = 1
 local MAX_ACTIONS_PER_WINDOW = 10
@@ -18,6 +19,8 @@ local PLAYER_ATTACK_COOLDOWN = 0.65
 local PLAYER_ATTACK_RANGE = 8
 local PLAYER_ATTACK_BOX = Vector3.new(6, 5, 5)
 local ENEMY_AGGRO_RANGE = 34
+local ENEMY_PATH_REFRESH_SECONDS = 1.15
+local ENEMY_PATH_AGENT = {AgentRadius = 2, AgentHeight = 5, AgentCanJump = false, WaypointSpacing = 4}
 local ENEMY_ATTACK_RANGE = 6
 local ENEMY_ATTACK_DAMAGE = 12
 local ENEMY_ATTACK_COOLDOWN = 2.4
@@ -197,6 +200,8 @@ local function registerEnemy(enemy)
         rewardResolved = false,
         attacking = false,
         nextAttackAt = 0,
+        nextPathAt = 0,
+        lastMoveGoal = nil,
     }
     enemies[enemy] = entry
     humanoid.Died:Connect(function()
@@ -226,7 +231,30 @@ local function registerEnemy(enemy)
             if targetPlayer and targetRoot and targetHumanoid then
                 if bestDistance > ENEMY_ATTACK_RANGE then
                     enemy:SetAttribute("CombatState", "Approach")
-                    humanoid:MoveTo(targetRoot.Position)
+                    local now = os.clock()
+                    if now >= entry.nextPathAt then
+                        entry.nextPathAt = now + ENEMY_PATH_REFRESH_SECONDS
+                        local path = PathfindingService:CreatePath(ENEMY_PATH_AGENT)
+                        local pathOk = pcall(function()
+                            path:ComputeAsync(root.Position, targetRoot.Position)
+                        end)
+                        if pathOk and path.Status == Enum.PathStatus.Success then
+                            local waypoints = path:GetWaypoints()
+                            local nextWaypoint = waypoints[2] or waypoints[1]
+                            if nextWaypoint then
+                                entry.lastMoveGoal = nextWaypoint.Position
+                                humanoid:MoveTo(nextWaypoint.Position)
+                            else
+                                entry.lastMoveGoal = targetRoot.Position
+                                humanoid:MoveTo(targetRoot.Position)
+                            end
+                        else
+                            -- The arena is intentionally open; direct pursuit is a safe fallback
+                            -- when Roblox pathfinding has no route or is temporarily unavailable.
+                            entry.lastMoveGoal = targetRoot.Position
+                            humanoid:MoveTo(targetRoot.Position)
+                        end
+                    end
                 elseif os.clock() >= entry.nextAttackAt and not entry.attacking then
                     entry.attacking = true
                     entry.nextAttackAt = os.clock() + ENEMY_ATTACK_COOLDOWN
@@ -259,6 +287,8 @@ local function registerEnemy(enemy)
                 end
             else
                 enemy:SetAttribute("CombatState", "Idle")
+                entry.lastMoveGoal = nil
+                entry.nextPathAt = 0
                 humanoid:MoveTo(root.Position)
             end
             task.wait(0.2)
