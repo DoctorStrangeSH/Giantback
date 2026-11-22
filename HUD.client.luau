@@ -367,7 +367,7 @@ local function renderPets()
         label(item, "Description", desc, UDim2.new(1, -210, 0, 38), UDim2.fromOffset(76, 33), 11, palette.muted)
         local bond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_Bond")) or 0), 0, 1000)
         local bondRank = player:GetAttribute("Companion_" .. pet.id .. "_BondRank") or "Знакомство"
-        label(item, "Friendship", owned and ("Дружба " .. tostring(bond) .. "/1000 · " .. bondRank) or "Сначала найди питомца", UDim2.new(1, -90, 0, 18), UDim2.fromOffset(76, 82), 10, palette.forest, Enum.Font.GothamBold)
+        label(item, "Friendship", owned and ("Дружба " .. tostring(bond) .. "/1000 · " .. bondRank) or "Сначала найди питомца", UDim2.new(1, -220, 0, 18), UDim2.fromOffset(76, 82), 10, palette.forest, Enum.Font.GothamBold)
 
         local action = button(item, "Action", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН", UDim2.fromOffset(108, 28), UDim2.new(1, -120, 0, 8), equipped and palette.gold or palette.forest)
         action.TextSize = 10
