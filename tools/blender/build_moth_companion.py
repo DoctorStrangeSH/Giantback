@@ -264,8 +264,23 @@ def main():
     parts.append(sphere("MothGlowCore",(0,1.53,-0.34),(0.115,0.13,0.075),glow,32,20))
     wing_mats=[lilac,rose,cyan,gold]
     for side,suffix in [(-1,"Left"),(1,"Right")]:
-        parts.append(wing("MothWingUpper"+suffix,side,True,wing_mats))
-        parts.append(wing("MothWingLower"+suffix,side,False,wing_mats))
+        for upper,wing_name in ((True,"Upper"),(False,"Lower")):
+            parts.append(wing("MothWing"+wing_name+suffix,side,upper,wing_mats))
+            span = 1.42 if upper else 1.04
+            length = 0.82 if upper else 0.66
+            root_x = side * 0.20
+            root_y = 1.52 if upper else 1.28
+            root_z = 0.10 if upper else 0.30
+            t = 0.57
+            mark_x = root_x + side * t * span
+            mark_y = root_y + t * length + 0.055
+            mark_z = root_z + 0.20 * t * t + 0.075
+            # Gold crescent inlay: an outer moon disc and a lilac offset inset.
+            parts.append(sphere("WingMoonGold"+wing_name+suffix,
+                (mark_x,mark_y,mark_z),(0.105,0.145,0.026),gold,24,16))
+            parts.append(sphere("WingMoonInset"+wing_name+suffix,
+                (mark_x+side*0.035,mark_y+0.035,mark_z+0.024),
+                (0.083,0.122,0.018),lilac,24,16))
     # Every required rig group is represented by one or more named mesh objects.
     rig={"version":1,"character":"LunarMothHero","forward_axis":"-Z","up_axis":"+Y",
          "parts":list(GROUPS),"wing_groups":["MothWingUpperLeft","MothWingUpperRight","MothWingLowerLeft","MothWingLowerRight"],
