@@ -472,6 +472,10 @@ end
 local function renderTools()
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
     local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
+    local ore = tonumber(player:GetAttribute("Resource_IronOre")) or 0
+    local ingots = tonumber(player:GetAttribute("Resource_IronIngot")) or 0
+    local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
+    local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
     addInfo("Инструменты путешественника", "Выбирай инструмент кнопкой или через панель быстрого доступа. Для добычи нужен правильный инструмент в руках.", 78)
     addInfo("Материалы", "🪵 Дерево: " .. tostring(wood) .. "   •   🪨 Камень: " .. tostring(stone) .. "   •   ⛏ Руда: " .. tostring(ore) .. "   •   🔩 Слитки: " .. tostring(ingots), 72)
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
