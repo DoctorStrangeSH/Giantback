@@ -231,3 +231,10 @@ The current changes are committed to the linear PR #7 candidate branch. Fresh Gi
 Added a first server-authoritative combat ability for each currently implemented companion. Fox selects the nearest living registered enemy in the player's current combat region within 18 studs and deals 24 damage; Moth heals ready allies in the same region within 14 studs for up to 18 HP each. Both require the matching owned-and-equipped companion, share a 14-second per-player cooldown that survives character respawns, and cannot be used while blocking or charging. Keyboard C, gamepad ButtonY and touch controls map to one payload-free server action. Added contract coverage for ownership, region boundaries, reward contribution, healing cap, cooldown persistence, input mapping and rejection feedback. Updated product spec, combat spec and roadmap.
 
 The branch remains a linear descendant of the canonical baseline. CI and Roblox Studio acceptance must still confirm the current head; specifically verify live pet equip state, co-op healing boundaries, and mobile touch layout.
+
+
+### Companion combat presentation follow-up
+
+The first combat abilities now have server-confirmed local presentation. Fox's success payload carries the server-selected enemy ID; the client resolves the registered enemy and shows an amber spark burst plus a short ground pulse. Moth's success payload carries only user IDs actually healed by the server; the client shows violet/lunar pulses on those allies. These local effects are presentation-only and cannot deal damage, heal, or grant rewards. Contract tests cover payload provenance, enemy resolution, ally lookup and the visual hooks.
+
+Latest validated head before this audit note: GitHub Actions #1641 — 236 Python contract tests PASS, Roblox place build PASS, generated-place validation PASS (71 named instances, 6 embedded scripts), artifact upload PASS. Studio playtesting remains required.
