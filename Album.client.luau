@@ -1168,6 +1168,58 @@ local function findResourceNode(nodeId)
     return nil
 end
 
+local resourceOriginalGeometry = setmetatable({}, {__mode = "k"})
+
+local function captureResourceGeometry(model)
+    local saved = resourceOriginalGeometry[model]
+    if saved then return saved end
+    saved = {}
+    for _, descendant in model:GetDescendants() do
+        if descendant:IsA("BasePart") and descendant.Name ~= "PromptAnchor" then
+            saved[descendant] = {size = descendant.Size, cframe = descendant.CFrame}
+        end
+    end
+    resourceOriginalGeometry[model] = saved
+    return saved
+end
+
+local function playResourceBreakAnimation(nodeId)
+    local model = findResourceNode(nodeId)
+    if not model then return end
+    local saved = captureResourceGeometry(model)
+    local isWood = string.find(nodeId, "Wood", 1, true) ~= nil
+    for part, geometry in saved do
+        if part.Parent then
+            local targetCFrame = geometry.cframe * CFrame.new(
+                isWood and 0 or (math.random() - 0.5) * 0.7,
+                isWood and -0.7 or -0.45,
+                isWood and 0 or (math.random() - 0.5) * 0.7
+            ) * CFrame.Angles(math.rad(isWood and 12 or math.random(-24, 24)), 0, math.rad(math.random(-20, 20)))
+            TweenService:Create(part, TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                Size = geometry.size * 0.12,
+                CFrame = targetCFrame,
+                LocalTransparencyModifier = 1,
+            }):Play()
+        end
+    end
+end
+
+local function restoreResourceGrowth(model)
+    local saved = captureResourceGeometry(model)
+    for part, geometry in saved do
+        if part.Parent then
+            part.Size = geometry.size * 0.12
+            part.CFrame = geometry.cframe * CFrame.new(0, -0.45, 0)
+            part.LocalTransparencyModifier = 1
+            TweenService:Create(part, TweenInfo.new(0.42, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = geometry.size,
+                CFrame = geometry.cframe,
+                LocalTransparencyModifier = 0,
+            }):Play()
+        end
+    end
+end
+
 local function applyResourceNodeVisibility(model, visible)
     for _, descendant in model:GetDescendants() do
         if descendant:IsA("BasePart") then
@@ -1182,6 +1234,9 @@ local function setResourceNodeVisible(nodeId, visible)
     resourceNodeHidden[nodeId] = not visible
     local model = findResourceNode(nodeId)
     if not model then return false end
+    if visible then
+        restoreResourceGrowth(model)
+    end
     applyResourceNodeVisibility(model, visible)
     return true
 end
@@ -1240,8 +1295,11 @@ event.OnClientEvent:Connect(function(message, payload)
     elseif message == "ResourcePicked" and type(payload) == "table" then
         playResourceRewardPickup(payload)
         playResourceBreakFeedback(payload.nodeId)
+        playResourceBreakAnimation(payload.nodeId)
         clearResourceHitFeedback(payload.nodeId)
-        applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
+        task.delay(0.3, function()
+            applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
+        end)
         return
     elseif message == "ResourceHit" and type(payload) == "table" then
         showResourceHitFeedback(payload)
