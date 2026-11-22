@@ -573,6 +573,11 @@ event.OnClientEvent:Connect(function(message, payload)
     if message == "OpenWorkshop" then
         openTab("Tools")
         showToast("Мастерская открыта. Выбери инструмент для усиления.")
+    elseif message == "ToolUpgraded" then
+        if activeTab == "Tools" and panel.Visible then
+            clearBody()
+            renderTools()
+        end
     elseif type(message) == "string" and message ~= "ResourceState" and message ~= "ResourcePicked" then
         showToast(message)
     end
