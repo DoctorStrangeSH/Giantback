@@ -58,6 +58,17 @@ class HomeIslandVisualApproachTests(unittest.TestCase):
         self.assertNotIn('Vector3.new(-10.5, 12.0, 12.4)', VISUALS)
         self.assertNotIn('Vector3.new(-23.0, 12.0, -8.5)', VISUALS)
 
+    def test_farm_plots_have_raised_edges_and_flush_furrows(self):
+        self.assertIn('"BedEdgeFront"', WORLD)
+        self.assertIn('"BedEdgeBack"', WORLD)
+        self.assertIn('"BedEdgeLeft"', WORLD)
+        self.assertIn('"BedEdgeRight"', WORLD)
+        self.assertIn('"SoilFurrow"', WORLD)
+        self.assertIn('bedTop + 0.015', WORLD)
+        self.assertIn('edgeMaterial = Enum.Material.WoodPlanks', WORLD)
+        self.assertIn('Color3.fromRGB(83, 57, 43)', WORLD)
+        self.assertIn('local bedFrame = soil.CFrame', WORLD)
+
     def test_garden_details_use_existing_non_colliding_visual_helpers(self):
         helper_start = VISUALS.index("local function makePart")
         helper_end = VISUALS.index("\nend", helper_start)
