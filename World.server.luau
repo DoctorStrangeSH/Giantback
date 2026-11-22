@@ -213,12 +213,92 @@ local function syncInventory(player)
     end
 end
 
+local function createToolPart(parent, name, size, offset, color, material, shape)
+    local part = Instance.new("Part")
+    part.Name = name
+    part.Size = size
+    part.Color = color
+    part.Material = material or Enum.Material.SmoothPlastic
+    part.Shape = shape or Enum.PartType.Block
+    part.Anchored = false
+    part.CanCollide = false
+    part.CanTouch = false
+    part.CanQuery = false
+    part.Massless = true
+    part.TopSurface = Enum.SurfaceType.Smooth
+    part.BottomSurface = Enum.SurfaceType.Smooth
+    part.CFrame = offset
+    part.Parent = parent
+    return part
+end
+
+local function createHarvestTool(toolId)
+    local tool = Instance.new("Tool")
+    tool.Name = toolId == "Axe" and "Топор путешественника" or "Кирка путешественника"
+    tool.ToolTip = toolId == "Axe" and "Нужен для добычи дерева" or "Нужна для добычи камня"
+    tool.RequiresHandle = true
+    tool.CanBeDropped = false
+    tool:SetAttribute("PetKingdomsToolId", toolId)
+
+    local handle = createToolPart(tool, "Handle", Vector3.new(0.28, 0.28, 2.5), CFrame.new(), Color3.fromRGB(132, 91, 57), Enum.Material.Wood, Enum.PartType.Cylinder)
+    handle.CFrame = CFrame.new() * CFrame.Angles(0, 0, math.rad(90))
+
+    if toolId == "Axe" then
+        local blade = createToolPart(tool, "AxeHead", Vector3.new(0.32, 1.0, 0.9), CFrame.new(0, 0.85, -0.05), Color3.fromRGB(178, 190, 190), Enum.Material.Metal)
+        local edge = createToolPart(tool, "AxeEdge", Vector3.new(0.12, 0.82, 0.72), CFrame.new(0, 0.87, -0.52), Color3.fromRGB(220, 225, 216), Enum.Material.Metal)
+        for _, part in {blade, edge} do
+            local weld = Instance.new("WeldConstraint")
+            weld.Part0 = handle
+            weld.Part1 = part
+            weld.Parent = handle
+        end
+    else
+        local head = createToolPart(tool, "PickaxeHead", Vector3.new(0.28, 0.32, 1.75), CFrame.new(0, 1.05, 0), Color3.fromRGB(166, 181, 184), Enum.Material.Metal)
+        local tipLeft = createToolPart(tool, "PickaxeTipLeft", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, -1.0), Color3.fromRGB(205, 211, 205), Enum.Material.Metal)
+        local tipRight = createToolPart(tool, "PickaxeTipRight", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, 1.0), Color3.fromRGB(205, 211, 205), Enum.Material.Metal)
+        for _, part in {head, tipLeft, tipRight} do
+            local weld = Instance.new("WeldConstraint")
+            weld.Part0 = handle
+            weld.Part1 = part
+            weld.Parent = handle
+        end
+    end
+
+    tool.Grip = CFrame.new(0, -0.8, -0.45) * CFrame.Angles(math.rad(-90), 0, math.rad(90))
+    return tool
+end
+
+local function findPlayerTool(player, toolId)
+    local toolName = toolId == "Axe" and "Топор путешественника" or "Кирка путешественника"
+    local character = player.Character
+    local backpack = player:FindFirstChildOfClass("Backpack")
+    return (character and character:FindFirstChild(toolName)) or (backpack and backpack:FindFirstChild(toolName))
+end
+
+local function ensurePlayerTools(player, session)
+    local backpack = player:FindFirstChildOfClass("Backpack")
+    if not backpack then return end
+    for toolId, owned in session.tools do
+        if owned == true and not findPlayerTool(player, toolId) then
+            createHarvestTool(toolId).Parent = backpack
+        end
+    end
+    local equipped = findPlayerTool(player, session.equippedTool)
+    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    if equipped and humanoid and equipped.Parent ~= player.Character then
+        humanoid:EquipTool(equipped)
+    end
+end
+
 local function syncTools(player)
     local session = sessions[player]
     local tools = session and session.tools or {}
     player:SetAttribute("Tool_AxeOwned", tools.Axe == true)
     player:SetAttribute("Tool_PickaxeOwned", tools.Pickaxe == true)
     player:SetAttribute("Tool_Equipped", session and session.equippedTool or "")
+    if session and player:GetAttribute("Ready") then
+        ensurePlayerTools(player, session)
+    end
 end
 
 local function syncBridge(player)
@@ -427,6 +507,13 @@ local function init(player)
         end)
     end
     session.characterConnection = player.CharacterAdded:Connect(placeCharacterAtHome)
+    session.toolCharacterConnection = player.CharacterAdded:Connect(function()
+        task.defer(function()
+            if sessions[player] == session and player.Parent then
+                syncTools(player)
+            end
+        end)
+    end)
     if player.Character then
         placeCharacterAtHome(player.Character)
     end
