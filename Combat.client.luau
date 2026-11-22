@@ -194,12 +194,84 @@ local function showBossSlamTelegraph(enemy)
     end)
 end
 
+local function showBossPhaseTransition(enemy, phase)
+    if not enemy or not enemy:IsA("Model") or not enemy:IsDescendantOf(Workspace) then return end
+    phase = math.clamp(tonumber(phase) or 1, 1, 3)
+    if phase <= 1 then return end
+
+    local root = enemy:FindFirstChild("HumanoidRootPart")
+    local core = enemy:FindFirstChild("SealCore", true)
+    if not root then return end
+
+    local accent = phase == 2 and Color3.fromRGB(190, 104, 255) or Color3.fromRGB(255, 105, 91)
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "LocalBossPhaseHighlight"
+    highlight.Adornee = enemy
+    highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+    highlight.FillColor = accent
+    highlight.OutlineColor = Color3.fromRGB(255, 231, 173)
+    highlight.FillTransparency = 0.28
+    highlight.OutlineTransparency = 0.08
+    highlight.Parent = enemy
+
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    rayParams.FilterDescendantsInstances = {enemy}
+    local floorHit = Workspace:Raycast(root.Position, Vector3.new(0, -24, 0), rayParams)
+    local floorPosition = floorHit and floorHit.Position or (root.Position - Vector3.new(0, 3, 0))
+
+    local pulse = Instance.new("Part")
+    pulse.Name = "LocalBossPhasePulse"
+    pulse.Shape = Enum.PartType.Cylinder
+    pulse.Anchored = true
+    pulse.CanCollide = false
+    pulse.CanTouch = false
+    pulse.CanQuery = false
+    pulse.CastShadow = false
+    pulse.Material = Enum.Material.Neon
+    pulse.Color = accent
+    pulse.Transparency = 0.18
+    pulse.Size = Vector3.new(0.22, 2, 2)
+    pulse.CFrame = CFrame.new(floorPosition + Vector3.new(0, 0.16, 0)) * CFrame.Angles(0, 0, math.rad(90))
+    pulse.Parent = Workspace
+
+    TweenService:Create(
+        pulse,
+        TweenInfo.new(0.85, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = Vector3.new(0.22, 30 + phase * 5, 30 + phase * 5), Transparency = 1}
+    ):Play()
+
+    if core and core:IsA("BasePart") then
+        local originalSize = core.Size
+        local targetColor = phase == 2 and Color3.fromRGB(194, 112, 255) or Color3.fromRGB(255, 103, 91)
+        TweenService:Create(core, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = originalSize * 1.45,
+            Color = targetColor,
+        }):Play()
+        task.delay(0.24, function()
+            if core.Parent then
+                TweenService:Create(core, TweenInfo.new(0.42, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = originalSize,
+                }):Play()
+            end
+        end)
+    end
+
+    task.delay(0.95, function()
+        if highlight.Parent then highlight:Destroy() end
+        if pulse.Parent then pulse:Destroy() end
+    end)
+end
+
 local function bindBossTelegraph(enemy)
     if not enemy:IsA("Model") or enemy:GetAttribute("IsBoss") ~= true then return end
     enemy:GetAttributeChangedSignal("BossAttack"):Connect(function()
         if enemy:GetAttribute("BossAttack") == "GroundSlam" then
             showBossSlamTelegraph(enemy)
         end
+    end)
+    enemy:GetAttributeChangedSignal("BossPhase"):Connect(function()
+        showBossPhaseTransition(enemy, enemy:GetAttribute("BossPhase"))
     end)
     if enemy:GetAttribute("BossAttack") == "GroundSlam" then
         showBossSlamTelegraph(enemy)
