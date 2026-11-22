@@ -186,3 +186,10 @@ The review camera now constructs an explicit Y-up orthonormal basis with Matrix 
 A fresh artifact from commit `dc089c3` confirms the camera correction: front, side, back and three-quarter views are all upright and readable. The model is recognizable and has a friendly base silhouette, but it still reads as a smooth primitive-based blockout rather than a finished artist-authored companion. The first render is also washed out: orange fur reads pale peach and form separation is weak.
 
 A preview lighting pass now reduces key/fill/rim power (1200/650/950 to 520/260/380) and uses AgX Medium High Contrast. This should improve color retention and form readability without changing exported geometry. A fresh render is required before judging the change. Next art pass should focus on richer orange/cream separation, layered cheek/chest/tail forms, intentional fur clumps, more expressive eye/muzzle proportions and cleaner transitions. Keep all 17 rig groups intact.
+
+
+## Third art pass — palette and chest silhouette
+
+The contrast pass did not sufficiently restore the intended orange/cream separation: the character still reads pale peach and the neck-to-body transition is too smooth. Updated the linear material palette to a deeper orange and warmer cream, with a richer inner-ear tone. Added three tapered chest-ruff plumes (center/left/right), merged into the existing FoxBelly rig group so the 17 runtime group contract remains unchanged. Source tests now lock the palette, all three ruff elements and their rig grouping.
+
+This is a new geometry/material iteration, not an art approval. Inspect the next four-view render for chest intersections, silhouette readability and color under the preview lighting before proceeding to tail/cheek sculpting.
