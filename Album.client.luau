@@ -356,7 +356,7 @@ local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCachePrompts = {}
 local foxCacheHighlights = {}
 local foxSniffUntil = 0
-local pettingUntil = {Fox = 0, Moth = 0}
+local pettingUntil = {Fox = 0, Moth = 0, CrystalWisp = 0}
 local pendingPetBurst = {}
 local lastFoxCacheSpot = ""
 local foxScentTrailFolder = nil
@@ -1774,6 +1774,8 @@ local function animateModelParts(model, state, time, moving, resting)
     local growthStage = math.clamp(math.floor(tonumber(model:GetAttribute("AppliedGrowthStage")) or 1), 1, 3)
     local sniffing = state.id == "Fox" and not state.isEncounter and now < foxSniffUntil
     local mothAbility = state.id == "Moth" and state.isLocal and now < mothAbilityUntil
+    local prismSenseActive = state.id == "CrystalWisp" and state.isLocal
+        and workspace:GetServerTimeNow() < (tonumber(player:GetAttribute("PrismSenseUntil")) or 0)
     local petting = not state.isEncounter and now < (pettingUntil[state.id] or 0)
     local body = model:FindFirstChild("Body")
     local bodyOffset = body and state.offsets[body]
@@ -1865,6 +1867,32 @@ local function animateModelParts(model, state, time, moving, resting)
                     end
                     transform = CFrame.new(0, math.sin(time * (mothAbility and 9 or 2.8)) * (mothAbility and 0.12 or 0.035), 0)
                         * aroundPoint(offset.Position, CFrame.Angles(0, 0, math.sin(time * 3.2) * 0.08))
+                end
+            elseif state.id == "CrystalWisp" then
+                local bobSpeed = resting and 1.35 or moving and 4.2 or 2.4
+                local bobAmount = resting and 0.035 or moving and 0.1 or 0.065
+                if petting then bobAmount += 0.025 end
+                local bob = math.sin(time * bobSpeed) * bobAmount
+                local sway = math.sin(time * (prismSenseActive and 4.8 or 1.8)) * (prismSenseActive and 0.11 or 0.045)
+                if string.match(part.Name, "^OrbitCrystal") then
+                    local shardIndex = tonumber(string.match(part.Name, "(%d+)$")) or 1
+                    local orbitSpeed = prismSenseActive and 1.85 or resting and 0.28 or 0.82
+                    local phase = time * orbitSpeed + (shardIndex - 1) * (math.pi * 2 / 3)
+                    transform = CFrame.new(0, bob, 0)
+                        * aroundPoint(rigOrigin, CFrame.Angles(math.sin(phase) * 0.12, phase, math.cos(phase) * 0.1))
+                elseif part.Name == "Body" then
+                    transform = CFrame.new(0, bob, 0)
+                        * aroundPoint(offset.Position, CFrame.Angles(sway * 0.45, 0, sway))
+                    local light = part:FindFirstChildOfClass("PointLight")
+                    if light then
+                        light.Brightness = prismSenseActive and (1.8 + math.sin(time * 9) * 0.45) or resting and 0.55 or 1.1
+                        light.Range = prismSenseActive and 18 or 12
+                    end
+                elseif part.Name == "Core" then
+                    transform = CFrame.new(0, bob, 0)
+                        * aroundPoint(offset.Position, CFrame.Angles(0, 0, math.sin(time * 2.8) * 0.08))
+                else
+                    transform = CFrame.new(0, bob, 0)
                 end
             end
 
