@@ -162,3 +162,9 @@ This is the first traversal slice, not yet the final dungeon: enemy encounters, 
 Rootvault now has its own tagged combat region (`RegionId = Rootvault`), so combat validation works while the player is inside the dungeon rather than requiring the Grove training ring. A dedicated 145-HP R6 sentinel guards the mechanism room. Its server-registered encounter is `RootvaultSentinel01`; each contributing player receives one persistent `RootvaultKey` on first clear through the existing reward/save path. The sealed-door prompt requires both that player's key and their own activated lever state. The key is retained after opening, while the final reward chest remains separately one-time.
 
 Roblox Studio acceptance remains required for sentinel navigation, pathfinding through the room openings, key persistence after reconnect, multiplayer contribution rewards and door progression.
+
+## 16. Rootvault prowler — staged
+
+The entry chamber now contains a distinct fast enemy, `RootvaultStalker01` (display name Корневой охотник): 75 HP, WalkSpeed 15, 8 damage, 1.8-second attack cooldown and 0.55-second telegraph. It uses the existing server-owned pursuit, attack validation and contributor tracking. Each player who contributes to its first defeat receives one persistent `RootvaultEssence` through the same idempotent reward/save pipeline. The sentinel continues to guard the mechanism room and award the separate RootvaultKey.
+
+Studio acceptance remains required for rig animation, navigation around the arrival point, combat balance and multiplayer reward persistence.
