@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 CLIENT = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
 MOTION = (ROOT / "modules/HarvestMotion.luau").read_text(encoding="utf-8")
+FEEDBACK = (ROOT / "modules/HarvestFeedback.luau").read_text(encoding="utf-8")
 BUILD = (ROOT / "build.py").read_text(encoding="utf-8")
 
 
@@ -14,7 +15,7 @@ class HarvestMotionModuleTests(unittest.TestCase):
         self.assertIn('modules" / "HarvestMotion.luau', BUILD)
         self.assertIn('require(storage:WaitForChild("HarvestMotion"))', CLIENT)
         self.assertIn('HarvestMotion.new(player)', CLIENT)
-        self.assertIn('local playHarvestToolSwing = harvestMotion.playToolSwing', CLIENT)
+        self.assertIn('local playHarvestToolSwing = harvestMotion.playToolSwing', FEEDBACK)
         self.assertIn('local playHarvestCameraShake = harvestMotion.playCameraShake', CLIENT)
 
     def test_motion_keeps_its_independent_generation_guards(self):
@@ -31,7 +32,7 @@ class HarvestMotionModuleTests(unittest.TestCase):
         self.assertIn('child:GetAttribute("PetKingdomsToolId")', MOTION)
         self.assertIn('first.Completed:Once(function()', MOTION)
         self.assertIn('second.Completed:Once(function()', MOTION)
-        self.assertIn('playHarvestToolSwing(nodeId)', CLIENT)
+        self.assertIn('playHarvestToolSwing(nodeId)', FEEDBACK)
         self.assertIn('playHarvestCameraShake(0.58)', CLIENT)
 
     def test_visual_module_never_awards_inventory_or_edits_server_state(self):
