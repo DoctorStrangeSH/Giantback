@@ -327,3 +327,13 @@ The canonical development branch includes persistent starter Axe/Pickaxe tools, 
 ## Ironworking 1.0 — implementation status
 
 The current working branch adds two Dusk-island iron veins requiring a Pickaxe and five hits, each yielding two IronOre with a 10-minute personal respawn. The personal island now has an owner-only furnace: 3 IronOre + 2 Wood produces one IronIngot after 60 seconds. The server persists the pending smelt and grants the ingot only when the owner returns to collect it after completion. The Tools panel displays ore, ingot and smelter status. Studio gameplay acceptance remains outstanding.
+
+
+### Companion progression 1.0
+
+- Each owned companion has its own persistent level (1–5) and XP bar. Existing profiles migrate safely from schema v10 to v11; profiles without companion data start at level 1 with 0 XP.
+- XP comes only from server-verified companion milestones: Fox cache collection (+30), Fox's Moon Gate trace (+20), Fox combat skill success (+12); Moth MoonBloom discovery (+35), Moon Gate rune reveal (+25), and successful combat healing (+6 per ally healed, capped at +24 per cast).
+- XP thresholds increase by level: 100, 175, 250 and 325 XP. Level 5 is the cap; excess XP is discarded rather than banked.
+- Fox's combat skill gains +3 damage per level (24 at level 1, 36 at level 5). Moth's healing gains +2 HP per level (18 at level 1, 26 at level 5). Server remains authoritative for all values.
+- Collection cards show level, current/required XP and a progress bar. No paid XP boosts or paid progression gates are required.
+- New companion species, passive traits, cosmetic variants and care interactions are later expansion scope, not part of this first progression slice.
