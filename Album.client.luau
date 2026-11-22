@@ -174,7 +174,7 @@ local names = {
 local descriptions = {
     Fox = "Ищет тайники и редкие находки.",
     Moth = "Раскрывает цветы и древние руны.",
-    CrystalWisp = "Находит скрытые кристаллы в Эхо-камере.",
+    CrystalWisp = "Сияет в темноте и хранит тайны пещеры.",
 }
 local companionButtons = {}
 
