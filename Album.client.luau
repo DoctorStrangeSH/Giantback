@@ -2091,6 +2091,28 @@ local function updateMothStardust(model, owner)
     emitter:SetAttribute("AppliedBondStage", bondStage)
 end
 
+local function companionGrowthForLevel(level)
+    level = math.clamp(math.floor(tonumber(level) or 1), 1, 5)
+    if level >= 5 then
+        return "Взрослый", 1.1, 3
+    elseif level >= 3 then
+        return "Подросток", 1, 2
+    end
+    return "Малыш", 0.9, 1
+end
+
+local function applyCompanionGrowth(model, owner, companionId)
+    if not model or not model.Parent then return end
+    local level = owner:GetAttribute("Companion_" .. companionId .. "_Level")
+    local stageName, scale, stageId = companionGrowthForLevel(level)
+    if model:GetAttribute("AppliedGrowthStage") == stageId then return end
+
+    model:ScaleTo(scale)
+    model:SetAttribute("AppliedGrowthStage", stageId)
+    model:SetAttribute("GrowthStageName", stageName)
+    captureAnimation(model, companionId, false, owner == player)
+end
+
 local function follow(dt)
     local now = workspace:GetServerTimeNow()
 
@@ -2145,6 +2167,7 @@ local function follow(dt)
                 model = storage[id]:Clone()
                 model.Name = id
                 model.Parent = workspace
+                applyCompanionGrowth(model, owner, id)
                 model:PivotTo(target)
                 models[owner] = model
                 captureAnimation(model, id, false, owner == player)
@@ -2158,6 +2181,7 @@ local function follow(dt)
                     playMothAbilityBurst(model)
                 end
             else
+                applyCompanionGrowth(model, owner, id)
                 model:PivotTo(model:GetPivot():Lerp(target, 1 - math.exp(-9 * dt)))
             end
 
