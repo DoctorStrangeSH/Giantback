@@ -232,7 +232,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('"ForeheadTuft_L", "ForeheadTuft_R"', source)
         self.assertIn('ellipsoid("CheekFluff_L"', source)
         self.assertIn('ellipsoid("CheekFluff_R"', source)
-        self.assertIn("Tapered cheek tufts follow the muzzle silhouette", source)
+        self.assertIn("Rounded cream cheek pads blend into the muzzle", source)
         self.assertIn("def plush_tail(", source)
         self.assertIn('plush_tail("FoxTail"', source)
         self.assertIn('plush_tail("FoxTailTip"', source)
