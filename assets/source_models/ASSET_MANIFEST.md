@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|
 | fox_companion.obj | pending import | pending | pending | no | current source; retained as rollback baseline |
 | fox_companion_hero.obj | generated in CI review artifact #163; no Roblox ID yet | pending | see generated `fox_companion_hero_rig.json` | no | 17 groups; artifact #163 passed Blender mesh/UV/material gates and produced four views + OBJ/MTL/BLEND/rig JSON. Manual review: friendly silhouette and strong tail, but head reads peach/pink, cheek pads remain detached, legs read cylindrical at gameplay distance. NOT artist-approved. New pass deepens orange, reduces studio exposure, tucks cheek pads; rerender required. Roblox Studio import not done. |
-| moth_companion.obj | pending import | pending | pending | no | keep wing groups separate |
+| moth_companion.obj | source BLOCKOUT; hero model not generated | pending | hover pivot requires review | no | Original OBJ/MTL retained as rollback baseline. `MOTH_ART_BRIEF.md` now defines lunar-moth identity, four independent wing groups, palette, animations and acceptance gates. Existing source is not artist-approved; UV/painted wing art, rig review and Studio import remain open. |
 | home_cottage.obj | pending import | pending | pending | no | static building |
 | farm_bed.obj | pending import | pending | pending | no | crop visuals may be separate |
 | bridge_segment.obj | pending import | pending | pending | no | snap points to be verified |
