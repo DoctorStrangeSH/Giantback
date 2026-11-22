@@ -51,7 +51,7 @@ class CombatFoundationContractTests(unittest.TestCase):
 
     def test_c1_uses_server_owned_enemy_damage_and_never_client_values(self):
         self.assertIn("entry.humanoid:TakeDamage(PLAYER_DAMAGE)", COMBAT)
-        self.assertIn("entry.humanoid:TakeDamage(damage)", COMBAT)
+        self.assertIn("currentHumanoid:TakeDamage(damage)", COMBAT)
         self.assertNotIn("payload.damage", COMBAT.lower())
         self.assertNotIn("payload.reward", COMBAT.lower())
         self.assertNotIn("payload.target", COMBAT.lower())
