@@ -131,7 +131,7 @@ local stoneLabel = label(resources, "Stone", "🪨  Камень  0", UDim2.new(
 local objective = Instance.new("Frame")
 objective.Name = "ObjectiveCard"
 objective.Position = UDim2.fromOffset(16, 84)
-objective.Size = UDim2.fromOffset(352, 82)
+objective.Size = UDim2.fromOffset(352, 94)
 objective.BackgroundColor3 = palette.paper
 objective.Parent = gui
 corner(objective, 18)
@@ -149,6 +149,24 @@ objectiveGlyph.TextXAlignment = Enum.TextXAlignment.Center
 local objectiveEyebrow = label(objective, "Eyebrow", "ТВОЯ СЛЕДУЮЩАЯ ЦЕЛЬ", UDim2.new(1, -82, 0, 18), UDim2.fromOffset(76, 10), 10, palette.forestLight, Enum.Font.GothamBold)
 local objectiveText = label(objective, "Objective", "Загружаем твой остров…", UDim2.new(1, -86, 0, 46), UDim2.fromOffset(76, 29), 14, palette.ink, Enum.Font.GothamBold)
 objectiveText.TextYAlignment = Enum.TextYAlignment.Top
+
+local progressTrack = Instance.new("Frame")
+progressTrack.Name = "AdventureProgressTrack"
+progressTrack.Position = UDim2.new(0, 76, 1, -13)
+progressTrack.Size = UDim2.new(1, -92, 0, 6)
+progressTrack.BackgroundColor3 = palette.paperDark
+progressTrack.Parent = objective
+corner(progressTrack, 6)
+
+local progressFill = Instance.new("Frame")
+progressFill.Name = "AdventureProgressFill"
+progressFill.Size = UDim2.fromScale(0, 1)
+progressFill.BackgroundColor3 = palette.gold
+progressFill.Parent = progressTrack
+corner(progressFill, 6)
+
+local progressCount = label(objective, "ProgressCount", "0 / 11", UDim2.new(1, -92, 0, 12), UDim2.new(0, 76, 1, -29), 9, palette.forestLight, Enum.Font.GothamBold)
+progressCount.TextXAlignment = Enum.TextXAlignment.Right
 
 local nav = Instance.new("Frame")
 nav.Name = "MainNavigation"
@@ -479,6 +497,8 @@ local function refresh()
         and "ПРИКЛЮЧЕНИЕ ПРОДОЛЖАЕТСЯ"
         or ("ПУТЕШЕСТВИЕ • ШАГ " .. tostring(completed + 1) .. " ИЗ " .. tostring(total))
     objectiveGlyph.Text = completed >= total and "★" or tostring(completed + 1)
+    progressCount.Text = tostring(completed) .. " / " .. tostring(total)
+    progressFill.Size = UDim2.fromScale(math.clamp(completed / total, 0, 1), 1)
     brandSubtitle.Text = "УРОВЕНЬ ГОРОДА " .. tostring(player:GetAttribute("City_Level") or 1)
     if panel.Visible and activeTab and renderers[activeTab] then
         clearBody()
@@ -515,7 +535,7 @@ local function updateLayout()
         resources.Size = UDim2.fromOffset(resourcesWidth, 58)
         woodLabel.TextSize = 10
         stoneLabel.TextSize = 10
-        objective.Size = UDim2.new(1, -32, 0, 78)
+        objective.Size = UDim2.new(1, -32, 0, 94)
         objective.Position = UDim2.fromOffset(16, 84)
         panel.Size = UDim2.new(1, -24, 0, math.max(180, math.min(430, height - 150)))
         panel.Position = UDim2.new(0.5, 0, 0.5, -8)
