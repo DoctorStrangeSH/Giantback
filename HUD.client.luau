@@ -359,7 +359,10 @@ local function renderTools()
             else
                 event:FireServer("EquipTool", tool.id)
                 task.delay(0.15, function()
-                    if activeTab == "Tools" and panel.Visible then openTab("Tools") end
+                    if activeTab == "Tools" and panel.Visible then
+                        clearBody()
+                        renderTools()
+                    end
                 end)
             end
         end)
