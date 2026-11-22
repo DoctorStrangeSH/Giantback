@@ -304,8 +304,8 @@ class CombatFoundationContractTests(unittest.TestCase):
 
     def test_boss_phase_transitions_have_client_only_visual_pulse(self):
         self.assertIn('local function showBossPhaseTransition(enemy, phase)', CLIENT)
-        self.assertIn('localBossPhaseHighlight', CLIENT)
-        self.assertIn('localBossPhasePulse', CLIENT)
+        self.assertIn('highlight.Name = "LocalBossPhaseHighlight"', CLIENT)
+        self.assertIn('pulse.Name = "LocalBossPhasePulse"', CLIENT)
         self.assertIn('enemy:GetAttributeChangedSignal("BossPhase")', CLIENT)
         self.assertIn('showBossPhaseTransition(enemy, enemy:GetAttribute("BossPhase"))', CLIENT)
         self.assertIn('TweenInfo.new(0.85, Enum.EasingStyle.Quad', CLIENT)
