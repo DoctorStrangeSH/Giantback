@@ -138,14 +138,14 @@ toggleGlyph.TextSize = 22
 toggleGlyph.TextXAlignment = Enum.TextXAlignment.Center
 local toggleTitle = label(toggle, "Title", "КОЛЛЕКЦИЯ", UDim2.new(1, -52, 0, 20), UDim2.fromOffset(45, 8), Enum.Font.GothamBold, palette.cream)
 toggleTitle.TextSize = 11
-local toggleCount = label(toggle, "Count", "0 / 2", UDim2.new(1, -52, 0, 17), UDim2.fromOffset(45, 27), Enum.Font.GothamMedium, palette.mint)
+local toggleCount = label(toggle, "Count", "0 / 3", UDim2.new(1, -52, 0, 17), UDim2.fromOffset(45, 27), Enum.Font.GothamMedium, palette.mint)
 toggleCount.TextSize = 10
 
 local panel = Instance.new("Frame")
 panel.Name = "CollectionPanel"
 panel.AnchorPoint = Vector2.new(1, 0)
 panel.Position = UDim2.new(1, -20, 0, 84)
-panel.Size = UDim2.fromOffset(294, 440)
+panel.Size = UDim2.fromOffset(294, 530)
 panel.BackgroundColor3 = palette.deep
 panel.Visible = false
 panel.Parent = gui
@@ -169,10 +169,12 @@ divider.Parent = panel
 local names = {
     Fox = "Лисёнок-корешок",
     Moth = "Лунная моль",
+    CrystalWisp = "Кристальный светляк",
 }
 local descriptions = {
     Fox = "Ищет тайники и редкие находки.",
     Moth = "Раскрывает цветы и древние руны.",
+    CrystalWisp = "Находит скрытые кристаллы в Эхо-камере.",
 }
 local companionButtons = {}
 
@@ -235,13 +237,14 @@ end
 
 createCompanionCard("Fox", 1)
 createCompanionCard("Moth", 2)
+createCompanionCard("CrystalWisp", 3)
 
 local resourceHeader = label(
     panel,
     "ResourceHeader",
     "МАТЕРИАЛЫ И ФЕРМА",
     UDim2.new(1, -28, 0, 18),
-    UDim2.fromOffset(16, 235),
+    UDim2.fromOffset(16, 310),
     Enum.Font.GothamBold,
     palette.mint
 )
@@ -275,42 +278,42 @@ local sunResourceCount = resourceChip(
     "SunPetal",
     "Солнечный лепесток",
     "✿",
-    UDim2.fromOffset(14, 258),
+    UDim2.fromOffset(14, 333),
     palette.gold
 )
 local moonResourceCount = resourceChip(
     "MoonPetal",
     "Лунный лепесток",
     "✧",
-    UDim2.new(0.5, 7, 0, 258),
+    UDim2.new(0.5, 7, 0, 333),
     palette.lilac
 )
 local carrotSeedCount = resourceChip(
     "CarrotSeed",
     "Семена моркови",
     "❀",
-    UDim2.fromOffset(14, 318),
+    UDim2.fromOffset(14, 393),
     palette.mint
 )
 local carrotCount = resourceChip(
     "Carrot",
     "Морковь",
     "◆",
-    UDim2.new(0.5, 7, 0, 318),
+    UDim2.new(0.5, 7, 0, 393),
     palette.gold
 )
 local moonSeedCount = resourceChip(
     "MoonSeed",
     "Лунное семя",
     "✦",
-    UDim2.fromOffset(14, 378),
+    UDim2.fromOffset(14, 453),
     palette.lilac
 )
 local starShardCount = resourceChip(
     "StarShard",
     "Звёздный осколок",
     "✧",
-    UDim2.new(0.5, 7, 0, 378),
+    UDim2.new(0.5, 7, 0, 453),
     palette.gold
 )
 
@@ -1678,6 +1681,7 @@ local companionActivity = {}
 local encounterLocations = {
     Fox = "Grove",
     Moth = "Dusk",
+    CrystalWisp = "CombatTrainingGlade",
 }
 
 local mothAbilityUntil = 0
@@ -1951,7 +1955,8 @@ local function updateEncounterVisibility(id)
         end
     end
 
-    local nest = island:FindFirstChild("Nest")
+    local grotto = id == "CrystalWisp" and island:FindFirstChild("CrystalGrotto")
+    local nest = id == "CrystalWisp" and grotto and grotto:FindFirstChild("CrystalWispNest") or island:FindFirstChild("Nest")
     local prompt = nest and nest:FindFirstChildOfClass("ProximityPrompt")
     if prompt then
         prompt.Enabled = not owned
@@ -1966,10 +1971,9 @@ for id in encounterLocations do
 end
 
 workspace.DescendantAdded:Connect(function(instance)
-    if instance.Name == "FoxEncounter" or instance.Name == "MothEncounter" or instance:IsA("ProximityPrompt") then
+    if instance.Name == "FoxEncounter" or instance.Name == "MothEncounter" or instance.Name == "CrystalWispEncounter" or instance:IsA("ProximityPrompt") then
         task.defer(function()
-            updateEncounterVisibility("Fox")
-            updateEncounterVisibility("Moth")
+            for id in encounterLocations do updateEncounterVisibility(id) end
         end)
     end
 end)
@@ -1978,9 +1982,9 @@ local function playCompanionPettingBurst(model, companionId, bondStage)
     if not model or not model.Parent then return end
     bondStage = math.clamp(math.floor(tonumber(bondStage) or 0), 0, 4)
     local sparkCount = 5 + bondStage * 2
-    local baseColor = companionId == "Fox" and palette.coral or palette.lilac
+    local baseColor = companionId == "Fox" and palette.coral or companionId == "CrystalWisp" and palette.water or palette.lilac
     local sparkColor = baseColor:Lerp(palette.gold, bondStage / 4)
-    local origin = model:GetPivot().Position + Vector3.new(0, companionId == "Fox" and 1.2 or 1.5, 0)
+    local origin = model:GetPivot().Position + Vector3.new(0, companionId == "Fox" and 1.2 or companionId == "CrystalWisp" and 0.9 or 1.5, 0)
     local folder = Instance.new("Folder")
     folder.Name = "CompanionPettingBurstLocal"
     folder.Parent = workspace
@@ -2037,7 +2041,7 @@ local function attachWorldPetPrompt(model, companionId)
 
     local prompt = Instance.new("ProximityPrompt")
     prompt.Name = "WorldPetPrompt"
-    prompt.ObjectText = companionId == "Fox" and "Лисёнок-корешок" or "Лунная моль"
+    prompt.ObjectText = names[companionId] or "Питомец"
     prompt.ActionText = "Погладить"
     prompt.KeyboardKeyCode = Enum.KeyCode.E
     prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
