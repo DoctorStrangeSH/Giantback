@@ -45,6 +45,13 @@ local function chargeAction(_, inputState)
     return Enum.ContextActionResult.Sink
 end
 
+local function companionSkillAction(_, inputState)
+    if inputState == Enum.UserInputState.Begin then
+        remote:FireServer("CompanionSkill")
+    end
+    return Enum.ContextActionResult.Sink
+end
+
 -- Mouse/keyboard + gamepad + ContextActionService touch buttons.
 ContextActionService:BindAction(
     "GiantbackAttack",
@@ -74,15 +81,24 @@ ContextActionService:BindAction(
     Enum.KeyCode.R,
     Enum.KeyCode.ButtonX
 )
+ContextActionService:BindAction(
+    "GiantbackCompanion",
+    companionSkillAction,
+    true,
+    Enum.KeyCode.C,
+    Enum.KeyCode.ButtonY
+)
 
 ContextActionService:SetTitle("GiantbackAttack", "УДАР")
 ContextActionService:SetTitle("GiantbackBlock", "БЛОК")
 ContextActionService:SetTitle("GiantbackDodge", "УКЛОН")
 ContextActionService:SetTitle("GiantbackCharge", "ЗАРЯД")
+ContextActionService:SetTitle("GiantbackCompanion", "ПИТОМЕЦ")
 ContextActionService:SetPosition("GiantbackAttack", UDim2.new(1, -92, 1, -190))
 ContextActionService:SetPosition("GiantbackBlock", UDim2.new(1, -188, 1, -112))
 ContextActionService:SetPosition("GiantbackDodge", UDim2.new(1, -92, 1, -92))
 ContextActionService:SetPosition("GiantbackCharge", UDim2.new(1, -188, 1, -205))
+ContextActionService:SetPosition("GiantbackCompanion", UDim2.new(1, -280, 1, -145))
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -161,6 +177,12 @@ remote.OnClientEvent:Connect(function(message, data)
     if message == "CombatRejected" and type(data) == "table" then
         local copy = rejectionMessages[data.code]
         if copy then showFeedback(copy, Color3.fromRGB(255, 207, 153)) end
+    elseif message == "CompanionSkillUsed" and type(data) == "table" then
+        if data.companionId == "Fox" then
+            showFeedback("ЛИСЁНОК · " .. tostring(data.damage or 0) .. " УРОНА", Color3.fromRGB(244, 190, 111))
+        elseif data.companionId == "Moth" then
+            showFeedback("ЛУННАЯ МОЛЬ · ЛЕЧЕНИЕ ×" .. tostring(data.healedCount or 0), Color3.fromRGB(190, 164, 232))
+        end
     elseif message == "CombatHit" then
         if type(data) == "table" and data.charged == true then
             showFeedback("ЗАРЯЖЕННЫЙ УДАР · " .. tostring(data.damage or ""), Color3.fromRGB(255, 185, 102))
