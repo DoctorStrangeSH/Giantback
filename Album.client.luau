@@ -1838,6 +1838,77 @@ local function animateModelParts(model, state, time, moving, resting)
     end
 end
 
+local sleepIndicators = {}
+
+local function setSleepIndicator(model, enabled)
+    local current = sleepIndicators[model]
+    if not enabled then
+        if current then
+            sleepIndicators[model] = nil
+            current:Destroy()
+        end
+        return
+    end
+    if current or not model or not model.Parent then return end
+
+    local anchor = model:FindFirstChild("Body") or model.PrimaryPart
+    if not anchor or not anchor:IsA("BasePart") then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "CompanionSleepZLocal"
+    billboard.Adornee = anchor
+    billboard.Size = UDim2.fromOffset(76, 48)
+    billboard.StudsOffsetWorldSpace = Vector3.new(0, 1.65, 0)
+    billboard.AlwaysOnTop = true
+    billboard.LightInfluence = 0
+    billboard.MaxDistance = 48
+    billboard.Parent = anchor
+    sleepIndicators[model] = billboard
+
+    task.spawn(function()
+        local glyphs = {"Z", "z", "z"}
+        while sleepIndicators[model] == billboard and billboard.Parent and model.Parent do
+            for index, glyphText in glyphs do
+                if sleepIndicators[model] ~= billboard or not billboard.Parent then break end
+                local glyph = Instance.new("TextLabel")
+                glyph.Name = "SleepGlyph"
+                glyph.AnchorPoint = Vector2.new(0.5, 0.5)
+                glyph.Position = UDim2.fromScale(0.52, 0.78)
+                glyph.Size = UDim2.fromOffset(24, 24)
+                glyph.BackgroundTransparency = 1
+                glyph.Text = glyphText
+                glyph.TextColor3 = index == 1 and palette.cream or palette.lilac
+                glyph.TextStrokeColor3 = palette.ink
+                glyph.TextStrokeTransparency = 0.35
+                glyph.TextTransparency = 0.05
+                glyph.Font = Enum.Font.GothamBlack
+                glyph.TextScaled = true
+                glyph.Rotation = (index - 2) * 9
+                glyph.Parent = billboard
+
+                local tween = TweenService:Create(
+                    glyph,
+                    TweenInfo.new(1.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                    {
+                        Position = UDim2.fromScale(0.52 + (index - 2) * 0.17, 0.05),
+                        TextTransparency = 1,
+                        TextStrokeTransparency = 1,
+                        Rotation = (index - 2) * 18,
+                    }
+                )
+                tween:Play()
+                task.wait(0.48)
+                Debris:AddItem(glyph, 0.05)
+            end
+            task.wait(0.28)
+        end
+        if sleepIndicators[model] == billboard then
+            sleepIndicators[model] = nil
+            billboard:Destroy()
+        end
+    end)
+end
+
 local function updateEncounterVisibility(id)
     local islandName = encounterLocations[id]
     local island = islandName and workspace:FindFirstChild(islandName)
@@ -1937,6 +2008,7 @@ local function follow(dt)
 
         if model and (model.Name ~= id or not root) then
             animationStates[model] = nil
+            setSleepIndicator(model, false)
             model:Destroy()
             models[owner] = nil
             model = nil
@@ -1977,7 +2049,12 @@ local function follow(dt)
             if moving then
                 activity.idleSince = now
             end
-            local resting = not moving and now - activity.idleSince >= 12
+            local idleSeconds = now - activity.idleSince
+            local resting = not moving and idleSeconds >= 12
+            local sleeping = not moving and idleSeconds >= 45
+            if owner == player then
+                setSleepIndicator(model, sleeping)
+            end
 
             local state = animationStates[model]
             if state then
@@ -2021,6 +2098,7 @@ Players.PlayerRemoving:Connect(function(owner)
     companionActivity[owner] = nil
     if models[owner] then
         animationStates[models[owner]] = nil
+        setSleepIndicator(models[owner], false)
         models[owner]:Destroy()
         models[owner] = nil
     end
