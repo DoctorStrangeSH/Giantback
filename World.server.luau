@@ -276,11 +276,11 @@ local function syncCompanionProgress(player)
 end
 
 local function awardCompanionXp(player, companionId, amount)
+    if companionId ~= "Fox" and companionId ~= "Moth" then return false, "InvalidCompanion" end
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") or player:GetAttribute(companionId) ~= true then
         return false, "CompanionNotOwned"
     end
-    if companionId ~= "Fox" and companionId ~= "Moth" then return false, "InvalidCompanion" end
     amount = math.clamp(math.floor(tonumber(amount) or 0), 0, 100)
     if amount <= 0 then return false, "InvalidAmount" end
 
