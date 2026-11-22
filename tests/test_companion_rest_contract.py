@@ -23,7 +23,7 @@ class CompanionRestContractTests(unittest.TestCase):
     def test_moth_folds_into_a_quiet_hover_and_dims_its_core(self):
         self.assertIn("flapSpeed = 3.2", ALBUM)
         self.assertIn("flapStrength = 0.13", ALBUM)
-        self.assertIn("twitchSpeed = 1.1", ALBUM)
+        self.assertIn("resting and 1.1", ALBUM)
         self.assertIn("resting and 0.38", ALBUM)
 
     def test_rest_is_visual_only_and_activity_state_is_cleaned_up(self):
