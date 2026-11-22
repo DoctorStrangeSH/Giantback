@@ -16,6 +16,22 @@ The original `moth_companion.obj` was parsed directly before planning the hero r
 
 This confirms the original source is a useful shape/layout BLOCKOUT with separable wing objects, but not a finished hero asset. Preserve it unchanged as rollback baseline. The new hero model must add authored UVs, closed/thickened wing surfaces where appropriate, hand-painted wing motifs and an independently validated four-wing rig.
 
+## 0.5 Third Hero correction pass — 2026-11-22
+
+Artifact #51 passed Blender geometry/UV/material and four-view package validation. Manual review of the actual front, side and three-quarter renders rejects final art acceptance:
+- thorax/abdomen still reads as a narrow tube rather than a soft plush moth body;
+- wings have a pointed/leaf-like silhouette and their color blocks feel too angular;
+- gold crescents are too small and do not read as the signature motif at gameplay distance;
+- legs are technically present but too thin and mechanical.
+
+Corrective source pass:
+- reshape the continuous body profile into a fuller rounded thorax with a softly tapered lower abdomen;
+- widen leg curves and soften/enlarge the feet so they read as a small friendly insect, not wire appendages;
+- change the wing width envelope to a rounded middle lobe with narrow root and tip;
+- enlarge the crescent motif substantially while preserving UVs and sealed geometry.
+
+Run #51 remains a technical pass only. The new artifact must be reviewed again in all four views; Studio import and runtime wing animation remain open.
+
 ## 0.4 Second Hero correction pass — 2026-11-22
 
 Artifact #31 confirmed that the broadened wings, combined body direction, curved antennae and four-wing crescent placement still pass the Blender technical pipeline. Manual review of #31 nevertheless found the gold/lilac moon marks read as layered oval discs, the lower body lacked visible insect legs, and the abdomen bands were hidden behind the body silhouette.
