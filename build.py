@@ -212,6 +212,11 @@ create_asset_library(server_storage, ("Buildings", "Environment"))
 
 storage = obj(doc, "ReplicatedStorage", "ReplicatedStorage")
 create_asset_library(storage, ("Companions",))
+
+# Client-visible, read-only selector used by companion followers.
+resolver = obj(storage, "ModuleScript", "CompanionTemplateResolver")
+prop(resolver, "ProtectedString", "Source",
+     (root / "modules" / "CompanionTemplateResolver.luau").read_text(encoding="utf-8"))
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
     if name == "Fox":
