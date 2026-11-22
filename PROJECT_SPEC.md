@@ -374,4 +374,12 @@ The current working branch adds two Dusk-island iron veins requiring a Pickaxe a
 - Fox has a curious explorer personality; Moth has a calm, light-guardian personality. The Pets tab shows both the companion's personality description and its current mood.
 - Mood is event-driven: Fox starts Curious, Moth starts Calm; successful feeding changes mood to Content; a completed play session changes mood to Happy; equipping a companion restores its personality baseline.
 - Mood is session flavor, not a survival or progression system. It does not decay, block abilities, consume resources, or punish the player for leaving. It resets to each companion's baseline on a fresh session.
-- The server owns mood state and synchronizes it through companion-specific player attributes. The first pass changes the album presentation only; unique animation/audio reactions remain NOT DONE.
+- The server owns mood state and synchronizes it through companion-specific player attributes. Petting adds a short local visual reaction; full animation/audio coverage remains NOT DONE.
+
+
+### Companion petting interaction 1.0
+
+- The Pets tab offers a voluntary Pet action for the currently equipped, owned companion. The server validates ownership/equipment and applies an independent 18-second per-companion cooldown.
+- A successful pet adds +5 friendship (capped at 1000), changes mood to Happy, synchronizes the album state and saves through the existing profile save path.
+- The owning client plays a short species-specific response: Fox swishes its tail and perks its ears; Moth flaps its wings faster and brightens its core. A small local heart/sparkle burst confirms the interaction.
+- Petting consumes no resources and has no decay, failure penalty, daily requirement or paid shortcut. The current action is an album button; direct world-touch interaction and hand/arm contact animation remain NOT DONE.
