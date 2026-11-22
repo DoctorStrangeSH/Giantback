@@ -30,7 +30,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "MoonSeed", "StarShard"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "IronOre", "MoonSeed", "StarShard"}
 local toolIds = {Axe = true, Pickaxe = true}
 local toolUpgradeCosts = {
     Axe = {Wood = 8, Stone = 6},
@@ -65,6 +65,8 @@ local resourceNodeIds = {
     GroveWood02 = true,
     DuskStone01 = true,
     DuskStone02 = true,
+    DuskIron01 = true,
+    DuskIron02 = true,
 }
 local sessions = {}
 local createPersonalCity
@@ -1377,6 +1379,19 @@ local function createResourceFlower(def, position)
         makePart("StoneLeft", Vector3.new(1.8, 1.55, 1.8), CFrame.new(-1.35, 0.72, 0.8), Color3.fromRGB(151, 157, 154), Enum.Material.Rock)
         makePart("StoneRight", Vector3.new(1.65, 1.3, 1.6), CFrame.new(1.25, 0.62, -0.72), Color3.fromRGB(103, 112, 113), Enum.Material.Rock)
         makePart("OreGlint", Vector3.new(0.55, 0.22, 0.28), CFrame.new(0.35, 1.85, -1.15), Color3.fromRGB(191, 202, 194), Enum.Material.SmoothPlastic)
+    elseif def.visual == "ironOre" then
+        makePart("IronRockMain", Vector3.new(3.6, 2.8, 3.1), CFrame.new(0, 1.15, 0), Color3.fromRGB(91, 99, 105), Enum.Material.Slate)
+        makePart("IronRockLeft", Vector3.new(1.9, 1.45, 1.8), CFrame.new(-1.3, 0.68, 0.72), Color3.fromRGB(112, 119, 122), Enum.Material.Rock)
+        makePart("IronRockRight", Vector3.new(1.7, 1.4, 1.7), CFrame.new(1.25, 0.72, -0.7), Color3.fromRGB(76, 86, 93), Enum.Material.Slate)
+        makePart("IronVeinA", Vector3.new(0.38, 0.9, 0.42), CFrame.new(-0.55, 1.8, -1.18) * CFrame.Angles(0, 0, math.rad(-24)), Color3.fromRGB(190, 104, 67), Enum.Material.Metal)
+        makePart("IronVeinB", Vector3.new(0.32, 0.72, 0.36), CFrame.new(0.38, 1.55, -1.3) * CFrame.Angles(0, 0, math.rad(28)), Color3.fromRGB(218, 135, 83), Enum.Material.Metal)
+        makePart("IronVeinC", Vector3.new(0.28, 0.58, 0.32), CFrame.new(0.92, 1.22, -0.92) * CFrame.Angles(0, 0, math.rad(-18)), Color3.fromRGB(153, 79, 58), Enum.Material.Metal)
+        local glint = makePart("IronOreGlint", Vector3.new(0.16, 0.16, 0.16), CFrame.new(-0.48, 2.1, -1.38), Color3.fromRGB(255, 192, 126), Enum.Material.Neon)
+        local glow = Instance.new("PointLight")
+        glow.Color = Color3.fromRGB(235, 139, 91)
+        glow.Range = 5
+        glow.Brightness = 0.28
+        glow.Parent = glint
     else
     makePart(
         "Stem",
@@ -1531,6 +1546,34 @@ local resourceDefinitions = {
         visual = "rock",
         kind = "renewable",
         respawnSeconds = 300,
+    },
+    {
+        key = "DuskIron01",
+        amount = 1,
+        requiredTool = "Pickaxe",
+        hitsRequired = 5,
+        verb = "Добыть железную руду",
+        itemId = "IronOre",
+        displayName = "Железная жила",
+        area = "Dusk",
+        offset = Vector3.new(-32, 0, -38),
+        visual = "ironOre",
+        kind = "renewable",
+        respawnSeconds = 420,
+    },
+    {
+        key = "DuskIron02",
+        amount = 1,
+        requiredTool = "Pickaxe",
+        hitsRequired = 5,
+        verb = "Добыть железную руду",
+        itemId = "IronOre",
+        displayName = "Железная жила",
+        area = "Dusk",
+        offset = Vector3.new(32, 0, 38),
+        visual = "ironOre",
+        kind = "renewable",
+        respawnSeconds = 420,
     },
 }
 
