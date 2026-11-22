@@ -45,6 +45,19 @@ class FarmingRegistryTests(unittest.TestCase):
         self.assertIn("session.selectedCropId = session.city.farm.selectedCropId or defaultCropId", WORLD)
         self.assertIn("session.city.farm.selectedCropId = cropId", WORLD)
 
+    def test_crop_selection_is_written_to_saved_island_profile(self):
+        self.assertIn("savedFarm.selectedCropId = citySnapshot.farm.selectedCropId", WORLD)
+        self.assertIn("session.city.farm.selectedCropId = cropId", WORLD)
+
+    def test_each_crop_has_distinct_visual_parts_and_five_growth_stages(self):
+        for crop_id in ("Carrot", "Strawberry", "Pumpkin", "Cabbage"):
+            self.assertIn(crop_id + " = {", WORLD[WORLD.index("local cropPieces = {"):WORLD.index("if not cropVisual then")])
+        for part_name in ("Root", "BerryA", "Fruit", "Heart"):
+            self.assertIn('name = "' + part_name + '"', WORLD)
+        self.assertIn("local stage = math.clamp(math.floor(growth * 5) + 1, 1, 5)", WORLD)
+        self.assertIn('cropVisual:SetAttribute("GrowthStage", stage)', WORLD)
+        self.assertIn('cropVisual:SetAttribute("GrowthProgress", growth)', WORLD)
+
     def test_growth_is_persisted_as_server_timestamps(self):
         self.assertIn("plantedAt = safeTimestamp(saved.plantedAt)", WORLD)
         self.assertIn("readyAt = safeTimestamp(saved.readyAt)", WORLD)
