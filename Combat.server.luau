@@ -627,6 +627,14 @@ local function handleAction(player, action, ...)
         state.comboExpiresAt = 0
         player:SetAttribute("CombatComboStep", 0)
         player:SetAttribute("CombatCharging", true)
+        local chargeStartedAt = now
+        task.delay(4, function()
+            if playerStates[player] == state and state.chargingStartedAt == chargeStartedAt then
+                state.chargingStartedAt = 0
+                player:SetAttribute("CombatCharging", false)
+                reject(player, "ChargeExpired")
+            end
+        end)
         return
     elseif action == "ChargeRelease" then
         performChargedAttack(player, state, now)
@@ -645,12 +653,20 @@ local function handleAction(player, action, ...)
     if action == "Attack" then
         performAttack(player, state, now)
     elseif action == "BlockStart" then
+        if state.chargingStartedAt > 0 then
+            state.chargingStartedAt = 0
+            player:SetAttribute("CombatCharging", false)
+        end
         state.blocking = true
         player:SetAttribute("CombatBlocking", true)
     elseif action == "BlockEnd" then
         state.blocking = false
         player:SetAttribute("CombatBlocking", false)
     elseif action == "Dodge" then
+        if state.chargingStartedAt > 0 then
+            state.chargingStartedAt = 0
+            player:SetAttribute("CombatCharging", false)
+        end
         if now < state.dodgeReadyAt then
             reject(player, "DodgeCooldown")
             return
