@@ -1585,6 +1585,19 @@ local function attachWorldPetPrompt(model, companionId)
     end)
 end
 
+-- Single source of truth for moth stardust personality and friendship intensity.
+local mothStardustRates = {
+    ["Любопытный"] = 9,
+    ["Озорной"] = 12,
+    ["Смелый"] = 7,
+    ["Застенчивый"] = 4,
+}
+
+local function mothStardustRate(personality, bondStage)
+    local stage = math.clamp(math.floor(tonumber(bondStage) or 0), 0, 4)
+    return math.min(16, (mothStardustRates[personality] or 7) + math.floor(stage / 2))
+end
+
 local function attachMothStardust(model)
     if not model or not model.Parent then return end
     local glow = model:FindFirstChild("Moonlight glow", true)
@@ -1600,14 +1613,8 @@ local function attachMothStardust(model)
     emitter.Color = ColorSequence.new(palette.lilacLight, palette.moon)
     emitter.LightEmission = 0.8
     local personality = player:GetAttribute("Companion_Moth_Personality")
-    local personalityRates = {
-        ["Любопытный"] = 9,
-        ["Озорной"] = 12,
-        ["Смелый"] = 7,
-        ["Застенчивый"] = 4,
-    }
     local bondStage = math.clamp(tonumber(player:GetAttribute("Companion_Moth_BondStage")) or 0, 0, 4)
-    emitter.Rate = math.min(16, (personalityRates[personality] or 7) + math.floor(bondStage / 2))
+    emitter.Rate = mothStardustRate(personality, bondStage)
     emitter.Lifetime = NumberRange.new(0.28, 0.55)
     emitter.Speed = NumberRange.new(0.12, 0.42)
     emitter.SpreadAngle = Vector2.new(150, 150)
@@ -1622,6 +1629,8 @@ local function attachMothStardust(model)
         NumberSequenceKeypoint.new(0, 0.12),
         NumberSequenceKeypoint.new(1, 1),
     })
+    emitter:SetAttribute("AppliedBondStage", bondStage)
+    emitter:SetAttribute("AppliedPersonality", personality or "")
     emitter.Parent = attachment
 end
 
@@ -1631,17 +1640,13 @@ local function updateMothStardust(model, owner)
     if not emitter or not emitter:IsA("ParticleEmitter") then return end
 
     local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_Moth_BondStage")) or 0, 0, 4)
-    if emitter:GetAttribute("AppliedBondStage") == bondStage then return end
-
     local personality = owner:GetAttribute("Companion_Moth_Personality")
-    local personalityRates = {
-        ["Любопытный"] = 9,
-        ["Озорной"] = 12,
-        ["Смелый"] = 7,
-        ["Застенчивый"] = 4,
-    }
-    emitter.Rate = math.min(16, (personalityRates[personality] or 7) + math.floor(bondStage / 2))
+    if emitter:GetAttribute("AppliedBondStage") == bondStage
+        and emitter:GetAttribute("AppliedPersonality") == (personality or "") then return end
+
+    emitter.Rate = mothStardustRate(personality, bondStage)
     emitter:SetAttribute("AppliedBondStage", bondStage)
+    emitter:SetAttribute("AppliedPersonality", personality or "")
 end
 
 local function companionGrowthForLevel(level)
