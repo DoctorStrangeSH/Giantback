@@ -16,6 +16,19 @@ The original `moth_companion.obj` was parsed directly before planning the hero r
 
 This confirms the original source is a useful shape/layout BLOCKOUT with separable wing objects, but not a finished hero asset. Preserve it unchanged as rollback baseline. The new hero model must add authored UVs, closed/thickened wing surfaces where appropriate, hand-painted wing motifs and an independently validated four-wing rig.
 
+## 0.6 Fourth Hero correction pass — 2026-11-22
+
+Artifact #56 passed the Blender technical pipeline and produced all four review angles. Manual inspection of the actual images shows the body still reads as a narrow tapered insect abdomen, especially from the front and side; the legs look like long wires, and the moon motifs remain too small at the current framing.
+
+Corrective source pass:
+- shorten the vertical body profile and widen its middle/lower rings into a compact plush thorax;
+- enlarge the head and eyes slightly to strengthen the friendly face;
+- move the three leg pairs closer together vertically and increase their soft thickness/feet size;
+- enlarge the four gold crescent motifs and move them inward so they read at smaller gameplay scale;
+- retain four independent wing meshes, UVs, named groups and animation metadata.
+
+The new pass is not yet accepted. Require fresh four-view render and manual review before Roblox import; runtime wing animation remains not done.
+
 ## 0.5 Third Hero correction pass — 2026-11-22
 
 Artifact #51 passed Blender geometry/UV/material and four-view package validation. Manual review of the actual front, side and three-quarter renders rejects final art acceptance:
