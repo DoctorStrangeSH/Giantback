@@ -1,6 +1,6 @@
 # Giantback — Combat System 1.0
 
-**Status:** C0 contract and C1 server combat loop implemented; Studio acceptance and enemy/arena setup remain NOT DONE; C2–C4 planned.  
+**Status:** C0 contract and C1 server combat loop plus generated training arena/enemy are implemented; Roblox Studio gameplay acceptance remains NOT DONE; C2–C4 planned.  
 **Owner:** gameplay/server systems.  
 **Scope:** first reliable combat loop for the 1.0 adventure release.
 
@@ -111,7 +111,7 @@ Implemented in `Combat.server.luau`:
 - Ready/alive, server-owned region ID and server-owned equipped-weapon gates for gameplay intents.
 - Sanitized C0 state snapshot; no mutable server state tables are sent to clients.
 - Transient combat state cleanup on death, respawn and disconnect.
-- C0 deliberately rejects gameplay actions with `CombatNotEnabled`; it does not apply damage or issue rewards.
+- C0 security contract remains the foundation for C1; the current server accepts the allow-listed combat actions and performs server-owned damage and reward resolution.
 
 Automated contract coverage lives in `tests/test_combat_foundation_contract.py`. The place builder embeds the new server script and CI validates its presence. C0 is not a playable combat milestone; no enemy, hitbox, damage or reward implementation is claimed.
 
@@ -132,4 +132,5 @@ Implemented in `Combat.server.luau`:
 - Enemy death resolves the reward through the profile-owned BindableFunction. The profile stores completed encounter IDs and inventory rewards idempotently (schema v10); failed profile saves roll back the in-session grant.
 - `Combat.client.luau` binds mouse/keyboard, gamepad and ContextActionService touch buttons for attack, held block and dodge; it sends action names only.
 - Leaving the tagged arena automatically clears held block; `BlockEnd` is always accepted for a ready player so a lost focus/input release cannot leave a stale guard state.
-- This code does not create the arena or enemy model. Studio setup must add one tagged training volume and one tagged enemy model for `GroveGrunt01`. No C1 release acceptance is claimed until this is configured and multiplayer-tested.
+- `WorldVisuals.server.luau` now generates a connected training glade beyond the Grove, tags its combat volume, and creates a complete R6-style `Корневой страж` NPC with 100 health, bark crown, glowing eyes and a rootwood club. The bridge and arena are generated in a fresh place build; no manual Studio tagging or placeholder rig import is required.
+- Studio acceptance is still required: verify that the NPC walks and attacks reliably, the hitbox aligns, rewards persist after reconnect, and two or more players cannot duplicate the reward.
