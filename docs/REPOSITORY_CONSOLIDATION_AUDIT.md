@@ -217,3 +217,10 @@ Latest PR #7 head after this fix is a linear descendant of the canonical base; a
 ### R15 torso-chain follow-up
 
 A second compatibility pass found that R15 rigs use `Root` and `Waist`, whereas the initial alias fix only normalized the R6 `RootJoint` name. The procedural animator now resolves `RootJoint` or `Root` and applies the corresponding subtle torso pose to `Waist` when present. Contract coverage and generated-place markers were extended. The PR remains Draft pending current CI and Studio acceptance.
+
+
+### Charged sword attack follow-up
+
+Added a server-timed hold/release sword attack. The server owns charge start time and computes damage (30–52) from a 0.45–1.6s valid charge; clients cannot submit duration, damage or target. The action is mapped to keyboard R, gamepad ButtonX and a touch hold control. Abandoned charges expire after four seconds; block/dodge/respawn and normal attacks cannot preserve or bypass the charge. Stronger impact push is reduced against bosses. Three contract tests and generated-place markers cover the server rules, client mappings and cancellation behavior.
+
+The current changes are committed to the linear PR #7 candidate branch. Fresh GitHub Actions results and Roblox Studio acceptance are still required; touch hold semantics and physical tuning remain unverified in Studio.
