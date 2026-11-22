@@ -6,7 +6,7 @@
 - [x] Cover organizer naming, safe defaults, destination checks and non-destructive behavior with source contract tests.
 - [ ] Import source models into Roblox Studio, confirm materials, scale, collisions and joints.
 - [ ] Publish approved MeshParts and record asset IDs and ownership in asset manifest.
-- [ ] Replace current Parts-based gameplay placeholders using approved imported templates; preserve fallback until Studio acceptance.
+- [~] Fox/Moth client followers can opt into approved MeshPart templates under ReplicatedStorage/AssetLibrary/Models/Companions; strict Studio-approval and rig-compatibility attributes preserve the existing Parts fallback. Real Studio import and acceptance remain NOT DONE.
 - [ ] Verify Fox tail and Moth wings, mobile rendering and multi-player visibility in Studio.
 
 ## Ironworking 1.0 — Ore and smelting
