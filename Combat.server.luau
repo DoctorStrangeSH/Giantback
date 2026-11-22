@@ -95,6 +95,11 @@ local function getPlayerRegion(player)
         end
     end
     player:SetAttribute("CombatRegionId", "")
+    local state = playerStates[player]
+    if state and state.blocking then
+        state.blocking = false
+        player:SetAttribute("CombatBlocking", false)
+    end
     return nil
 end
 
@@ -321,6 +326,11 @@ local function handleAction(player, action, ...)
     end
     if not isReady(player) then
         reject(player, "PlayerNotReady")
+        return
+    end
+    if action == "BlockEnd" then
+        state.blocking = false
+        player:SetAttribute("CombatBlocking", false)
         return
     end
     if not getPlayerRegion(player) then
