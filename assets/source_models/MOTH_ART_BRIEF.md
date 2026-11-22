@@ -30,6 +30,7 @@ Corrective source pass:
 - broaden the upper/lower wing silhouettes and shorten their spanwise length to create softer, rounded wings;
 - replace bead antennae with curved Bezier feelers and club tips;
 - combine thorax/abdomen into one elongated body shell while retaining gold abdomen bands as decoration;
+- add a small gold crescent inlay with a lilac offset inset on each wing, positioned on the visible surface as the creature's signature moon motif;
 - preserve the four separate UV-mapped wing groups and existing palette.
 
 This pass still requires a fresh render and manual review. Do not treat the first successful geometry gate as art approval or as a Roblox-ready rig.
