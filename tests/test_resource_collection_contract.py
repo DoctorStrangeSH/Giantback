@@ -72,6 +72,19 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("p.MaxActivationDistance + 1", WORLD)
         self.assertIn("(root.Position-part.Position).Magnitude", WORLD)
 
+    def test_harvest_swing_animates_r6_and_r15_right_arm_locally(self):
+        swing = CLIENT.split("local function playHarvestCharacterSwing(character, nodeId, generation)", 1)[1].split("local function playHarvestToolSwing(nodeId)", 1)[0]
+        self.assertIn('character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")', swing)
+        self.assertIn('descendant.Name == "RightShoulder" or descendant.Name == "Right Shoulder"', swing)
+        self.assertIn('descendant.Name == "RightElbow"', swing)
+        self.assertIn("RunService:BindToRenderStep", swing)
+        self.assertIn("Enum.RenderPriority.Last.Value", swing)
+        self.assertIn("shoulder.Transform = shoulder.Transform * pose", swing)
+        self.assertIn("elbow.Transform = elbow.Transform * CFrame.Angles", swing)
+        self.assertIn("RunService:UnbindFromRenderStep(bindingName)", swing)
+        tool_swing = CLIENT.split("local function playHarvestToolSwing(nodeId)", 1)[1].split("local function ensureHarvestDamageOverlay", 1)[0]
+        self.assertIn("playHarvestCharacterSwing(character, nodeId, generation)", tool_swing)
+
     def test_harvest_hit_spawns_local_material_chips_without_server_physics(self):
         chips = CLIENT.split("local function spawnHarvestChips(anchor, nodeId)", 1)[1].split("local function showResourceHitFeedback(payload)", 1)[0]
         self.assertIn('chip.Name = "LocalHarvestChip"', chips)
