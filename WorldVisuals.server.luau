@@ -1451,6 +1451,44 @@ local chestGlow = orb(
 addLight(chestGlow, palette.moon, 12, 0.7)
 placeTrialPrompt(trialChest, "Сундук двух стражей", "Забрать награду")
 
+-- Three readable, interactable runes form the chamber's small memory puzzle.
+local puzzleRunes = {
+    {name = "ForestTrialRuneMoon", label = "Луна", color = palette.moon, offset = Vector3.new(-8, 0.55, 0)},
+    {name = "ForestTrialRuneDawn", label = "Рассвет", color = palette.gold, offset = Vector3.new(8, 0.55, 0)},
+    {name = "ForestTrialRuneTide", label = "Прилив", color = palette.water, offset = Vector3.new(0, 0.55, -3)},
+}
+for index, definition in puzzleRunes do
+    local rune = makePart(
+        chamber,
+        definition.name,
+        Vector3.new(2.4, 0.42, 2.4),
+        CFrame.new(chamberCenter + definition.offset),
+        definition.color,
+        Enum.Material.Neon,
+        Enum.PartType.Cylinder
+    )
+    rune.CanQuery = true
+    rune:SetAttribute("PuzzleRuneId", definition.name)
+    rune:SetAttribute("PuzzleOrder", index)
+    local runePrompt = placeTrialPrompt(rune, "Руна памяти", "Активировать")
+    runePrompt.HoldDuration = 0.25
+    local label = Instance.new("BillboardGui")
+    label.Name = "RuneLabel"
+    label.Size = UDim2.fromOffset(120, 28)
+    label.StudsOffset = Vector3.new(0, 1.4, 0)
+    label.AlwaysOnTop = true
+    label.Parent = rune
+    local labelText = Instance.new("TextLabel")
+    labelText.Size = UDim2.fromScale(1, 1)
+    labelText.BackgroundTransparency = 1
+    labelText.Text = definition.label
+    labelText.TextColor3 = palette.cream
+    labelText.TextStrokeTransparency = 0.35
+    labelText.Font = Enum.Font.GothamBold
+    labelText.TextScaled = true
+    labelText.Parent = label
+end
+
 for i = 1, 8 do
     local angle = math.pi * 2 * i / 8
     local pos = chamberCenter + Vector3.new(math.cos(angle) * 13, 0.5, math.sin(angle) * 13)
