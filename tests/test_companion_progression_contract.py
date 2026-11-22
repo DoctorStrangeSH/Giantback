@@ -39,7 +39,7 @@ class CompanionProgressionContractTests(unittest.TestCase):
         self.assertIn('player:GetAttribute("Companion_" .. id .. "_XP")', ALBUM)
         self.assertIn('player:GetAttribute("Companion_" .. id .. "_XPToNext")', ALBUM)
         self.assertIn('entry.xpFill.Size = UDim2.fromScale', ALBUM)
-        self.assertIn('"УР. 5 · МАКСИМУМ"', ALBUM)
+        self.assertIn('growthStage .. " · УР. 5" .. " · МАКСИМУМ"', ALBUM)
 
     def test_verified_exploration_milestones_award_the_matching_companion(self):
         self.assertIn('awardCompanionXp(player, "Fox", 30)', WORLD)
