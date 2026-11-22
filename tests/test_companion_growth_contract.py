@@ -18,6 +18,8 @@ class CompanionGrowthContractTests(unittest.TestCase):
         self.assertIn("local function applyCompanionGrowth(model, owner, companionId)", ALBUM)
         self.assertIn('model:GetAttribute("AppliedGrowthStage") == stageId', ALBUM)
         self.assertIn("model:ScaleTo(scale)", ALBUM)
+        self.assertIn("local currentState = animationStates[model]", ALBUM)
+        self.assertIn("part.CFrame = pivot * offset", ALBUM)
         self.assertIn('model:SetAttribute("GrowthStageName", stageName)', ALBUM)
         self.assertIn("captureAnimation(model, companionId, false, owner == player)", ALBUM)
         self.assertIn("applyCompanionGrowth(model, owner, id)", ALBUM)
