@@ -279,10 +279,26 @@ local companionMoodDefaults = {
 
 local companionPersonalities = {"Любопытный", "Озорной", "Смелый", "Застенчивый"}
 
-local function getCompanionPersonality(userId, companionId)
+local companionPersonalitySet = {}
+for _, personality in companionPersonalities do
+    companionPersonalitySet[personality] = true
+end
+
+local function getDefaultCompanionPersonality(userId, companionId)
     local speciesOffset = companionId == "Moth" and 2 or 0
     local index = ((math.abs(userId) + speciesOffset) % #companionPersonalities) + 1
     return companionPersonalities[index]
+end
+
+local function normalizeCompanionPersonalities(raw, userId)
+    raw = type(raw) == "table" and raw or {}
+    local result = {}
+    for _, id in COMPANION_IDS do
+        local saved = raw[id]
+        result[id] = type(saved) == "string" and companionPersonalitySet[saved]
+            and saved or getDefaultCompanionPersonality(userId, id)
+    end
+    return result
 end
 
 local function setCompanionMood(player, companionId, mood)
@@ -311,7 +327,7 @@ local function syncCompanionProgress(player)
         player:SetAttribute("Companion_" .. id .. "_BondRank", bondRank)
         local mood = session.companionMood and session.companionMood[id] or companionMoodDefaults[id]
         player:SetAttribute("Companion_" .. id .. "_Mood", mood)
-        player:SetAttribute("Companion_" .. id .. "_Personality", getCompanionPersonality(player.UserId, id))
+        player:SetAttribute("Companion_" .. id .. "_Personality", session.companionPersonalities[id])
     end
 end
 
@@ -810,7 +826,9 @@ save = function(player)
 
                 local savedCompanions = type(old.companions) == "table" and old.companions or {}
                 for _, companionId in COMPANION_IDS do
-                    savedCompanions[companionId] = companionProgressSnapshot[companionId]
+                    local savedCompanion = companionProgressSnapshot[companionId]
+                    savedCompanion.personality = session.companionPersonalities[companionId]
+                    savedCompanions[companionId] = savedCompanion
                 end
                 old.companions = savedCompanions
 
@@ -871,6 +889,7 @@ local function init(player)
         completedCombatEncounters = {},
         companionProgress = normalizeCompanionProgress(nil),
         companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth},
+        companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
         companionFeedReadyAt = {},
         companionPetReadyAt = {},
         companionPlayReadyAt = {},
@@ -998,6 +1017,13 @@ local function init(player)
             end
 
             session.companionProgress = normalizeCompanionProgress(data.companions)
+            local savedCompanions = type(data.companions) == "table" and data.companions or {}
+            local savedPersonalities = {}
+            for _, id in COMPANION_IDS do
+                local saved = type(savedCompanions[id]) == "table" and savedCompanions[id] or {}
+                savedPersonalities[id] = saved.personality
+            end
+            session.companionPersonalities = normalizeCompanionPersonalities(savedPersonalities, player.UserId)
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     else
