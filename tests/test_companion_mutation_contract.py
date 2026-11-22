@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 
 class CompanionMutationContractTests(unittest.TestCase):
@@ -30,7 +31,7 @@ class CompanionMutationContractTests(unittest.TestCase):
     def test_mutation_metadata_is_replicated_for_collection_and_other_players(self):
         self.assertIn('"Companion_" .. companionId .. "_MutationName"', WORLD)
         self.assertIn('"Companion_" .. companionId .. "_MutationRarity"', WORLD)
-        self.assertIn('entry.name.Text = names[id] .. " ✦ " .. mutationName', ALBUM)
+        self.assertIn('local mutationName = player:GetAttribute("Companion_" .. pet.id .. "_MutationName")', HUD)
 
     def test_discovery_roll_uses_the_actual_encounter_biome(self):
         self.assertIn("local function rollCompanionMutation(companionId, biomeId)", WORLD)
@@ -58,7 +59,7 @@ class CompanionMutationContractTests(unittest.TestCase):
         self.assertIn('if visual.legendary then', ALBUM)
         self.assertIn('LegendaryMutationAttachment', ALBUM)
         self.assertIn('LegendaryMutationParticles', ALBUM)
-        self.assertIn('mutationRarity == "Легендарный"', ALBUM)
+        self.assertIn('local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")', HUD)
 
     def test_visual_mutations_restore_base_colors_and_apply_bounded_tint(self):
         self.assertIn("local function applyCompanionMutation(model, owner, companionId)", ALBUM)
