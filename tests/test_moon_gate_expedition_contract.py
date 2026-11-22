@@ -126,15 +126,15 @@ class MoonGateExpeditionContractTests(unittest.TestCase):
         self.assertIn("descendant.LocalTransparencyModifier = relicCollected and 1 or 0", ALBUM)
 
     def test_star_shard_is_visible_in_the_collection_resource_panel(self):
-        self.assertIn('"Звёздный осколок"', ALBUM)
-        self.assertIn("Resource_StarShard", ALBUM)
-        self.assertIn("starShardCount.Text", ALBUM)
+        self.assertIn('"Звёздный осколок"', HUD)
+        self.assertIn("Resource_StarShard", HUD)
+        self.assertIn('addInfo("Находки и ферма"', HUD)
 
     def test_expedition_route_requires_fox_then_moth_then_relic_before_the_home_flower(self):
-        fox_trace = ALBUM.index('{flag = "MoonGateTrace",')
-        moth_gate = ALBUM.index('{flag = "MoonGateOpen",')
-        relic = ALBUM.index('{flag = "MoonRelic",')
-        flower = ALBUM.index('{flag = "Flower",')
+        fox_trace = HUD.index('{key = "MoonGateTrace",')
+        moth_gate = HUD.index('{key = "MoonGateOpen",')
+        relic = HUD.index('{key = "MoonRelic",')
+        flower = HUD.index('{key = "Flower",')
         self.assertLess(fox_trace, moth_gate)
         self.assertLess(moth_gate, relic)
         self.assertLess(relic, flower)
