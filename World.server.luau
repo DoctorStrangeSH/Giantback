@@ -1073,7 +1073,7 @@ createPersonalCity = function(player, session)
                     plotModel,
                     "SoilFurrow",
                     Vector3.new(0.12, 0.025, bedWidth - 0.62),
-                    bedFrame * CFrame.new(furrowX, bedTop + 0.225, 0),
+                    bedFrame * CFrame.new(furrowX, bedTop + 0.015, 0),
                     Color3.fromRGB(83, 57, 43),
                     Enum.PartType.Block,
                     Enum.Material.Ground
