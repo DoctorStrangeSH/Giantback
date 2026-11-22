@@ -7,6 +7,7 @@ COMBAT = (ROOT / "Combat.server.luau").read_text(encoding="utf-8")
 BUILD = (ROOT / "build.py").read_text(encoding="utf-8")
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 CLIENT = (ROOT / "Combat.client.luau").read_text(encoding="utf-8")
+VISUALS = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
 WORKFLOW = (ROOT / ".github/workflows/validate-place.yml").read_text(encoding="utf-8")
 
 
@@ -107,6 +108,20 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('"CombatControls"', BUILD)
         self.assertIn('"Combat"', WORKFLOW)
         self.assertIn('"CombatAction"', WORKFLOW)
+
+    def test_place_generates_tagged_training_arena_and_first_r6_enemy(self):
+        self.assertIn('combatGlade.Name = "CombatTrainingGlade"', VISUALS)
+        self.assertIn('region:SetAttribute("RegionId", "GroveTraining")', VISUALS)
+        self.assertIn('CollectionService:AddTag(region, "GiantbackCombatRegion")', VISUALS)
+        self.assertIn('enemy:SetAttribute("EncounterId", "GroveGrunt01")', VISUALS)
+        self.assertIn('enemy:SetAttribute("RegionId", "GroveTraining")', VISUALS)
+        self.assertIn('CollectionService:AddTag(enemy, "GiantbackEnemy")', VISUALS)
+        for rig_part in ("HumanoidRootPart", "Torso", "Head", "Right Arm", "Left Arm", "Right Leg", "Left Leg"):
+            self.assertIn(f'"{rig_part}"', VISUALS)
+        self.assertIn('enemyHumanoid.DisplayName = "Корневой страж"', VISUALS)
+        self.assertIn("enemyHumanoid.MaxHealth = 100", VISUALS)
+        self.assertIn("GroveApproach", VISUALS)
+        self.assertIn("Training stone platform", VISUALS)
 
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
