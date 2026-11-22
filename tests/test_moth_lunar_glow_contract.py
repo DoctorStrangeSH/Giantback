@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 BUILD = (ROOT / "build.py").read_text(encoding="utf-8")
 VISUALS = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
@@ -73,12 +74,12 @@ class MothLunarGlowContractTests(unittest.TestCase):
         self.assertIn('GetAttributeChangedSignal("MoonGateOpen")', ALBUM)
 
     def test_local_moth_ability_has_faster_wings_and_a_brighter_pulsing_glow(self):
-        self.assertIn("isLocal = isLocal == true", ALBUM)
-        self.assertIn("state.isLocal and now < mothAbilityUntil", ALBUM)
-        self.assertIn("mothAbility and 21 or 11.5", ALBUM)
-        self.assertIn("mothAbility and 0.76 or 0.42", ALBUM)
-        self.assertIn("light.Brightness = pulse", ALBUM)
-        self.assertIn("light.Range = mothAbility and 14 or 9", ALBUM)
+        self.assertIn("isLocal = isLocal == true", ANIMATION)
+        self.assertIn("state.isLocal and now < mothAbilityUntil", ANIMATION)
+        self.assertIn("mothAbility and 21 or 11.5", ANIMATION)
+        self.assertIn("mothAbility and 0.76 or 0.42", ANIMATION)
+        self.assertIn("light.Brightness = pulse", ANIMATION)
+        self.assertIn("light.Range = mothAbility and 14 or 9", ANIMATION)
 
     def test_moth_ability_burst_is_created_only_for_the_local_players_own_companion(self):
         self.assertIn('if player:GetAttribute("Companion") ~= "Moth" then return end', ALBUM)
