@@ -167,6 +167,7 @@ corner(progressFill, 6)
 
 local progressCount = label(objective, "ProgressCount", "0 / 11", UDim2.new(1, -92, 0, 12), UDim2.new(0, 76, 1, -29), 9, palette.forestLight, Enum.Font.GothamBold)
 progressCount.TextXAlignment = Enum.TextXAlignment.Right
+local progressTween = nil
 
 local nav = Instance.new("Frame")
 nav.Name = "MainNavigation"
@@ -498,7 +499,11 @@ local function refresh()
         or ("ПУТЕШЕСТВИЕ • ШАГ " .. tostring(completed + 1) .. " ИЗ " .. tostring(total))
     objectiveGlyph.Text = completed >= total and "★" or tostring(completed + 1)
     progressCount.Text = tostring(completed) .. " / " .. tostring(total)
-    progressFill.Size = UDim2.fromScale(math.clamp(completed / total, 0, 1), 1)
+    if progressTween then progressTween:Cancel() end
+    progressTween = TweenService:Create(progressFill, TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = UDim2.fromScale(math.clamp(completed / total, 0, 1), 1),
+    })
+    progressTween:Play()
     brandSubtitle.Text = "УРОВЕНЬ ГОРОДА " .. tostring(player:GetAttribute("City_Level") or 1)
     if panel.Visible and activeTab and renderers[activeTab] then
         clearBody()
@@ -549,7 +554,7 @@ local function updateLayout()
         brandTitle.TextSize = 18
         brandSubtitle.TextSize = 9
         resources.Size = UDim2.fromOffset(214, 58)
-        objective.Size = UDim2.fromOffset(352, 82)
+        objective.Size = UDim2.fromOffset(352, 94)
         objective.Position = UDim2.fromOffset(16, 84)
         panel.Size = UDim2.fromOffset(470, 420)
         nav.Size = UDim2.fromOffset(560, 68)
