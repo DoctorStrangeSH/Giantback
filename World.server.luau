@@ -30,8 +30,8 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
-local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard"}
+local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "Flower", "Timber", "Lantern", "Lit"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil"}
 local toolIds = {Axe = true, Pickaxe = true}
 local combatRewardDefinitions = {
     GroveGrunt01 = {itemId = "Wood", amount = 3},
@@ -2700,7 +2700,14 @@ local crystalEntrance = workspace.Dusk and workspace.Dusk:FindFirstChild("Crysta
 local crystalArrival = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrottoArrival")
 local crystalReturn = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrottoReturn")
 local crystalHeart = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrottoHeart")
+local crystalRuneParts = {}
+local crystalRuneSequence = {"CrystalRuneMoon", "CrystalRuneDawn", "CrystalRuneTide"}
+for _, runeName in crystalRuneSequence do
+    crystalRuneParts[runeName] = crystalGrotto and crystalGrotto:FindFirstChild(runeName)
+end
+local crystalCache = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrottoCache")
 local crystalGrottoInside = {}
+local crystalRuneProgress = {}
 
 if crystalEntrance and crystalArrival then
     connectTrialPrompt(crystalEntrance, function(player)
@@ -2733,6 +2740,78 @@ if crystalReturn and crystalEntrance then
         player:SetAttribute("InCrystalGrotto", false)
         character:PivotTo(crystalEntrance.CFrame * CFrame.new(0, 0, -7))
         tip(player, "Ты вернулся в Сумеречную долину.")
+    end)
+end
+
+-- Crystal Grotto memory puzzle: progress is per player and the completed seal is persistent.
+for expectedIndex, runeName in crystalRuneSequence do
+    local runePart = crystalRuneParts[runeName]
+    if runePart then
+        connectTrialPrompt(runePart, function(player)
+            local session = sessions[player]
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if not session or not crystalGrottoInside[player] or not root or not humanoid or humanoid.Health <= 0 then return end
+            if (root.Position - runePart.Position).Magnitude > 11 then return end
+            if player:GetAttribute("CrystalRunes") then
+                return tip(player, "Печать уже пробуждена. Тайник открыт.")
+            end
+
+            local now = os.clock()
+            local state = crystalRuneProgress[player]
+            if not state or now - state.lastAt > 25 then
+                state = {nextIndex = 1, lastAt = now}
+                crystalRuneProgress[player] = state
+            end
+            state.lastAt = now
+
+            if runeName ~= crystalRuneSequence[state.nextIndex] then
+                state.nextIndex = runeName == crystalRuneSequence[1] and 2 or 1
+                tip(player, state.nextIndex == 2
+                    and "Луна отозвалась! Теперь пробуди Рассвет."
+                    or "Руны погасли. Подсказка у входа поможет вспомнить порядок.")
+                return
+            end
+
+            state.nextIndex += 1
+            if state.nextIndex > #crystalRuneSequence then
+                crystalRuneProgress[player] = nil
+                player:SetAttribute("CrystalRunes", true)
+                tip(player, "Три руны запели в унисон! Древняя печать открыла тайник.")
+                if session.online then save(player) end
+            else
+                local nextLabel = state.nextIndex == 2 and "Рассвет" or "Прилив"
+                tip(player, "Руна пробуждена. Следующая: " .. nextLabel .. ".")
+            end
+        end)
+    else
+        warn("Crystal Grotto puzzle rune is missing:", runeName)
+    end
+end
+
+if crystalCache then
+    connectTrialPrompt(crystalCache, function(player)
+        local session = sessions[player]
+        local character = player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if not session or not crystalGrottoInside[player] or not root or not humanoid or humanoid.Health <= 0 then return end
+        if (root.Position - crystalCache.Position).Magnitude > 11 then return end
+        if not player:GetAttribute("CrystalRunes") then
+            return tip(player, "Тайник запечатан. Сначала пробуди три руны: Луна, Рассвет, Прилив.")
+        end
+        if player:GetAttribute("CrystalCache") then
+            return tip(player, "В тайнике больше нет сокровищ. Печать осталась в твоей коллекции.")
+        end
+        player:SetAttribute("CrystalCache", true)
+        session.inventory.CrystalSigil = (session.inventory.CrystalSigil or 0) + 1
+        syncInventory(player)
+        tip(player, "Сокровище найдено! Получена древняя печать ×1.")
+        if session.online and not save(player) then
+            warn("Crystal Grotto cache save will be retried:", player.UserId)
+            tip(player, "Печать получена. Сохранение будет повторено автоматически.")
+        end
     end)
 end
 
@@ -2777,6 +2856,7 @@ end
 
 Players.PlayerRemoving:Connect(function(player)
     crystalGrottoInside[player] = nil
+    crystalRuneProgress[player] = nil
     rootvaultInside[player] = nil
     rootvaultLeverActivated[player] = nil
     rootvaultTrapCooldown[player] = nil
