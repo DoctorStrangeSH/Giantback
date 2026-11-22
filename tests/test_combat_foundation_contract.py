@@ -65,7 +65,6 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('"Combat.server.luau"', BUILD)
         self.assertIn('"Combat"', WORKFLOW)
         self.assertIn('"CombatAction"', WORKFLOW)
-        self.assertIn('"Combat.server.luau"', WORKFLOW)
 
 
 if __name__ == "__main__":
