@@ -55,6 +55,10 @@ local resourceNodeIds = {
     GroveSunPetal02 = true,
     DuskMoonPetal01 = true,
     DuskMoonPetal02 = true,
+    GroveWood01 = true,
+    GroveWood02 = true,
+    DuskStone01 = true,
+    DuskStone02 = true,
 }
 local sessions = {}
 local createPersonalCity
@@ -1105,6 +1109,17 @@ local function createResourceFlower(def, position)
     anchor.Parent = model
     model.PrimaryPart = anchor
 
+    if def.visual == "tree" then
+        makePart("Trunk", Vector3.new(1.25, 3.8, 1.25), CFrame.new(0, 1.8, 0), Color3.fromRGB(126, 88, 59), Enum.Material.Wood, Enum.PartType.Cylinder)
+        makePart("CanopyLower", Vector3.new(4.8, 3.4, 4.8), CFrame.new(0, 4.2, 0), Color3.fromRGB(91, 145, 91), Enum.Material.Grass)
+        makePart("CanopyUpper", Vector3.new(3.6, 3.1, 3.6), CFrame.new(0, 6.1, 0), Color3.fromRGB(119, 169, 105), Enum.Material.Grass)
+        makePart("HarvestMark", Vector3.new(0.55, 0.18, 0.55), CFrame.new(0, 2.15, -0.68), Color3.fromRGB(221, 179, 105), Enum.Material.Wood)
+    elseif def.visual == "rock" then
+        makePart("StoneMain", Vector3.new(3.4, 2.7, 2.8), CFrame.new(0, 1.15, 0), Color3.fromRGB(125, 132, 132), Enum.Material.Slate)
+        makePart("StoneLeft", Vector3.new(1.8, 1.55, 1.8), CFrame.new(-1.35, 0.72, 0.8), Color3.fromRGB(151, 157, 154), Enum.Material.Rock)
+        makePart("StoneRight", Vector3.new(1.65, 1.3, 1.6), CFrame.new(1.25, 0.62, -0.72), Color3.fromRGB(103, 112, 113), Enum.Material.Rock)
+        makePart("OreGlint", Vector3.new(0.55, 0.22, 0.28), CFrame.new(0.35, 1.85, -1.15), Color3.fromRGB(191, 202, 194), Enum.Material.SmoothPlastic)
+    else
     makePart(
         "Stem",
         Vector3.new(0.95, 0.14, 0.14),
@@ -1152,6 +1167,8 @@ local function createResourceFlower(def, position)
         Color3.fromRGB(113, 164, 111)
     )
 
+    end
+
     model:PivotTo(position)
     return model, anchor
 end
@@ -1198,6 +1215,46 @@ local resourceDefinitions = {
         offset = Vector3.new(12, 0, -8),
         petalColor = Color3.fromRGB(190, 164, 232),
         heartColor = Color3.fromRGB(218, 208, 255),
+        kind = "renewable",
+        respawnSeconds = 300,
+    },
+    {
+        key = "GroveWood01",
+        itemId = "Wood",
+        displayName = "Лесная древесина",
+        area = "Grove",
+        offset = Vector3.new(-34, 0, -25),
+        visual = "tree",
+        kind = "renewable",
+        respawnSeconds = 300,
+    },
+    {
+        key = "GroveWood02",
+        itemId = "Wood",
+        displayName = "Лесная древесина",
+        area = "Grove",
+        offset = Vector3.new(34, 0, 24),
+        visual = "tree",
+        kind = "renewable",
+        respawnSeconds = 300,
+    },
+    {
+        key = "DuskStone01",
+        itemId = "Stone",
+        displayName = "Каменная жила",
+        area = "Dusk",
+        offset = Vector3.new(-20, 0, -17),
+        visual = "rock",
+        kind = "renewable",
+        respawnSeconds = 300,
+    },
+    {
+        key = "DuskStone02",
+        itemId = "Stone",
+        displayName = "Каменная жила",
+        area = "Dusk",
+        offset = Vector3.new(20, 0, 17),
+        visual = "rock",
         kind = "renewable",
         respawnSeconds = 300,
     },
