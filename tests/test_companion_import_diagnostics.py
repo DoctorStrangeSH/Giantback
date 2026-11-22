@@ -25,6 +25,12 @@ class CompanionImportDiagnosticsTests(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertIn(marker, CHECKER)
 
+    def test_separate_mesh_parts_required_for_animation(self):
+        self.assertIn('descendant:IsA("MeshPart")', CHECKER)
+        self.assertIn('model.Name == "MothCompanion" and partName == "Wing"', CHECKER)
+        self.assertIn('and 2 or 1', CHECKER)
+        self.assertIn('matchingMeshes < requiredCount', CHECKER)
+
     def test_no_automatic_approval_or_mutation(self):
         for forbidden in (":Destroy()", ":Clone()", ".Parent =", ":SetAttribute(", "GiantbackRuntimeReady = true"):
             self.assertNotIn(forbidden, CHECKER)
