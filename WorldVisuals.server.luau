@@ -333,6 +333,87 @@ end
 local deckLantern = orb(deck, "Porch lantern glass", Vector3.new(4.5, 15, -5), Vector3.new(0.8, 1.2, 0.8), palette.gold, Enum.Material.Neon)
 addLight(deckLantern, palette.gold, 13, 0.8)
 
+-- A readable garden path and a small enchanted arch guide new players to their first crops.
+local gardenApproach = makeFolder(homeDetails, "GardenApproach")
+local pathStones = {
+    Vector3.new(-12.2, 12.12, -0.1),
+    Vector3.new(-12.0, 12.12, 1.9),
+    Vector3.new(-12.35, 12.12, 3.9),
+    Vector3.new(-12.1, 12.12, 5.9),
+    Vector3.new(-12.2, 12.12, 7.9),
+}
+for index, position in pathStones do
+    local stone = orb(
+        gardenApproach,
+        "Garden path stone",
+        position,
+        Vector3.new(1.55 + (index % 2) * 0.18, 0.22, 1.25),
+        index % 2 == 0 and palette.stoneLight or Color3.fromRGB(190, 181, 151),
+        Enum.Material.Slate
+    )
+    stone.CFrame = CFrame.new(position) * CFrame.Angles(0, math.rad((index % 2 == 0 and 8 or -9)), 0)
+end
+
+local archLeft = Vector3.new(-16.7, 12.15, 6.2)
+local archRight = Vector3.new(-7.7, 12.15, 6.2)
+for index, position in {archLeft, archRight} do
+    cylinder(
+        gardenApproach,
+        "Garden arch post",
+        position + Vector3.new(0, 1.75, 0),
+        3.5,
+        0.42,
+        palette.barkLight,
+        Enum.Material.Wood
+    )
+    orb(
+        gardenApproach,
+        "Garden arch cap",
+        position + Vector3.new(0, 3.55, 0),
+        Vector3.new(0.82, 0.48, 0.82),
+        palette.gold,
+        Enum.Material.Wood
+    )
+    for leafIndex = 1, 3 do
+        local side = index == 1 and 1 or -1
+        orb(
+            gardenApproach,
+            "Arch climbing leaf",
+            position + Vector3.new(side * (0.22 + leafIndex * 0.12), 0.7 + leafIndex * 0.72, 0.22),
+            Vector3.new(0.72, 0.36, 0.48),
+            leafIndex % 2 == 0 and palette.leafLight or palette.leaf,
+            Enum.Material.Grass
+        )
+    end
+end
+makePart(
+    gardenApproach,
+    "Garden arch lintel",
+    Vector3.new(9.5, 0.48, 0.55),
+    CFrame.new(-12.2, 15.85, 6.2),
+    palette.barkLight,
+    Enum.Material.Wood
+)
+local archMoon = orb(
+    gardenApproach,
+    "Garden arch moon charm",
+    Vector3.new(-12.2, 16.55, 6.2),
+    Vector3.new(0.82, 0.82, 0.42),
+    palette.gold,
+    Enum.Material.Neon
+)
+addLight(archMoon, palette.gold, 7, 0.28)
+for index = 1, 4 do
+    local x = -15.2 + index * 2
+    addFlower(
+        gardenApproach,
+        Vector3.new(x, 12.12, 7.1 + (index % 2) * 0.45),
+        index % 2 == 0 and palette.lilacLight or palette.coral,
+        0.58,
+        180 + index
+    )
+end
+
 -- Turn the two simple banks into distinct little places.
 local function decorateIsland(island, isDusk)
     local islandDetails = makeFolder(island, "HandcraftedDetails")
