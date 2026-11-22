@@ -1,0 +1,79 @@
+name: Lunar Moth Blender visual review
+
+on:
+  push:
+    branches: [feat/cozy-world-visual-pass]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: lunar-moth-visual-review-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      EGL_PLATFORM: surfaceless
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Blender Python module
+        run: python -m pip install bpy==4.2.0
+      - name: Install headless rendering system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libxrender1 libxi6 libxkbcommon0 libsm6 libxext6
+      - name: Generate Lunar Moth Hero review asset
+        run: |
+          python -c "import runpy,sys; sys.argv=['build_moth_companion.py','--','--output-dir','build/moth_hero']; runpy.run_path('tools/blender/build_moth_companion.py',run_name='__main__')"
+      - name: Validate review package and four-wing rig contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          output = Path("build/moth_hero")
+          required = [
+              "moth_companion_hero_three_quarter.png",
+              "moth_companion_hero_front.png",
+              "moth_companion_hero_side.png",
+              "moth_companion_hero_back.png",
+              "moth_companion_hero.blend",
+              "moth_companion_hero.obj",
+              "moth_companion_hero_rig.json",
+              "moth_companion_hero_mesh_report.json",
+          ]
+          missing = [name for name in required if not (output / name).is_file()]
+          assert not missing, f"Missing review outputs: {missing}"
+          rig = json.loads((output / "moth_companion_hero_rig.json").read_text())
+          report = json.loads((output / "moth_companion_hero_mesh_report.json").read_text())
+          assert len(rig["parts"]) == 10
+          assert len(rig["wing_groups"]) == 4
+          assert report["part_count"] == 10
+          assert set(report["parts"]) == set(rig["parts"])
+          for name, part in report["parts"].items():
+              assert part["vertices"] > 0 and part["faces"] > 0, f"{name}: empty geometry"
+              assert part["zero_area_faces"] == 0, f"{name}: zero-area faces"
+              assert part["non_manifold_edges"] == 0, f"{name}: non-manifold edges"
+              assert part["uv_layers"] >= 1, f"{name}: UV layer missing"
+              assert part["materials"], f"{name}: no materials"
+              assert set(part["material_profiles"]) == set(part["materials"])
+          for wing in rig["wing_groups"]:
+              assert report["parts"][wing]["uv_layers"] >= 1
+          print("Lunar Moth review package passed: 10 rig groups, four UV-mapped wing meshes, geometry/material gates, four renders.")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lunar-Moth-Blender-Visual-Review
+          path: build/moth_hero/
+          if-no-files-found: error
+          retention-days: 14
