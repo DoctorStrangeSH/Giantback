@@ -111,7 +111,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('player:SetAttribute("CrystalEchoDiscovered", true)', WORLD)
 
     def test_echo_chamber_has_a_return_route_and_cleans_player_state(self):
-        self.assertIn('local crystalEchoReturn = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoReturn")', WORLD)
+        self.assertIn('local crystalEchoReturn = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoReturn", true)', WORLD)
         self.assertIn('crystalEchoInside[player] = nil', WORLD)
         self.assertIn('character:PivotTo(crystalEchoGate.CFrame', WORLD)
         self.assertIn('crystalEchoInside[player] = nil', WORLD)
