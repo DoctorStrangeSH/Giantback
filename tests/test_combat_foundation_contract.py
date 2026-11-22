@@ -323,6 +323,17 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(bindEnemyHealth)', CLIENT)
         self.assertIn('if isBoss then updateBossHud(enemy) end', CLIENT)
 
+    def test_seal_minion_awakening_has_local_particle_and_floor_ring_cue(self):
+        self.assertIn('local function showMinionAwakening(minion)', CLIENT)
+        self.assertIn('minion:GetAttribute("ArchetypeId") ~= "SealMinion"', CLIENT)
+        self.assertIn('LocalMinionAwakening', CLIENT)
+        self.assertIn('LocalSealSparkBurst', CLIENT)
+        self.assertIn('particles:Emit(22)', CLIENT)
+        self.assertIn('LocalMinionAwakeningRing', CLIENT)
+        self.assertIn('Size = Vector3.new(0.12, 12, 12)', CLIENT)
+        self.assertIn('showMinionAwakening(enemy)', CLIENT)
+        self.assertIn('CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(function(enemy)', CLIENT)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
