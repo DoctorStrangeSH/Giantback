@@ -99,17 +99,34 @@ def tapered_body(name, profile, material, segments=40):
 
 
 def abdomen_band(name, y, rx, rz, material, segments=40):
-    # A narrow raised ring follows the tapered body's elliptical cross-section.
+    # A sealed raised ring follows the tapered body's elliptical cross-section.
     vertices = []
     half_height = 0.022
-    for band_y in (y - half_height, y + half_height):
+    outer_rx, outer_rz = rx + 0.014, rz + 0.014
+    inner_rx, inner_rz = rx - 0.006, rz - 0.006
+    loops = (
+        (y - half_height, outer_rx, outer_rz),
+        (y + half_height, outer_rx, outer_rz),
+        (y - half_height, inner_rx, inner_rz),
+        (y + half_height, inner_rx, inner_rz),
+    )
+    for band_y, band_rx, band_rz in loops:
         for index in range(segments):
             angle = math.tau * index / segments
-            vertices.append(((rx + 0.012) * math.cos(angle), band_y, (rz + 0.012) * math.sin(angle)))
+            vertices.append((band_rx * math.cos(angle), band_y, band_rz * math.sin(angle)))
     faces = []
     for index in range(segments):
         nxt = (index + 1) % segments
-        faces.append((index, nxt, nxt + segments, index + segments))
+        ol, oln = index, nxt
+        oh, ohn = segments + index, segments + nxt
+        il, iln = 2 * segments + index, 2 * segments + nxt
+        ih, ihn = 3 * segments + index, 3 * segments + nxt
+        faces.extend((
+            (ol, oln, ohn, oh),
+            (il, ih, ihn, iln),
+            (oh, ohn, ihn, ih),
+            (ol, il, iln, oln),
+        ))
     mesh = bpy.data.meshes.new(name + "Mesh")
     mesh.from_pydata(vertices, [], faces)
     mesh.update()
