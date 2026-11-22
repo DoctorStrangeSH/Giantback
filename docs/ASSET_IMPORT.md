@@ -74,3 +74,14 @@ Both still use the existing `ReplicatedStorage/Fox` and `ReplicatedStorage/Moth`
 The feature affects the client follower clones. Wild encounter art and other world geometry remain existing blockouts until their own integration is accepted. Approval flags are stored on the imported Studio Model, not in source OBJ files. They are not automatically restored by running `python build.py`: the generated .rbxlx does not contain uploaded MeshPart assets.
 
 If an import is missing, incomplete or unapproved, `companionTemplate` falls back to the playable companion template without changing server-owned gameplay state. After a template is approved, respawn/re-equip to instantiate a new follower clone.
+
+
+## Read-only procedural-rig diagnostic (Studio)
+
+After using the organizer, select `FoxCompanion` or `MothCompanion` in Roblox Studio Explorer, then run `tools/roblox/inspect_companion_imports.luau` from the **Studio Command Bar**. It checks:
+- asset identity and the direct-child `Body` MeshPart;
+- separately animated `Tail` / `Wing` named parts;
+- empty MeshIds, unwanted collisions, joint/constraint/bone conflicts, and extreme scale;
+- current approval attributes, but does **not** set them.
+
+The tool prints STRUCTURAL PASS/FAIL and warnings to Output and does not change any objects or flags. **STRUCTURAL PASS is not artistic or runtime approval.** Check animation, pivots, materials, orientation, mobile performance and multiplayer behavior manually. Keep existing procedural blockouts until those checks pass. The model cannot be approved automatically by this diagnostic.
