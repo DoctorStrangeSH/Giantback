@@ -38,7 +38,7 @@
 - [x] Confirm fresh Validate Giantback run #1223 after the validator update; tests, place build, generated-place validation and artifact upload all passed.
 - [x] Port starter tool ownership/equipment and server-authoritative multi-hit wood/stone gathering.
 - [x] Port smelter state/actions and iron ore processing; owner-only furnace, persistent timer and collect-after-completion flow are implemented.
-- [~] Combat C0 server protocol is implemented in consolidated PR #7; it intentionally does not deal damage. C1 playable combat remains pending Studio acceptance and a server-owned enemy/encounter implementation.
+- [~] Combat C1 server loop implemented in PR #7: tagged arena/enemy registry, server-owned sword hitbox/damage, telegraphed enemy melee, frontal block, timed dodge and idempotent persistent encounter reward (profile schema v10). Studio still must add/tag the training arena volume and enemy rig, then verify multiplayer, touch/gamepad, animation alignment and reward persistence.
 
 ## Farming 2.0 — Four-crop server foundation
 
