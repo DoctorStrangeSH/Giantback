@@ -356,3 +356,14 @@ The current working branch adds two Dusk-island iron veins requiring a Pickaxe a
 - Friendship ranks: Знакомство (0–99), Знакомцы (100–299), Друзья (300–599), Лучшие друзья (600–899), Родственные души (900–1000).
 - Friendship never decays. No hunger meter, absence penalty, daily login requirement, paid friendship boost or paid food.
 - The Pets tab displays friendship and offers feeding when the companion is equipped and harvested food is available. This first slice does not yet include play interactions, mood simulation, pet animations or visual evolution.
+
+
+### Companion play: memory game 1.0
+
+- The Pets tab offers an optional three-symbol memory game for the currently equipped, owned companion.
+- The server creates a unique challenge token and sequence. The client shows the sequence briefly, then asks the player to repeat it using three large touch-friendly buttons.
+- Each input is validated server-side against the token, expected index and expected symbol. Incorrect inputs end the round without reducing friendship or XP.
+- A successful round grants +15 friendship and +8 companion XP. The sequence expands from 3 to 4 symbols at friendship 600.
+- A 25-second per-companion cooldown and an 18-second challenge timeout prevent remote spam and abandoned sessions.
+- No streaks, daily requirement, energy depletion, punishment for failure or paid retry. This is a short cooperative-feeling interaction, not an obligation.
+- This first pass uses shared symbol controls with pet-specific presentation. Unique animations, sound cues and richer play toys remain later polish.
