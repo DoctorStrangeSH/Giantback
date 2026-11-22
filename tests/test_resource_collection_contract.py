@@ -85,6 +85,21 @@ class ResourceCollectionContractTests(unittest.TestCase):
         tool_swing = CLIENT.split("local function playHarvestToolSwing(nodeId)", 1)[1].split("local function ensureHarvestDamageOverlay", 1)[0]
         self.assertIn("playHarvestCharacterSwing(character, nodeId, generation)", tool_swing)
 
+    def test_final_harvest_hit_has_distinct_local_break_burst(self):
+        burst = CLIENT.split("local function playResourceFinalBreakBurst(anchor, nodeId)", 1)[1].split("local function playResourceBreakFeedback(nodeId)", 1)[0]
+        self.assertIn('ring.Name = "LocalHarvestFinalBurst"', burst)
+        self.assertIn("Enum.PartType.Cylinder", burst)
+        self.assertIn("Enum.Material.Neon", burst)
+        self.assertIn('fragment.Name = "LocalHarvestFinalFragment"', burst)
+        self.assertIn("fragment.Anchored = true", burst)
+        self.assertIn("fragment.CanCollide = false", burst)
+        self.assertIn("Debris:AddItem(ring, 0.42)", burst)
+        self.assertIn("Debris:AddItem(fragment, 0.46)", burst)
+        feedback = CLIENT.split("local function playResourceBreakFeedback(nodeId)", 1)[1].split("local function spawnHarvestChips", 1)[0]
+        self.assertIn("playResourceFinalBreakBurst(anchor, nodeId)", feedback)
+        picked = CLIENT.split('elseif message == "ResourcePicked"', 1)[1].split('elseif message == "ResourceHit"', 1)[0]
+        self.assertIn("playResourceBreakFeedback(payload.nodeId)", picked)
+
     def test_harvest_hit_spawns_local_material_chips_without_server_physics(self):
         chips = CLIENT.split("local function spawnHarvestChips(anchor, nodeId)", 1)[1].split("local function showResourceHitFeedback(payload)", 1)[0]
         self.assertIn('chip.Name = "LocalHarvestChip"', chips)
