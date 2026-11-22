@@ -15,7 +15,8 @@ class CompanionProgressionContractTests(unittest.TestCase):
         self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 11)", WORLD)
         self.assertIn("local companionProgressSnapshot = normalizeCompanionProgress(session.companionProgress)", WORLD)
         self.assertIn('local savedCompanions = type(old.companions) == "table" and old.companions or {}', WORLD)
-        self.assertIn("savedCompanions[companionId] = companionProgressSnapshot[companionId]", WORLD)
+        self.assertIn("savedCompanion = companionProgressSnapshot[companionId]", WORLD)
+        self.assertIn("savedCompanions[companionId] = savedCompanion", WORLD)
         self.assertIn("session.companionProgress = normalizeCompanionProgress(data.companions)", WORLD)
 
     def test_companion_xp_is_bounded_and_levels_have_increasing_thresholds(self):
