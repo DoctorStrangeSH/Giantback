@@ -729,6 +729,20 @@ event.OnServerEvent:Connect(function(player, action, payload)
         return
     end
 
+    if action == "SelectCrop" then
+        local session = sessions[player]
+        local cropId = type(payload) == "string" and payload or ""
+        local definition = cropDefinitions[cropId]
+        if not session or not definition then return end
+        if (session.inventory[definition.seedItemId] or 0) < 1 then
+            return tip(player, "У тебя пока нет семян: " .. definition.displayName .. ".")
+        end
+        session.selectedCropId = cropId
+        syncFarm(player)
+        tip(player, "Выбрано для посадки: " .. definition.displayName .. ". Подойди к свободной грядке.")
+        return
+    end
+
     if pets[action] and player:GetAttribute(action) then
         player:SetAttribute("Companion",action)
     end
@@ -769,7 +783,7 @@ local function makeFarmVisualPart(parent, name, size, frame, color, shape, mater
     return part
 end
 
-local function refreshFarmPlotVisual(cityModel, plotId, farm)
+local function refreshFarmPlotVisual(cityModel, plotId, farm, selectedCropId)
     local plotModel = cityModel and cityModel:FindFirstChild(plotId)
     if not plotModel then return end
 
@@ -791,13 +805,13 @@ local function refreshFarmPlotVisual(cityModel, plotId, farm)
             interaction.ObjectText = "Улучшить ферму"
         elseif state.cropId == "" then
             interaction.ActionText = "Посадить"
-            interaction.ObjectText = "Морковь"
+            interaction.ObjectText = cropDefinitions[selectedCropId or defaultCropId].displayName
         elseif os.time() >= state.readyAt then
             interaction.ActionText = "Собрать"
-            interaction.ObjectText = "Морковь созрела"
+            interaction.ObjectText = (cropDefinitions[state.cropId] and cropDefinitions[state.cropId].displayName or "Урожай") .. " созрела"
         else
             interaction.ActionText = "Проверить"
-            interaction.ObjectText = "Морковь растёт"
+            interaction.ObjectText = (cropDefinitions[state.cropId] and cropDefinitions[state.cropId].displayName or "Растение") .. " растёт"
         end
     end
 
@@ -843,7 +857,7 @@ local function refreshFarmCity(player, cityModel)
     local session = sessions[player]
     if not session or not session.city or not cityModel then return end
     for _, plotId in farmPlotIds do
-        refreshFarmPlotVisual(cityModel, plotId, session.city.farm)
+        refreshFarmPlotVisual(cityModel, plotId, session.city.farm, session.selectedCropId)
     end
 end
 
@@ -859,27 +873,45 @@ local function interactFarmPlot(player, ownerUserId, plotId)
         return tip(player, "Эта грядка откроется после улучшения фермы.")
     end
 
+    if session.farmActionBusy[plotId] then return end
+    session.farmActionBusy[plotId] = true
     local now = os.time()
     if state.cropId == "" then
-        if (session.inventory.CarrotSeed or 0) < 1 then
-            return tip(player, "Семена закончились. Новые семена появятся у торговца позже.")
+        local cropId = session.selectedCropId or defaultCropId
+        local definition = cropDefinitions[cropId]
+        if not definition then session.farmActionBusy[plotId] = nil return end
+        if (session.inventory[definition.seedItemId] or 0) < 1 then
+            session.farmActionBusy[plotId] = nil
+            return tip(player, "Нет семян: " .. definition.displayName .. ". Выбери другую культуру.")
         end
-        session.inventory.CarrotSeed -= 1
-        state.cropId = "Carrot"
+        session.inventory[definition.seedItemId] -= 1
+        state.cropId = cropId
         state.plantedAt = now
-        state.readyAt = now + cropDefinitions.Carrot.growthSeconds
-        tip(player, "Морковь посажена! Она созреет примерно через 3 минуты.")
+        state.readyAt = now + definition.growthSeconds
+        tip(player, definition.displayName .. " посажена! Рост займёт около " .. tostring(math.ceil(definition.growthSeconds / 60)) .. " мин.")
     else
+        local definition = cropDefinitions[state.cropId]
+        if not definition then
+            state.cropId, state.plantedAt, state.readyAt = "", 0, 0
+            session.farmActionBusy[plotId] = nil
+            return
+        end
         if now < state.readyAt then
             local remaining = state.readyAt - now
-            return tip(player, "Морковь ещё растёт: осталось " .. tostring(math.ceil(remaining / 60)) .. " мин.")
+            session.farmActionBusy[plotId] = nil
+            return tip(player, definition.displayName .. " ещё растёт: осталось " .. tostring(math.ceil(remaining / 60)) .. " мин.")
         end
-        session.inventory.Carrot = (session.inventory.Carrot or 0) + 1
-        state.cropId = ""
-        state.plantedAt = 0
-        state.readyAt = 0
-        tip(player, "Урожай собран: морковь ×1!")
+        session.inventory[definition.harvestItemId] = (session.inventory[definition.harvestItemId] or 0) + definition.reward
+        if definition.regrowSeconds then
+            state.plantedAt = now
+            state.readyAt = now + definition.regrowSeconds
+            tip(player, "Собрано: " .. definition.displayName .. " ×" .. tostring(definition.reward) .. "! Куст снова плодоносит.")
+        else
+            state.cropId, state.plantedAt, state.readyAt = "", 0, 0
+            tip(player, "Урожай собран: " .. definition.displayName .. " ×" .. tostring(definition.reward) .. "!")
+        end
     end
+    session.farmActionBusy[plotId] = nil
 
     syncInventory(player)
     syncFarm(player)
