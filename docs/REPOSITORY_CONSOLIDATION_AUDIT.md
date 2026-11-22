@@ -212,3 +212,8 @@ The PR #7 head is now 179 commits ahead and zero behind the canonical developmen
 A source review of the client animation binder found that it only recognized R6 Motor6D names with spaces (for example `Right Shoulder`). Standard R15 rigs use compact names (for example `RightShoulder`), so those rigs could silently skip the procedural animation layer. The binder now normalizes joint names by lowercasing and removing whitespace, and uses canonical shoulder/hip/root/neck keys. Added a contract test and generated-place workflow markers for this compatibility path. Actual R6/R15 pose quality still requires Studio review.
 
 Latest PR #7 head after this fix is a linear descendant of the canonical base; automated CI for the new commits is not yet confirmed by the available commit-run lookup. Keep the PR Draft and do not merge until current CI and Studio acceptance are recorded.
+
+
+### R15 torso-chain follow-up
+
+A second compatibility pass found that R15 rigs use `Root` and `Waist`, whereas the initial alias fix only normalized the R6 `RootJoint` name. The procedural animator now resolves `RootJoint` or `Root` and applies the corresponding subtle torso pose to `Waist` when present. Contract coverage and generated-place markers were extended. The PR remains Draft pending current CI and Studio acceptance.
