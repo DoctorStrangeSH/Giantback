@@ -311,14 +311,16 @@ end
 
 local companionMutationDefinitions = {
     Fox = {
-        {id = "Mossback", name = "Мшистый", rarity = "Необычный", weight = 70},
-        {id = "Sunblessed", name = "Солнечный", rarity = "Редкий", weight = 24},
-        {id = "Prismtail", name = "Призматический", rarity = "Эпический", weight = 6},
+        {id = "Mossback", name = "Мшистый", rarity = "Необычный", weight = 140, biome = "Grove"},
+        {id = "Sunblessed", name = "Солнечный", rarity = "Редкий", weight = 48, biome = "Grove"},
+        {id = "Prismtail", name = "Призматический", rarity = "Эпический", weight = 11, biome = "Grove"},
+        {id = "Elderwood", name = "Древесный дух", rarity = "Легендарный", weight = 1, biome = "Grove"},
     },
     Moth = {
-        {id = "Moonveil", name = "Лунная вуаль", rarity = "Необычный", weight = 70},
-        {id = "Stardust", name = "Звёздная пыль", rarity = "Редкий", weight = 24},
-        {id = "Aurora", name = "Аврора", rarity = "Эпический", weight = 6},
+        {id = "Moonveil", name = "Лунная вуаль", rarity = "Необычный", weight = 140, biome = "Dusk"},
+        {id = "Stardust", name = "Звёздная пыль", rarity = "Редкий", weight = 48, biome = "Dusk"},
+        {id = "Aurora", name = "Аврора", rarity = "Эпический", weight = 11, biome = "Dusk"},
+        {id = "Eclipse", name = "Затмение", rarity = "Легендарный", weight = 1, biome = "Dusk"},
     },
 }
 
@@ -365,6 +367,7 @@ local function ensureCompanionMutation(player, companionId)
     player:SetAttribute("Companion_" .. companionId .. "_Mutation", mutationId or "")
     player:SetAttribute("Companion_" .. companionId .. "_MutationName", definition and definition.name or "")
     player:SetAttribute("Companion_" .. companionId .. "_MutationRarity", definition and definition.rarity or "")
+    player:SetAttribute("Companion_" .. companionId .. "_MutationBiome", definition and definition.biome or "")
     if session.online then
         task.defer(function()
             if sessions[player] == session and player.Parent and not save(player) then
@@ -385,6 +388,7 @@ local function syncCompanionProgress(player)
         player:SetAttribute("Companion_" .. id .. "_Mutation", mutationId or "")
         player:SetAttribute("Companion_" .. id .. "_MutationName", mutationDefinition and mutationDefinition.name or "")
         player:SetAttribute("Companion_" .. id .. "_MutationRarity", mutationDefinition and mutationDefinition.rarity or "")
+        player:SetAttribute("Companion_" .. id .. "_MutationBiome", mutationDefinition and mutationDefinition.biome or "")
         local progressData = session.companionProgress[id]
         player:SetAttribute("Companion_" .. id .. "_Level", progressData.level)
         player:SetAttribute("Companion_" .. id .. "_XP", progressData.xp)
