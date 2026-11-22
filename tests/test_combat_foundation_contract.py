@@ -394,6 +394,13 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('player:SetAttribute("CombatComboStep", 0)', COMBAT)
         self.assertIn('player:SetAttribute("CombatComboStep", comboStep)', COMBAT)
 
+
+    def test_finisher_applies_server_authoritative_enemy_knockback(self):
+        self.assertIn("if isFinisher and entry.root.Parent then", COMBAT)
+        self.assertIn("local resistance = entry.isBoss and 0.28 or 1", COMBAT)
+        self.assertIn("entry.root:ApplyImpulse(impulse)", COMBAT)
+        self.assertIn("entry.humanoid:TakeDamage(COMBO_DAMAGE[comboStep])", COMBAT)
+
     def test_combo_feedback_uses_server_confirmed_hit_data(self):
         self.assertIn('remote:FireClient(player, "CombatHit", {', COMBAT)
         self.assertIn("comboStep = comboStep", COMBAT)
