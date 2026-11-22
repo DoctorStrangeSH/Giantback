@@ -59,6 +59,34 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('session.equippedTool ~= def.requiredTool', WORLD)
 
 
+    def test_grotto_rune_puzzle_uses_the_clued_order_and_player_local_progress(self):
+        self.assertIn('local crystalRuneSequence = {"CrystalRuneMoon", "CrystalRuneDawn", "CrystalRuneTide"}', WORLD)
+        self.assertIn('local crystalRuneProgress = {}', WORLD)
+        self.assertIn('now - state.lastAt > 25', WORLD)
+        self.assertIn('player:GetAttribute("CrystalRunes")', WORLD)
+        self.assertIn('player:SetAttribute("CrystalRunes", true)', WORLD)
+        self.assertIn('if session.online then save(player) end', WORLD)
+
+    def test_grotto_cache_requires_runes_and_grants_one_persistent_sigil(self):
+        self.assertIn('local crystalCache = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrottoCache")', WORLD)
+        self.assertIn('if not player:GetAttribute("CrystalRunes") then', WORLD)
+        self.assertIn('if player:GetAttribute("CrystalCache") then', WORLD)
+        self.assertIn('player:SetAttribute("CrystalCache", true)', WORLD)
+        self.assertIn('session.inventory.CrystalSigil = (session.inventory.CrystalSigil or 0) + 1', WORLD)
+        self.assertIn('"CrystalSigil"}', WORLD.split("local toolIds")[0])
+
+    def test_rune_puzzle_and_cache_are_real_visual_interactions(self):
+        self.assertIn('name = "CrystalRuneMoon"', VISUALS)
+        self.assertIn('name = "CrystalRuneDawn"', VISUALS)
+        self.assertIn('name = "CrystalRuneTide"', VISUALS)
+        self.assertIn('"Луна → Рассвет → Прилив"', VISUALS)
+        self.assertIn('"CrystalGrottoCache"', VISUALS)
+        self.assertIn('placeTrialPrompt(crystalCache', VISUALS)
+
+    def test_rune_progress_is_cleaned_up_when_player_leaves(self):
+        self.assertIn('crystalRuneProgress[player] = nil', WORLD)
+
+
     def test_expedition_journal_tracks_both_grotto_milestones(self):
         self.assertIn('{key = "CrystalGrottoDiscovered"', HUD)
         self.assertIn('{key = "CrystalHeart"', HUD)
