@@ -53,7 +53,7 @@ def material(name, color, roughness=0.72, metallic=0.0, soft_fur=False):
         # Soft fabric-like sheen keeps the companion readable under warm island light.
         # Guard optional sockets so the material remains compatible with Blender 4.2.
         if "Sheen Weight" in shader.inputs:
-            shader.inputs["Sheen Weight"].default_value = 0.18
+            shader.inputs["Sheen Weight"].default_value = 0.08
         if "Sheen Roughness" in shader.inputs:
             shader.inputs["Sheen Roughness"].default_value = 0.72
         mat["giantback_surface_profile"] = "soft_fur"
@@ -66,8 +66,8 @@ def material(name, color, roughness=0.72, metallic=0.0, soft_fur=False):
         noise.inputs["Roughness"].default_value = 0.62
         bump = nodes.new("ShaderNodeBump")
         bump.name = name + "_SoftFurBump"
-        bump.inputs["Strength"].default_value = 0.022
-        bump.inputs["Distance"].default_value = 0.006
+        bump.inputs["Strength"].default_value = 0.004
+        bump.inputs["Distance"].default_value = 0.002
         links.new(noise.outputs["Fac"], bump.inputs["Height"])
         links.new(bump.outputs["Normal"], shader.inputs["Normal"])
     else:
@@ -378,15 +378,9 @@ def create_fox(p):
     # Head silhouette: broad forehead, soft cheeks and a shorter, friendlier muzzle.
     sculpted_head("FoxHead", (0, 1.73, -0.62), (0.62, 0.61, 0.56), p["fox_orange"], 64, 40)
     lofted_muzzle("FoxMuzzle", [(-1.385, 1.42, 0.075, 0.065), (-1.33, 1.42, 0.20, 0.13), (-1.23, 1.43, 0.31, 0.19), (-1.11, 1.44, 0.36, 0.215), (-1.015, 1.45, 0.29, 0.17), (-0.985, 1.45, 0.18, 0.11)], p["cream"])
-    # Compact cheek tufts blend into the muzzle; avoid long whisker-like spikes.
-    curved_plume("CheekFluff_L",
-        [(-0.20, 1.37, -1.005), (-0.31, 1.42, -1.025),
-         (-0.43, 1.48, -0.975), (-0.50, 1.53, -0.905)],
-        [0.010, 0.065, 0.050, 0.006], p["cream"], sides=20, steps_per_segment=7)
-    curved_plume("CheekFluff_R",
-        [(0.20, 1.37, -1.005), (0.31, 1.42, -1.025),
-         (0.43, 1.48, -0.975), (0.50, 1.53, -0.905)],
-        [0.010, 0.065, 0.050, 0.006], p["cream"], sides=20, steps_per_segment=7)
+    # Rounded cream cheek pads blend into the muzzle instead of forming pointed whisker tufts.
+    ellipsoid("CheekFluff_L", (-0.37, 1.445, -0.99), (0.145, 0.095, 0.075), p["cream"], 24, 16)
+    ellipsoid("CheekFluff_R", (0.37, 1.445, -0.99), (0.145, 0.095, 0.075), p["cream"], 24, 16)
     # Layered swept forelock tufts break the smooth cap silhouette.
     curved_plume("ForeheadTuft",
         [(-0.13, 2.16, -0.93), (-0.09, 2.27, -0.91),
