@@ -198,6 +198,28 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('Луна → Рассвет → Прилив', VISUALS)
         self.assertIn('runePrompt.HoldDuration = 0.25', VISUALS)
 
+    def test_rootvault_is_gated_and_rewards_each_player_once(self):
+        self.assertIn('RootvaultChest01 = {itemId = "IronOre", amount = 3}', WORLD)
+        self.assertIn('session.completedCombatEncounters.GroveTrialChest01 ~= true', WORLD)
+        self.assertIn('rootvaultInside[player] = true', WORLD)
+        self.assertIn('player:SetAttribute("InRootvault", true)', WORLD)
+        self.assertIn('rootvaultLeverActivated[player] = true', WORLD)
+        self.assertIn('if not rootvaultLeverActivated[player] then', WORLD)
+        self.assertIn('combatRewardFunction:Invoke(player, "RootvaultChest01")', WORLD)
+        self.assertIn('session.completedCombatEncounters.RootvaultChest01', WORLD)
+        self.assertIn('trap.Touched:Connect(function(hit)', WORLD)
+        self.assertIn('humanoid:TakeDamage(math.clamp(tonumber(trap:GetAttribute("TrapDamage")) or 10, 1, 20))', WORLD)
+        self.assertIn('rootvaultTrapCooldown[player]', WORLD)
+        self.assertIn('"RootvaultDungeon"', VISUALS)
+        self.assertIn('"RootvaultEntryRoom"', VISUALS)
+        self.assertIn('"RootvaultTrapPassage"', VISUALS)
+        self.assertIn('"RootvaultMechanismRoom"', VISUALS)
+        self.assertIn('"RootvaultSealedDoor"', VISUALS)
+        self.assertIn('"RootvaultRewardRoom"', VISUALS)
+        self.assertIn('"RootvaultRewardChest"', VISUALS)
+        self.assertIn('"RootvaultPressurePlate"', VISUALS)
+        self.assertIn('"RootvaultEntrance"', VISUALS)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
