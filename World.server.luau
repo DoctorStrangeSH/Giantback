@@ -4,6 +4,8 @@ local RunService = game:GetService("RunService")
 local DataStoreService = game:GetService("DataStoreService")
 local ServerStorage = game:GetService("ServerStorage")
 local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
 local storeName = RunService:IsStudio() and "GiantbackAlbum_Studio_v1" or "GiantbackAlbum_v1"
 local storeOk, storeResult = pcall(function()
     return DataStoreService:GetDataStore(storeName)
@@ -2836,6 +2838,126 @@ if crystalHeart then
         end
     end)
 end
+
+-- Crystal Grotto environmental event: warn first, then strike a random safe-bounded spot.
+local crystalFallRandom = Random.new()
+local crystalFallActive = false
+
+local function getCrystalGrottoPlayers()
+    local active = {}
+    for player, inside in crystalGrottoInside do
+        if inside and player.Parent then
+            local character = player.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            if humanoid and humanoid.Health > 0 and root then
+                table.insert(active, player)
+            end
+        end
+    end
+    return active
+end
+
+local function runCrystalFallEvent()
+    if crystalFallActive or not crystalGrotto or not crystalGrotto.Parent then return end
+    local activePlayers = getCrystalGrottoPlayers()
+    if #activePlayers == 0 then return end
+    crystalFallActive = true
+
+    local center = crystalGrotto:FindFirstChild("CrystalGrottoFloor")
+    if not center or not center:IsA("BasePart") then
+        crystalFallActive = false
+        return
+    end
+
+    local impactPosition = center.Position + Vector3.new(
+        crystalFallRandom:NextNumber(-16, 16),
+        center.Size.Y / 2 + 0.2,
+        crystalFallRandom:NextNumber(-13, 13)
+    )
+    local warning = Instance.new("Part")
+    warning.Name = "CrystalFallWarning"
+    warning.Shape = Enum.PartType.Cylinder
+    warning.Size = Vector3.new(0.18, 13, 13)
+    warning.CFrame = CFrame.new(impactPosition) * CFrame.Angles(0, 0, math.rad(90))
+    warning.Anchored = true
+    warning.CanCollide = false
+    warning.CanTouch = false
+    warning.Material = Enum.Material.Neon
+    warning.Color = Color3.fromRGB(255, 151, 112)
+    warning.Transparency = 0.3
+    warning.Parent = crystalGrotto
+    Debris:AddItem(warning, 5)
+
+    for _, player in activePlayers do
+        tip(player, "Осторожно! Сверху сыплются кристаллы — покинь отмеченную область!")
+    end
+    task.wait(3)
+
+    local shard = Instance.new("Part")
+    shard.Name = "CrystalFallShard"
+    shard.Shape = Enum.PartType.Block
+    shard.Size = Vector3.new(2.6, 6.5, 2.6)
+    shard.CFrame = CFrame.new(impactPosition + Vector3.new(0, 22, 0))
+        * CFrame.Angles(math.rad(12), 0, math.rad(18))
+    shard.Anchored = true
+    shard.CanCollide = false
+    shard.Material = Enum.Material.Neon
+    shard.Color = Color3.fromRGB(170, 126, 220)
+    shard.Parent = crystalGrotto
+    Debris:AddItem(shard, 3)
+
+    local fallTween = TweenService:Create(
+        shard,
+        TweenInfo.new(0.42, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        {CFrame = CFrame.new(impactPosition + Vector3.new(0, 3.2, 0))}
+    )
+    fallTween:Play()
+    fallTween.Completed:Wait()
+
+    local impact = Instance.new("Part")
+    impact.Name = "CrystalFallImpact"
+    impact.Shape = Enum.PartType.Ball
+    impact.Size = Vector3.new(1, 1, 1)
+    impact.CFrame = CFrame.new(impactPosition + Vector3.new(0, 1, 0))
+    impact.Anchored = true
+    impact.CanCollide = false
+    impact.Material = Enum.Material.Neon
+    impact.Color = Color3.fromRGB(211, 164, 245)
+    impact.Parent = crystalGrotto
+    Debris:AddItem(impact, 0.7)
+    TweenService:Create(
+        impact,
+        TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = Vector3.new(12, 1, 12), Transparency = 1}
+    ):Play()
+
+    for _, player in getCrystalGrottoPlayers() do
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        if humanoid and humanoid.Health > 0 and root
+            and (root.Position - impactPosition).Magnitude <= 8 then
+            humanoid:TakeDamage(18)
+            tip(player, "Кристальный обвал задел тебя! Уходи от красной отметки заранее.")
+        end
+    end
+
+    task.wait(0.8)
+    crystalFallActive = false
+end
+
+task.spawn(function()
+    while task.wait(crystalFallRandom:NextInteger(95, 145)) do
+        if #getCrystalGrottoPlayers() > 0 then
+            local ok, err = pcall(runCrystalFallEvent)
+            if not ok then
+                crystalFallActive = false
+                warn("Crystal Grotto fall event failed:", err)
+            end
+        end
+    end
+end)
 
 for _, trap in rootvault and rootvault:GetChildren() or {} do
     if trap:IsA("BasePart") and trap:GetAttribute("TrapDamage") then
