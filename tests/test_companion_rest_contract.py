@@ -4,16 +4,17 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+ACTIVITY = (ROOT / "modules/CompanionActivity.luau").read_text(encoding="utf-8")
 ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 
 
 class CompanionRestContractTests(unittest.TestCase):
     def test_rest_starts_only_after_a_short_owner_idle_period(self):
-        self.assertIn("local companionActivity = {}", ALBUM)
-        self.assertIn("idleSince = now", ALBUM)
-        self.assertIn("idleSeconds >= 12", ALBUM)
+        self.assertIn("local companionActivity = setmetatable({}, {__mode = \"k\"})", ACTIVITY)
+        self.assertIn("idleSince = now", ACTIVITY)
+        self.assertIn("idleSeconds >= 12", ACTIVITY)
         self.assertIn("if moving then", ALBUM)
-        self.assertIn("activity.idleSince = now", ALBUM)
+        self.assertIn("activity.idleSince = now", ACTIVITY)
 
     def test_fox_uses_soft_breathing_and_relaxed_tail_and_paws(self):
         self.assertIn("math.sin(time * 1.8) * 0.035", ANIMATION)
@@ -29,7 +30,7 @@ class CompanionRestContractTests(unittest.TestCase):
 
     def test_deep_idle_adds_local_sleep_z_glyphs_and_cleans_them_up(self):
         self.assertIn('local sleepIndicators = {}', ALBUM)
-        self.assertIn('idleSeconds >= 45', ALBUM)
+        self.assertIn('idleSeconds >= 45', ACTIVITY)
         self.assertIn('setSleepIndicator(model, sleeping)', ALBUM)
         self.assertIn('CompanionSleepZLocal', ALBUM)
         self.assertIn('AlwaysOnTop = true', ALBUM)
@@ -40,7 +41,7 @@ class CompanionRestContractTests(unittest.TestCase):
 
     def test_rest_is_visual_only_and_activity_state_is_cleaned_up(self):
         self.assertIn("animateModelParts(model, state, phase, moving, resting)", ALBUM)
-        self.assertIn("companionActivity[owner] = nil", ALBUM)
+        self.assertIn("companionActivity.forget(owner)", ALBUM)
         self.assertNotIn("RestEnergy", ALBUM)
         self.assertNotIn("RestPenalty", ALBUM)
 
