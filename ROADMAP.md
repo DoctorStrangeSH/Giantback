@@ -4,6 +4,7 @@
 - [x] Validate six original OBJ/MTL source pairs and source manifest in GitHub Actions.
 - [x] Add a Roblox Studio Command Bar organizer for already imported models with dry-run mode, duplicate prevention and explicit destinations.
 - [x] Cover organizer naming, safe defaults, destination checks and non-destructive behavior with source contract tests.
+- [~] Add read-only Roblox Studio rig diagnostics for the six-source import pipeline: Fox/Moth structure, MeshIds, moving parts, collision, bone/joint conflicts and scale; real Studio model import and manual animation/art approval remain NOT DONE.
 - [ ] Import source models into Roblox Studio, confirm materials, scale, collisions and joints.
 - [ ] Publish approved MeshParts and record asset IDs and ownership in asset manifest.
 - [~] Fox/Moth client followers can opt into approved MeshPart templates under ReplicatedStorage/AssetLibrary/Models/Companions; strict Studio-approval and rig-compatibility attributes preserve the existing Parts fallback. Real Studio import and acceptance remain NOT DONE.
