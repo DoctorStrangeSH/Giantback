@@ -166,12 +166,19 @@ end
 local function resolveEnemyReward(enemy, entry)
     if entry.rewardResolved then return end
     entry.rewardResolved = true
-    if not entry.lastHitBy or not rewardFunction or not REWARD_ENCOUNTERS[entry.encounterId] then return end
-    local ok, granted = pcall(function()
-        return rewardFunction:Invoke(entry.lastHitBy, entry.encounterId)
-    end)
-    if not ok or granted ~= true then
-        warn("Combat reward was not granted:", entry.encounterId, entry.lastHitBy.UserId)
+    if not rewardFunction or not REWARD_ENCOUNTERS[entry.encounterId] then return end
+
+    -- Every player who landed a server-validated hit earns their own first-clear reward.
+    -- This keeps co-op fair without trusting client-supplied party or damage data.
+    for contributor in entry.contributors do
+        if contributor.Parent == Players then
+            local ok, granted = pcall(function()
+                return rewardFunction:Invoke(contributor, entry.encounterId)
+            end)
+            if not ok or granted ~= true then
+                warn("Combat reward was not granted:", entry.encounterId, contributor.UserId)
+            end
+        end
     end
 end
 
@@ -196,7 +203,7 @@ local function registerEnemy(enemy)
         root = root,
         encounterId = encounterId,
         regionId = regionId,
-        lastHitBy = nil,
+        contributors = {},
         rewardResolved = false,
         attacking = false,
         nextAttackAt = 0,
@@ -326,7 +333,7 @@ local function performAttack(player, state, now)
                 local offset = entry.root.Position - root.Position
                 if offset.Magnitude <= PLAYER_ATTACK_RANGE and root.CFrame.LookVector:Dot(offset.Unit) >= 0.25 then
                     hitThisSwing[enemy] = true
-                    entry.lastHitBy = player
+                    entry.contributors[player] = true
                     entry.humanoid:TakeDamage(PLAYER_DAMAGE)
                     enemy:SetAttribute("CombatHealth", math.max(0, entry.humanoid.Health))
                     remote:FireClient(player, "CombatHit", { enemyId = enemy:GetAttribute("EnemyId") or enemy.Name })
