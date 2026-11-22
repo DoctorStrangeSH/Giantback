@@ -328,12 +328,15 @@ local function renderCity()
     local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
     local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
     addInfo("Материалы для моста", "🪵 Дерево: " .. tostring(wood) .. " / 5    •    🪨 Камень: " .. tostring(stone) .. " / 3", 66)
+    local sunPetals = tonumber(player:GetAttribute("Resource_SunPetal")) or 0
+    local moonPetals = tonumber(player:GetAttribute("Resource_MoonPetal")) or 0
     local moonSeeds = tonumber(player:GetAttribute("Resource_MoonSeed")) or 0
     local starShards = tonumber(player:GetAttribute("Resource_StarShard")) or 0
     local carrotSeeds = tonumber(player:GetAttribute("Resource_CarrotSeed")) or 0
     local carrots = tonumber(player:GetAttribute("Resource_Carrot")) or 0
     addInfo("Находки и ферма", "🌙 Лунные семена: " .. tostring(moonSeeds) .. "   •   ✦ Звёздный осколок: " .. tostring(starShards)
-        .. "   •   🥕 Семена: " .. tostring(carrotSeeds) .. "   •   Урожай: " .. tostring(carrots), 76)
+        .. "   •   🥕 Семена: " .. tostring(carrotSeeds) .. "   •   Урожай: " .. tostring(carrots)
+        .. "   •   ☀ Солнечные лепестки: " .. tostring(sunPetals) .. "   •   ☾ Лунные лепестки: " .. tostring(moonPetals), 98)
     addInfo("Ферма: уровень " .. tostring(farmLevel), "У тебя есть четыре места для грядок. Открой вкладку «Ферма», чтобы посмотреть их состояние.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
 end
