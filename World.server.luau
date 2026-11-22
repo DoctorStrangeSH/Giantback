@@ -1220,6 +1220,8 @@ local resourceDefinitions = {
     },
     {
         key = "GroveWood01",
+        amount = 2,
+        verb = "Срубить дерево ×2",
         itemId = "Wood",
         displayName = "Лесная древесина",
         area = "Grove",
@@ -1230,6 +1232,8 @@ local resourceDefinitions = {
     },
     {
         key = "GroveWood02",
+        amount = 2,
+        verb = "Срубить дерево ×2",
         itemId = "Wood",
         displayName = "Лесная древесина",
         area = "Grove",
@@ -1240,6 +1244,8 @@ local resourceDefinitions = {
     },
     {
         key = "DuskStone01",
+        amount = 2,
+        verb = "Добыть камень ×2",
         itemId = "Stone",
         displayName = "Каменная жила",
         area = "Dusk",
@@ -1250,6 +1256,8 @@ local resourceDefinitions = {
     },
     {
         key = "DuskStone02",
+        amount = 2,
+        verb = "Добыть камень ×2",
         itemId = "Stone",
         displayName = "Каменная жила",
         area = "Dusk",
@@ -1284,7 +1292,7 @@ local function spawnResource(def)
     local model, anchor = createResourceFlower(def, position)
     model.Parent = folder
 
-    prompt(anchor, def.displayName, "Собрать", function(player)
+    prompt(anchor, def.displayName, def.verb or "Собрать", function(player)
         local session = sessions[player]
         if not session or not player:GetAttribute("Ready") then return end
 
@@ -1313,14 +1321,15 @@ local function spawnResource(def)
             session.resourceCooldowns[def.key] = nextReadyAt
         end
 
-        session.inventory[def.itemId] = (session.inventory[def.itemId] or 0) + 1
+        local amount = math.clamp(math.floor(tonumber(def.amount) or 1), 1, 100)
+        session.inventory[def.itemId] = (session.inventory[def.itemId] or 0) + amount
         syncInventory(player)
         event:FireClient(player, "ResourcePicked", {
             nodeId = def.key,
             unique = def.kind == "unique",
             readyAt = nextReadyAt,
         })
-        tip(player, "Получено: " .. def.displayName .. " ×1")
+        tip(player, "Получено: " .. def.displayName .. " ×" .. tostring(amount))
 
         if session.online and not save(player) then
             warn("Resource pickup save will be retried:", player.UserId, def.key)
