@@ -50,10 +50,13 @@ Do not introduce random extra hues. Any new markings must remain inside this war
 - Use warm key light, gentle fill, soft rim light and contact shadows.
 - Character must remain legible without relying on bloom or post-processing.
 
+
+**Current generator review palette (not yet visually approved):** `fox_orange` RGB `(0.90, 0.20, 0.025)`; `cream` RGB `(0.92, 0.72, 0.48)`. The increased green channel is intentional: prior renders read red/coral rather than recognizable fox orange under AgX studio lighting. Re-render and inspect under the same four views before changing the approved color standard.
+
 ## 4.1 Review findings and corrective pass (2026-11-22)
 
 The first successful Blender visual review (four orthographic views; 17 rig groups; clean UV/material/mesh report) is a technical pass, not an art approval. The rendered coat read pink-coral instead of fox orange, procedural fur relief looked grainy, and the cheek tufts projected like whisker spikes. The corrective generator pass therefore:
-- shifts the coat to a more saturated orange and the cream to a deeper warm ivory;
+- shifts the coat from red-coral toward a clearer storybook orange (generator RGB 0.90 / 0.20 / 0.025) and the cream toward warm ivory (0.92 / 0.72 / 0.48);
 - lowers key/fill/rim and world illumination to retain color saturation;
 - reduces fur noise scale to 16, bump to strength 0.004 / distance 0.002 and sheen weight 0.08;
 - replaces pointed cheek tufts with rounded cream cheek pads integrated into the muzzle silhouette.
