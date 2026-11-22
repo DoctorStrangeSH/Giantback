@@ -126,7 +126,7 @@ jobs:
               "ResourcePicked",
               "p.MaxActivationDistance + 1",
               "kind = \"renewable\"",
-              "old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 10)",
+              "old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 11)",
               "old.resourceCooldowns = savedCooldowns",
               "old.collectedNodes = savedCollected",
               "LocalTransparencyModifier = visible and 0 or 1",
