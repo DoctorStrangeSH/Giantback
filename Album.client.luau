@@ -2158,6 +2158,10 @@ local companionMutationVisuals = {
     Aurora = {color = Color3.fromRGB(117, 235, 215), outline = Color3.fromRGB(205, 255, 240)},
     Elderwood = {color = Color3.fromRGB(116, 194, 112), outline = Color3.fromRGB(225, 255, 173), legendary = true},
     Eclipse = {color = Color3.fromRGB(79, 62, 132), outline = Color3.fromRGB(255, 222, 151), legendary = true},
+    PrismGlow = {color = Color3.fromRGB(187, 160, 255), outline = Color3.fromRGB(223, 214, 255)},
+    EchoSpark = {color = Color3.fromRGB(99, 204, 219), outline = Color3.fromRGB(191, 248, 255)},
+    Starseed = {color = Color3.fromRGB(255, 204, 124), outline = Color3.fromRGB(255, 238, 190)},
+    HeartOfPrism = {color = Color3.fromRGB(143, 91, 230), outline = Color3.fromRGB(255, 224, 255), legendary = true},
 }
 local mutationOriginalColors = setmetatable({}, {__mode = "k"})
 
