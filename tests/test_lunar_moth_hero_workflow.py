@@ -21,6 +21,8 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         ):
             self.assertIn(name, source)
         self.assertIn('uv=mesh.uv_layers.new(name="WingUV")', source)
+        self.assertIn("0.10 + 0.90 * (math.sin", source)
+        self.assertIn("width = (0.10 + 0.90 * (math.sin", source)
         self.assertIn('"wing_groups":["MothWingUpperLeft","MothWingUpperRight","MothWingLowerLeft","MothWingLowerRight"]', source)
 
     def test_lunar_palette_and_gameplay_animation_states_are_locked(self):
