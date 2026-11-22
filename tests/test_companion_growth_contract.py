@@ -4,6 +4,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 
@@ -26,11 +27,11 @@ class CompanionGrowthContractTests(unittest.TestCase):
         self.assertIn("applyCompanionGrowth(model, owner, id)", ALBUM)
 
     def test_growth_stage_changes_companion_motion_without_gameplay_effects(self):
-        self.assertIn('local growthStage = math.clamp(math.floor(tonumber(model:GetAttribute("AppliedGrowthStage")) or 1), 1, 3)', ALBUM)
-        self.assertIn('local growthSway = ({[1] = 0.82, [2] = 1, [3] = 1.22})[growthStage]', ALBUM)
-        self.assertIn('local growthStride = ({[1] = 0.82, [2] = 1, [3] = 1.12})[growthStage]', ALBUM)
-        self.assertIn('local growthFlap = ({[1] = 0.88, [2] = 1, [3] = 1.16})[growthStage]', ALBUM)
-        self.assertIn('local adultGlow = growthStage == 3 and 1.18', ALBUM)
+        self.assertIn('local growthStage = math.clamp(math.floor(tonumber(model:GetAttribute("AppliedGrowthStage")) or 1), 1, 3)', ANIMATION)
+        self.assertIn('local growthSway = ({[1] = 0.82, [2] = 1, [3] = 1.22})[growthStage]', ANIMATION)
+        self.assertIn('local growthStride = ({[1] = 0.82, [2] = 1, [3] = 1.12})[growthStage]', ANIMATION)
+        self.assertIn('local growthFlap = ({[1] = 0.88, [2] = 1, [3] = 1.16})[growthStage]', ANIMATION)
+        self.assertIn('local adultGlow = growthStage == 3 and 1.18', ANIMATION)
         self.assertNotIn("GrowthDamage", ALBUM)
         self.assertNotIn("GrowthReward", ALBUM)
 
