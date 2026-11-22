@@ -2052,9 +2052,7 @@ local function follow(dt)
             local idleSeconds = now - activity.idleSince
             local resting = not moving and idleSeconds >= 12
             local sleeping = not moving and idleSeconds >= 45
-            if owner == player then
-                setSleepIndicator(model, sleeping)
-            end
+            setSleepIndicator(model, sleeping)
 
             local state = animationStates[model]
             if state then
