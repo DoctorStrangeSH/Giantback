@@ -30,13 +30,14 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey"}
 local toolIds = {Axe = true, Pickaxe = true}
 local combatRewardDefinitions = {
     GroveGrunt01 = {itemId = "Wood", amount = 3},
     GroveScout02 = {itemId = "SunPetal", amount = 2},
     GroveTrialChest01 = {itemId = "StarShard", amount = 1},
     RootvaultChest01 = {itemId = "IronOre", amount = 3},
+    RootvaultSentinel01 = {itemId = "RootvaultKey", amount = 1},
 }
 local toolUpgradeCosts = {Axe = {Wood = 8, Stone = 6}, Pickaxe = {Wood = 6, Stone = 8}}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
@@ -2077,8 +2078,11 @@ if rootvaultDoorPrompt and rootvaultRewardRoom then
     connectTrialPrompt(rootvaultDoorPrompt, function(player)
         local session, character = validRootvaultInteraction(player, rootvaultDoorPrompt)
         if not session then return end
+        if (session.inventory.RootvaultKey or 0) < 1 then
+            return tip(player, "Печать не поддаётся. Победи Стража хранилища и забери ключ.")
+        end
         if not rootvaultLeverActivated[player] then
-            return tip(player, "Печать закрыта. Найди рычаг в зале механизма.")
+            return tip(player, "Сначала активируй древний рычаг.")
         end
         character:PivotTo(rootvaultRewardRoom:GetPivot() * CFrame.new(0, 4, -5))
         tip(player, "Ты открыл путь в зал реликвии!")
