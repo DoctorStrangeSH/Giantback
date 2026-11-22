@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 VISUALS = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
+ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
 
 
 class CrystalGrottoContractTests(unittest.TestCase):
