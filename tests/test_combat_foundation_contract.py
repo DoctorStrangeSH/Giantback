@@ -125,6 +125,8 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('enemyHighlight.Name = "CombatTelegraphHighlight"', VISUALS)
         self.assertIn('warningBillboard.Name = "CombatTelegraphWarning"', VISUALS)
         self.assertIn('warningText.Text = "БЕРЕГИСЬ!"', VISUALS)
+        self.assertIn('warningText.Text = "АТАКА!"', VISUALS)
+        self.assertIn("TweenService:Create(rightShoulder", VISUALS)
         self.assertIn("GroveApproach", VISUALS)
         self.assertIn("Training stone platform", VISUALS)
 
@@ -137,6 +139,9 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('remote:FireServer("BlockStart")', CLIENT)
         self.assertIn('remote:FireServer("BlockEnd")', CLIENT)
         self.assertIn('remote:FireServer("Dodge")', CLIENT)
+        self.assertIn('feedbackGui.Name = "GiantbackCombatFeedback"', CLIENT)
+        self.assertIn('showFeedback("ПОПАЛ!"', CLIENT)
+        self.assertIn('CombatRegionRequired = "Войди на тренировочную арену"', CLIENT)
         self.assertIn('ContextActionService:BindAction(', CLIENT)
 
 
