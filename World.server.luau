@@ -127,6 +127,7 @@ local function defaultCity()
         level = 1,
         farm = {
             level = 1,
+            selectedCropId = defaultCropId,
             plots = plots,
         },
         bridges = {
@@ -164,6 +165,7 @@ local function normalizeCity(raw)
     city.bridges.homeToGrove = rawBridges.homeToGrove == true
     local rawFarm = type(raw.farm) == "table" and raw.farm or {}
     city.farm.level = math.clamp(math.floor(tonumber(rawFarm.level) or 1), 1, 3)
+    city.farm.selectedCropId = isValidCropId(rawFarm.selectedCropId) and rawFarm.selectedCropId or defaultCropId
     local rawPlots = type(rawFarm.plots) == "table" and rawFarm.plots or {}
 
     for _, plotId in farmPlotIds do
@@ -441,6 +443,7 @@ local function init(player)
                 session.inventory[key] = math.clamp(math.floor(amount), 0, 1000000)
             end
             session.city = normalizeCity(type(data.island) == "table" and data.island or data.city)
+            session.selectedCropId = session.city.farm.selectedCropId or defaultCropId
 
             local savedCooldowns = type(data.resourceCooldowns) == "table" and data.resourceCooldowns or {}
             for nodeId, readyAt in savedCooldowns do
@@ -738,6 +741,7 @@ event.OnServerEvent:Connect(function(player, action, payload)
             return tip(player, "У тебя пока нет семян: " .. definition.displayName .. ".")
         end
         session.selectedCropId = cropId
+        session.city.farm.selectedCropId = cropId
         syncFarm(player)
         tip(player, "Выбрано для посадки: " .. definition.displayName .. ". Подойди к свободной грядке.")
         return
