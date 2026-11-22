@@ -25,9 +25,7 @@
 - [x] Fix resource reward handling so each node grants its configured amount (wood/stone now correctly grant ×2; iron grants ×2).
 - [x] Add a personal owner-only furnace: 3 IronOre + 2 Wood starts a 60-second smelt; the iron ingot is granted only when collected after completion.
 - [x] Persist in-progress smelting timestamps and pending output across rejoin; add HUD material counts and smelter status.
-- [x] Add client-local tool swing, hit cracks/progress, impact particles, final break burst, reward pickup and regrowth feedback; optional camera shake can be disabled by player attribute. Server rewards and resource state remain authoritative.
-- [x] Validate the feedback integration in PR #6: gameplay contract tests, Roblox place build, embedded-script validation and artifact upload passed in run #45007937474.
-- [ ] Roblox Studio playtest: verify tool animation on R6/R15, impact alignment, resource break/regrowth, local-only effects and mobile readability.
+- [~] Implement harvesting tool swing/impact, hit-progress/crack, break/regrowth and reward feedback in consolidated PR #7; awaiting Studio acceptance and merge into the canonical branch.
 - [ ] Studio playtest: verify Backpack switching, correct-tool checks, hit progress, respawn restoration, upgrade cost consumption and save/rejoin.
 - [ ] Add mobile-friendly touch controls and tool selection UX after Studio testing.
 
@@ -39,9 +37,8 @@
 - [x] Update generated-place validation marker for the forward-compatible schema assignment.
 - [x] Confirm fresh Validate Giantback run #1223 after the validator update; tests, place build, generated-place validation and artifact upload all passed.
 - [x] Port starter tool ownership/equipment and server-authoritative multi-hit wood/stone gathering.
-- [x] Confirm the current cozy-world base already contains server-authoritative iron ore harvesting, personal smelter actions, 60-second processing and persisted pending output; do not re-port the older V2 implementation.
-- [x] C0 server-owned CombatAction remote, action allow-list, strict empty-payload contract, request rate limit, ready/alive/region/equipped-weapon gates, sanitized state snapshot and transient-state cleanup; contract tests and place embedding added.
-- [ ] C1 first playable sword-and-shield loop; do not enable damage until server hit validation and acceptance tests exist.
+- [x] Port smelter state/actions and iron ore processing; owner-only furnace, persistent timer and collect-after-completion flow are implemented.
+- [~] Combat C0 server protocol is implemented in consolidated PR #7; it intentionally does not deal damage. C1 playable combat remains pending Studio acceptance and a server-owned enemy/encounter implementation.
 
 ## Farming 2.0 — Four-crop server foundation
 
@@ -279,13 +276,12 @@
 - [ ] Проверить отсутствие визуальных дубликатов и багов после респавна.
 
 ## Этап 6. Экспедиции и бой
-- [ ] Зафиксировать серверный CombatAction-контракт и тесты защиты от подмены урона/дистанции/частоты атак (`docs/COMBAT_SYSTEM_1.0.md`).
-- [ ] Реализовать первый вертикальный срез: меч и щит, базовая атака, блок и уклонение.
-- [ ] Добавить одного серверно-управляемого врага с телеграфом, здоровьем, смертью и наградой.
-- [ ] Добавить лук и посох как отдельные боевые стили после стабилизации ближнего боя.
-- [ ] Добавить броню, экипировку и кузнечные улучшения с серверной проверкой ресурсов.
-- [ ] Собрать два законченных приключенческих биома и первое подземелье на 1–4 игроков.
-- [ ] Добавить босса, идемпотентную награду и кооперативные проверки.
+- [ ] Добавить лес и каменный биом как законченные зоны.
+- [ ] Создать базовые инструменты, оружие и броню.
+- [ ] Добавить врагов с читаемыми атаками.
+- [ ] Реализовать кооператив 1–4 игрока.
+- [ ] Создать одно полноценное подземелье с головоломкой и боссом.
+- [ ] Выдавать серверно-проверяемые награды.
 
 ## Этап 7. Социальность и монетизация
 - [ ] Посещение городов друзей.
