@@ -64,6 +64,8 @@ local resourceNodeIds = {
     GroveWood02 = true,
     DuskStone01 = true,
     DuskStone02 = true,
+    DuskIron01 = true,
+    DuskIron02 = true,
 }
 local sessions = {}
 local createPersonalCity
@@ -217,6 +219,8 @@ local function syncInventory(player)
         local amount = session and session.inventory and session.inventory[key] or 0
         player:SetAttribute("Resource_" .. key, amount)
     end
+    player:SetAttribute("Smelter_ReadyAt", session and session.smeltingReadyAt or 0)
+    player:SetAttribute("Smelter_Pending", session and session.smeltingAmount or 0)
 end
 
 local function createToolPart(parent, name, size, offset, color, material, shape)
@@ -401,6 +405,10 @@ local function save(player)
             end
         end
 
+        local smeltingSnapshot = {
+            readyAt = math.max(0, math.floor(tonumber(session.smeltingReadyAt) or 0)),
+            amount = math.clamp(math.floor(tonumber(session.smeltingAmount) or 0), 0, 10),
+        }
         local toolsSnapshot = {
             Axe = session.tools.Axe == true,
             Pickaxe = session.tools.Pickaxe == true,
@@ -424,7 +432,7 @@ local function save(player)
                     old[key] = old[key] == true or snapshot[key]
                 end
                 -- Never downgrade a profile written by a newer feature branch.
-                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 8)
+                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 9)
 
                 local savedTools = type(old.tools) == "table" and old.tools or {}
                 savedTools.Axe = toolsSnapshot.Axe
@@ -432,6 +440,7 @@ local function save(player)
                 savedTools.equipped = toolsSnapshot.equipped
                 savedTools.levels = toolsSnapshot.levels
                 old.tools = savedTools
+                old.smelting = smeltingSnapshot
 
                 local savedInventory = type(old.inventory) == "table" and old.inventory or {}
                 for _, key in inventoryKeys do
@@ -505,6 +514,8 @@ local function init(player)
         resourceCooldowns = {},
         resourceHits = {},
         resourceHitCooldowns = {},
+        smeltingReadyAt = 0,
+        smeltingAmount = 0,
         collectedNodes = {},
         city = defaultCity(),
         cityModel = nil,
@@ -584,6 +595,9 @@ local function init(player)
                 end
                 session.inventory[key] = math.clamp(math.floor(amount), 0, 1000000)
             end
+            local savedSmelting = type(data.smelting) == "table" and data.smelting or {}
+            session.smeltingReadyAt = math.max(0, math.floor(tonumber(savedSmelting.readyAt) or 0))
+            session.smeltingAmount = math.clamp(math.floor(tonumber(savedSmelting.amount) or 0), 0, 10)
             local savedTools = type(data.tools) == "table" and data.tools or {}
             session.tools = {
                 Axe = savedTools.Axe == true or savedTools.Axe == nil,
@@ -1481,11 +1495,15 @@ local function createResourceFlower(def, position)
         makePart("CanopyLower", Vector3.new(4.8, 3.4, 4.8), CFrame.new(0, 4.2, 0), Color3.fromRGB(91, 145, 91), Enum.Material.Grass)
         makePart("CanopyUpper", Vector3.new(3.6, 3.1, 3.6), CFrame.new(0, 6.1, 0), Color3.fromRGB(119, 169, 105), Enum.Material.Grass)
         makePart("HarvestMark", Vector3.new(0.55, 0.18, 0.55), CFrame.new(0, 2.15, -0.68), Color3.fromRGB(221, 179, 105), Enum.Material.Wood)
-    elseif def.visual == "rock" then
+    elseif def.visual == "rock" or def.visual == "ore" then
         makePart("StoneMain", Vector3.new(3.4, 2.7, 2.8), CFrame.new(0, 1.15, 0), Color3.fromRGB(125, 132, 132), Enum.Material.Slate)
         makePart("StoneLeft", Vector3.new(1.8, 1.55, 1.8), CFrame.new(-1.35, 0.72, 0.8), Color3.fromRGB(151, 157, 154), Enum.Material.Rock)
         makePart("StoneRight", Vector3.new(1.65, 1.3, 1.6), CFrame.new(1.25, 0.62, -0.72), Color3.fromRGB(103, 112, 113), Enum.Material.Rock)
-        makePart("OreGlint", Vector3.new(0.55, 0.22, 0.28), CFrame.new(0.35, 1.85, -1.15), Color3.fromRGB(191, 202, 194), Enum.Material.SmoothPlastic)
+        makePart("OreGlint", Vector3.new(0.55, 0.22, 0.28), CFrame.new(0.35, 1.85, -1.15), def.visual == "ore" and Color3.fromRGB(242, 163, 91) or Color3.fromRGB(191, 202, 194), def.visual == "ore" and Enum.Material.Neon or Enum.Material.SmoothPlastic)
+        if def.visual == "ore" then
+            makePart("IronVein", Vector3.new(0.9, 0.32, 0.34), CFrame.new(-0.7, 1.35, -1.22), Color3.fromRGB(183, 104, 67), Enum.Material.Metal)
+            makePart("IronVeinSmall", Vector3.new(0.48, 0.22, 0.25), CFrame.new(0.9, 1.15, -1.0), Color3.fromRGB(224, 145, 91), Enum.Material.Metal)
+        end
     else
     makePart(
         "Stem",
@@ -1608,6 +1626,18 @@ local resourceDefinitions = {
         area = "Dusk", offset = Vector3.new(20, 0, 17), visual = "rock",
         kind = "renewable", respawnSeconds = 300,
     },
+    {
+        key = "DuskIron01", amount = 2, requiredTool = "Pickaxe", hitsRequired = 5,
+        verb = "Добыть железо", itemId = "IronOre", displayName = "Железная жила",
+        area = "Dusk", offset = Vector3.new(-42, 0, 27), visual = "ore",
+        kind = "renewable", respawnSeconds = 600,
+    },
+    {
+        key = "DuskIron02", amount = 2, requiredTool = "Pickaxe", hitsRequired = 5,
+        verb = "Добыть железо", itemId = "IronOre", displayName = "Железная жила",
+        area = "Dusk", offset = Vector3.new(42, 0, -29), visual = "ore",
+        kind = "renewable", respawnSeconds = 600,
+    },
 }
 
 local function spawnResource(def)
@@ -1688,14 +1718,15 @@ local function spawnResource(def)
             session.resourceCooldowns[def.key] = nextReadyAt
         end
 
-        session.inventory[def.itemId] = (session.inventory[def.itemId] or 0) + 1
+        local rewardAmount = math.max(1, math.floor(tonumber(def.amount) or 1))
+        session.inventory[def.itemId] = (session.inventory[def.itemId] or 0) + rewardAmount
         syncInventory(player)
         event:FireClient(player, "ResourcePicked", {
             nodeId = def.key,
             unique = def.kind == "unique",
             readyAt = nextReadyAt,
         })
-        tip(player, "Получено: " .. def.displayName .. " ×1")
+        tip(player, "Получено: " .. def.displayName .. " ×" .. tostring(rewardAmount))
 
         if session.online and not save(player) then
             warn("Resource pickup save will be retried:", player.UserId, def.key)
