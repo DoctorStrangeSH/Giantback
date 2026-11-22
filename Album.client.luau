@@ -2066,6 +2066,25 @@ local function attachMothStardust(model)
     emitter.Parent = attachment
 end
 
+local function updateMothStardust(model, owner)
+    local glow = model and model:FindFirstChild("Moonlight glow", true)
+    local emitter = glow and glow:FindFirstChild("CompanionStardust")
+    if not emitter or not emitter:IsA("ParticleEmitter") then return end
+
+    local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_Moth_BondStage")) or 0, 0, 4)
+    if emitter:GetAttribute("AppliedBondStage") == bondStage then return end
+
+    local personality = owner:GetAttribute("Companion_Moth_Personality")
+    local personalityRates = {
+        ["Любопытный"] = 9,
+        ["Озорной"] = 12,
+        ["Смелый"] = 7,
+        ["Застенчивый"] = 4,
+    }
+    emitter.Rate = math.min(16, (personalityRates[personality] or 7) + math.floor(bondStage / 2))
+    emitter:SetAttribute("AppliedBondStage", bondStage)
+end
+
 local function follow(dt)
     local now = workspace:GetServerTimeNow()
 
@@ -2111,6 +2130,10 @@ local function follow(dt)
             local target = root.CFrame
                 * followOffset
                 * CFrame.Angles(0, math.sin(phase * 1.6) * 0.06, 0)
+
+            if owner == player and id == "Moth" and model then
+                updateMothStardust(model, owner)
+            end
 
             if not model then
                 model = storage[id]:Clone()
