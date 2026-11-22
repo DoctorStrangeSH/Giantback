@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local CollectionService = game:GetService("CollectionService")
 local Workspace = game:GetService("Workspace")
+local companionXpFunction = ServerStorage:WaitForChild("GiantbackGrantCompanionXP", 30)
 local PathfindingService = game:GetService("PathfindingService")
 
 local ACTION_RATE_WINDOW = 1
@@ -33,6 +34,8 @@ local FOX_SKILL_DAMAGE = 24
 local FOX_SKILL_RANGE = 18
 local MOTH_HEAL_AMOUNT = 18
 local MOTH_HEAL_RADIUS = 14
+local FOX_SKILL_DAMAGE_PER_LEVEL = 3
+local MOTH_HEAL_PER_LEVEL = 2
 local ENEMY_AGGRO_RANGE = 34
 local ENEMY_PATH_REFRESH_SECONDS = 1.15
 local ENEMY_PATH_AGENT = {AgentRadius = 2, AgentHeight = 5, AgentCanJump = false, WaypointSpacing = 4}
@@ -629,18 +632,25 @@ local function performCompanionSkill(player, state, now)
             return
         end
         targetEntry.contributors[player] = true
-        targetEntry.humanoid:TakeDamage(FOX_SKILL_DAMAGE)
+        local companionLevel = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_Fox_Level")) or 1), 1, 5)
+        local damage = FOX_SKILL_DAMAGE + (companionLevel - 1) * FOX_SKILL_DAMAGE_PER_LEVEL
+        targetEntry.humanoid:TakeDamage(damage)
         target:SetAttribute("CombatHealth", math.max(0, targetEntry.humanoid.Health))
+        if companionXpFunction then
+            pcall(function() companionXpFunction:Invoke(player, "Fox", 12) end)
+        end
         state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN
         player:SetAttribute("CompanionSkillReadyAt", state.companionSkillReadyAt)
         remote:FireClient(player, "CompanionSkillUsed", {
             companionId = "Fox",
             targetId = target:GetAttribute("EnemyId") or target.Name,
-            damage = FOX_SKILL_DAMAGE,
+            damage = damage,
         })
         return
     end
 
+    local companionLevel = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_Moth_Level")) or 1), 1, 5)
+    local healAmount = MOTH_HEAL_AMOUNT + (companionLevel - 1) * MOTH_HEAL_PER_LEVEL
     local healedPlayers = {}
     for _, ally in Players:GetPlayers() do
         if ally:GetAttribute("Ready") == true and getPlayerRegion(ally) == regionId then
@@ -649,7 +659,7 @@ local function performCompanionSkill(player, state, now)
                 and (allyRoot.Position - playerRoot.Position).Magnitude <= MOTH_HEAL_RADIUS
                 and allyHumanoid.Health < allyHumanoid.MaxHealth then
                 local before = allyHumanoid.Health
-                allyHumanoid.Health = math.min(allyHumanoid.MaxHealth, before + MOTH_HEAL_AMOUNT)
+                allyHumanoid.Health = math.min(allyHumanoid.MaxHealth, before + healAmount)
                 table.insert(healedPlayers, ally.UserId)
             end
         end
@@ -658,13 +668,17 @@ local function performCompanionSkill(player, state, now)
         reject(player, "CompanionNoOneToHeal")
         return
     end
+    if companionXpFunction then
+        local xpReward = math.min(24, #healedPlayers * 6)
+        pcall(function() companionXpFunction:Invoke(player, "Moth", xpReward) end)
+    end
     state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN
     player:SetAttribute("CompanionSkillReadyAt", state.companionSkillReadyAt)
     remote:FireClient(player, "CompanionSkillUsed", {
         companionId = "Moth",
         healedCount = #healedPlayers,
         healedUserIds = healedPlayers,
-        healAmount = MOTH_HEAL_AMOUNT,
+        healAmount = healAmount,
     })
 end
 
