@@ -96,7 +96,6 @@ jobs:
               "GiantbackAttack",
               "GiantbackBlock",
               "GiantbackDodge",
-              "CombatControls",
               "GiantbackGrantCombatReward",
               "FoxEncounter",
               "LocalTransparencyModifier",
