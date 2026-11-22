@@ -3,6 +3,7 @@ local Storage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local DataStoreService = game:GetService("DataStoreService")
 local ServerStorage = game:GetService("ServerStorage")
+local HttpService = game:GetService("HttpService")
 local storeName = RunService:IsStudio() and "GiantbackAlbum_Studio_v1" or "GiantbackAlbum_v1"
 local storeOk, storeResult = pcall(function()
     return DataStoreService:GetDataStore(storeName)
@@ -332,6 +333,105 @@ local companionFeedFoods = {
     Carrot = {bond = 15, name = "морковь"},
 }
 local companionFeedOrder = {"Pumpkin", "Strawberry", "Cabbage", "Carrot"}
+
+local companionPlaySymbols = {"🐾", "🍃", "✨"}
+local companionPlayCooldownSeconds = 25
+
+local function finishCompanionPlay(player, success, reason)
+    local session = sessions[player]
+    if not session then return end
+    local challenge = session.companionPlay
+    session.companionPlay = nil
+    if not challenge then return end
+
+    if not success then
+        event:FireClient(player, "CompanionPlayFinished", {
+            success = false,
+            message = reason or "Ничего страшного! Попробуй ещё раз, когда питомец снова захочет играть.",
+        })
+        return
+    end
+
+    local progressData = session.companionProgress[challenge.companionId]
+    progressData.bond = math.clamp((progressData.bond or 0) + 15, 0, 1000)
+    syncCompanionProgress(player)
+    local xpGranted = awardCompanionXp(player, challenge.companionId, 8)
+    if not xpGranted and session.online then
+        save(player)
+    end
+    event:FireClient(player, "CompanionPlayFinished", {
+        success = true,
+        message = pets[challenge.companionId] .. " отлично поиграл с тобой! Дружба +15.",
+    })
+end
+
+local function startCompanionPlay(player, companionId)
+    if companionId ~= "Fox" and companionId ~= "Moth" then return end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") or player:GetAttribute(companionId) ~= true then return end
+    if player:GetAttribute("Companion") ~= companionId then
+        return tip(player, "Сначала позови питомца, с которым хочешь поиграть.")
+    end
+    if session.companionPlay then
+        return tip(player, "Вы уже играете! Повтори последовательность.")
+    end
+
+    session.companionPlayReadyAt = session.companionPlayReadyAt or {}
+    local now = os.clock()
+    local readyAt = session.companionPlayReadyAt[companionId] or 0
+    if now < readyAt then
+        return tip(player, "Питомцу нужен небольшой отдых перед следующей игрой.")
+    end
+
+    local bond = session.companionProgress[companionId].bond or 0
+    local length = bond >= 600 and 4 or 3
+    local sequence = {}
+    for index = 1, length do
+        sequence[index] = math.random(1, #companionPlaySymbols)
+    end
+
+    local token = HttpService:GenerateGUID(false)
+    session.companionPlay = {
+        token = token,
+        companionId = companionId,
+        sequence = sequence,
+        nextIndex = 1,
+        startedAt = now,
+        expiresAt = now + 18,
+    }
+    session.companionPlayReadyAt[companionId] = now + companionPlayCooldownSeconds
+    event:FireClient(player, "CompanionPlayStarted", {
+        token = token,
+        companionId = companionId,
+        sequence = sequence,
+        symbols = companionPlaySymbols,
+    })
+end
+
+local function submitCompanionPlayInput(player, payload)
+    local session = sessions[player]
+    local challenge = session and session.companionPlay
+    if not challenge or type(payload) ~= "table" then return end
+    if payload.token ~= challenge.token then return end
+    if os.clock() > challenge.expiresAt then
+        return finishCompanionPlay(player, false, "Время игры вышло. Питомец всё равно рад, что ты попробовал!")
+    end
+
+    local index = tonumber(payload.index)
+    local symbol = tonumber(payload.symbol)
+    if not index or not symbol or index ~= challenge.nextIndex
+        or symbol ~= challenge.sequence[challenge.nextIndex] then
+        return finishCompanionPlay(player, false, "Ой! Последовательность сбилась. Ничего страшного — сыграем ещё!")
+    end
+
+    challenge.nextIndex += 1
+    if challenge.nextIndex > #challenge.sequence then
+        if os.clock() - challenge.startedAt < 1.1 then
+            return finishCompanionPlay(player, false, "Как быстро! Давай сыграем ещё раз и не спеша.")
+        end
+        finishCompanionPlay(player, true)
+    end
+end
 
 local function feedCompanion(player, companionId)
     if companionId ~= "Fox" and companionId ~= "Moth" then return end
@@ -712,6 +812,8 @@ local function init(player)
         completedCombatEncounters = {},
         companionProgress = normalizeCompanionProgress(nil),
         companionFeedReadyAt = {},
+        companionPlayReadyAt = {},
+        companionPlay = nil,
         online = false,
         selectedCropId = defaultCropId,
         farmActionBusy = {},
@@ -1092,6 +1194,16 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "FeedCompanion" then
         feedCompanion(player, payload)
+        return
+    end
+
+    if action == "StartCompanionPlay" then
+        startCompanionPlay(player, payload)
+        return
+    end
+
+    if action == "CompanionPlayInput" then
+        submitCompanionPlayInput(player, payload)
         return
     end
 
