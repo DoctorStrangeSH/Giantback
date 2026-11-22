@@ -30,7 +30,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "IronOre", "MoonSeed", "StarShard"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard"}
 local toolIds = {Axe = true, Pickaxe = true}
 local toolUpgradeCosts = {
     Axe = {Wood = 8, Stone = 6},
@@ -141,7 +141,9 @@ local function defaultCity()
         bridges = {
             homeToGrove = false,
         },
-        buildings = {},
+        buildings = {
+            smelter = {readyAt = 0},
+        },
     }
 end
 
@@ -193,6 +195,12 @@ local function normalizeCity(raw)
         end
     end
 
+    local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}
+    local rawSmelter = type(rawBuildings.smelter) == "table" and rawBuildings.smelter or {}
+    city.buildings.smelter = {
+        readyAt = safeTimestamp(rawSmelter.readyAt),
+    }
+
     return city
 end
 
@@ -217,6 +225,13 @@ local function syncInventory(player)
         local amount = session and session.inventory and session.inventory[key] or 0
         player:SetAttribute("Resource_" .. key, amount)
     end
+end
+
+local function syncSmelter(player)
+    local session = sessions[player]
+    local smelter = session and session.city and session.city.buildings and session.city.buildings.smelter
+    player:SetAttribute("Smelter_ReadyAt", smelter and smelter.readyAt or 0)
+    player:SetAttribute("Smelter_BatchActive", smelter ~= nil and smelter.readyAt > 0)
 end
 
 local function createToolPart(parent, name, size, offset, color, material, shape)
@@ -493,6 +508,9 @@ local function save(player)
                 if type(savedIsland.buildings) ~= "table" then
                     savedIsland.buildings = {}
                 end
+                savedIsland.buildings.smelter = {
+                    readyAt = safeTimestamp(citySnapshot.buildings.smelter.readyAt),
+                }
                 old.island = savedIsland
                 old.city = nil
                 return old
@@ -645,6 +663,7 @@ local function init(player)
     syncFarm(player)
     syncBridge(player)
     syncFoxScout(player)
+    syncSmelter(player)
     if not allocateHomeIsland(player, session) then
         sessions[player] = nil
         player:Kick("На этом сервере заняты все 8 домашних островов. Попробуй другой сервер.")
@@ -665,6 +684,63 @@ local function init(player)
     player:SetAttribute("Ready", true)
     syncTools(player)
 end
+local function startSmelting(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    local smelter = session.city.buildings.smelter
+    if smelter.readyAt > os.time() then
+        return tip(player, "Плавильня уже работает. Возвращайся позже за слитком.")
+    elseif smelter.readyAt > 0 then
+        return tip(player, "Слиток готов! Забери его из плавильни.")
+    end
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    local station = session.cityModel and session.cityModel:FindFirstChild("Smelter")
+    local anchor = station and station:FindFirstChild("PromptAnchor")
+    if not root or not anchor or (root.Position - anchor.Position).Magnitude > 14 then
+        return tip(player, "Чтобы загрузить плавильню, подойди к ней на своём острове.")
+    end
+    local oreCost, woodCost = 3, 2
+    if (session.inventory.IronOre or 0) < oreCost or (session.inventory.Wood or 0) < woodCost then
+        return tip(player, "Нужно железная руда ×3 и дерево ×2.")
+    end
+    session.inventory.IronOre -= oreCost
+    session.inventory.Wood -= woodCost
+    smelter.readyAt = os.time() + 120
+    syncInventory(player)
+    syncSmelter(player)
+    tip(player, "Плавильня запущена! Через 2 минуты можно забрать железный слиток.")
+    if session.online and not save(player) then
+        warn("Smelting start save will be retried:", player.UserId)
+    end
+end
+
+local function collectSmelting(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    local smelter = session.city.buildings.smelter
+    if smelter.readyAt <= 0 then
+        return tip(player, "Плавильня пуста. Загрузи железную руду и дерево.")
+    end
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    local station = session.cityModel and session.cityModel:FindFirstChild("Smelter")
+    local anchor = station and station:FindFirstChild("PromptAnchor")
+    if not root or not anchor or (root.Position - anchor.Position).Magnitude > 14 then
+        return tip(player, "Забрать слиток можно у плавильни на своём острове.")
+    end
+    if os.time() < smelter.readyAt then
+        local remaining = smelter.readyAt - os.time()
+        return tip(player, "Железо плавится. Осталось примерно " .. tostring(math.ceil(remaining / 60)) .. " мин.")
+    end
+    smelter.readyAt = 0
+    session.inventory.IronIngot = (session.inventory.IronIngot or 0) + 1
+    syncInventory(player)
+    syncSmelter(player)
+    tip(player, "Готово! Ты получил железный слиток ×1.")
+    if session.online and not save(player) then
+        warn("Smelting collection save will be retried:", player.UserId)
+    end
+end
+
 local function collectFoxCache(player, cacheId)
     if typeof(cacheId) ~= "string" or not foxCacheIdSet[cacheId] then return end
     local session = sessions[player]
@@ -874,6 +950,16 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "CollectFoxCache" then
         collectFoxCache(player, payload)
+        return
+    end
+
+    if action == "StartSmelting" then
+        startSmelting(player)
+        return
+    end
+
+    if action == "CollectSmelting" then
+        collectSmelting(player)
         return
     end
 
@@ -1259,6 +1345,50 @@ createPersonalCity = function(player, session)
         prompt(workshopAnchor, "Мастерская", "Улучшить инструменты", function(visitor)
             if visitor.UserId ~= ownerUserId then return end
             event:FireClient(visitor, "OpenWorkshop")
+        end)
+
+        -- A personal furnace belongs to this island and never accepts visitor actions.
+        local furnace = Instance.new("Model")
+        furnace.Name = "Smelter"
+        furnace:SetAttribute("OwnerUserId", ownerUserId)
+        furnace.Parent = cityModel
+        local furnaceFrame = meadow.CFrame * CFrame.new(-5.5, meadow.Size.Y / 2 + 1.0, -10)
+        local function furnacePart(name, size, offset, color, material, shape)
+            return makeFarmVisualPart(furnace, name, size, furnaceFrame * CFrame.new(offset), color, shape or Enum.PartType.Block, material or Enum.Material.Slate)
+        end
+        furnacePart("StoneBase", Vector3.new(4.0, 1.1, 3.6), Vector3.new(0, 0, 0), Color3.fromRGB(83, 89, 91), Enum.Material.Slate)
+        furnacePart("FurnaceBody", Vector3.new(3.2, 3.0, 2.8), Vector3.new(0, 1.65, 0), Color3.fromRGB(113, 91, 78), Enum.Material.Brick)
+        furnacePart("FurnaceArch", Vector3.new(2.0, 1.45, 0.24), Vector3.new(0, 1.45, -1.48), Color3.fromRGB(53, 57, 60), Enum.Material.Basalt)
+        local mouth = furnacePart("FurnaceMouth", Vector3.new(1.45, 1.35, 0.12), Vector3.new(0, 1.25, -1.63), Color3.fromRGB(255, 132, 65), Enum.Material.Neon)
+        local fireLight = Instance.new("PointLight")
+        fireLight.Color = Color3.fromRGB(255, 139, 71)
+        fireLight.Range = 9
+        fireLight.Brightness = 0.65
+        fireLight.Parent = mouth
+        furnacePart("Chimney", Vector3.new(0.8, 2.4, 0.8), Vector3.new(0.9, 4.0, 0.55), Color3.fromRGB(78, 82, 83), Enum.Material.Basalt)
+        local smoke = Instance.new("ParticleEmitter")
+        smoke.Name = "FurnaceSmoke"
+        smoke.Color = ColorSequence.new(Color3.fromRGB(115, 112, 108), Color3.fromRGB(190, 180, 164))
+        smoke.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.35), NumberSequenceKeypoint.new(1, 0.85)})
+        smoke.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.45), NumberSequenceKeypoint.new(1, 1)})
+        smoke.Lifetime = NumberRange.new(1.8, 2.8)
+        smoke.Rate = 3
+        smoke.Speed = NumberRange.new(1.2, 2.0)
+        smoke.SpreadAngle = Vector2.new(12, 12)
+        smoke.Parent = furnace:FindFirstChild("Chimney")
+        local furnaceAnchor = Instance.new("Part")
+        furnaceAnchor.Name = "PromptAnchor"
+        furnaceAnchor.Size = Vector3.new(0.6, 0.6, 0.6)
+        furnaceAnchor.Transparency = 1
+        furnaceAnchor.Anchored = true
+        furnaceAnchor.CanCollide = false
+        furnaceAnchor.CanTouch = false
+        furnaceAnchor.CanQuery = true
+        furnaceAnchor.CFrame = furnaceFrame * CFrame.new(0, 2.1, -2.1)
+        furnaceAnchor.Parent = furnace
+        prompt(furnaceAnchor, "Плавильня", "Плавить железо", function(visitor)
+            if visitor.UserId ~= ownerUserId then return end
+            event:FireClient(visitor, "OpenSmelter")
         end)
 
         local plotPositions = {
