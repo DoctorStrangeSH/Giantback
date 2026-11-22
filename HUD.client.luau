@@ -361,6 +361,7 @@ local function renderPets()
     local pets = {
         {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "🦊"},
         {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "🦋"},
+        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "✦"},
     }
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
@@ -371,8 +372,8 @@ local function renderPets()
         label(item, "Name", pet.name .. " • " .. pet.role, UDim2.new(1, -210, 0, 24), UDim2.fromOffset(76, 8), 14, palette.ink, Enum.Font.GothamBold)
         local desc = owned and pet.description or pet.location
         label(item, "Description", desc, UDim2.new(1, -210, 0, 25), UDim2.fromOffset(76, 33), 11, palette.muted)
-        local mood = player:GetAttribute("Companion_" .. pet.id .. "_Mood") or (pet.id == "Fox" and "Любопытство" or "Спокойствие")
-        local moodLine = pet.id == "Fox" and "Любопытный исследователь" or "Нежная хранительница света"
+        local mood = player:GetAttribute("Companion_" .. pet.id .. "_Mood") or (pet.id == "Fox" and "Любопытство" or pet.id == "Moth" and "Спокойствие" or "Сияние")
+        local moodLine = pet.id == "Fox" and "Любопытный исследователь" or pet.id == "Moth" and "Нежная хранительница света" or "Кристальный проводник"
         local moodGlyph = mood == "Радость" and "✦" or mood == "Довольство" and "♡" or pet.id == "Fox" and "⌕" or "☾"
         label(item, "Mood", owned and (moodGlyph .. " " .. moodLine .. " · " .. mood) or "Характер откроется при знакомстве",
             UDim2.new(1, -220, 0, 18), UDim2.fromOffset(76, 60), 10, palette.forest, Enum.Font.GothamBold)
@@ -407,7 +408,8 @@ local function renderPets()
                 foxTalent = foxTalent .. " · Нюх отдыхает"
             end
         end
-        label(item, "Talent", owned and (pet.id == "Fox" and foxTalent or mothTalent) or "Найди питомца, чтобы открыть талант",
+        local wispTalent = "Призменное чутьё: скрытые жилы на " .. tostring(16 + (companionLevel - 1) * 3) .. " сек."
+        label(item, "Talent", owned and (pet.id == "Fox" and foxTalent or pet.id == "Moth" and mothTalent or wispTalent) or "Найди питомца, чтобы открыть талант",
             UDim2.new(1, -28, 0, 20), UDim2.fromOffset(16, 179), 10, palette.forest)
 
         local action = button(item, "Action", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН", UDim2.fromOffset(108, 28), UDim2.new(1, -120, 0, 8), equipped and palette.gold or palette.forest)
