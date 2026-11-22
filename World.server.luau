@@ -232,6 +232,8 @@ local function syncInventory(player)
     player:SetAttribute("Smelter_Pending", session and session.smeltingAmount or 0)
 end
 
+local save
+
 local COMPANION_IDS = {"Fox", "Moth"}
 local COMPANION_MAX_LEVEL = 5
 
@@ -448,7 +450,7 @@ applyHomeBridgeState = function(slotIndex, built)
     return true
 end
 
-local function save(player)
+save = function(player)
     local session = sessions[player]
     if not session or not session.online or not store then return false end
     if session.saving then
