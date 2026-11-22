@@ -502,6 +502,69 @@ for index = 1, 5 do
     )
 end
 
+-- A small home-island canopy creates a layered silhouette without crowding
+-- the cottage, four farm plots, resource piles or companion sanctuary.
+local homeCanopy = makeFolder(homeDetails, "HomeCanopy")
+local homeTreeSites = {
+    {position = Vector3.new(-28.0, 12.0, 15.5), scale = 0.86, color = Color3.fromRGB(119, 164, 112), seed = 1201},
+    {position = Vector3.new(1.5, 12.0, -23.0), scale = 0.92, color = Color3.fromRGB(145, 181, 126), seed = 1202},
+    {position = Vector3.new(22.0, 12.0, -16.5), scale = 0.78, color = Color3.fromRGB(105, 151, 110), seed = 1203},
+}
+for _, treeSite in homeTreeSites do
+    addTree(homeCanopy, treeSite.position, treeSite.scale, treeSite.color, treeSite.seed)
+    local crownTop = treeSite.position + Vector3.new(0, 9.2 * treeSite.scale, 0)
+    for berryIndex = 1, 3 do
+        local angle = berryIndex * math.pi * 2 / 3
+        local berry = orb(
+            homeCanopy,
+            "Canopy glow berry",
+            crownTop + Vector3.new(math.cos(angle) * 2.0 * treeSite.scale, -0.7, math.sin(angle) * 2.0 * treeSite.scale),
+            Vector3.new(0.34, 0.42, 0.34) * treeSite.scale,
+            berryIndex == 2 and palette.gold or palette.coral,
+            Enum.Material.Neon
+        )
+        if berryIndex == 2 then addLight(berry, palette.gold, 5, 0.16) end
+    end
+end
+
+-- Low shrubs and flower pockets soften the paths while leaving the farm readable.
+local homeGardenPockets = {
+    {center = Vector3.new(-24.0, 12.12, 15.0), color = palette.lilacLight, seed = 1301},
+    {center = Vector3.new(7.0, 12.12, -20.0), color = palette.coral, seed = 1302},
+    {center = Vector3.new(20.0, 12.12, -8.0), color = palette.gold, seed = 1303},
+    {center = Vector3.new(4.0, 12.12, 21.0), color = palette.lilac, seed = 1304},
+}
+for _, pocket in homeGardenPockets do
+    for shrubIndex = 1, 2 do
+        local offset = Vector3.new((shrubIndex - 1.5) * 1.25, 0.32, (shrubIndex % 2 == 0 and 0.45 or -0.45))
+        orb(
+            homeCanopy,
+            "Rounded berry shrub",
+            pocket.center + offset,
+            Vector3.new(1.55, 0.95, 1.35),
+            shrubIndex == 1 and palette.mossLight or palette.leaf,
+            Enum.Material.Grass
+        )
+    end
+    addFlower(homeCanopy, pocket.center + Vector3.new(0, 0.12, 1.35), pocket.color, 0.54, pocket.seed)
+end
+
+-- Small mushroom groups add a second scale of detail beneath the trees.
+local homeMushroomSites = {
+    Vector3.new(-25.2, 12.12, 19.0),
+    Vector3.new(5.5, 12.12, -26.0),
+    Vector3.new(24.0, 12.12, -20.0),
+}
+for index, position in homeMushroomSites do
+    addMushroom(
+        homeCanopy,
+        position,
+        index == 2 and palette.lilac or palette.coral,
+        0.58 + (index % 2) * 0.12,
+        index == 2
+    )
+end
+
 -- Turn the two simple banks into distinct little places.
 local function decorateIsland(island, isDusk)
     local islandDetails = makeFolder(island, "HandcraftedDetails")
