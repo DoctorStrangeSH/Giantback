@@ -256,3 +256,13 @@ The first combat companion slice adds one active ability for each currently impl
 - Keyboard C, gamepad ButtonY and a ContextActionService touch button trigger the same server action. The client only displays server-confirmed feedback.
 
 The skills are intentionally supportive: Fox adds a modest damage assist and Moth improves co-op sustain, but neither replaces player combat. Contract tests and generated-place markers cover ownership, region filtering, server damage/healing, cooldown and input mapping. Studio acceptance must verify real companion ownership/equip flows, multiplayer healing boundaries, hit feedback, mobile button layout and balance.
+
+
+## 31. Companion combat presentation
+
+Combat ability outcomes remain server-authoritative; the client receives only presentation identifiers after a successful action.
+
+- Fox success includes the server-selected `targetId`. The client resolves that ID against registered `GiantbackEnemy` models, then emits a short amber sparkle burst and expanding ground pulse at the target. If the target is no longer locally available, the effect safely falls back to the player's character.
+- Moth success includes `healedUserIds`, populated only from allies the server actually healed. Each matching character receives a violet/lunar sparkle burst and ground pulse. The client never chooses who was healed.
+- Effects are local-only, short-lived, non-colliding, and have no hitbox, damage, healing, or reward authority. They are omitted if the corresponding character/root is not streamed in.
+- The current implementation is a readable first VFX pass; Studio review should tune particle density, pulse size, readability on mobile, streaming edge cases, and visual overlap in co-op.
