@@ -73,7 +73,7 @@ def wing(name, side, upper, materials):
         for r in range(rows + 1):
             t = r / rows
             # Wide outer lobe, pinched root, softly scalloped trailing edge.
-            width = (math.sin(math.pi * (t ** 0.78)) ** 0.72) * (0.30 + 0.70 * t) * span
+            width = (0.10 + 0.90 * (math.sin(math.pi * (t ** 0.78)) ** 0.72)) * (0.30 + 0.70 * t) * span
             if t > 0.72:
                 width *= 1.0 + 0.055 * math.sin((t - 0.72) * math.pi * 7.0)
             for col in range(cols + 1):
