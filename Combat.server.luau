@@ -473,6 +473,17 @@ local function performAttack(player, state, now)
                     hitThisSwing[enemy] = true
                     entry.contributors[player] = true
                     entry.humanoid:TakeDamage(COMBO_DAMAGE[comboStep])
+                    if isFinisher and entry.root.Parent then
+                        -- Server-owned impact push: ordinary enemies are displaced clearly;
+                        -- bosses resist the launch so the finisher never skips their phase loop.
+                        local pushDirection = Vector3.new(forward.X, 0, forward.Z)
+                        if pushDirection.Magnitude > 0 then
+                            local resistance = entry.isBoss and 0.28 or 1
+                            local impulse = pushDirection.Unit * entry.root.AssemblyMass * 24 * resistance
+                                + Vector3.new(0, entry.root.AssemblyMass * 5 * resistance, 0)
+                            entry.root:ApplyImpulse(impulse)
+                        end
+                    end
                     enemy:SetAttribute("CombatHealth", math.max(0, entry.humanoid.Health))
                     remote:FireClient(player, "CombatHit", {
                         enemyId = enemy:GetAttribute("EnemyId") or enemy.Name,
