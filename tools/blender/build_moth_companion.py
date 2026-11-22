@@ -274,12 +274,12 @@ def main():
             t = 0.57
             mark_x = root_x + side * t * span
             mark_y = root_y + t * length + 0.055
-            mark_z = root_z + 0.20 * t * t + 0.075
+            mark_z = root_z + 0.20 * t * t + 0.025
             # Gold crescent inlay: an outer moon disc and a lilac offset inset.
             parts.append(sphere("WingMoonGold"+wing_name+suffix,
                 (mark_x,mark_y,mark_z),(0.105,0.145,0.026),gold,24,16))
             parts.append(sphere("WingMoonInset"+wing_name+suffix,
-                (mark_x+side*0.035,mark_y+0.035,mark_z+0.024),
+                (mark_x+side*0.035,mark_y+0.035,mark_z-0.035),
                 (0.083,0.122,0.018),lilac,24,16))
     # Every required rig group is represented by one or more named mesh objects.
     rig={"version":1,"character":"LunarMothHero","forward_axis":"-Z","up_axis":"+Y",
