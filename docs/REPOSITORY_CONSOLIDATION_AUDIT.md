@@ -133,3 +133,11 @@ The following figures are from GitHub compare against `feat/cozy-world-visual-pa
 ### C0 remote argument validation hardening
 
 A code review found that the original callback accepted only a single named optional payload. Roblox RemoteEvent can forward more than one trailing argument, and Lua would silently discard arguments beyond the named parameter. The callback now captures all trailing arguments and rejects any argument count above zero, including explicit nil. A regression contract test covers this case. CI is rerun on the updated PR head.
+
+
+### C1 combat implementation staged in PR #7
+
+- Added a server-authoritative sword attack hitbox, target registry, enemy telegraph/approach loop, block and dodge handling.
+- Added PC, gamepad and touch input bindings through `Combat.client.luau`.
+- Added profile schema v10 idempotent reward ledger for `GroveGrunt01`.
+- CI is being rerun. Studio still needs one tagged combat region and one tagged enemy rig before gameplay acceptance.
