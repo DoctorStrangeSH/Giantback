@@ -200,7 +200,18 @@ for slot_index in range(8):
 bridge_dusk = obj(w, "Model", "BridgeToDusk")
 add_radial_bridge(bridge_dusk, "MoonBridge", math.pi / 8, 73, 120)
 
+def create_asset_library(service, categories):
+    """Reserve Studio import folders; never invent MeshPart IDs or replace blockouts."""
+    library = obj(service, "Folder", "AssetLibrary")
+    models = obj(library, "Folder", "Models")
+    for category in categories:
+        obj(models, "Folder", category)
+
+
+create_asset_library(server_storage, ("Buildings", "Environment"))
+
 storage = obj(doc, "ReplicatedStorage", "ReplicatedStorage")
+create_asset_library(storage, ("Companions",))
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
     if name == "Fox":
