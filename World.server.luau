@@ -36,6 +36,7 @@ local combatRewardDefinitions = {
     GroveGrunt01 = {itemId = "Wood", amount = 3},
     GroveScout02 = {itemId = "SunPetal", amount = 2},
     GroveTrialChest01 = {itemId = "StarShard", amount = 1},
+    RootvaultChest01 = {itemId = "IronOre", amount = 3},
 }
 local toolUpgradeCosts = {Axe = {Wood = 8, Stone = 6}, Pickaxe = {Wood = 6, Stone = 8}}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
@@ -2007,6 +2008,148 @@ Players.PlayerRemoving:Connect(function(player)
     trialBusy[player] = nil
     trialPuzzleProgress[player] = nil
     trialPuzzleComplete[player] = nil
+end)
+
+-- Rootvault expedition: unlock, traversal, trap damage and one-time personal relic cache.
+local rootvault = trial and trial:FindFirstChild("RootvaultDungeon")
+local rootvaultEntryRoom = rootvault and rootvault:FindFirstChild("RootvaultEntryRoom")
+local rootvaultMechanismRoom = rootvault and rootvault:FindFirstChild("RootvaultMechanismRoom")
+local rootvaultRewardRoom = rootvault and rootvault:FindFirstChild("RootvaultRewardRoom")
+local rootvaultInside = {}
+local rootvaultLeverActivated = {}
+local rootvaultTrapCooldown = {}
+local rootvaultChestBusy = {}
+
+local rootvaultEntrance = trialChamber and trialChamber:FindFirstChild("RootvaultEntrance")
+local rootvaultArrival = rootvaultEntryRoom and rootvaultEntryRoom:FindFirstChild("RootvaultArrival")
+local rootvaultEntryReturn = rootvaultEntryRoom and rootvaultEntryRoom:FindFirstChild("RootvaultReturn")
+local rootvaultLever = rootvaultMechanismRoom and rootvaultMechanismRoom:FindFirstChild("RootvaultLeverBase")
+local rootvaultDoorPrompt = rootvaultMechanismRoom and rootvaultMechanismRoom:FindFirstChild("RootvaultDoorPrompt")
+local rootvaultMechanismExit = rootvaultMechanismRoom and rootvaultMechanismRoom:FindFirstChild("RootvaultMechanismExit")
+local rootvaultRewardReturn = rootvaultRewardRoom and rootvaultRewardRoom:FindFirstChild("RootvaultReturnDoorPrompt")
+local rootvaultChest = rootvaultRewardRoom and rootvaultRewardRoom:FindFirstChild("RootvaultRewardChest")
+local rootvaultSealedDoor = rootvaultMechanismRoom and rootvaultMechanismRoom:FindFirstChild("RootvaultSealedDoor")
+
+local function validRootvaultInteraction(player, anchorPart)
+    if not rootvaultInside[player] then return nil end
+    return validTrialInteraction(player, anchorPart)
+end
+
+if rootvaultEntrance and rootvaultArrival then
+    connectTrialPrompt(rootvaultEntrance, function(player)
+        local session, character = validTrialInteraction(player, rootvaultEntrance)
+        if not session then return end
+        if session.completedCombatEncounters.GroveTrialChest01 ~= true then
+            return tip(player, "Сначала заверши тайник с тремя рунами и забери его награду.")
+        end
+        rootvaultInside[player] = true
+        rootvaultLeverActivated[player] = nil
+        player:SetAttribute("InRootvault", true)
+        character:PivotTo(rootvaultArrival.CFrame * CFrame.new(0, 4, 0))
+        tip(player, "Хранилище корней: найди механизм и открой путь к реликвии!")
+    end)
+end
+
+if rootvaultEntryReturn and rootvaultEntrance then
+    connectTrialPrompt(rootvaultEntryReturn, function(player)
+        local session, character = validRootvaultInteraction(player, rootvaultEntryReturn)
+        if not session then return end
+        rootvaultInside[player] = nil
+        rootvaultLeverActivated[player] = nil
+        player:SetAttribute("InRootvault", false)
+        character:PivotTo(rootvaultEntrance.CFrame * CFrame.new(0, 0, -7))
+    end)
+end
+
+if rootvaultLever then
+    connectTrialPrompt(rootvaultLever, function(player)
+        local session = validRootvaultInteraction(player, rootvaultLever)
+        if not session then return end
+        if rootvaultLeverActivated[player] then
+            return tip(player, "Механизм уже активирован. Дверь хранилища ждёт тебя.")
+        end
+        rootvaultLeverActivated[player] = true
+        tip(player, "Механизм загудел! Печать хранилища ослабла.")
+    end)
+end
+
+if rootvaultDoorPrompt and rootvaultRewardRoom then
+    connectTrialPrompt(rootvaultDoorPrompt, function(player)
+        local session, character = validRootvaultInteraction(player, rootvaultDoorPrompt)
+        if not session then return end
+        if not rootvaultLeverActivated[player] then
+            return tip(player, "Печать закрыта. Найди рычаг в зале механизма.")
+        end
+        character:PivotTo(rootvaultRewardRoom:GetPivot() * CFrame.new(0, 4, -5))
+        tip(player, "Ты открыл путь в зал реликвии!")
+    end)
+end
+
+if rootvaultRewardReturn and rootvaultMechanismRoom then
+    connectTrialPrompt(rootvaultRewardReturn, function(player)
+        local session, character = validRootvaultInteraction(player, rootvaultRewardReturn)
+        if not session then return end
+        character:PivotTo(rootvaultMechanismRoom:GetPivot() * CFrame.new(0, 4, 5))
+    end)
+end
+
+if rootvaultMechanismExit and rootvaultEntrance then
+    connectTrialPrompt(rootvaultMechanismExit, function(player)
+        local session, character = validRootvaultInteraction(player, rootvaultMechanismExit)
+        if not session then return end
+        rootvaultInside[player] = nil
+        rootvaultLeverActivated[player] = nil
+        player:SetAttribute("InRootvault", false)
+        character:PivotTo(rootvaultEntrance.CFrame * CFrame.new(0, 0, -7))
+    end)
+end
+
+if rootvaultChest then
+    connectTrialPrompt(rootvaultChest, function(player)
+        local session = validRootvaultInteraction(player, rootvaultChest)
+        if not session then return end
+        if not rootvaultLeverActivated[player] then
+            return tip(player, "Сначала активируй механизм хранилища.")
+        end
+        if session.completedCombatEncounters.RootvaultChest01 then
+            return tip(player, "Реликвия этого хранилища уже у тебя.")
+        end
+        if rootvaultChestBusy[player] then return end
+        rootvaultChestBusy[player] = true
+        local ok, granted = pcall(function()
+            return combatRewardFunction:Invoke(player, "RootvaultChest01")
+        end)
+        rootvaultChestBusy[player] = nil
+        if not ok or granted ~= true then
+            tip(player, "Не удалось сохранить реликвию. Попробуй ещё раз.")
+        else
+            tip(player, "Хранилище покорено! Получено: Железная руда ×3.")
+        end
+    end)
+end
+
+for _, trap in rootvault and rootvault:GetChildren() or {} do
+    if trap:IsA("BasePart") and trap:GetAttribute("TrapDamage") then
+        trap.Touched:Connect(function(hit)
+            local character = hit:FindFirstAncestorOfClass("Model")
+            local player = character and Players:GetPlayerFromCharacter(character)
+            if not player or not rootvaultInside[player] then return end
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if not humanoid or humanoid.Health <= 0 then return end
+            local now = os.clock()
+            if rootvaultTrapCooldown[player] and now - rootvaultTrapCooldown[player] < 1.25 then return end
+            rootvaultTrapCooldown[player] = now
+            humanoid:TakeDamage(math.clamp(tonumber(trap:GetAttribute("TrapDamage")) or 10, 1, 20))
+            tip(player, "Ловушка! Следи за светящимися плитами.")
+        end)
+    end
+end
+
+Players.PlayerRemoving:Connect(function(player)
+    rootvaultInside[player] = nil
+    rootvaultLeverActivated[player] = nil
+    rootvaultTrapCooldown[player] = nil
+    rootvaultChestBusy[player] = nil
 end)
 
 -- All islands are fixed. Eight personal bridges lead into the shared Grove hub.
