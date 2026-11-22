@@ -45,8 +45,18 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("RequestResourceState")', CLIENT)
 
     def test_renewable_nodes_have_explicit_personal_cooldowns(self):
-        self.assertEqual(WORLD.count('kind = "renewable"'), 4)
-        self.assertEqual(WORLD.count("respawnSeconds = 300"), 4)
+        self.assertEqual(WORLD.count('kind = "renewable"'), 8)
+        self.assertEqual(WORLD.count("respawnSeconds = 300"), 8)
+
+    def test_world_has_personal_wood_and_stone_nodes_in_adventure_biomes(self):
+        self.assertIn('GroveWood01 = true', WORLD)
+        self.assertIn('GroveWood02 = true', WORLD)
+        self.assertIn('DuskStone01 = true', WORLD)
+        self.assertIn('DuskStone02 = true', WORLD)
+        self.assertIn('visual = "tree"', WORLD)
+        self.assertIn('visual = "rock"', WORLD)
+        self.assertIn('itemId = "Wood"', WORLD)
+        self.assertIn('itemId = "Stone"', WORLD)
 
     def test_remote_handshake_is_registered_before_player_initialization(self):
         self.assertLess(WORLD.index("event.OnServerEvent:Connect"), WORLD.index("Players.PlayerAdded:Connect(init)"))
