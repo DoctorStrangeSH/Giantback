@@ -2735,6 +2735,7 @@ for _, trap in rootvault and rootvault:GetChildren() or {} do
 end
 
 Players.PlayerRemoving:Connect(function(player)
+    crystalGrottoInside[player] = nil
     rootvaultInside[player] = nil
     rootvaultLeverActivated[player] = nil
     rootvaultTrapCooldown[player] = nil
