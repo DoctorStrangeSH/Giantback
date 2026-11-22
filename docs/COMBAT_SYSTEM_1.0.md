@@ -144,3 +144,9 @@ Implemented in `Combat.server.luau`:
 Внутри находится сундук, который один раз за профиль выдаёт `StarShard ×1` через существующий механизм `GiantbackGrantCombatReward`. Повторная выдача блокируется сохранённой отметкой `GroveTrialChest01`, а конкурентные обращения к сундуку в рамках сессии дополнительно защищены `trialBusy`. Выход ведёт назад к арене. Оба портала и комната создаются `WorldVisuals.server.luau`.
 
 **Статус:** серверный функционал и сборка добавлены в PR #7. Это короткая наградная комната, а **не** полноценное процедурное подземелье, головоломка или босс. Проверка геометрии, коллизий, выхода и сохранения в Roblox Studio остаётся NOT DONE.
+
+## 13. Rune memory puzzle — staged
+
+The forest trial chamber contains three interactable runes. The visible clue gives the sequence **Moon → Dawn → Tide**. The server tracks progress independently per player, rejects incorrect order, resets an abandoned sequence after 20 seconds, and only enables the chest after all three runes are activated in order. Puzzle progress is session-scoped; the final chest reward remains profile-persistent and idempotent.
+
+Roblox Studio acceptance remains required for prompt reachability, label readability, room layout and multiplayer isolation.
