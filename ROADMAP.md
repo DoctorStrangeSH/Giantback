@@ -1,3 +1,13 @@
+## Home Island — Garden Approach visual pass
+
+- [x] Добавить отдельную зону `HandcraftedDetails/GardenApproach` в шаблон личного острова.
+- [x] Проложить пять крупных stepping stones от входа коттеджа к фермерской зоне, чтобы новичок визуально понимал направление.
+- [x] Добавить деревянную садовую арку с лунным светильником и небольшими вьющимися листьями; арка стоит перед грядками и не закрывает интерактивные точки.
+- [x] Добавить source-contract tests `tests/test_home_island_visual_approach.py` для пути, арки и non-colliding visual helpers.
+- [ ] Подтвердить Python/gameplay/place validation после коммита.
+- [ ] Проверить композицию и проход игрока в Roblox Studio на PC/mobile; убедиться, что декор не перекрывает фермерские interaction prompts.
+- [ ] Следующий визуальный проход: мягкие края острова, разнообразие растительности и читаемая зона питомцев; не перегружать стартовую площадку.
+
 - [~] Fox Hero: artifact #239 успешно прошёл Blender technical gate и ручную проверку. Orange coat, глаза, мордочка и большой хвост читаются хорошо; уменьшенные forelock/brows стали аккуратнее, но лоб всё ещё имеет отдельные raised tufts, лапы остаются capsule-like с заметными cuff seams, а боковой силуэт корпуса/ног сегментирован. Нужен более органичный переход torso↔legs и встроенные лапы; не закрывать art acceptance и не импортировать до нового рендера.
 - [x] Усилить CI visual-review gate: workflow проверяет четыре ракурса/OBJ/BLEND, совпадение rig/mesh report (17 групп), непустую геометрию, zero-area/non-manifold faces/edges, UV и назначенные материалы. Source-contract + place validation #965 SUCCESS; Blender artifact после последнего цветового pass ещё ожидается.
 - [x] Soft-fur shader contract: `soft_fur`/`smooth` metadata and Sheen 0.08 are covered by tests. Current Fox Hero micro-relief is Noise scale 10, Detail 1, Bump strength 0.002/distance 0.001 (reduced after #187 manual review); next render must confirm gameplay-distance readability.
