@@ -4,6 +4,18 @@
 **Source baseline:** `assets/source_models/moth_companion.obj` + `moth_companion.mtl`. Keep the original files as rollback references; create a separate hero iteration rather than overwriting them.
 **Status:** [~] gameplay identity and source palette documented; current OBJ/MTL are a BLOCKOUT baseline, not artist-approved. UVs, painted textures, animation rig, Blender review and Roblox Studio import remain open.
 
+## 0. Existing source audit — 2026-11-22
+
+The original `moth_companion.obj` was parsed directly before planning the hero rebuild:
+- 1,306 vertices; 1,980 faces (1,978 triangles and 2 quads).
+- 15 named objects: body, head, upper/lower wing left/right, upper/lower wing roots, wing tips left/right, antennae left/right, eyes left/right and glow core.
+- Seven MTL materials are assigned across the objects.
+- 0 zero-area faces and 0 edges shared by more than two faces in the source audit.
+- 616 boundary edges remain; the source includes open surface shells and requires manual normal/thickness review before reuse.
+- **0 UV coordinates** are present. This is a hard production gap: the existing MTL colors are not a painted wing texture.
+
+This confirms the original source is a useful shape/layout BLOCKOUT with separable wing objects, but not a finished hero asset. Preserve it unchanged as rollback baseline. The new hero model must add authored UVs, closed/thickened wing surfaces where appropriate, hand-painted wing motifs and an independently validated four-wing rig.
+
 ## 1. Character identity
 
 A tiny, gentle moon-moth that feels like a magical forest spirit: curious, calm, welcoming and quietly luminous. It should be instantly distinguishable from the Fox by its hovering silhouette, broad patterned wings, delicate antennae and soft light core.
