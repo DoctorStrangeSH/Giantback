@@ -28,6 +28,15 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("PetCompanion", pet.id)', HUD)
         self.assertIn("petButton.Active = owned and equipped", HUD)
 
+    def test_equipped_companion_can_be_petted_from_world_prompt(self):
+        self.assertIn("local function attachWorldPetPrompt(model, companionId)", ALBUM)
+        self.assertIn('prompt.Name = "WorldPetPrompt"', ALBUM)
+        self.assertIn('prompt.ActionText = "Погладить"', ALBUM)
+        self.assertIn("prompt.HoldDuration = 0.35", ALBUM)
+        self.assertIn("prompt.GamepadKeyCode = Enum.KeyCode.ButtonX", ALBUM)
+        self.assertIn('event:FireServer("PetCompanion", companionId)', ALBUM)
+        self.assertIn("attachWorldPetPrompt(model, id)", ALBUM)
+
     def test_client_plays_species_specific_reaction_and_visual_feedback(self):
         self.assertIn('message == "CompanionPetted"', ALBUM)
         self.assertIn("pettingUntil", ALBUM)
