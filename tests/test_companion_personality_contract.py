@@ -10,9 +10,20 @@ ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
 class CompanionPersonalityContractTests(unittest.TestCase):
     def test_server_assigns_a_stable_species_specific_personality(self):
         self.assertIn('local companionPersonalities = {"Любопытный", "Озорной", "Смелый", "Застенчивый"}', WORLD)
-        self.assertIn("local function getCompanionPersonality(userId, companionId)", WORLD)
+        self.assertIn("local function getDefaultCompanionPersonality(userId, companionId)", WORLD)
         self.assertIn("((math.abs(userId) + speciesOffset) % #companionPersonalities) + 1", WORLD)
-        self.assertIn('player:SetAttribute("Companion_" .. id .. "_Personality", getCompanionPersonality(player.UserId, id))', WORLD)
+        self.assertIn("local function normalizeCompanionPersonalities(raw, userId)", WORLD)
+        self.assertIn('player:SetAttribute("Companion_" .. id .. "_Personality", session.companionPersonalities[id])', WORLD)
+
+    def test_personalities_are_saved_and_restored_with_companion_profile(self):
+        self.assertIn("companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId)", WORLD)
+        self.assertIn("savedPersonalities[id] = saved.personality", WORLD)
+        self.assertIn("session.companionPersonalities = normalizeCompanionPersonalities(savedPersonalities, player.UserId)", WORLD)
+        self.assertIn("savedCompanion.personality = session.companionPersonalities[companionId]", WORLD)
+
+    def test_unknown_or_missing_saved_personality_uses_safe_default(self):
+        self.assertIn("companionPersonalitySet[saved]", WORLD)
+        self.assertIn("and saved or getDefaultCompanionPersonality(userId, id)", WORLD)
 
     def test_fox_idle_curiosity_frequency_depends_on_personality(self):
         self.assertIn('["Любопытный"] = {5, 10}', ALBUM)
