@@ -224,3 +224,10 @@ A second compatibility pass found that R15 rigs use `Root` and `Waist`, whereas 
 Added a server-timed hold/release sword attack. The server owns charge start time and computes damage (30–52) from a 0.45–1.6s valid charge; clients cannot submit duration, damage or target. The action is mapped to keyboard R, gamepad ButtonX and a touch hold control. Abandoned charges expire after four seconds; block/dodge/respawn and normal attacks cannot preserve or bypass the charge. Stronger impact push is reduced against bosses. Three contract tests and generated-place markers cover the server rules, client mappings and cancellation behavior.
 
 The current changes are committed to the linear PR #7 candidate branch. Fresh GitHub Actions results and Roblox Studio acceptance are still required; touch hold semantics and physical tuning remain unverified in Studio.
+
+
+### Fox / Moth combat companion ability slice
+
+Added a first server-authoritative combat ability for each currently implemented companion. Fox selects the nearest living registered enemy in the player's current combat region within 18 studs and deals 24 damage; Moth heals ready allies in the same region within 14 studs for up to 18 HP each. Both require the matching owned-and-equipped companion, share a 14-second per-player cooldown that survives character respawns, and cannot be used while blocking or charging. Keyboard C, gamepad ButtonY and touch controls map to one payload-free server action. Added contract coverage for ownership, region boundaries, reward contribution, healing cap, cooldown persistence, input mapping and rejection feedback. Updated product spec, combat spec and roadmap.
+
+The branch remains a linear descendant of the canonical baseline. CI and Roblox Studio acceptance must still confirm the current head; specifically verify live pet equip state, co-op healing boundaries, and mobile touch layout.
