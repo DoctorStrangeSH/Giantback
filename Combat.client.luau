@@ -36,6 +36,15 @@ local function dodgeAction(_, inputState)
     return Enum.ContextActionResult.Sink
 end
 
+local function chargeAction(_, inputState)
+    if inputState == Enum.UserInputState.Begin then
+        remote:FireServer("ChargeStart")
+    elseif inputState == Enum.UserInputState.End or inputState == Enum.UserInputState.Cancel then
+        remote:FireServer("ChargeRelease")
+    end
+    return Enum.ContextActionResult.Sink
+end
+
 -- Mouse/keyboard + gamepad + ContextActionService touch buttons.
 ContextActionService:BindAction(
     "GiantbackAttack",
@@ -58,13 +67,22 @@ ContextActionService:BindAction(
     Enum.KeyCode.Q,
     Enum.KeyCode.ButtonB
 )
+ContextActionService:BindAction(
+    "GiantbackCharge",
+    chargeAction,
+    true,
+    Enum.KeyCode.R,
+    Enum.KeyCode.ButtonX
+)
 
 ContextActionService:SetTitle("GiantbackAttack", "УДАР")
 ContextActionService:SetTitle("GiantbackBlock", "БЛОК")
 ContextActionService:SetTitle("GiantbackDodge", "УКЛОН")
+ContextActionService:SetTitle("GiantbackCharge", "ЗАРЯД")
 ContextActionService:SetPosition("GiantbackAttack", UDim2.new(1, -92, 1, -190))
 ContextActionService:SetPosition("GiantbackBlock", UDim2.new(1, -188, 1, -112))
 ContextActionService:SetPosition("GiantbackDodge", UDim2.new(1, -92, 1, -92))
+ContextActionService:SetPosition("GiantbackCharge", UDim2.new(1, -188, 1, -205))
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -144,7 +162,9 @@ remote.OnClientEvent:Connect(function(message, data)
         local copy = rejectionMessages[data.code]
         if copy then showFeedback(copy, Color3.fromRGB(255, 207, 153)) end
     elseif message == "CombatHit" then
-        if type(data) == "table" and data.finisher == true then
+        if type(data) == "table" and data.charged == true then
+            showFeedback("ЗАРЯЖЕННЫЙ УДАР · " .. tostring(data.damage or ""), Color3.fromRGB(255, 185, 102))
+        elseif type(data) == "table" and data.finisher == true then
             showFeedback("ФИНИШЕР!", Color3.fromRGB(255, 190, 104))
         elseif type(data) == "table" and type(data.comboStep) == "number" then
             showFeedback("КОМБО " .. tostring(data.comboStep) .. "/3", Color3.fromRGB(187, 236, 164))
