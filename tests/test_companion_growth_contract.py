@@ -4,6 +4,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 
 class CompanionGrowthContractTests(unittest.TestCase):
@@ -34,11 +35,11 @@ class CompanionGrowthContractTests(unittest.TestCase):
         self.assertNotIn("GrowthReward", ALBUM)
 
     def test_collection_cards_show_the_matching_growth_stage(self):
-        self.assertIn('levelValue >= 5 and "ВЗРОСЛЫЙ"', ALBUM)
-        self.assertIn('levelValue >= 3 and "ПОДРОСТОК"', ALBUM)
-        self.assertIn('"МАЛЫШ"', ALBUM)
-        self.assertIn('growthStage .. " · УР. 5 · МАКСИМУМ"', ALBUM)
-        self.assertIn('growthStage .. " · УР. " .. tostring(levelValue)', ALBUM)
+        self.assertIn('companionLevel >= 5 and "ВЗРОСЛЫЙ"', HUD)
+        self.assertIn('companionLevel >= 3 and "ПОДРОСТОК"', HUD)
+        self.assertIn('"МАЛЫШ"', HUD)
+        self.assertIn('companionLevel >= 5 and "УР. 5 · МАКСИМУМ"', HUD)
+        self.assertIn('growthStage .. " · " .. levelText .. mutationText', HUD)
 
 
 if __name__ == "__main__":
