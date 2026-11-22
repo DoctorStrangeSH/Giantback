@@ -131,6 +131,31 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('"PrismSeed"', VISUALS)
 
 
+    def test_crystal_wisp_is_a_persistent_third_companion_with_grotto_mutations(self):
+        self.assertIn('local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp"}', WORLD)
+        self.assertIn('CrystalWisp = "Кристальный светляк"', WORLD)
+        self.assertIn('CrystalWisp = {', WORLD)
+        self.assertIn('biome = "CrystalGrotto"', WORLD)
+        self.assertIn('"CrystalWisp", "Seed"', WORLD.split("local progress = ", 1)[1].split("local inventoryKeys", 1)[0])
+
+    def test_crystal_wisp_adoption_consumes_seed_and_requires_echo_chamber(self):
+        self.assertIn('local crystalWispNest = crystalGrotto and crystalGrotto:FindFirstChild("CrystalWispNest", true)', WORLD)
+        self.assertIn('if not crystalEchoInside[player] or player:GetAttribute("CrystalEchoDiscovered") ~= true then', WORLD)
+        self.assertIn('if (session.inventory.PrismSeed or 0) < 1 then', WORLD)
+        self.assertIn('session.inventory.PrismSeed -= 1', WORLD)
+        self.assertIn('player:SetAttribute("CrystalWisp", true)', WORLD)
+        self.assertIn('player:SetAttribute("Companion", "CrystalWisp")', WORLD)
+
+    def test_crystal_wisp_visual_is_shared_by_encounter_and_followers(self):
+        self.assertIn('wispModel.Name = "CrystalWisp"', VISUALS)
+        self.assertIn('wispModel.PrimaryPart = wispBody', VISUALS)
+        self.assertIn('encounterModel.Name = "CrystalWispEncounter"', WORLD)
+        self.assertIn('CrystalWisp = "CombatTrainingGlade"', ALBUM)
+        self.assertIn('createCompanionCard("CrystalWisp", 3)', ALBUM)
+
+    def test_crystal_wisp_is_in_expedition_journal(self):
+        self.assertIn('{key = "CrystalWisp", title = "Подружиться с кристальным светляком"', HUD)
+
     def test_expedition_journal_tracks_both_grotto_milestones(self):
         self.assertIn('{key = "CrystalGrottoDiscovered"', HUD)
         self.assertIn('{key = "CrystalHeart"', HUD)
