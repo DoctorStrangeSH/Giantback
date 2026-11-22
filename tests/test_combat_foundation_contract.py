@@ -344,7 +344,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('state == "Telegraph"', CLIENT)
         self.assertIn('state == "Recover"', CLIENT)
         self.assertIn('state == "PhaseTransition"', CLIENT)
-        self.assertIn('entry.humanoid.MoveDirection.Magnitude > 0.08', CLIENT)
+        self.assertIn('horizontalVelocity.Magnitude > 0.75', CLIENT)
         self.assertIn('setJointPose(rightLeg, -swing * 0.58', CLIENT)
         self.assertIn('bindEnemyProceduralAnimation(enemy)', CLIENT)
         self.assertIn('joint.Transform = CFrame.identity', CLIENT)
