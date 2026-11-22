@@ -31,8 +31,8 @@ local occupiedHomeSlots = {}
 if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
-local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
-local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit"}
+local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк"}
+local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed"}
 local toolIds = {Axe = true, Pickaxe = true}
 local combatRewardDefinitions = {
@@ -246,7 +246,7 @@ end
 
 local save
 
-local COMPANION_IDS = {"Fox", "Moth"}
+local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp"}
 local COMPANION_MAX_LEVEL = 5
 
 local function companionXpToNext(level)
@@ -279,6 +279,7 @@ end
 local companionMoodDefaults = {
     Fox = "Любопытство",
     Moth = "Спокойствие",
+    CrystalWisp = "Любопытство",
 }
 
 local companionPersonalities = {"Любопытный", "Озорной", "Смелый", "Застенчивый"}
@@ -289,7 +290,7 @@ for _, personality in companionPersonalities do
 end
 
 local function getDefaultCompanionPersonality(userId, companionId)
-    local speciesOffset = companionId == "Moth" and 2 or 0
+    local speciesOffset = companionId == "Moth" and 2 or companionId == "CrystalWisp" and 4 or 0
     local index = ((math.abs(userId) + speciesOffset) % #companionPersonalities) + 1
     return companionPersonalities[index]
 end
@@ -307,7 +308,7 @@ end
 
 local function setCompanionMood(player, companionId, mood)
     local session = sessions[player]
-    if not session or (companionId ~= "Fox" and companionId ~= "Moth") then return end
+    if not session or table.find(COMPANION_IDS, companionId) == nil then return end
     session.companionMood = session.companionMood or {}
     session.companionMood[companionId] = mood
     player:SetAttribute("Companion_" .. companionId .. "_Mood", mood)
@@ -325,6 +326,12 @@ local companionMutationDefinitions = {
         {id = "Stardust", name = "Звёздная пыль", rarity = "Редкий", weight = 48, biome = "Dusk"},
         {id = "Aurora", name = "Аврора", rarity = "Эпический", weight = 11, biome = "Dusk"},
         {id = "Eclipse", name = "Затмение", rarity = "Легендарный", weight = 1, biome = "Dusk"},
+    },
+    CrystalWisp = {
+        {id = "PrismGlow", name = "Призматическое сияние", rarity = "Необычный", weight = 140, biome = "CrystalGrotto"},
+        {id = "EchoSpark", name = "Искра эха", rarity = "Редкий", weight = 48, biome = "CrystalGrotto"},
+        {id = "Starseed", name = "Звёздное семя", rarity = "Эпический", weight = 11, biome = "CrystalGrotto"},
+        {id = "HeartOfPrism", name = "Сердце призмы", rarity = "Легендарный", weight = 1, biome = "CrystalGrotto"},
     },
 }
 
@@ -440,7 +447,7 @@ local function syncCompanionProgress(player)
 end
 
 local function awardCompanionXp(player, companionId, amount)
-    if companionId ~= "Fox" and companionId ~= "Moth" then return false, "InvalidCompanion" end
+    if table.find(COMPANION_IDS, companionId) == nil then return false, "InvalidCompanion" end
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") or player:GetAttribute(companionId) ~= true then
         return false, "CompanionNotOwned"
@@ -515,7 +522,7 @@ local function finishCompanionPlay(player, success, reason)
 end
 
 local function startCompanionPlay(player, companionId)
-    if companionId ~= "Fox" and companionId ~= "Moth" then return end
+    if table.find(COMPANION_IDS, companionId) == nil then return end
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") or player:GetAttribute(companionId) ~= true then return end
     if player:GetAttribute("Companion") ~= companionId then
@@ -2087,8 +2094,52 @@ local function encounter(id, island, height)
         tip(player,pets[id] .. " теперь с тобой!")
     end)
 end
+
 encounter("Fox",workspace.Grove,1.8)
 encounter("Moth",workspace.Dusk,3.5)
+
+local crystalWispNest = crystalGrotto and crystalGrotto:FindFirstChild("CrystalWispNest", true)
+if crystalWispNest then
+    local crystalWisp = Storage:FindFirstChild("CrystalWisp")
+    if crystalWisp and crystalWisp:IsA("Model") then
+        local encounterModel = crystalWisp:Clone()
+        encounterModel.Name = "CrystalWispEncounter"
+        encounterModel:SetAttribute("CompanionId", "CrystalWisp")
+        encounterModel.Parent = workspace:FindFirstChild("CombatTrainingGlade") or crystalGrotto
+        encounterModel:PivotTo(CFrame.new(crystalWispNest.Position + Vector3.new(0, 2.1, 0)))
+        prompt(crystalWispNest, pets.CrystalWisp, "Предложить семя", function(player)
+            local session = sessions[player]
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if not session or not root or not humanoid or humanoid.Health <= 0 then return end
+            if not crystalEchoInside[player] or player:GetAttribute("CrystalEchoDiscovered") ~= true then
+                return tip(player, "Светляк прячется глубже Эхо-камеры. Сначала открой её.")
+            end
+            if player:GetAttribute("CrystalWisp") == true then
+                return tip(player, "Кристальный светляк уже стал твоим другом.")
+            end
+            if (session.inventory.PrismSeed or 0) < 1 then
+                return tip(player, "Светляк тянется к призматическому семени. Найди его в центре камеры.")
+            end
+            session.inventory.PrismSeed -= 1
+            session.companionDiscoveryBiomes = session.companionDiscoveryBiomes or {}
+            session.companionDiscoveryBiomes.CrystalWisp = "CrystalGrotto"
+            player:SetAttribute("CrystalWisp", true)
+            ensureCompanionMutation(player, "CrystalWisp")
+            player:SetAttribute("Companion", "CrystalWisp")
+            syncInventory(player)
+            syncCompanionProgress(player)
+            tip(player, "Кристальный светляк принял семя! Теперь он будет путешествовать с тобой.")
+            if session.online and not save(player) then
+                warn("Crystal Wisp adoption save will be retried:", player.UserId)
+                tip(player, "Светляк с тобой. Сохранение будет повторено автоматически.")
+            end
+        end)
+    else
+        warn("Crystal Wisp model is missing from ReplicatedStorage.")
+    end
+end
 
 
 -- Server-authoritative gatherables. Nodes stay in the shared world, while each
