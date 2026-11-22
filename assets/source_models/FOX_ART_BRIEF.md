@@ -179,3 +179,10 @@ Visual inspection found:
 - The current character reads as a simple smooth blockout with separate rounded components; it does not yet meet the requested experienced-artist finish, sculpted fur, or premium companion silhouette.
 
 The review camera now constructs an explicit Y-up orthonormal basis with Matrix instead of relying on track_quat roll behavior. A fresh render is required to verify orientation. After that, prioritize sculptural silhouette, connected transitions, layered cheek/chest/tail forms, ear shaping, paw anatomy, and richer controlled materials. Do not mark Fox Hero art-approved until all views are inspected.
+
+
+## Second review and lighting pass (2026-11-22)
+
+A fresh artifact from commit `dc089c3` confirms the camera correction: front, side, back and three-quarter views are all upright and readable. The model is recognizable and has a friendly base silhouette, but it still reads as a smooth primitive-based blockout rather than a finished artist-authored companion. The first render is also washed out: orange fur reads pale peach and form separation is weak.
+
+A preview lighting pass now reduces key/fill/rim power (1200/650/950 to 520/260/380) and uses AgX Medium High Contrast. This should improve color retention and form readability without changing exported geometry. A fresh render is required before judging the change. Next art pass should focus on richer orange/cream separation, layered cheek/chest/tail forms, intentional fur clumps, more expressive eye/muzzle proportions and cleaner transitions. Keep all 17 rig groups intact.
