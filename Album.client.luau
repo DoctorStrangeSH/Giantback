@@ -672,6 +672,9 @@ local function ensureHarvestDamageOverlay(node, nodeId, hits, maximum)
     end
 end
 
+-- Defined later, but referenced by the earlier reward and hit-effect callbacks.
+local findResourceNode
+
 local function playResourceRewardPickup(payload)
     if type(payload) ~= "table" then return end
     local itemId = payload.itemId
@@ -970,10 +973,7 @@ updateFoxCacheMarkers()
 updateMothBloomReveal()
 updateMoonGatePuzzle()
 
-local resourceNodeHidden = {}
-local resourceVisibilityGeneration = {}
-
-local function findResourceNode(nodeId)
+findResourceNode = function(nodeId)
     for _, islandName in {"Grove", "Dusk"} do
         local island = workspace:FindFirstChild(islandName)
         local folder = island and island:FindFirstChild("ResourceNodes")
@@ -1062,68 +1062,14 @@ local function restoreResourceGrowth(model)
     end
 end
 
-local function applyResourceNodeVisibility(model, visible)
-    for _, descendant in model:GetDescendants() do
-        if descendant:IsA("BasePart") then
-            descendant.LocalTransparencyModifier = visible and 0 or 1
-        elseif descendant:IsA("ProximityPrompt") then
-            descendant.Enabled = visible
-        end
-    end
-end
-
-local function setResourceNodeVisible(nodeId, visible)
-    resourceNodeHidden[nodeId] = not visible
-    local model = findResourceNode(nodeId)
-    if not model then return false end
-    if visible then
-        restoreResourceGrowth(model)
-    end
-    applyResourceNodeVisibility(model, visible)
-    return true
-end
-
-local function hideResourceNodeWhenReady(nodeId, generation, attempts)
-    if generation ~= resourceVisibilityGeneration[nodeId] then return end
-    if setResourceNodeVisible(nodeId, false) then return end
-    if attempts < 40 then
-        task.delay(0.25, function()
-            hideResourceNodeWhenReady(nodeId, generation, attempts + 1)
-        end)
-    end
-end
-
+-- Client-only visibility state is isolated; server cooldowns remain authoritative.
+local ResourceNodeVisibility = require(storage:WaitForChild("ResourceNodeVisibility"))
+local resourceVisibility = ResourceNodeVisibility.new(findResourceNode, restoreResourceGrowth)
 local function applyResourceNodeState(nodeId, readyAt, unique)
-    if type(nodeId) ~= "string" then return end
-    local generation = (resourceVisibilityGeneration[nodeId] or 0) + 1
-    resourceVisibilityGeneration[nodeId] = generation
-
-    if unique then
-        hideResourceNodeWhenReady(nodeId, generation, 0)
-        return
-    end
-
-    local remaining = (tonumber(readyAt) or 0) - os.time()
-    if remaining <= 0 then
-        setResourceNodeVisible(nodeId, true)
-        return
-    end
-
-    hideResourceNodeWhenReady(nodeId, generation, 0)
-    task.delay(remaining, function()
-        if resourceVisibilityGeneration[nodeId] == generation then
-            setResourceNodeVisible(nodeId, true)
-        end
-    end)
+    resourceVisibility.apply(nodeId, readyAt, unique)
 end
 
-workspace.DescendantAdded:Connect(function(descendant)
-    if not descendant:IsA("Model") then return end
-    local nodeId = descendant:GetAttribute("ResourceNodeId")
-    if nodeId and resourceNodeHidden[nodeId] then
-        applyResourceNodeVisibility(descendant, false)
-    end
-end)
+workspace.DescendantAdded:Connect(resourceVisibility.onDescendantAdded)
 
 event.OnClientEvent:Connect(function(message, payload)
     if message == "CompanionPetted" and type(payload) == "table" then
