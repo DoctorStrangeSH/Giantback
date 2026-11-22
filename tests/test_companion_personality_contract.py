@@ -25,6 +25,22 @@ class CompanionPersonalityContractTests(unittest.TestCase):
         self.assertIn("companionPersonalitySet[saved]", WORLD)
         self.assertIn("and saved or getDefaultCompanionPersonality(userId, id)", WORLD)
 
+    def test_relationship_stage_is_synced_from_bond_thresholds(self):
+        self.assertIn('progressData.bond >= 900 and 4', WORLD)
+        self.assertIn('progressData.bond >= 600 and 3', WORLD)
+        self.assertIn('progressData.bond >= 300 and 2', WORLD)
+        self.assertIn('progressData.bond >= 100 and 1', WORLD)
+        self.assertIn('"_BondStage", bondStage', WORLD)
+
+    def test_higher_bond_changes_fox_and_moth_idle_behavior(self):
+        self.assertIn('owner:GetAttribute("Companion_" .. id .. "_BondStage")', ALBUM)
+        self.assertIn('window[1] - bondStage * 1.5', ALBUM)
+        self.assertIn('window[2] - bondStage * 2', ALBUM)
+        self.assertIn('personalityRadius - bondStage * 0.035', ALBUM)
+        self.assertIn('local function updateMothStardust(model, owner)', ALBUM)
+        self.assertIn('emitter:GetAttribute("AppliedBondStage") == bondStage', ALBUM)
+        self.assertIn('updateMothStardust(model, owner)', ALBUM)
+
     def test_fox_idle_curiosity_frequency_depends_on_personality(self):
         self.assertIn('["Любопытный"] = {5, 10}', ALBUM)
         self.assertIn('["Озорной"] = {6, 11}', ALBUM)
