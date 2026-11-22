@@ -26,6 +26,20 @@ class HomeIslandVisualApproachTests(unittest.TestCase):
         self.assertIn('Vector3.new(-16.7, 12.15, 6.2)', VISUALS)
         self.assertIn('Vector3.new(-7.7, 12.15, 6.2)', VISUALS)
 
+    def test_companion_sanctuary_has_three_rest_spots_and_a_clear_approach(self):
+        self.assertIn('makeFolder(homeDetails, "PetSanctuary")', VISUALS)
+        self.assertIn('local sanctuaryCenter = Vector3.new(-23, 12.16, -8.5)', VISUALS)
+        self.assertIn('"Companion sanctuary moss pad"', VISUALS)
+        self.assertIn('"Companion sanctuary stone dais"', VISUALS)
+        self.assertEqual(VISUALS.count('"Companion resting cushion base"'), 1)
+        self.assertIn('local restSpots = {', VISUALS)
+        self.assertIn('Vector3.new(-25.1, 12.48, -8.5)', VISUALS)
+        self.assertIn('Vector3.new(-20.9, 12.48, -8.5)', VISUALS)
+        self.assertIn('Vector3.new(-23.0, 12.48, -6.1)', VISUALS)
+        self.assertIn('"Sanctuary moon lantern"', VISUALS)
+        self.assertIn('"Companion nook stepping stone"', VISUALS)
+        self.assertIn('"Sanctuary border pebble"', VISUALS)
+
     def test_garden_details_use_existing_non_colliding_visual_helpers(self):
         helper_start = VISUALS.index("local function makePart")
         helper_end = VISUALS.index("\nend", helper_start)
