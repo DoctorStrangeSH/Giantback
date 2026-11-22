@@ -32,6 +32,10 @@ local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная мол
 local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "MoonSeed", "StarShard"}
 local toolIds = {Axe = true, Pickaxe = true}
+local toolUpgradeCosts = {
+    Axe = {Wood = 8, Stone = 6},
+    Pickaxe = {Wood = 6, Stone = 8},
+}
 local defaultTools = {Axe = true, Pickaxe = true}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCacheIdSet = {}
@@ -232,20 +236,22 @@ local function createToolPart(parent, name, size, offset, color, material, shape
     return part
 end
 
-local function createHarvestTool(toolId)
+local function createHarvestTool(toolId, level)
+    level = math.clamp(math.floor(tonumber(level) or 1), 1, 2)
     local tool = Instance.new("Tool")
     tool.Name = toolId == "Axe" and "Топор путешественника" or "Кирка путешественника"
-    tool.ToolTip = toolId == "Axe" and "Нужен для добычи дерева" or "Нужна для добычи камня"
+    tool.ToolTip = level >= 2 and "Усиленный инструмент: добыча быстрее" or (toolId == "Axe" and "Нужен для добычи дерева" or "Нужна для добычи камня")
     tool.RequiresHandle = true
     tool.CanBeDropped = false
     tool:SetAttribute("PetKingdomsToolId", toolId)
+    tool:SetAttribute("PetKingdomsToolLevel", level)
 
     local handle = createToolPart(tool, "Handle", Vector3.new(0.28, 0.28, 2.5), CFrame.new(), Color3.fromRGB(132, 91, 57), Enum.Material.Wood, Enum.PartType.Cylinder)
     handle.CFrame = CFrame.new() * CFrame.Angles(0, 0, math.rad(90))
 
     if toolId == "Axe" then
-        local blade = createToolPart(tool, "AxeHead", Vector3.new(0.32, 1.0, 0.9), CFrame.new(0, 0.85, -0.05), Color3.fromRGB(178, 190, 190), Enum.Material.Metal)
-        local edge = createToolPart(tool, "AxeEdge", Vector3.new(0.12, 0.82, 0.72), CFrame.new(0, 0.87, -0.52), Color3.fromRGB(220, 225, 216), Enum.Material.Metal)
+        local blade = createToolPart(tool, "AxeHead", Vector3.new(0.32, 1.0, 0.9), CFrame.new(0, 0.85, -0.05), level >= 2 and Color3.fromRGB(218, 169, 83) or Color3.fromRGB(178, 190, 190), Enum.Material.Metal)
+        local edge = createToolPart(tool, "AxeEdge", Vector3.new(0.12, 0.82, 0.72), CFrame.new(0, 0.87, -0.52), level >= 2 and Color3.fromRGB(255, 218, 132) or Color3.fromRGB(220, 225, 216), Enum.Material.Metal)
         for _, part in {blade, edge} do
             local weld = Instance.new("WeldConstraint")
             weld.Part0 = handle
@@ -253,8 +259,8 @@ local function createHarvestTool(toolId)
             weld.Parent = handle
         end
     else
-        local head = createToolPart(tool, "PickaxeHead", Vector3.new(0.28, 0.32, 1.75), CFrame.new(0, 1.05, 0), Color3.fromRGB(166, 181, 184), Enum.Material.Metal)
-        local tipLeft = createToolPart(tool, "PickaxeTipLeft", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, -1.0), Color3.fromRGB(205, 211, 205), Enum.Material.Metal)
+        local head = createToolPart(tool, "PickaxeHead", Vector3.new(0.28, 0.32, 1.75), CFrame.new(0, 1.05, 0), level >= 2 and Color3.fromRGB(218, 169, 83) or Color3.fromRGB(166, 181, 184), Enum.Material.Metal)
+        local tipLeft = createToolPart(tool, "PickaxeTipLeft", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, -1.0), level >= 2 and Color3.fromRGB(255, 218, 132) or Color3.fromRGB(205, 211, 205), Enum.Material.Metal)
         local tipRight = createToolPart(tool, "PickaxeTipRight", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, 1.0), Color3.fromRGB(205, 211, 205), Enum.Material.Metal)
         for _, part in {head, tipLeft, tipRight} do
             local weld = Instance.new("WeldConstraint")
@@ -279,8 +285,16 @@ local function ensurePlayerTools(player, session)
     local backpack = player:FindFirstChildOfClass("Backpack")
     if not backpack then return end
     for toolId, owned in session.tools do
-        if owned == true and not findPlayerTool(player, toolId) then
-            createHarvestTool(toolId).Parent = backpack
+        if owned == true then
+            local level = session.toolLevels[toolId] or 1
+            local current = findPlayerTool(player, toolId)
+            if current and current:GetAttribute("PetKingdomsToolLevel") ~= level then
+                current:Destroy()
+                current = nil
+            end
+            if not current then
+                createHarvestTool(toolId, level).Parent = backpack
+            end
         end
     end
     local equipped = findPlayerTool(player, session.equippedTool)
@@ -296,6 +310,8 @@ local function syncTools(player)
     player:SetAttribute("Tool_AxeOwned", tools.Axe == true)
     player:SetAttribute("Tool_PickaxeOwned", tools.Pickaxe == true)
     player:SetAttribute("Tool_Equipped", session and session.equippedTool or "")
+    player:SetAttribute("Tool_AxeLevel", session and session.toolLevels.Axe or 1)
+    player:SetAttribute("Tool_PickaxeLevel", session and session.toolLevels.Pickaxe or 1)
     if session and player:GetAttribute("Ready") then
         ensurePlayerTools(player, session)
     end
@@ -379,6 +395,10 @@ local function save(player)
             Axe = session.tools.Axe == true,
             Pickaxe = session.tools.Pickaxe == true,
             equipped = toolIds[session.equippedTool] and session.equippedTool or "",
+            levels = {
+                Axe = math.clamp(math.floor(tonumber(session.toolLevels.Axe) or 1), 1, 2),
+                Pickaxe = math.clamp(math.floor(tonumber(session.toolLevels.Pickaxe) or 1), 1, 2),
+            },
         }
         local citySnapshot = normalizeCity(session.city)
         local foxScoutSnapshot = {
@@ -393,12 +413,13 @@ local function save(player)
                 for _, key in progress do
                     old[key] = old[key] == true or snapshot[key]
                 end
-                old.schemaVersion = 7
+                old.schemaVersion = 8
 
                 local savedTools = type(old.tools) == "table" and old.tools or {}
                 savedTools.Axe = toolsSnapshot.Axe
                 savedTools.Pickaxe = toolsSnapshot.Pickaxe
                 savedTools.equipped = toolsSnapshot.equipped
+                savedTools.levels = toolsSnapshot.levels
                 old.tools = savedTools
 
                 local savedInventory = type(old.inventory) == "table" and old.inventory or {}
@@ -467,6 +488,7 @@ local function init(player)
     local session = {
         inventory = {},
         tools = {Axe = true, Pickaxe = true},
+        toolLevels = {Axe = 1, Pickaxe = 1},
         equippedTool = "Axe",
         resourceCooldowns = {},
         resourceHits = {},
@@ -545,6 +567,11 @@ local function init(player)
             session.tools = {
                 Axe = savedTools.Axe == true or savedTools.Axe == nil,
                 Pickaxe = savedTools.Pickaxe == true or savedTools.Pickaxe == nil,
+            }
+            local savedLevels = type(savedTools.levels) == "table" and savedTools.levels or {}
+            session.toolLevels = {
+                Axe = math.clamp(math.floor(tonumber(savedLevels.Axe) or 1), 1, 2),
+                Pickaxe = math.clamp(math.floor(tonumber(savedLevels.Pickaxe) or 1), 1, 2),
             }
             local savedEquippedTool = savedTools.equipped
             if toolIds[savedEquippedTool] and session.tools[savedEquippedTool] then
@@ -821,6 +848,36 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "CollectFoxCache" then
         collectFoxCache(player, payload)
+        return
+    end
+
+    if action == "UpgradeTool" then
+        local session = sessions[player]
+        if not session or typeof(payload) ~= "string" or not toolUpgradeCosts[payload] then return end
+        if session.toolLevels[payload] >= 2 then
+            return tip(player, "Этот инструмент уже улучшен до максимального уровня.")
+        end
+        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        local workshop = session.homeIsland and session.homeIsland:FindFirstChild("PersonalCity")
+        local station = workshop and workshop:FindFirstChild("Workshop")
+        local anchor = station and station:FindFirstChild("PromptAnchor")
+        if not root or not anchor or (root.Position - anchor.Position).Magnitude > 14 then
+            return tip(player, "Улучшать инструменты можно только у верстака на своём острове.")
+        end
+        local cost = toolUpgradeCosts[payload]
+        local woodCost, stoneCost = cost.Wood, cost.Stone
+        if (session.inventory.Wood or 0) < woodCost or (session.inventory.Stone or 0) < stoneCost then
+            return tip(player, "Не хватает материалов: дерево ×" .. tostring(woodCost) .. " и камень ×" .. tostring(stoneCost) .. ".")
+        end
+        session.inventory.Wood -= woodCost
+        session.inventory.Stone -= stoneCost
+        session.toolLevels[payload] = 2
+        syncInventory(player)
+        syncTools(player)
+        tip(player, payload == "Axe" and "Готово! Топор усилен: деревья теперь рубятся быстрее." or "Готово! Кирка усилена: камень теперь добывается быстрее.")
+        if session.online and not save(player) then
+            warn("Tool upgrade save will be retried:", player.UserId, payload)
+        end
         return
     end
 
@@ -1141,6 +1198,39 @@ createPersonalCity = function(player, session)
 
     local meadow = homeIsland:FindFirstChild("Meadow")
     if meadow then
+        local workshop = Instance.new("Model")
+        workshop.Name = "Workshop"
+        workshop:SetAttribute("OwnerUserId", ownerUserId)
+        workshop.Parent = cityModel
+        local benchFrame = meadow.CFrame * CFrame.new(
+            meadow.Size.X / 2 - 4.5,
+            meadow.Size.Y / 2 + 0.72,
+            -meadow.Size.Z / 2 + 4.5
+        )
+        makeFarmVisualPart(workshop, "WorkbenchTop", Vector3.new(4.8, 0.38, 2.4), benchFrame, Color3.fromRGB(126, 83, 53), Enum.PartType.Block, Enum.Material.Wood)
+        for _, offset in {
+            Vector3.new(-2.0, -0.78, -0.85), Vector3.new(2.0, -0.78, -0.85),
+            Vector3.new(-2.0, -0.78, 0.85), Vector3.new(2.0, -0.78, 0.85),
+        } do
+            makeFarmVisualPart(workshop, "WorkbenchLeg", Vector3.new(0.32, 1.2, 0.32), benchFrame * CFrame.new(offset), Color3.fromRGB(91, 61, 43), Enum.PartType.Block, Enum.Material.Wood)
+        end
+        makeFarmVisualPart(workshop, "AnvilBase", Vector3.new(1.15, 0.42, 0.72), benchFrame * CFrame.new(0, 0.42, 0), Color3.fromRGB(75, 83, 86), Enum.PartType.Block, Enum.Material.Metal)
+        makeFarmVisualPart(workshop, "AnvilTop", Vector3.new(1.65, 0.3, 0.8), benchFrame * CFrame.new(0, 0.78, 0), Color3.fromRGB(137, 151, 151), Enum.PartType.Block, Enum.Material.Metal)
+        local workshopAnchor = Instance.new("Part")
+        workshopAnchor.Name = "PromptAnchor"
+        workshopAnchor.Size = Vector3.new(0.5, 0.5, 0.5)
+        workshopAnchor.Transparency = 1
+        workshopAnchor.Anchored = true
+        workshopAnchor.CanCollide = false
+        workshopAnchor.CanTouch = false
+        workshopAnchor.CanQuery = true
+        workshopAnchor.CFrame = benchFrame * CFrame.new(0, 2.0, 0)
+        workshopAnchor.Parent = workshop
+        prompt(workshopAnchor, "Мастерская", "Улучшить инструменты", function(visitor)
+            if visitor.UserId ~= ownerUserId then return end
+            event:FireClient(visitor, "OpenWorkshop")
+        end)
+
         local plotPositions = {
             Plot01 = Vector3.new(-14.5, meadow.Size.Y / 2 + 0.22, 8.8),
             Plot02 = Vector3.new(-10.5, meadow.Size.Y / 2 + 0.22, 8.8),
@@ -1465,6 +1555,9 @@ local function spawnResource(def)
             end
 
             local hitsRequired = math.clamp(math.floor(tonumber(def.hitsRequired) or 1), 1, 10)
+            if def.requiredTool and (session.toolLevels[def.requiredTool] or 1) >= 2 then
+                hitsRequired = math.max(1, hitsRequired - 1)
+            end
             if hitsRequired > 1 then
                 local hitNow = os.clock()
                 local lastHitAt = session.resourceHitCooldowns[def.key] or 0
