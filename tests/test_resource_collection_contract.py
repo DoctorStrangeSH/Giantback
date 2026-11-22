@@ -77,6 +77,12 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('"ResourceHit"', WORLD)
         self.assertIn('"ResourceHit"', CLIENT)
         self.assertIn('node:PivotTo(origin * CFrame.new(offset))', CLIENT)
+        self.assertIn('Instance.new("BillboardGui")', CLIENT)
+        self.assertIn('"LocalHarvestProgress"', CLIENT)
+        self.assertIn('"Добыча "', CLIENT)
+        self.assertIn('Instance.new("ParticleEmitter")', CLIENT)
+        self.assertIn('emitter:Emit(7)', CLIENT)
+        self.assertIn('clearResourceHitFeedback(payload.nodeId)', CLIENT)
 
     def test_world_resource_yields_are_server_defined_and_positive(self):
         self.assertIn('amount = 2,', WORLD)
