@@ -1,3 +1,13 @@
+## Ironworking 1.0 — Ore and smelting
+
+- [x] Two personal iron-ore resource nodes in the Dusk biome with pickaxe validation, five-hit harvesting, per-player cooldowns and configured rewards.
+- [x] Personal island furnace with a 60-second server-timed recipe (3 ore + 2 wood → 1 ingot).
+- [x] Server checks furnace ownership and interaction distance; no client-side reward grants.
+- [x] Persist pending smelting state so progress survives reconnects and offline time.
+- [x] Show ore, ingot counts and smelting status in the Tools panel.
+- [ ] Studio playtest: verify ore placement, furnace access, timer, reconnect, collection and duplicate-claim prevention.
+- [ ] Add multiple recipes, fuel choices and furnace upgrades after the first smelting loop is playtested.
+
 ## Harvesting 2.0 — Starter tools and multi-hit resource nodes
 
 - [x] Add persistent Axe/Pickaxe ownership, selected tool and level-1/2 progression to player profiles (schema v8, monotonic version writes).
@@ -9,7 +19,11 @@
 - [x] Add server-authoritative multi-hit progress with a 0.4-second per-node hit throttle and faster harvesting at tool level 2.
 - [x] Add client-local hit progress display; collected-node visibility remains per-player.
 - [x] Add regression tests for tool persistence, equip validation, multi-hit state, workshop distance/material costs and local hit feedback.
-- [ ] Add iron ore nodes and a server-authoritative smelting loop; do not grant IronIngot until a completed smelt is collected.
+- [x] Add two iron-ore veins to the Dusk island; each requires the pickaxe and five hits, yields two ore, and respawns after 10 minutes per player.
+- [x] Add distinct iron-vein visuals and resource-specific interaction labels.
+- [x] Fix resource reward handling so each node grants its configured amount (wood/stone now correctly grant ×2; iron grants ×2).
+- [x] Add a personal owner-only furnace: 3 IronOre + 2 Wood starts a 60-second smelt; the iron ingot is granted only when collected after completion.
+- [x] Persist in-progress smelting timestamps and pending output across rejoin; add HUD material counts and smelter status.
 - [ ] Add polished tool swing/impact animations and resource-specific break effects.
 - [ ] Studio playtest: verify Backpack switching, correct-tool checks, hit progress, respawn restoration, upgrade cost consumption and save/rejoin.
 - [ ] Add mobile-friendly touch controls and tool selection UX after Studio testing.
