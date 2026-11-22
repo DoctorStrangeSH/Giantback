@@ -217,6 +217,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('"RootvaultSealedDoor"', VISUALS)
         self.assertIn('"RootvaultRewardRoom"', VISUALS)
         self.assertIn('"RootvaultRewardChest"', VISUALS)
+        self.assertIn("local vaultFloorY = 0", VISUALS)
         self.assertIn('"RootvaultPressurePlate"', VISUALS)
         self.assertIn('"RootvaultEntrance"', VISUALS)
 
