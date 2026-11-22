@@ -55,6 +55,15 @@ Do not introduce random extra hues. Any new markings must remain inside this war
 
 **Visual review of artifact #145:** all four views are technically clean and the silhouette reads as a friendly collectible fox, with a strong tail and readable eyes. However, the coat still renders salmon/pastel rather than unmistakably orange; the cream cheek pads protrude as separate white dots. This is a visual rejection, not an approval. Latest corrective source pass pushes green/blue channels down and scales/tucks the cheek pads; new render is required before reconsideration.
 
+## 4.5 Corrective source pass — paw integration and fur readability
+
+The next generator revision preserves the accepted orange palette and tail/face silhouette while changing:
+- Paw caps use the same orange material as the legs/body instead of cream, preventing the sock/cuff read.
+- Paw ellipsoids are slightly smaller and smoother (32 × 20 segments) and toe accents are lighter and thinner.
+- Soft-fur noise scale is reduced from 16 to 10, Detail from 2 to 1, Bump strength from 0.004 to 0.002 and distance from 0.002 to 0.001 to reduce grain at gameplay distance.
+
+These are source-level corrections, not visual acceptance. A new Blender render must confirm the paws read as integrated orange feet and the fur surface is smoother. Do not alter the approved orange RGB direction unless the new render proves it necessary.
+
 ## 4.4 Visual review — artifact #187
 
 Artifact #187 was generated with the Standard color transform and lower studio lighting. The orange coat now reads clearly as fox orange in the front, side and 3/4 views; the previous salmon/pink cast is substantially corrected. The cream muzzle and tail tip remain readable, the large tail is a strong signature silhouette, and the cheek pads no longer dominate as detached dots. **Color direction is accepted provisionally.**
