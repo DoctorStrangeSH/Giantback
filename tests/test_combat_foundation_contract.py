@@ -139,7 +139,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('AttackDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute("AttackDamage")) or ENEMY_ATTACK_DAMAGE), 1, 30)', COMBAT)
         self.assertIn('task.wait(entry.telegraphSeconds)', COMBAT)
         self.assertIn('local bestDistance = entry.aggroRange', COMBAT)
-        self.assertIn('elseif bestDistance > entry.attackRange then', COMBAT)
+        self.assertIn('if bestDistance > entry.attackRange then', COMBAT)
         self.assertIn('GroveScout02 = {itemId = "SunPetal", amount = 2}', WORLD)
 
     def test_forest_scout_has_distinct_speed_health_telegraph_and_reward(self):
