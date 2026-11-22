@@ -359,15 +359,20 @@ local function renderPets()
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
         local equipped = player:GetAttribute("Companion") == pet.id
-        local item = card(body, pet.id .. "Card", 124)
+        local item = card(body, pet.id .. "Card", 136)
         local icon = label(item, "Icon", pet.icon, UDim2.fromOffset(58, 58), UDim2.fromOffset(10, 24), 34, palette.ink)
         icon.TextXAlignment = Enum.TextXAlignment.Center
         label(item, "Name", pet.name .. " • " .. pet.role, UDim2.new(1, -210, 0, 24), UDim2.fromOffset(76, 8), 14, palette.ink, Enum.Font.GothamBold)
         local desc = owned and pet.description or pet.location
-        label(item, "Description", desc, UDim2.new(1, -210, 0, 38), UDim2.fromOffset(76, 33), 11, palette.muted)
+        label(item, "Description", desc, UDim2.new(1, -210, 0, 25), UDim2.fromOffset(76, 33), 11, palette.muted)
+        local mood = player:GetAttribute("Companion_" .. pet.id .. "_Mood") or (pet.id == "Fox" and "Любопытство" or "Спокойствие")
+        local moodLine = pet.id == "Fox" and "Любопытный исследователь" or "Нежная хранительница света"
+        local moodGlyph = mood == "Радость" and "✦" or mood == "Довольство" and "♡" or pet.id == "Fox" and "⌕" or "☾"
+        label(item, "Mood", owned and (moodGlyph .. " " .. moodLine .. " · " .. mood) or "Характер откроется при знакомстве",
+            UDim2.new(1, -220, 0, 18), UDim2.fromOffset(76, 60), 10, palette.forest, Enum.Font.GothamBold)
         local bond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_Bond")) or 0), 0, 1000)
         local bondRank = player:GetAttribute("Companion_" .. pet.id .. "_BondRank") or "Знакомство"
-        label(item, "Friendship", owned and ("Дружба " .. tostring(bond) .. "/1000 · " .. bondRank) or "Сначала найди питомца", UDim2.new(1, -220, 0, 18), UDim2.fromOffset(76, 82), 10, palette.forest, Enum.Font.GothamBold)
+        label(item, "Friendship", owned and ("Дружба " .. tostring(bond) .. "/1000 · " .. bondRank) or "Сначала найди питомца", UDim2.new(1, -220, 0, 18), UDim2.fromOffset(76, 84), 10, palette.forest, Enum.Font.GothamBold)
 
         local action = button(item, "Action", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН", UDim2.fromOffset(108, 28), UDim2.new(1, -120, 0, 8), equipped and palette.gold or palette.forest)
         action.TextSize = 10
