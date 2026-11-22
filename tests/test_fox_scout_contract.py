@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 BUILD = (ROOT / "build.py").read_text(encoding="utf-8")
 VISUALS = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
@@ -91,9 +92,9 @@ class FoxScoutContractTests(unittest.TestCase):
 
     def test_fox_plays_a_short_sniff_animation_when_a_cache_is_revealed(self):
         self.assertIn("foxSniffUntil", ALBUM)
-        self.assertIn('part.Name == "Muzzle" and sniffing', ALBUM)
-        self.assertIn("sniffing and 9 or 4.2", ALBUM)
-        self.assertIn("sniffing and 0.16 or petting and 0.11 or 0.055", ALBUM)
+        self.assertIn('part.Name == "Muzzle" and sniffing', ANIMATION)
+        self.assertIn("sniffing and 9 or 4.2", ANIMATION)
+        self.assertIn("sniffing and 0.16 or petting and 0.11 or 0.055", ANIMATION)
 
 
     def test_fox_scent_trail_is_local_and_only_shown_for_the_equipped_fox(self):
