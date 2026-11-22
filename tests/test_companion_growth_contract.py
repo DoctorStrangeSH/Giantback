@@ -37,7 +37,7 @@ class CompanionGrowthContractTests(unittest.TestCase):
         self.assertIn('levelValue >= 5 and "ВЗРОСЛЫЙ"', ALBUM)
         self.assertIn('levelValue >= 3 and "ПОДРОСТОК"', ALBUM)
         self.assertIn('"МАЛЫШ"', ALBUM)
-        self.assertIn('growthStage .. " · УР. 5"', ALBUM)
+        self.assertIn('growthStage .. " · УР. 5 · МАКСИМУМ"', ALBUM)
         self.assertIn('growthStage .. " · УР. " .. tostring(levelValue)', ALBUM)
 
 
