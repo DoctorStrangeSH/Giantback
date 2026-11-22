@@ -59,6 +59,15 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('if output.exists() and any(output.iterdir()) and not args.overwrite', source)
         self.assertNotIn('fox_companion.obj"', source)
 
+    def test_fox_hero_palette_and_layered_chest_ruff_are_present(self):
+        source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
+        self.assertIn('"fox_orange": material("fox_orange", (0.48, 0.105, 0.018)', source)
+        self.assertIn('"cream": material("cream", (0.76, 0.54, 0.30)', source)
+        self.assertIn('curved_plume("ChestRuffCenter"', source)
+        self.assertIn('curved_plume("ChestRuffLeft"', source)
+        self.assertIn('curved_plume("ChestRuffRight"', source)
+        self.assertIn('"FoxBelly": ["FoxBelly", "ChestRuffCenter", "ChestRuffLeft", "ChestRuffRight"]', source)
+
     def test_review_lighting_preserves_fox_color_and_form_contrast(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
         self.assertIn('("Key", (1.8, 2.8, -2.0), 520, 3.2)', source)
