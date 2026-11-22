@@ -30,7 +30,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "MoonSeed", "StarShard"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "MoonSeed", "StarShard"}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCacheIdSet = {}
 for _, cacheId in foxCacheIds do
@@ -44,12 +44,15 @@ local foxCacheRewards = {
 }
 local farmPlotIds = {"Plot01", "Plot02", "Plot03", "Plot04"}
 local cropDefinitions = {
-    Carrot = {
-        seedItemId = "CarrotSeed",
-        harvestItemId = "Carrot",
-        growthSeconds = 180,
-    },
+    Carrot = {seedItemId = "CarrotSeed", harvestItemId = "Carrot", growthSeconds = 300, reward = 1, displayName = "Морковь"},
+    Strawberry = {seedItemId = "StrawberrySeed", harvestItemId = "Strawberry", growthSeconds = 720, regrowSeconds = 480, reward = 2, displayName = "Клубника"},
+    Pumpkin = {seedItemId = "PumpkinSeed", harvestItemId = "Pumpkin", growthSeconds = 1800, reward = 1, displayName = "Тыква"},
+    Cabbage = {seedItemId = "CabbageSeed", harvestItemId = "Cabbage", growthSeconds = 1200, reward = 1, displayName = "Капуста"},
 }
+local defaultCropId = "Carrot"
+local function isValidCropId(cropId)
+    return type(cropId) == "string" and cropDefinitions[cropId] ~= nil
+end
 local resourceNodeIds = {
     GroveSunPetal01 = true,
     GroveSunPetal02 = true,
@@ -169,7 +172,7 @@ local function normalizeCity(raw)
         local plantedAt = safeTimestamp(saved.plantedAt)
         local readyAt = safeTimestamp(saved.readyAt)
 
-        if cropDefinitions[cropId]
+        if isValidCropId(cropId)
             and isFarmPlotUnlocked(city.farm, plotId)
             and plantedAt > 0
             and readyAt >= plantedAt then
@@ -190,6 +193,7 @@ local function syncFarm(player)
 
     player:SetAttribute("City_Level", session.city.level)
     player:SetAttribute("Farm_Level", session.city.farm.level)
+    player:SetAttribute("Farm_SelectedCrop", session.selectedCropId or defaultCropId)
     for _, plotId in farmPlotIds do
         local plot = session.city.farm.plots[plotId]
         player:SetAttribute("Farm_" .. plotId .. "_Unlocked", isFarmPlotUnlocked(session.city.farm, plotId))
@@ -373,9 +377,14 @@ local function init(player)
         foxSearchReadyAt = 0,
         foxSearchCount = 0,
         online = false,
+        selectedCropId = defaultCropId,
+        farmActionBusy = {},
     }
     for _, key in inventoryKeys do session.inventory[key] = 0 end
     session.inventory.CarrotSeed = 3
+    session.inventory.StrawberrySeed = 2
+    session.inventory.PumpkinSeed = 1
+    session.inventory.CabbageSeed = 1
     session.inventory.Wood = 2
     session.inventory.Stone = 1
     sessions[player] = session
@@ -416,6 +425,12 @@ local function init(player)
                 local amount
                 if key == "CarrotSeed" and savedAmount == nil then
                     amount = 3
+                elseif key == "StrawberrySeed" and savedAmount == nil then
+                    amount = 2
+                elseif key == "PumpkinSeed" and savedAmount == nil then
+                    amount = 1
+                elseif key == "CabbageSeed" and savedAmount == nil then
+                    amount = 1
                 elseif key == "Wood" and savedAmount == nil then
                     amount = 2
                 elseif key == "Stone" and savedAmount == nil then
