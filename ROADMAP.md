@@ -18,6 +18,7 @@
 
 - [x] Измерить исходный `moth_companion.obj`: 1,306 vertices, 1,980 faces (1,978 triangles + 2 quads), 15 named objects, 7 assigned MTL materials.
 - [x] Геометрические sanity checks: 0 zero-area faces, 0 edges with more than two adjacent faces; 616 boundary edges требуют ручного осмотра открытых оболочек.
+- [x] Добавить `tests/test_moth_source_blockout_audit.py`: регрессионно фиксирует measured OBJ inventory, topology sanity checks и отсутствие UV, чтобы исходный BLOCKOUT нельзя было случайно принять за production-ready. Gameplay/world contract tests в Validate run #1034 прошли; финальное завершение workflow ожидается.
 - [x] Обнаружить и зафиксировать критический gap: UV coordinates = 0. Исходник остаётся BLOCKOUT, не финальный текстурируемый asset.
 - [ ] В новой Hero-модели создать UV unwrap, толщину/чистые кромки крыльев и painted motifs; оригинальный OBJ не перезаписывать.
 
