@@ -162,3 +162,8 @@ The first real Blender visual-review run exposed two zero-area faces in the FoxH
 ## Headless render reliability
 
 The visual-review workflow now serializes renders per branch, cancels superseded runs, forces software OpenGL with surfaceless EGL, and uses a 20-minute timeout. The currently observed render has not produced a downloadable artifact yet; visual approval remains blocked until the PNG views are available and inspected.
+
+
+## CI preview render performance
+
+For reliable headless software rendering, the four CI review views now use 768×768 output and 16 Eevee TAA render samples. This is a preview/acceptance setting intended to shorten CPU-only render time; it is not the final high-resolution art export. Final presentation renders can be produced at higher resolution after the model is visually accepted.
