@@ -1307,7 +1307,7 @@ local function spawnResource(def)
                     readyAt = readyAt,
                 })
                 local remaining = readyAt - now
-                return tip(player, "Цветок снова расцветёт через " .. tostring(math.ceil(remaining / 60)) .. " мин.")
+                return tip(player, def.displayName .. " снова можно будет собрать через " .. tostring(math.ceil(remaining / 60)) .. " мин.")
             end
             nextReadyAt = now + math.max(1, math.floor(def.respawnSeconds or 300))
             session.resourceCooldowns[def.key] = nextReadyAt
