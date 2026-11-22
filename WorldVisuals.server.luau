@@ -1125,7 +1125,7 @@ enemy:SetAttribute("CombatState", "Idle")
 enemy.Parent = combatGlade
 
 local enemySpawn = arenaCenter + Vector3.new(0, 3, -3)
-local enemyRoot = makeEnemyPart(enemy, "HumanoidRootPart", Vector3.new(2, 2, 1), CFrame.lookAt(enemySpawn, enemySpawn + Vector3.new(0, 0, 1)), palette.ink)
+local enemyRoot = makeEnemyPart(enemy, "HumanoidRootPart", Vector3.new(2, 2, 1), CFrame.lookAt(enemySpawn, enemySpawn + Vector3.new(0, 0, -1)), palette.ink)
 enemyRoot.Massless = false
 enemyRoot.Transparency = 1
 local torso = makeEnemyPart(enemy, "Torso", Vector3.new(2.1, 2.25, 1.25), enemyRoot.CFrame, Color3.fromRGB(100, 111, 78), Enum.Material.Wood)
