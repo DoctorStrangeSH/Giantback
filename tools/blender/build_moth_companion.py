@@ -146,7 +146,7 @@ def abdomen_band(name, y, rx, rz, material, segments=40):
 def crescent(name, center, side, material):
     # Build a crescent as a curved strip between two arcs, not a concave ngon.
     cx, cy, cz = center
-    outer_radius, inner_radius, inner_offset = 0.31, 0.255, 0.145
+    outer_radius, inner_radius, inner_offset = 0.39, 0.325, 0.19
     steps = 28
     outer_front, inner_front = [], []
     for step in range(steps + 1):
@@ -260,7 +260,7 @@ def moth_leg(name, side, start_y, end_y, material):
     curve = bpy.data.curves.new(name + "Curve", "CURVE")
     curve.dimensions = "3D"
     curve.resolution_u = 12
-    curve.bevel_depth = 0.042
+    curve.bevel_depth = 0.052
     curve.bevel_resolution = 3
     spline = curve.splines.new("BEZIER")
     spline.bezier_points.add(2)
@@ -276,7 +276,7 @@ def moth_leg(name, side, start_y, end_y, material):
     obj = bpy.data.objects.new(name, curve)
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(material)
-    foot = sphere(name + "Foot", coords[-1], (0.095, 0.060, 0.070), material, 20, 12)
+    foot = sphere(name + "Foot", coords[-1], (0.105, 0.070, 0.075), material, 20, 12)
     return [obj, foot]
 
 
@@ -285,7 +285,7 @@ def antenna(name, side, material):
     curve = bpy.data.curves.new(name + "Curve", "CURVE")
     curve.dimensions = "3D"
     curve.resolution_u = 16
-    curve.bevel_depth = 0.022
+    curve.bevel_depth = 0.028
     curve.bevel_resolution = 4
     spline = curve.splines.new("BEZIER")
     spline.bezier_points.add(3)
@@ -419,33 +419,32 @@ def main():
     plum=mat("deep_plum",(0.12,0.075,0.17),0.35)
     glow=mat("moon_core",(0.48,0.88,0.88),0.28,emission=1.2)
     parts=[]
+    # Compact, plush silhouette: a broad rounded thorax with a softly tucked abdomen.
     body_profile = [
-        (0.24,0.045,0.055),
-        (0.34,0.105,0.115),
-        (0.48,0.17,0.18),
-        (0.66,0.225,0.225),
-        (0.86,0.275,0.265),
-        (1.08,0.315,0.295),
-        (1.28,0.345,0.315),
-        (1.46,0.335,0.305),
-        (1.62,0.275,0.255),
-        (1.76,0.17,0.17),
-        (1.84,0.085,0.095),
+        (0.48,0.16,0.15),
+        (0.58,0.24,0.22),
+        (0.76,0.31,0.27),
+        (0.98,0.355,0.30),
+        (1.20,0.37,0.315),
+        (1.40,0.345,0.30),
+        (1.58,0.275,0.25),
+        (1.72,0.16,0.16),
+        (1.79,0.08,0.09),
     ]
     parts.append(tapered_body("MothThorax",body_profile,ivory))
-    parts.append(sphere("MothHead",(0,1.91,-0.20),(0.40,0.37,0.34),ivory,40,28))
+    parts.append(sphere("MothHead",(0,1.91,-0.20),(0.43,0.40,0.36),ivory,48,32))
     for band_index, (band_y, band_rx, band_rz) in enumerate((
-        (0.58,0.17,0.18),
-        (0.78,0.215,0.22),
-        (0.98,0.245,0.245),
+        (0.68,0.285,0.25),
+        (0.88,0.335,0.285),
+        (1.08,0.365,0.31),
     )):
         parts.append(abdomen_band(f"AbdomenBand{band_index}",band_y,band_rx,band_rz,gold))
     for side,suffix in [(-1,"Left"),(1,"Right")]:
-        parts.append(sphere("MothEye"+suffix,(side*0.20,1.97,-0.493),(0.075,0.095,0.035),plum,24,16))
+        parts.append(sphere("MothEye"+suffix,(side*0.215,1.97,-0.535),(0.09,0.11,0.04),plum,28,18))
         parts.extend(antenna("MothAntenna"+suffix,side,gold))
-        for leg_index, (start_y, end_y) in enumerate(((1.02,0.70),(0.84,0.52),(0.66,0.36))):
+        for leg_index, (start_y, end_y) in enumerate(((1.05,0.88),(0.84,0.68),(0.64,0.50))):
             parts.extend(moth_leg("MothThoraxLeg"+suffix+str(leg_index+1),side,start_y,end_y,ivory))
-    parts.append(sphere("MothGlowCore",(0,1.53,-0.34),(0.115,0.13,0.075),glow,32,20))
+    parts.append(sphere("MothGlowCore",(0,1.55,-0.365),(0.13,0.145,0.08),glow,32,20))
     wing_mats=[lilac,rose,cyan,gold]
     for side,suffix in [(-1,"Left"),(1,"Right")]:
         for upper,wing_name in ((True,"Upper"),(False,"Lower")):
@@ -455,7 +454,7 @@ def main():
             root_x = side * 0.20
             root_y = 1.52 if upper else 1.28
             root_z = 0.10 if upper else 0.30
-            t = 0.57
+            t = 0.46
             mark_x = root_x + side * t * span
             mark_y = root_y + t * length + 0.055
             mark_z = root_z + 0.20 * t * t + 0.10 - 0.055 - 0.012
