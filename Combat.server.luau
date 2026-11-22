@@ -31,7 +31,7 @@ local BLOCK_DAMAGE_MULTIPLIER = 0.25
 
 local ALLOWED_REGIONS = { GroveTraining = true, DuskTraining = true }
 local ALLOWED_WEAPONS = { SwordShield = true }
-local REWARD_ENCOUNTERS = { GroveGrunt01 = true }
+local REWARD_ENCOUNTERS = { GroveGrunt01 = true, GroveScout02 = true }
 
 local remote = ReplicatedStorage:FindFirstChild("CombatAction")
 if remote and not remote:IsA("RemoteEvent") then
@@ -202,6 +202,12 @@ local function registerEnemy(enemy)
         nextAttackAt = 0,
         nextPathAt = 0,
         lastMoveGoal = nil,
+        aggroRange = math.clamp(tonumber(enemy:GetAttribute("AggroRange")) or ENEMY_AGGRO_RANGE, 8, 80),
+        attackRange = math.clamp(tonumber(enemy:GetAttribute("AttackRange")) or ENEMY_ATTACK_RANGE, 3, 10),
+        attackDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute("AttackDamage")) or ENEMY_ATTACK_DAMAGE), 1, 30),
+        attackCooldown = math.clamp(tonumber(enemy:GetAttribute("AttackCooldown")) or ENEMY_ATTACK_COOLDOWN, 1, 8),
+        telegraphSeconds = math.clamp(tonumber(enemy:GetAttribute("TelegraphSeconds")) or ENEMY_TELEGRAPH_SECONDS, 0.35, 2),
+        pathRefreshSeconds = math.clamp(tonumber(enemy:GetAttribute("PathRefreshSeconds")) or ENEMY_PATH_REFRESH_SECONDS, 0.5, 3),
     }
     enemies[enemy] = entry
     humanoid.Died:Connect(function()
@@ -214,7 +220,7 @@ local function registerEnemy(enemy)
     task.spawn(function()
         while enemy.Parent and isEnemyAlive(enemy) do
             local targetPlayer, targetRoot, targetHumanoid
-            local bestDistance = ENEMY_AGGRO_RANGE
+            local bestDistance = entry.aggroRange
             for _, player in Players:GetPlayers() do
                 if player:GetAttribute("Ready") == true and getPlayerRegion(player) == entry.regionId then
                     local playerHumanoid, playerRoot = getCharacterParts(player)
@@ -229,11 +235,11 @@ local function registerEnemy(enemy)
             end
 
             if targetPlayer and targetRoot and targetHumanoid then
-                if bestDistance > ENEMY_ATTACK_RANGE then
+                if bestDistance > entry.attackRange then
                     enemy:SetAttribute("CombatState", "Approach")
                     local now = os.clock()
                     if now >= entry.nextPathAt then
-                        entry.nextPathAt = now + ENEMY_PATH_REFRESH_SECONDS
+                        entry.nextPathAt = now + entry.pathRefreshSeconds
                         local path = PathfindingService:CreatePath(ENEMY_PATH_AGENT)
                         local pathOk = pcall(function()
                             path:ComputeAsync(root.Position, targetRoot.Position)
@@ -257,18 +263,18 @@ local function registerEnemy(enemy)
                     end
                 elseif os.clock() >= entry.nextAttackAt and not entry.attacking then
                     entry.attacking = true
-                    entry.nextAttackAt = os.clock() + ENEMY_ATTACK_COOLDOWN
+                    entry.nextAttackAt = os.clock() + entry.attackCooldown
                     enemy:SetAttribute("CombatState", "Telegraph")
-                    task.wait(ENEMY_TELEGRAPH_SECONDS)
+                    task.wait(entry.telegraphSeconds)
                     if isEnemyAlive(enemy) and targetPlayer.Parent and targetPlayer.Character then
                         local currentHumanoid, currentRoot = getCharacterParts(targetPlayer)
                         if currentHumanoid and currentRoot
                             and getPlayerRegion(targetPlayer) == entry.regionId
-                            and (currentRoot.Position - root.Position).Magnitude <= ENEMY_ATTACK_RANGE + 0.75 then
+                            and (currentRoot.Position - root.Position).Magnitude <= entry.attackRange + 0.75 then
                             local playerState = playerStates[targetPlayer]
                             local dodging = playerState and playerState.dodgingUntil > os.clock()
                             if not dodging then
-                                local damage = ENEMY_ATTACK_DAMAGE
+                                local damage = entry.attackDamage
                                 if playerState and playerState.blocking then
                                     local towardEnemy = (root.Position - currentRoot.Position).Unit
                                     if currentRoot.CFrame.LookVector:Dot(towardEnemy) >= 0.35 then
