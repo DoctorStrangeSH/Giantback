@@ -29,7 +29,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("for nodeId, collected in savedCollected do", WORLD)
 
     def test_profile_schema_and_migration_compatible_fields(self):
-        self.assertIn("old.schemaVersion = 6", WORLD)
+        self.assertIn("old.schemaVersion = 8", WORLD)
         self.assertIn("data.resourceCooldowns", WORLD)
         self.assertIn("data.collectedNodes", WORLD)
 
@@ -45,8 +45,8 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("RequestResourceState")', CLIENT)
 
     def test_renewable_nodes_have_explicit_personal_cooldowns(self):
-        self.assertEqual(WORLD.count('kind = "renewable"'), 4)
-        self.assertEqual(WORLD.count("respawnSeconds = 300"), 4)
+        self.assertEqual(WORLD.count('kind = "renewable"'), 8)
+        self.assertEqual(WORLD.count("respawnSeconds = 300"), 8)
 
     def test_remote_handshake_is_registered_before_player_initialization(self):
         self.assertLess(WORLD.index("event.OnServerEvent:Connect"), WORLD.index("Players.PlayerAdded:Connect(init)"))
