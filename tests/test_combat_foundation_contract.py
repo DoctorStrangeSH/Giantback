@@ -120,6 +120,11 @@ class CombatFoundationContractTests(unittest.TestCase):
             self.assertIn(f'"{rig_part}"', VISUALS)
         self.assertIn('enemyHumanoid.DisplayName = "Корневой страж"', VISUALS)
         self.assertIn("enemyHumanoid.MaxHealth = 100", VISUALS)
+        self.assertIn("enemyRoot.Massless = false", VISUALS)
+        self.assertIn("CFrame.lookAt(enemySpawn, enemySpawn + Vector3.new(0, 0, 1))", VISUALS)
+        self.assertIn('enemyHighlight.Name = "CombatTelegraphHighlight"', VISUALS)
+        self.assertIn('warningBillboard.Name = "CombatTelegraphWarning"', VISUALS)
+        self.assertIn('warningText.Text = "БЕРЕГИСЬ!"', VISUALS)
         self.assertIn("GroveApproach", VISUALS)
         self.assertIn("Training stone platform", VISUALS)
 
