@@ -217,6 +217,10 @@ create_asset_library(storage, ("Companions",))
 resolver = obj(storage, "ModuleScript", "CompanionTemplateResolver")
 prop(resolver, "ProtectedString", "Source",
      (root / "modules" / "CompanionTemplateResolver.luau").read_text(encoding="utf-8"))
+
+resource_visibility = obj(storage, "ModuleScript", "ResourceNodeVisibility")
+prop(resource_visibility, "ProtectedString", "Source",
+     (root / "modules" / "ResourceNodeVisibility.luau").read_text(encoding="utf-8"))
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
     if name == "Fox":
