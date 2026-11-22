@@ -190,3 +190,7 @@ The dormant rigs are authored as part of the generated place; they do not pursue
 ## 20. Client-side boss phase transformation pulse
 
 The client listens for the server-replicated `BossPhase` attribute. On phases 2 and 3 it plays a short local-only transformation cue: an occluded Highlight flash, an expanding neon floor pulse raycast-aligned to the arena floor, and a brief SealCore size/color pulse. Phase 2 uses violet; phase 3 uses ember red. The effect does not modify boss health, movement, attacks, or damage and cannot be invoked by client input. Full rig animation, persistent armor geometry changes, and audio remain NOT DONE.
+
+## 21. Enemy health UI
+
+The client now creates local-only BillboardGui health/name bars for regular enemies and summoned minions, with distance culling at 90 studs and health color bands. The Seal Keeper receives a dedicated top-center boss panel with localized phase label, numeric HP and phase-colored health bar. UI follows replicated server health attributes and Humanoid.HealthChanged; it does not accept client-supplied health. Bars are cleaned up when an enemy dies or leaves Workspace. Studio review is still needed for mobile readability, overlap in co-op, and camera positioning.
