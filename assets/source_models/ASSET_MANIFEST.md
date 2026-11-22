@@ -3,7 +3,7 @@
 | Source file | Roblox MeshPart asset ID | Scale | Pivot | Studio checked | Notes |
 |---|---|---|---|---|---|
 | fox_companion.obj | pending import | pending | pending | no | current source; retained as rollback baseline |
-| fox_companion_hero.obj | generated in CI review artifact; no Roblox ID yet | pending | see generated `fox_companion_hero_rig.json` | no | 17 groups; first review artifact passed mesh/UV/material gates; corrective pass now uses saturated orange/warm ivory, lower studio lighting, near-imperceptible fur relief and rounded cream cheek pads; latest render pending, Studio import still blocked on art review |
+| fox_companion_hero.obj | generated in CI review artifact #145; no Roblox ID yet | pending | see generated `fox_companion_hero_rig.json` | no | 17 groups; artifact #145 passed mesh/UV/material gates (all 17 groups have UV/materials; zero-area/non-manifold = 0). Manual visual review: friendly readable silhouette, but coat still reads salmon/pastel and cheek pads look detached; NOT artist-approved. Latest source pass increases orange saturation and tucks/reduces cheek pads; rerender required. Studio import blocked on art approval. |
 | moth_companion.obj | pending import | pending | pending | no | keep wing groups separate |
 | home_cottage.obj | pending import | pending | pending | no | static building |
 | farm_bed.obj | pending import | pending | pending | no | crop visuals may be separate |
