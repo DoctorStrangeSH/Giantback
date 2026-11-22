@@ -320,7 +320,9 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('enemy:GetAttributeChangedSignal("CombatHealth")', CLIENT)
         self.assertIn('enemy:GetAttributeChangedSignal("CombatMaxHealth")', CLIENT)
         self.assertIn('humanoid.HealthChanged:Connect(refresh)', CLIENT)
-        self.assertIn('CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(bindEnemyHealth)', CLIENT)
+        self.assertIn('CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(function(enemy)', CLIENT)
+        self.assertIn('bindEnemyHealth(enemy)', CLIENT)
+        self.assertIn('showMinionAwakening(enemy)', CLIENT)
         self.assertIn('if isBoss then updateBossHud(enemy) end', CLIENT)
 
     def test_seal_minion_awakening_has_local_particle_and_floor_ring_cue(self):
