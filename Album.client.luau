@@ -767,6 +767,117 @@ player:GetAttributeChangedSignal("Companion"):Connect(updateMoonGatePuzzle)
 player:GetAttributeChangedSignal("MoonGateTrace"):Connect(updateMoonGatePuzzle)
 player:GetAttributeChangedSignal("MoonGateOpen"):Connect(updateMoonGatePuzzle)
 player:GetAttributeChangedSignal("MoonRelic"):Connect(updateMoonGatePuzzle)
+local resourceHitBars = {}
+local resourceHitEffects = {}
+
+local function showResourceHitFeedback(payload)
+    local nodeId = payload.nodeId
+    if type(nodeId) ~= "string" then return end
+    local node = findResourceNode(nodeId)
+    if not node then return end
+
+    local anchor = node.PrimaryPart or node:FindFirstChild("PromptAnchor")
+    if not anchor or not anchor:IsA("BasePart") then return end
+
+    local bar = resourceHitBars[nodeId]
+    if not bar or not bar.Parent then
+        bar = Instance.new("BillboardGui")
+        bar.Name = "LocalHarvestProgress"
+        bar.Adornee = anchor
+        bar.AlwaysOnTop = true
+        bar.LightInfluence = 0
+        bar.MaxDistance = 70
+        bar.Size = UDim2.fromOffset(142, 34)
+        bar.StudsOffset = nodeId:find("Wood") and Vector3.new(0, 5.1, 0) or Vector3.new(0, 3.1, 0)
+        bar.Parent = player:WaitForChild("PlayerGui")
+
+        local background = Instance.new("Frame")
+        background.Name = "Background"
+        background.Size = UDim2.fromScale(1, 1)
+        background.BackgroundColor3 = Color3.fromRGB(31, 45, 39)
+        background.BackgroundTransparency = 0.12
+        background.BorderSizePixel = 0
+        background.Parent = bar
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 9)
+        corner.Parent = background
+
+        local fill = Instance.new("Frame")
+        fill.Name = "Fill"
+        fill.Size = UDim2.fromScale(0, 1)
+        fill.BackgroundColor3 = nodeId:find("Wood") and Color3.fromRGB(128, 190, 116) or Color3.fromRGB(151, 190, 207)
+        fill.BorderSizePixel = 0
+        fill.Parent = background
+        local fillCorner = Instance.new("UICorner")
+        fillCorner.CornerRadius = UDim.new(0, 9)
+        fillCorner.Parent = fill
+
+        local label = Instance.new("TextLabel")
+        label.Name = "Count"
+        label.BackgroundTransparency = 1
+        label.Size = UDim2.fromScale(1, 1)
+        label.Font = Enum.Font.GothamBold
+        label.TextColor3 = Color3.fromRGB(255, 248, 224)
+        label.TextStrokeTransparency = 0.65
+        label.TextSize = 13
+        label.ZIndex = 2
+        label.Parent = background
+        resourceHitBars[nodeId] = bar
+    end
+
+    local background = bar:FindFirstChild("Background")
+    local fill = background and background:FindFirstChild("Fill")
+    local label = background and background:FindFirstChild("Count")
+    local hits = math.max(0, math.floor(tonumber(payload.hits) or 0))
+    local maximum = math.max(1, math.floor(tonumber(payload.maxHits) or 1))
+    if fill then
+        TweenService:Create(fill, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.fromScale(math.clamp(hits / maximum, 0, 1), 1),
+        }):Play()
+    end
+    if label then label.Text = "Добыча " .. tostring(hits) .. "/" .. tostring(maximum) end
+
+    local effectGeneration = (resourceHitEffects[nodeId] or 0) + 1
+    resourceHitEffects[nodeId] = effectGeneration
+    local origin = node:GetPivot()
+    task.spawn(function()
+        for _, offset in {Vector3.new(0, 0.13, 0), Vector3.new(0, -0.09, 0), Vector3.zero} do
+            if resourceHitEffects[nodeId] ~= effectGeneration or not node.Parent then return end
+            node:PivotTo(origin * CFrame.new(offset))
+            task.wait(0.04)
+        end
+        if resourceHitEffects[nodeId] == effectGeneration and node.Parent then
+            node:PivotTo(origin)
+        end
+    end)
+
+    local emitter = anchor:FindFirstChild("HarvestImpact")
+    if not emitter then
+        emitter = Instance.new("ParticleEmitter")
+        emitter.Name = "HarvestImpact"
+        emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+        emitter.Rate = 0
+        emitter.Lifetime = NumberRange.new(0.18, 0.38)
+        emitter.Speed = NumberRange.new(2, 4)
+        emitter.SpreadAngle = Vector2.new(150, 150)
+        emitter.RotSpeed = NumberRange.new(-90, 90)
+        emitter.LightEmission = 0.65
+        emitter.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.18),
+            NumberSequenceKeypoint.new(1, 0),
+        })
+        emitter.Parent = anchor
+    end
+    emitter:Emit(7)
+end
+
+local function clearResourceHitFeedback(nodeId)
+    local bar = resourceHitBars[nodeId]
+    resourceHitBars[nodeId] = nil
+    resourceHitEffects[nodeId] = (resourceHitEffects[nodeId] or 0) + 1
+    if bar then bar:Destroy() end
+end
+
 workspace.DescendantAdded:Connect(function(descendant)
     if descendant.Name == "FoxCache01" or descendant.Name == "FoxCache02" or descendant.Name == "FoxCache03" or descendant.Name == "FoxCacheVisuals" or descendant.Name == "FoxCacheVisual01" or descendant.Name == "FoxCacheVisual02" or descendant.Name == "FoxCacheVisual03" or descendant.Name == "Trail" or descendant.Name == "Bank" then
         task.defer(updateFoxCacheMarkers)
@@ -968,24 +1079,11 @@ event.OnClientEvent:Connect(function(message, payload)
         end
         return
     elseif message == "ResourcePicked" and type(payload) == "table" then
+        clearResourceHitFeedback(payload.nodeId)
         applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
         return
     elseif message == "ResourceHit" and type(payload) == "table" then
-        local grove = workspace:FindFirstChild("Grove")
-        local dusk = workspace:FindFirstChild("Dusk")
-        local node = (grove and grove:FindFirstChild("ResourceNodes") and grove.ResourceNodes:FindFirstChild(payload.nodeId))
-            or (dusk and dusk:FindFirstChild("ResourceNodes") and dusk.ResourceNodes:FindFirstChild(payload.nodeId))
-        if node and node:IsA("Model") then
-            local origin = node:GetPivot()
-            task.spawn(function()
-                for _, offset in {Vector3.new(0, 0.12, 0), Vector3.new(0, -0.08, 0), Vector3.zero} do
-                    if not node.Parent then return end
-                    node:PivotTo(origin * CFrame.new(offset))
-                    task.wait(0.045)
-                end
-                if node.Parent then node:PivotTo(origin) end
-            end)
-        end
+        showResourceHitFeedback(payload)
         return
     end
 
