@@ -66,6 +66,19 @@ class CompanionProgressionContractTests(unittest.TestCase):
         moth_xp_spawn = COMBAT.index("task.spawn(function()", moth_cooldown)
         self.assertLess(moth_cooldown, moth_xp_spawn)
 
+    def test_level_three_and_five_unlock_server_side_passive_talents(self):
+        self.assertIn("local function foxScoutCooldownForLevel(level)", WORLD)
+        self.assertIn("if level >= 5 then return 60 end", WORLD)
+        self.assertIn("if level >= 3 then return 90 end", WORLD)
+        self.assertIn("session.foxSearchReadyAt = os.time() + foxScoutCooldownForLevel(foxLevel)", WORLD)
+        self.assertIn("local healRadius = MOTH_HEAL_RADIUS + (companionLevel >= 5 and 4 or companionLevel >= 3 and 2 or 0)", COMBAT)
+        self.assertIn("Magnitude <= healRadius", COMBAT)
+        self.assertIn("healRadius = healRadius", COMBAT)
+        self.assertIn("Острый нюх: поиск каждые 60 сек.", ALBUM)
+        self.assertIn("Чуткий нюх: поиск каждые 90 сек.", ALBUM)
+        self.assertIn("Лунная аура: радиус лечения +4.", ALBUM)
+        self.assertIn("Лунная аура: радиус лечения +2.", ALBUM)
+
     def test_ci_checks_companion_progression_contract(self):
         for marker in (
             "GiantbackGrantCompanionXP",
