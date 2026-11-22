@@ -1,3 +1,13 @@
+## Lunar Moth — second visual correction pass
+
+- [x] Проверить artifact #31: Blender geometry/UV/material gates прошли, но ручная приёмка отклонила oval-like moon marks, отсутствие видимых ног и скрытые abdomen bands.
+- [x] Заменить овальные отметки на отдельные замкнутые crescent mesh с UV, толщиной и bevel; включить каждый знак в соответствующую wing-группу mesh report.
+- [x] Добавить шесть изогнутых ног с мягкими лапками; включить mesh feet в thorax report group.
+- [x] Перенести три золотые abdomen bands на видимую переднюю поверхность.
+- [ ] Получить новый Blender artifact и пройти zero-area/non-manifold/UV/material gates.
+- [ ] Вручную принять четыре ракурса; проверить, что полумесяцы читаются как полумесяцы, ноги не выглядят случайными выступами, а тело сохраняет дружелюбный силуэт.
+- [ ] Roblox Studio import, scale/pivot check и runtime wing animation — не выполнены.
+
 ## Home Island — Garden Approach visual pass
 
 - [x] Добавить отдельную зону `HandcraftedDetails/GardenApproach` в шаблон личного острова.
