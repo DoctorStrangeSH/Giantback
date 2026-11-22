@@ -9,8 +9,9 @@ HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 class LegacyJournalCleanupTests(unittest.TestCase):
     def test_unified_hud_remains_active_and_legacy_ui_disabled(self):
-        self.assertIn('gui.Name = "GiantbackJournal"', CLIENT)
-        self.assertIn("gui.Enabled = false", CLIENT)
+        self.assertNotIn('GiantbackJournal', CLIENT)
+        self.assertNotIn('QuestCard', CLIENT)
+        self.assertNotIn('CollectionPanel', CLIENT)
         self.assertIn('"GiantbackHUD"', HUD)
 
     def test_disabled_legacy_layout_and_perpetual_poll_are_removed(self):
