@@ -233,6 +233,18 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('Победи Стража хранилища и забери ключ.', WORLD)
         self.assertIn('RootvaultKey', WORLD)
 
+    def test_rootvault_stalker_is_a_distinct_fast_enemy_with_persistent_material_reward(self):
+        self.assertIn('RootvaultStalker01 = {itemId = "RootvaultEssence", amount = 1}', WORLD)
+        self.assertIn('"RootvaultEssence"', WORLD)
+        self.assertIn('RootvaultStalker01 = true', COMBAT)
+        self.assertIn('EncounterId", "RootvaultStalker01"', VISUALS)
+        self.assertIn('DisplayName = "Корневой охотник"', VISUALS)
+        self.assertIn('stalkerHumanoid.MaxHealth = 75', VISUALS)
+        self.assertIn('stalkerHumanoid.WalkSpeed = 15', VISUALS)
+        self.assertIn('AttackDamage", 8', VISUALS)
+        self.assertIn('AttackCooldown", 1.8', VISUALS)
+        self.assertIn('CollectionService:AddTag(stalker, "GiantbackEnemy")', VISUALS)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
