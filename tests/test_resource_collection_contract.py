@@ -29,11 +29,11 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("for nodeId, collected in savedCollected do", WORLD)
 
     def test_profile_schema_and_migration_compatible_fields(self):
-        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 6)", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 8)", WORLD)
         self.assertIn('"IronOre", "IronIngot"', WORLD)
 
     def test_saving_legacy_schema_never_downgrades_newer_profile(self):
-        self.assertIn("math.max(tonumber(old.schemaVersion) or 0, 6)", WORLD)
+        self.assertIn("math.max(tonumber(old.schemaVersion) or 0, 8)", WORLD)
         self.assertIn("local savedIsland = type(old.island) == \"table\" and old.island", WORLD)
         self.assertIn("if type(savedIsland.buildings) ~= \"table\" then", WORLD)
         self.assertIn("savedIsland.buildings = {}", WORLD)
@@ -52,8 +52,41 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("RequestResourceState")', CLIENT)
 
     def test_renewable_nodes_have_explicit_personal_cooldowns(self):
-        self.assertEqual(WORLD.count('kind = "renewable"'), 4)
-        self.assertEqual(WORLD.count("respawnSeconds = 300"), 4)
+        self.assertEqual(WORLD.count('kind = "renewable"'), 8)
+        self.assertEqual(WORLD.count("respawnSeconds = 300"), 8)
+
+
+    def test_tools_are_persisted_and_restored_after_respawn(self):
+        self.assertIn("local toolIds = {Axe = true, Pickaxe = true}", WORLD)
+        self.assertIn("tools = {Axe = true, Pickaxe = true}", WORLD)
+        self.assertIn("local function createHarvestTool(toolId, level)", WORLD)
+        self.assertIn("local function ensurePlayerTools(player, session)", WORLD)
+        self.assertIn("session.toolCharacterConnection", WORLD)
+        self.assertIn("savedTools.Axe = toolsSnapshot.Axe", WORLD)
+        self.assertIn("savedTools.Pickaxe = toolsSnapshot.Pickaxe", WORLD)
+
+    def test_wood_and_stone_nodes_require_the_correct_equipped_tool(self):
+        for node_id in ("GroveWood01", "GroveWood02", "DuskStone01", "DuskStone02"):
+            self.assertIn(f'key = "{node_id}"', WORLD)
+        self.assertIn('requiredTool = "Axe"', WORLD)
+        self.assertIn('requiredTool = "Pickaxe"', WORLD)
+        self.assertIn('session.equippedTool ~= def.requiredTool', WORLD)
+        self.assertIn('equippedTool.Parent ~= player.Character', WORLD)
+
+    def test_resource_hits_are_server_limited_and_tool_upgrade_reduces_hits(self):
+        self.assertIn("session.resourceHitCooldowns[def.key]", WORLD)
+        self.assertIn("if hitNow - lastHitAt < 0.4 then return end", WORLD)
+        self.assertIn("session.resourceHits[def.key] = hits", WORLD)
+        self.assertIn('event:FireClient(player, "ResourceHit"', WORLD)
+        self.assertIn("hitsRequired - 1", WORLD)
+        self.assertIn("session.resourceHits[def.key] = nil", WORLD)
+
+    def test_tool_upgrade_checks_owner_workshop_and_material_cost(self):
+        upgrade = WORLD.split('if action == "UpgradeTool" then', 1)[1].split('if action == "EquipTool" then', 1)[0]
+        self.assertIn("session.homeIsland", upgrade)
+        self.assertIn("session.inventory.Wood", upgrade)
+        self.assertIn("session.inventory.Stone", upgrade)
+        self.assertIn("session.toolLevels[payload] = 2", upgrade)
 
     def test_remote_handshake_is_registered_before_player_initialization(self):
         self.assertLess(WORLD.index("event.OnServerEvent:Connect"), WORLD.index("Players.PlayerAdded:Connect(init)"))
