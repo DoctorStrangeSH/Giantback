@@ -608,6 +608,7 @@ local function init(player)
         end)
     end
     player:SetAttribute("Ready", true)
+    syncTools(player)
 end
 local function collectFoxCache(player, cacheId)
     if typeof(cacheId) ~= "string" or not foxCacheIdSet[cacheId] then return end
