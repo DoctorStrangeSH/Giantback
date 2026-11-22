@@ -28,7 +28,7 @@ class HarvestMotionModuleTests(unittest.TestCase):
     def test_character_animation_and_tool_sequence_preserved(self):
         self.assertIn('local function playHarvestCharacterSwing(character, nodeId, generation)', MOTION)
         self.assertIn('shoulder.Transform = shoulder.Transform * pose', MOTION)
-        self.assertIn('tool:GetAttribute("PetKingdomsToolId")', MOTION)
+        self.assertIn('child:GetAttribute("PetKingdomsToolId")', MOTION)
         self.assertIn('first.Completed:Once(function()', MOTION)
         self.assertIn('second.Completed:Once(function()', MOTION)
         self.assertIn('playHarvestToolSwing(nodeId)', CLIENT)
