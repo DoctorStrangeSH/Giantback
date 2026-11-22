@@ -697,9 +697,11 @@ def main():
     camera, center, radius = add_review_camera(objects)
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE_NEXT"
-    scene.render.resolution_x = 1200
-    scene.render.resolution_y = 1200
+    # CI uses a fast review resolution; final artist-approved renders can be made at 1200+.
+    scene.render.resolution_x = 768
+    scene.render.resolution_y = 768
     scene.render.resolution_percentage = 100
+    scene.eevee.taa_render_samples = 16
     scene.render.image_settings.file_format = "PNG"
     scene.render.filepath = str(output / "fox_companion_hero_three_quarter.png")
     scene.view_settings.view_transform = "AgX"
