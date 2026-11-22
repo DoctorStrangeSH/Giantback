@@ -171,6 +171,12 @@ local rejectionMessages = {
     NoServerEquippedWeapon = "Оружие пока не экипировано",
     RateLimited = "Не торопись — попробуй чуть позже",
     PlayerNotReady = "Подожди, пока мир загрузится",
+    CompanionRequired = "Сначала выбери питомца-компаньона",
+    CompanionNotOwned = "Этот питомец ещё не найден",
+    CompanionSkillCooldown = "Способность питомца восстанавливается",
+    CompanionSkillUnavailable = "Сейчас питомец не может помочь",
+    CompanionNoTarget = "Лисёнок не видит противника рядом",
+    CompanionNoOneToHeal = "Рядом никому не требуется лечение",
 }
 
 remote.OnClientEvent:Connect(function(message, data)
