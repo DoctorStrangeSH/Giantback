@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - feat/cozy-world-visual-pass
+      - feat/harvesting-feedback-on-latest
   pull_request:
     branches:
       - main
       - integration/giantback-consolidation
+      - feat/cozy-world-visual-pass
 
 permissions:
   contents: read
