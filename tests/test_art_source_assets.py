@@ -211,7 +211,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('bump.inputs["Distance"].default_value = 0.002', source)
         self.assertIn('"giantback_surface_profile"] = "soft_fur"', source)
         self.assertIn('"material_profiles": {', source)
-        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.20, 0.025), 0.90, soft_fur=True)', source)
+        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.105, 0.003), 0.90, soft_fur=True)', source)
         self.assertIn('"cream": material("cream", (0.92, 0.72, 0.48), 0.92, soft_fur=True)', source)
         self.assertIn("true single-vertex poles and clean topology", source)
         self.assertIn("verts, faces = [(cx, cy + sy, cz)], []", source)
