@@ -1,6 +1,6 @@
 # Giantback — Combat System 1.0
 
-**Status:** Design contract — implementation not started.  
+**Status:** C0 implemented; C1–C4 remain planned.  
 **Owner:** gameplay/server systems.  
 **Scope:** first reliable combat loop for the 1.0 adventure release.
 
@@ -100,3 +100,17 @@ Roblox Studio acceptance must additionally verify animation timing, hitbox align
 5. **C4 — Expedition:** one 5–10 minute dungeon, puzzle, boss and co-op scaling for 1–4 players.
 
 Do not start C1 until C0 tests pass. Do not mark any combat milestone DONE until Roblox Studio acceptance is recorded.
+
+
+## 10. C0 implementation record
+
+Implemented in `Combat.server.luau`:
+- Dedicated server-owned `CombatAction` RemoteEvent, recreated safely if a conflicting instance type exists.
+- Strict action allow-list and empty payload contract; the client cannot provide damage, target, reward or health values.
+- Global per-player request rate limit (10 requests per one-second window).
+- Ready/alive, server-owned region ID and server-owned equipped-weapon gates for gameplay intents.
+- Sanitized C0 state snapshot; no mutable server state tables are sent to clients.
+- Transient combat state cleanup on death, respawn and disconnect.
+- C0 deliberately rejects gameplay actions with `CombatNotEnabled`; it does not apply damage or issue rewards.
+
+Automated contract coverage lives in `tests/test_combat_foundation_contract.py`. The place builder embeds the new server script and CI validates its presence. C0 is not a playable combat milestone; no enemy, hitbox, damage or reward implementation is claimed.
