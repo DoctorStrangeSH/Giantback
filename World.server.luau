@@ -265,7 +265,8 @@ local function normalizeCompanionProgress(raw)
                 needed = companionXpToNext(level)
             end
         end
-        result[id] = {level = level, xp = level >= COMPANION_MAX_LEVEL and 0 or xp}
+        local bond = math.clamp(math.floor(tonumber(saved.bond) or 0), 0, 1000)
+        result[id] = {level = level, xp = level >= COMPANION_MAX_LEVEL and 0 or xp, bond = bond}
     end
     return result
 end
@@ -279,6 +280,13 @@ local function syncCompanionProgress(player)
         player:SetAttribute("Companion_" .. id .. "_XP", progressData.xp)
         player:SetAttribute("Companion_" .. id .. "_XPToNext",
             progressData.level >= COMPANION_MAX_LEVEL and 0 or companionXpToNext(progressData.level))
+        player:SetAttribute("Companion_" .. id .. "_Bond", progressData.bond)
+        local bondRank = progressData.bond >= 900 and "Родственные души"
+            or progressData.bond >= 600 and "Лучшие друзья"
+            or progressData.bond >= 300 and "Друзья"
+            or progressData.bond >= 100 and "Знакомцы"
+            or "Знакомство"
+        player:SetAttribute("Companion_" .. id .. "_BondRank", bondRank)
     end
 end
 
@@ -315,6 +323,53 @@ local function awardCompanionXp(player, companionId, amount)
         tip(player, pets[companionId] .. " вырос до уровня " .. tostring(progressData.level) .. "!")
     end
     return true, {level = progressData.level, xp = progressData.xp, levelsGained = levelsGained}
+end
+
+local companionFeedFoods = {
+    Pumpkin = {bond = 25, name = "тыкву"},
+    Strawberry = {bond = 20, name = "клубнику"},
+    Cabbage = {bond = 18, name = "капусту"},
+    Carrot = {bond = 15, name = "морковь"},
+}
+local companionFeedOrder = {"Pumpkin", "Strawberry", "Cabbage", "Carrot"}
+
+local function feedCompanion(player, companionId)
+    if companionId ~= "Fox" and companionId ~= "Moth" then return end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") or player:GetAttribute(companionId) ~= true then return end
+    if player:GetAttribute("Companion") ~= companionId then
+        return tip(player, "Сначала позови питомца, которого хочешь угостить.")
+    end
+
+    local now = os.clock()
+    session.companionFeedReadyAt = session.companionFeedReadyAt or {}
+    local readyAt = session.companionFeedReadyAt[companionId] or 0
+    if now < readyAt then
+        return tip(player, "Питомец ещё наслаждается угощением. Попробуй чуть позже!")
+    end
+
+    local foodId
+    for _, candidate in companionFeedOrder do
+        if (session.inventory[candidate] or 0) > 0 then
+            foodId = candidate
+            break
+        end
+    end
+    if not foodId then
+        return tip(player, "В рюкзаке пока нет урожая. Вырасти морковь, клубнику, капусту или тыкву!")
+    end
+
+    local food = companionFeedFoods[foodId]
+    session.inventory[foodId] -= 1
+    local progressData = session.companionProgress[companionId]
+    progressData.bond = math.clamp((progressData.bond or 0) + food.bond, 0, 1000)
+    session.companionFeedReadyAt[companionId] = now + 8
+    syncInventory(player)
+    syncCompanionProgress(player)
+    tip(player, pets[companionId] .. " с радостью съел " .. food.name .. "! Дружба +" .. tostring(food.bond) .. ".")
+    if session.online and not save(player) then
+        warn("Companion feeding save will be retried:", player.UserId, companionId)
+    end
 end
 
 local companionXpFunction = ServerStorage:FindFirstChild("GiantbackGrantCompanionXP")
@@ -656,6 +711,7 @@ local function init(player)
         foxSearchCount = 0,
         completedCombatEncounters = {},
         companionProgress = normalizeCompanionProgress(nil),
+        companionFeedReadyAt = {},
         online = false,
         selectedCropId = defaultCropId,
         farmActionBusy = {},
@@ -1033,6 +1089,11 @@ end
 
 event.OnServerEvent:Connect(function(player, action, payload)
     if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
+
+    if action == "FeedCompanion" then
+        feedCompanion(player, payload)
+        return
+    end
 
     if action == "SearchMoonGate" then
         searchMoonGate(player)
