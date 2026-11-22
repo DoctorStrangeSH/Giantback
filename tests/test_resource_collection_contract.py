@@ -52,6 +52,22 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('session.inventory.Stone -= stoneCost', upgrade)
         self.assertIn('session.toolLevels[payload] = 2', upgrade)
 
+    def test_selected_tool_is_actually_equipped_and_restored_after_respawn(self):
+        sync_tools = WORLD.split("local function syncTools(player)", 1)[1].split("local function syncBridge(player)", 1)[0]
+        self.assertIn("ensurePlayerTools(player, session)", sync_tools)
+        self.assertIn("local selectedTool = toolIds[session.equippedTool]", sync_tools)
+        self.assertIn('character:FindFirstChildOfClass("Humanoid")', sync_tools)
+        self.assertIn('player:FindFirstChildOfClass("Backpack")', sync_tools)
+        self.assertIn("humanoid:EquipTool(selectedTool)", sync_tools)
+        self.assertIn("player.CharacterAdded:Connect(function()", WORLD)
+        self.assertIn("syncTools(player)", WORLD)
+
+    def test_equip_action_updates_selected_tool_before_sync(self):
+        equip = WORLD.split('if action == "EquipTool" then', 1)[1].split('if action == "RequestResourceState" then', 1)[0]
+        self.assertIn("session.equippedTool = payload", equip)
+        self.assertIn("syncTools(player)", equip)
+        self.assertIn("if session.tools[payload] ~= true then", equip)
+
     def test_server_checks_prompt_distance(self):
         self.assertIn("p.MaxActivationDistance + 1", WORLD)
         self.assertIn("(root.Position-part.Position).Magnitude", WORLD)
