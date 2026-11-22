@@ -91,6 +91,19 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("humanoid.Health = humanoid.MaxHealth", sword)
         self.assertIn('(root.Position - dummyRoot.Position).Magnitude > 10', sword)
 
+    def test_training_dummy_has_live_health_bar_and_owner_safe_raycast_combat(self):
+        dummy = WORLD.split("local function createTrainingDummy(session)", 1)[1].split("local function createHarvestTool", 1)[0]
+        self.assertIn('billboard.Name = "HealthDisplay"', dummy)
+        self.assertIn('fill.Name = "BarFill"', dummy)
+        self.assertIn("humanoid.HealthChanged:Connect(updateHealthDisplay)", dummy)
+        sword = WORLD.split("if isSword then", 1)[1].split("return tool", 1)[0]
+        self.assertIn("RaycastParams.new()", sword)
+        self.assertIn("rayParams.FilterDescendantsInstances = {character}", sword)
+        self.assertIn("workspace:Raycast(rayOrigin, rayDirection, rayParams)", sword)
+        self.assertIn("hit.Instance:IsDescendantOf(dummy)", sword)
+        self.assertIn('dummy:GetAttribute("OwnerUserId") ~= player.UserId', sword)
+        self.assertIn("humanoid:TakeDamage(20)", sword)
+
     def test_hud_exposes_forge_crafting_and_training_dummy_health(self):
         tools = HUD.split("local function renderTools()", 1)[1].split("local function renderWorld()", 1)[0]
         self.assertIn("ВЫКОВАТЬ МЕЧ", tools)
