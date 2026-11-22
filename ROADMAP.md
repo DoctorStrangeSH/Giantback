@@ -29,6 +29,7 @@
 - [x] Первый Blender запуск создал BLEND/OBJ и 4 PNG, но gate поймал zero-area faces на верхнем крыле. Исправлен профиль ширины с 10% minimum и добавлен regression test; последующий run #20 прошёл все geometry/UV/material gates.
 - [x] Исправлен Moth wing width profile: введён ненулевой floor 10%, чтобы корневая/концевая полосы не схлопывались в zero-area quads; добавлен regression guard. Первый render package собран, но acceptance gate корректно остановил артефакт из-за геометрии; новый run #15 ожидает перепроверки.
 - [x] Создать body/head/abdomen, antennae, moon-gold accents, moon-cyan core и согласованную lilac/rose/cyan palette.
+- [x] После художественного review #20 расширить/укоротить крылья, заменить bead antennae на Bezier feelers, объединить thorax/abdomen в цельный силуэт и добавить gold/lilac crescent inlays на все четыре крыла; fresh render + art review ещё обязательны.
 - [x] Зафиксировать 10 стабильных rig groups и пять планируемых состояний (idle_hover/follow/reveal_secret/ability_burst/rest); текущий JSON — контракт, не готовый Roblox rig.
 - [x] Добавить отдельный CI workflow `.github/workflows/lunar-moth-visual-review.yml`: BLEND/OBJ/MTL, rig JSON, mesh report, четыре ракурса, UV/geometry/material gates и artifact upload.
 - [x] Добавить source-contract tests `tests/test_lunar_moth_hero_workflow.py`.
