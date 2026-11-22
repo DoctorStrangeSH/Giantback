@@ -154,6 +154,44 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('"ResourcePicked"', CLIENT)
         self.assertIn('event:FireServer("RequestResourceState")', CLIENT)
 
+    def test_smelter_is_persisted_in_island_buildings_and_offline_timer_is_absolute(self):
+        self.assertIn('smelter = {readyAt = 0}', WORLD)
+        self.assertIn('city.buildings.smelter = {', WORLD)
+        self.assertIn('readyAt = safeTimestamp(rawSmelter.readyAt)', WORLD)
+        self.assertIn('savedIsland.buildings.smelter = {', WORLD)
+        self.assertIn('readyAt = safeTimestamp(citySnapshot.buildings.smelter.readyAt)', WORLD)
+        self.assertIn('smelter.readyAt = os.time() + 120', WORLD)
+        self.assertIn('if os.time() < smelter.readyAt then', WORLD)
+
+    def test_smelting_recipe_is_server_validated_and_consumes_materials_once(self):
+        start = WORLD.split('local function startSmelting(player)', 1)[1].split('local function collectSmelting(player)', 1)[0]
+        self.assertIn('local oreCost, woodCost = 3, 2', start)
+        self.assertIn('session.inventory.IronOre -= oreCost', start)
+        self.assertIn('session.inventory.Wood -= woodCost', start)
+        self.assertIn('smelter.readyAt = os.time() + 120', start)
+        self.assertIn('if smelter.readyAt > os.time()', start)
+        collect = WORLD.split('local function collectSmelting(player)', 1)[1].split('local function collectFoxCache', 1)[0]
+        self.assertIn('session.inventory.IronIngot = (session.inventory.IronIngot or 0) + 1', collect)
+        self.assertIn('smelter.readyAt = 0', collect)
+        self.assertIn('if os.time() < smelter.readyAt then', collect)
+        self.assertIn('if (root.Position - anchor.Position).Magnitude > 14 then', collect)
+        self.assertIn('if (root.Position - anchor.Position).Magnitude > 14 then', start)
+
+    def test_personal_furnace_is_created_and_owner_only_prompt_opens_smelter(self):
+        self.assertIn('furnace.Name = "Smelter"', WORLD)
+        self.assertIn('furnace:SetAttribute("OwnerUserId", ownerUserId)', WORLD)
+        self.assertIn('prompt(furnaceAnchor, "Плавильня", "Плавить железо"', WORLD)
+        self.assertIn('event:FireClient(visitor, "OpenSmelter")', WORLD)
+        self.assertIn('visitor.UserId ~= ownerUserId', WORLD)
+
+    def test_smelter_ui_shows_recipe_state_and_calls_server_actions(self):
+        self.assertIn('player:GetAttribute("Resource_IronIngot")', HUD)
+        self.assertIn('player:GetAttribute("Smelter_ReadyAt")', HUD)
+        self.assertIn('event:FireServer("StartSmelting")', HUD)
+        self.assertIn('event:FireServer("CollectSmelting")', HUD)
+        self.assertIn('OpenSmelter', HUD)
+        self.assertIn('выйдешь из игры', HUD)
+
     def test_iron_ore_is_a_persistent_pickaxe_resource_with_distinct_visual(self):
         self.assertIn('"IronOre"', WORLD.split("local inventoryKeys =", 1)[1].split("\n", 1)[0])
         self.assertIn("DuskIron01 = true", WORLD)
