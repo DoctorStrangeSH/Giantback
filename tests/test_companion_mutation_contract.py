@@ -35,7 +35,7 @@ class CompanionMutationContractTests(unittest.TestCase):
     def test_visual_mutations_restore_base_colors_and_apply_bounded_tint(self):
         self.assertIn("local function applyCompanionMutation(model, owner, companionId)", ALBUM)
         self.assertIn("mutationOriginalColors", ALBUM)
-        self.assertIn("descendant.Color = originalColor", ALBUM)
+        self.assertIn("part.Color = originalColor", ALBUM)
         self.assertIn("descendant.Color:Lerp(visual.color, accent and 0.58 or 0.24)", ALBUM)
         self.assertIn("CompanionMutationHighlight", ALBUM)
         self.assertIn("applyCompanionMutation(model, owner, id)", ALBUM)
