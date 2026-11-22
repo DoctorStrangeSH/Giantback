@@ -447,6 +447,10 @@ local function registerEnemy(enemy)
 end
 
 local function performAttack(player, state, now)
+    if state.chargingStartedAt > 0 then
+        reject(player, "ChargeInProgress")
+        return
+    end
     if now < state.attackReadyAt then
         reject(player, "AttackCooldown")
         return
