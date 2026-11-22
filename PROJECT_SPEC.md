@@ -337,3 +337,12 @@ The current working branch adds two Dusk-island iron veins requiring a Pickaxe a
 - Fox's combat skill gains +3 damage per level (24 at level 1, 36 at level 5). Moth's healing gains +2 HP per level (18 at level 1, 26 at level 5). Server remains authoritative for all values.
 - Collection cards show level, current/required XP and a progress bar. No paid XP boosts or paid progression gates are required.
 - New companion species, passive traits, cosmetic variants and care interactions are later expansion scope, not part of this first progression slice.
+
+
+### Companion passive talents 1.0
+
+- Fox unlocks **Чуткий нюх** at level 3: Fox cache-search cooldown decreases from 120 to 90 seconds. At level 5, **Острый нюх** reduces it to 60 seconds.
+- Moth unlocks **Лунная аура** at level 3: healing radius grows from 14 to 16 studs. At level 5 it grows to 18 studs.
+- Passive effects are calculated by the server from saved companion levels. Client attributes are display-only and cannot select or amplify a passive.
+- The collection card explains the currently unlocked passive or the next level milestone.
+- This progression is deterministic and gameplay-earned. No hunger decay, missed-day penalties or paid stat boosts.
