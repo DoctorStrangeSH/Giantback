@@ -32,6 +32,15 @@ class CompanionMutationContractTests(unittest.TestCase):
         self.assertIn('"Companion_" .. companionId .. "_MutationRarity"', WORLD)
         self.assertIn('entry.name.Text = names[id] .. " ✦ " .. mutationName', ALBUM)
 
+    def test_discovery_roll_uses_the_actual_encounter_biome(self):
+        self.assertIn("local function rollCompanionMutation(companionId, biomeId)", WORLD)
+        self.assertIn("if definition.biome == biomeId then", WORLD)
+        self.assertIn("rollCompanionMutation(companionId, discoveryBiome)", WORLD)
+        self.assertIn("session.companionDiscoveryBiomes[id] = island.Name", WORLD)
+        self.assertIn("ensureCompanionMutation(player, id)", WORLD)
+        self.assertIn('encounter("Fox",workspace.Grove,1.8)', WORLD)
+        self.assertIn('encounter("Moth",workspace.Dusk,3.5)', WORLD)
+
     def test_legendary_mutations_have_half_percent_weight_and_biome_identity(self):
         self.assertIn('id = "Elderwood", name = "Древесный дух", rarity = "Легендарный", weight = 1, biome = "Grove"', WORLD)
         self.assertIn('id = "Eclipse", name = "Затмение", rarity = "Легендарный", weight = 1, biome = "Dusk"', WORLD)
