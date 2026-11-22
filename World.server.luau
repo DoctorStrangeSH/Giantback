@@ -314,6 +314,13 @@ local function syncTools(player)
     player:SetAttribute("Tool_PickaxeLevel", session and session.toolLevels.Pickaxe or 1)
     if session and player:GetAttribute("Ready") then
         ensurePlayerTools(player, session)
+        local selectedTool = toolIds[session.equippedTool] and findPlayerTool(player, session.equippedTool) or nil
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        local backpack = player:FindFirstChildOfClass("Backpack")
+        if selectedTool and humanoid and selectedTool.Parent == backpack then
+            humanoid:EquipTool(selectedTool)
+        end
     end
 end
 
