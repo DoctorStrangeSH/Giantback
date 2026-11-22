@@ -61,6 +61,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('Instance.new("WeldConstraint")', WORLD)
         self.assertIn('humanoid:EquipTool(equipped)', WORLD)
         self.assertIn('session.toolCharacterConnection', WORLD)
+        self.assertLess(WORLD.index('player:SetAttribute("Ready", true)'), WORLD.index('syncTools(player)', WORLD.index('player:SetAttribute("Ready", true)')))
 
     def test_resource_nodes_require_the_matching_equipped_tool(self):
         self.assertEqual(WORLD.count('requiredTool = "Axe"'), 2)
