@@ -32,8 +32,8 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
-local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil"}
+local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed"}
 local toolIds = {Axe = true, Pickaxe = true}
 local combatRewardDefinitions = {
     GroveGrunt01 = {itemId = "Wood", amount = 3},
@@ -2708,6 +2708,11 @@ for _, runeName in crystalRuneSequence do
     crystalRuneParts[runeName] = crystalGrotto and crystalGrotto:FindFirstChild(runeName)
 end
 local crystalCache = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrottoCache")
+local crystalEchoGate = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoGate")
+local crystalEchoArrival = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoArrival")
+local crystalEchoReturn = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoReturn")
+local prismSeed = crystalGrotto and crystalGrotto:FindFirstChild("PrismSeed")
+local crystalEchoInside = {}
 local crystalGrottoInside = {}
 local crystalRuneProgress = {}
 
@@ -2813,6 +2818,61 @@ if crystalCache then
         if session.online and not save(player) then
             warn("Crystal Grotto cache save will be retried:", player.UserId)
             tip(player, "Печать получена. Сохранение будет повторено автоматически.")
+        end
+    end)
+end
+
+-- Secret Echo Chamber: the ancient sigil opens a one-way discovery path to a rare seed.
+if crystalEchoGate and crystalEchoArrival then
+    connectTrialPrompt(crystalEchoGate, function(player)
+        local session = sessions[player]
+        local character = player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if not session or not crystalGrottoInside[player] or not root or not humanoid or humanoid.Health <= 0 then return end
+        if (root.Position - crystalEchoGate.Position).Magnitude > 11 then return end
+        if not player:GetAttribute("CrystalCache") or (session.inventory.CrystalSigil or 0) < 1 then
+            return tip(player, "Дверь шепчет: принеси древнюю печать из тайника с тремя рунами.")
+        end
+        crystalEchoInside[player] = true
+        player:SetAttribute("CrystalEchoDiscovered", true)
+        character:PivotTo(crystalEchoArrival.CFrame * CFrame.new(0, 4, 0))
+        tip(player, "Секретная Эхо-камера открыта! Здесь растёт редкое призматическое семя.")
+        if session.online then save(player) end
+    end)
+end
+
+if crystalEchoReturn then
+    connectTrialPrompt(crystalEchoReturn, function(player)
+        local session = sessions[player]
+        local character = player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        if not session or not crystalEchoInside[player] or not character or not root then return end
+        if (root.Position - crystalEchoReturn.Position).Magnitude > 11 then return end
+        crystalEchoInside[player] = nil
+        character:PivotTo(crystalEchoGate.CFrame * CFrame.new(0, 0, -7))
+        tip(player, "Ты вернулся в главный зал Кристальной пещеры.")
+    end)
+end
+
+if prismSeed then
+    connectTrialPrompt(prismSeed, function(player)
+        local session = sessions[player]
+        local character = player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if not session or not crystalEchoInside[player] or not root or not humanoid or humanoid.Health <= 0 then return end
+        if (root.Position - prismSeed.Position).Magnitude > 11 then return end
+        if player:GetAttribute("PrismSeedFound") then
+            return tip(player, "Призматическое семя уже хранится в твоей коллекции.")
+        end
+        player:SetAttribute("PrismSeedFound", true)
+        session.inventory.PrismSeed = (session.inventory.PrismSeed or 0) + 1
+        syncInventory(player)
+        tip(player, "Невероятная находка! Получено призматическое семя ×1.")
+        if session.online and not save(player) then
+            warn("Prism Seed reward save will be retried:", player.UserId)
+            tip(player, "Семя получено. Сохранение будет повторено автоматически.")
         end
     end)
 end
@@ -2979,6 +3039,7 @@ end
 Players.PlayerRemoving:Connect(function(player)
     crystalGrottoInside[player] = nil
     crystalRuneProgress[player] = nil
+    crystalEchoInside[player] = nil
     rootvaultInside[player] = nil
     rootvaultLeverActivated[player] = nil
     rootvaultTrapCooldown[player] = nil
