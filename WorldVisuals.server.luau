@@ -414,6 +414,94 @@ for index = 1, 4 do
     )
 end
 
+-- A dedicated, readable rest nook gives collected companions a visible home.
+local petSanctuary = makeFolder(homeDetails, "PetSanctuary")
+local sanctuaryCenter = Vector3.new(-23, 12.16, -8.5)
+orb(
+    petSanctuary,
+    "Companion sanctuary moss pad",
+    sanctuaryCenter,
+    Vector3.new(9.4, 0.34, 8.2),
+    Color3.fromRGB(115, 151, 119),
+    Enum.Material.Grass
+)
+cylinder(
+    petSanctuary,
+    "Companion sanctuary stone dais",
+    sanctuaryCenter + Vector3.new(0, 0.12, 0),
+    0.24,
+    6.8,
+    Color3.fromRGB(167, 157, 132),
+    Enum.Material.Slate
+)
+local restSpots = {
+    {position = Vector3.new(-25.1, 12.48, -8.5), color = palette.lilacLight},
+    {position = Vector3.new(-20.9, 12.48, -8.5), color = palette.coral},
+    {position = Vector3.new(-23.0, 12.48, -6.1), color = palette.cream},
+}
+for index, spot in restSpots do
+    cylinder(
+        petSanctuary,
+        "Companion resting cushion base",
+        spot.position,
+        0.22,
+        1.85,
+        palette.barkLight,
+        Enum.Material.Wood
+    )
+    orb(
+        petSanctuary,
+        "Companion resting cushion",
+        spot.position + Vector3.new(0, 0.18, 0),
+        Vector3.new(1.9, 0.34, 1.55),
+        spot.color,
+        Enum.Material.Fabric
+    )
+end
+local sanctuaryLantern = orb(
+    petSanctuary,
+    "Sanctuary moon lantern",
+    sanctuaryCenter + Vector3.new(0, 1.0, 1.65),
+    Vector3.new(0.62, 0.86, 0.62),
+    palette.moon,
+    Enum.Material.Neon
+)
+addLight(sanctuaryLantern, palette.moon, 10, 0.48)
+for index = 1, 7 do
+    local angle = math.pi * 2 * index / 7
+    local position = sanctuaryCenter + Vector3.new(math.cos(angle) * 4.3, 0.18, math.sin(angle) * 3.7)
+    orb(
+        petSanctuary,
+        "Sanctuary border pebble",
+        position,
+        Vector3.new(0.78, 0.3, 0.72),
+        index % 2 == 0 and palette.stoneLight or palette.stone,
+        Enum.Material.Slate
+    )
+end
+for index = 1, 4 do
+    local x = -17.1 - index * 1.55
+    local stone = orb(
+        petSanctuary,
+        "Companion nook stepping stone",
+        Vector3.new(x, 12.18, -8.5 + (index % 2) * 0.35),
+        Vector3.new(1.2, 0.2, 1.0),
+        index % 2 == 0 and palette.stoneLight or Color3.fromRGB(190, 181, 151),
+        Enum.Material.Slate
+    )
+    stone.CFrame = CFrame.new(stone.Position) * CFrame.Angles(0, math.rad(index % 2 == 0 and 7 or -8), 0)
+end
+for index = 1, 5 do
+    local angle = math.pi * 2 * index / 5
+    addFlower(
+        petSanctuary,
+        sanctuaryCenter + Vector3.new(math.cos(angle) * 5.0, 0.16, math.sin(angle) * 4.3),
+        index % 2 == 0 and palette.lilacLight or palette.coral,
+        0.52,
+        900 + index
+    )
+end
+
 -- Turn the two simple banks into distinct little places.
 local function decorateIsland(island, isDusk)
     local islandDetails = makeFolder(island, "HandcraftedDetails")
