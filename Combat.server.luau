@@ -653,12 +653,13 @@ local function performCompanionSkill(player, state, now)
 
     local companionLevel = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_Moth_Level")) or 1), 1, 5)
     local healAmount = MOTH_HEAL_AMOUNT + (companionLevel - 1) * MOTH_HEAL_PER_LEVEL
+    local healRadius = MOTH_HEAL_RADIUS + (companionLevel >= 5 and 4 or companionLevel >= 3 and 2 or 0)
     local healedPlayers = {}
     for _, ally in Players:GetPlayers() do
         if ally:GetAttribute("Ready") == true and getPlayerRegion(ally) == regionId then
             local allyHumanoid, allyRoot = getCharacterParts(ally)
             if allyHumanoid and allyRoot
-                and (allyRoot.Position - playerRoot.Position).Magnitude <= MOTH_HEAL_RADIUS
+                and (allyRoot.Position - playerRoot.Position).Magnitude <= healRadius
                 and allyHumanoid.Health < allyHumanoid.MaxHealth then
                 local before = allyHumanoid.Health
                 allyHumanoid.Health = math.min(allyHumanoid.MaxHealth, before + healAmount)
@@ -683,6 +684,7 @@ local function performCompanionSkill(player, state, now)
         healedCount = #healedPlayers,
         healedUserIds = healedPlayers,
         healAmount = healAmount,
+        healRadius = healRadius,
     })
 end
 
