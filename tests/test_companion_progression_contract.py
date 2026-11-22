@@ -88,6 +88,9 @@ class CompanionProgressionContractTests(unittest.TestCase):
             "Companion_Moth_Level",
             "FOX_SKILL_DAMAGE_PER_LEVEL = 3",
             "MOTH_HEAL_PER_LEVEL = 2",
+            "FeedCompanion",
+            "Companion_Fox_Bond",
+            "Companion_Moth_Bond",
             "УР. 5 · МАКСИМУМ",
         ):
             self.assertIn(marker, CI)
