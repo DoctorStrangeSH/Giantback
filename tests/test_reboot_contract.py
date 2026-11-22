@@ -117,7 +117,7 @@ class RebootContractTests(unittest.TestCase):
         self.assertIn("event:FireServer(pet.id)", HUD)
 
     def test_legacy_hud_is_disabled_and_new_hud_is_embedded(self):
-        self.assertIn("gui.Enabled = false", CLIENT)
+        self.assertNotIn('GiantbackJournal', CLIENT)
         self.assertIn('root / "HUD.client.luau"', BUILD)
 
     def test_world_map_describes_the_fixed_bridge_hub(self):
