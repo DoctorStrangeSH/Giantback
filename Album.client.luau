@@ -2110,6 +2110,16 @@ local function applyCompanionGrowth(model, owner, companionId)
     local stageName, scale, stageId = companionGrowthForLevel(level)
     if model:GetAttribute("AppliedGrowthStage") == stageId then return end
 
+    local currentState = animationStates[model]
+    if currentState then
+        local pivot = model:GetPivot()
+        for part, offset in currentState.offsets do
+            if part.Parent then
+                part.CFrame = pivot * offset
+            end
+        end
+    end
+
     model:ScaleTo(scale)
     model:SetAttribute("AppliedGrowthStage", stageId)
     model:SetAttribute("GrowthStageName", stageName)
