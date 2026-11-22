@@ -1011,7 +1011,7 @@ local function init(player)
         foxSearchCount = 0,
         completedCombatEncounters = {},
         companionProgress = normalizeCompanionProgress(nil),
-        companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth},
+        companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth, CrystalWisp = companionMoodDefaults.CrystalWisp},
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
         companionMutations = normalizeCompanionMutations(nil),
         companionDiscoveryBiomes = {},
@@ -2362,7 +2362,7 @@ local function spawnResource(def)
     local resourcePrompt = prompt(anchor, def.displayName, def.verb or "Собрать", function(player)
         local session = sessions[player]
         if not session or not player:GetAttribute("Ready") then return end
-        if def.hiddenByPrismSense and (tonumber(player:GetAttribute("PrismSenseUntil")) or 0) < os.clock() then
+        if def.hiddenByPrismSense and (tonumber(player:GetAttribute("PrismSenseUntil")) or 0) < workspace:GetServerTimeNow() then
             return tip(player, "Кристальная жила скрыта. Попроси светляка применить Призменное чутьё.")
         end
         if def.area == "CrystalGrotto" then
