@@ -198,3 +198,7 @@ The client now creates local-only BillboardGui health/name bars for regular enem
 ## 22. Seal Fragment awakening cue
 
 When a Seal Fragment is activated and enters the tagged enemy collection, each client plays a local-only awakening cue: violet Highlight flash, a short spark particle burst, and an expanding floor ring aligned by raycast. The cue is guarded per client per minion and does not affect combat or enemy visibility/authority. The same collection-added callback binds its local health bar. Studio acceptance must confirm particle readability, floor alignment and performance with both minions and multiple players.
+
+## 23. Client procedural enemy animation layer
+
+Tagged custom enemy rigs now receive a lightweight local animation layer driven by replicated `CombatState` and Humanoid movement. It supplies idle breathing/head motion, alternating arm/leg locomotion, single-attack wind-up, two-arm ground-slam wind-up, recovery and phase-transition poses. Motor6D.Transform is applied client-side only; the server still owns movement, hit timing and damage. Joint transforms are reset when the rig leaves Workspace. This is a procedural placeholder animation layer, not authored animation assets or a substitute for final animation polish. Studio validation is required for joint orientation, replication timing, and visual quality on every enemy rig.
