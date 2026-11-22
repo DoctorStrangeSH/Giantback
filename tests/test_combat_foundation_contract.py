@@ -462,6 +462,23 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('CompanionNoTarget = "Лисёнок не видит противника рядом"', CLIENT)
         self.assertIn('CompanionNoOneToHeal = "Рядом никому не требуется лечение"', CLIENT)
 
+
+    def test_moth_skill_returns_only_server_confirmed_healed_player_ids_for_vfx(self):
+        self.assertIn("table.insert(healedPlayers, ally.UserId)", COMBAT)
+        self.assertIn("healedUserIds = healedPlayers", COMBAT)
+        self.assertIn("healedCount = #healedPlayers", COMBAT)
+
+    def test_companion_skill_vfx_uses_server_confirmed_target_and_healed_allies(self):
+        self.assertIn("local function showCompanionImpact(root, accent, radius)", CLIENT)
+        self.assertIn("local function findEnemyRoot(enemyId)", CLIENT)
+        self.assertIn('CollectionService:GetTagged("GiantbackEnemy")', CLIENT)
+        self.assertIn('showCompanionImpact(targetRoot, Color3.fromRGB(244, 178, 94), 7)', CLIENT)
+        self.assertIn("type(data.healedUserIds) == \"table\"", CLIENT)
+        self.assertIn("Players:GetPlayerByUserId(userId)", CLIENT)
+        self.assertIn("showCompanionImpact(allyRoot, Color3.fromRGB(190, 164, 232), 5)", CLIENT)
+        self.assertIn('particles:Emit(20)', CLIENT)
+        self.assertIn('"LocalCompanionSkillPulse"', CLIENT)
+
     def test_finisher_applies_server_authoritative_enemy_knockback(self):
         self.assertIn("if isFinisher and entry.root.Parent then", COMBAT)
         self.assertIn("local resistance = entry.isBoss and 0.28 or 1", COMBAT)
