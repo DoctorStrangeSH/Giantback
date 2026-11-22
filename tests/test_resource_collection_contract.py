@@ -6,6 +6,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 CLIENT = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+FEEDBACK = (ROOT / "modules/HarvestFeedback.luau").read_text(encoding="utf-8")
 VISIBILITY = (ROOT / "modules/ResourceNodeVisibility.luau").read_text(encoding="utf-8")
 
 
@@ -94,7 +95,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
     def test_client_shows_hit_progress_and_clears_it_after_collection(self):
         self.assertIn('message == "ResourceHit"', CLIENT)
         self.assertIn('showResourceHitFeedback(payload)', CLIENT)
-        self.assertIn('LocalHarvestProgress', CLIENT)
+        self.assertIn('LocalHarvestProgress', FEEDBACK)
         self.assertIn('clearResourceHitFeedback(payload.nodeId)', CLIENT)
 
     def test_tools_hud_supports_equipping_and_upgrading_both_tools(self):
