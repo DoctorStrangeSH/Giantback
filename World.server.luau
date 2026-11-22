@@ -470,6 +470,7 @@ local function init(player)
         equippedTool = "Axe",
         resourceCooldowns = {},
         resourceHits = {},
+        resourceHitCooldowns = {},
         collectedNodes = {},
         city = defaultCity(),
         cityModel = nil,
@@ -1443,10 +1444,14 @@ local function spawnResource(def)
         local session = sessions[player]
         if not session or not player:GetAttribute("Ready") then return end
 
-        if def.requiredTool and session.equippedTool ~= def.requiredTool then
-            return tip(player, def.requiredTool == "Axe"
-                and "Для дерева нужен экипированный топор. Открой вкладку «Инструменты»."
-                or "Для камня нужна экипированная кирка. Открой вкладку «Инструменты».")
+        if def.requiredTool then
+            local equippedTool = findPlayerTool(player, def.requiredTool)
+            if session.equippedTool ~= def.requiredTool or not equippedTool or equippedTool.Parent ~= player.Character then
+                syncTools(player)
+                return tip(player, def.requiredTool == "Axe"
+                    and "Возьми топор в руки, чтобы рубить дерево."
+                    or "Возьми кирку в руки, чтобы добывать камень.")
+            end
         end
 
         local now = os.time()
@@ -1461,6 +1466,10 @@ local function spawnResource(def)
 
             local hitsRequired = math.clamp(math.floor(tonumber(def.hitsRequired) or 1), 1, 10)
             if hitsRequired > 1 then
+                local hitNow = os.clock()
+                local lastHitAt = session.resourceHitCooldowns[def.key] or 0
+                if hitNow - lastHitAt < 0.4 then return end
+                session.resourceHitCooldowns[def.key] = hitNow
                 local hits = math.min(hitsRequired, (session.resourceHits[def.key] or 0) + 1)
                 session.resourceHits[def.key] = hits
                 event:FireClient(player, "ResourceHit", {
