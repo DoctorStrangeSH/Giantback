@@ -1124,7 +1124,9 @@ enemy:SetAttribute("RegionId", "GroveTraining")
 enemy:SetAttribute("CombatState", "Idle")
 enemy.Parent = combatGlade
 
-local enemyRoot = makeEnemyPart(enemy, "HumanoidRootPart", Vector3.new(2, 2, 1), CFrame.new(arenaCenter + Vector3.new(0, 3, -3)), palette.ink)
+local enemySpawn = arenaCenter + Vector3.new(0, 3, -3)
+local enemyRoot = makeEnemyPart(enemy, "HumanoidRootPart", Vector3.new(2, 2, 1), CFrame.lookAt(enemySpawn, enemySpawn + Vector3.new(0, 0, 1)), palette.ink)
+enemyRoot.Massless = false
 enemyRoot.Transparency = 1
 local torso = makeEnemyPart(enemy, "Torso", Vector3.new(2.1, 2.25, 1.25), enemyRoot.CFrame, Color3.fromRGB(100, 111, 78), Enum.Material.Wood)
 torso.CanCollide = true
@@ -1177,6 +1179,60 @@ enemyHumanoid.Parent = enemy
 enemy.PrimaryPart = enemyRoot
 enemyRoot:SetNetworkOwner(nil)
 CollectionService:AddTag(enemy, "GiantbackEnemy")
+
+local enemyHighlight = Instance.new("Highlight")
+enemyHighlight.Name = "CombatTelegraphHighlight"
+enemyHighlight.Adornee = enemy
+enemyHighlight.FillColor = palette.coral
+enemyHighlight.FillTransparency = 0.72
+enemyHighlight.OutlineColor = palette.gold
+enemyHighlight.OutlineTransparency = 0.08
+enemyHighlight.Enabled = false
+enemyHighlight.Parent = enemy
+
+local warningBillboard = Instance.new("BillboardGui")
+warningBillboard.Name = "CombatTelegraphWarning"
+warningBillboard.Adornee = head
+warningBillboard.Size = UDim2.fromOffset(190, 42)
+warningBillboard.StudsOffset = Vector3.new(0, 2.1, 0)
+warningBillboard.AlwaysOnTop = true
+warningBillboard.Enabled = false
+warningBillboard.Parent = enemy
+
+local warningText = Instance.new("TextLabel")
+warningText.Name = "WarningText"
+warningText.Size = UDim2.fromScale(1, 1)
+warningText.BackgroundColor3 = Color3.fromRGB(61, 43, 48)
+warningText.BackgroundTransparency = 0.18
+warningText.BorderSizePixel = 0
+warningText.Text = "ВНИМАНИЕ!"
+warningText.TextColor3 = palette.cream
+warningText.TextStrokeTransparency = 0.35
+warningText.Font = Enum.Font.GothamBold
+warningText.TextScaled = true
+warningText.Parent = warningBillboard
+
+enemy:GetAttributeChangedSignal("CombatState"):Connect(function()
+    local state = enemy:GetAttribute("CombatState")
+    local telegraphing = state == "Telegraph"
+    enemyHighlight.Enabled = telegraphing
+    warningBillboard.Enabled = telegraphing
+    if telegraphing then
+        warningText.Text = "БЕРЕГИСЬ!"
+        warningText.BackgroundColor3 = Color3.fromRGB(132, 67, 59)
+    elseif state == "Recover" then
+        warningText.Text = "АТАКА!"
+        warningText.BackgroundColor3 = Color3.fromRGB(91, 105, 82)
+        warningBillboard.Enabled = true
+        task.delay(0.35, function()
+            if enemy.Parent and enemy:GetAttribute("CombatState") == "Recover" then
+                warningBillboard.Enabled = false
+            end
+        end)
+    else
+        warningBillboard.Enabled = false
+    end
+end)
 
 local entranceGlow = orb(arena, "Training glade welcome light", arenaCenter + Vector3.new(0, 6.4, -21), Vector3.new(0.65, 0.65, 0.65), palette.gold, Enum.Material.Neon)
 addLight(entranceGlow, palette.gold, 12, 0.55)
