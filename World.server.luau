@@ -83,6 +83,8 @@ local resourceNodeIds = {
     DuskStone02 = true,
     DuskIron01 = true,
     DuskIron02 = true,
+    CrystalGrottoLumen01 = true,
+    CrystalGrottoLumen02 = true,
 }
 local sessions = {}
 local createPersonalCity
@@ -2132,6 +2134,16 @@ local function createResourceFlower(def, position)
         makePart("CanopyLower", Vector3.new(4.8, 3.4, 4.8), CFrame.new(0, 4.2, 0), Color3.fromRGB(91, 145, 91), Enum.Material.Grass)
         makePart("CanopyUpper", Vector3.new(3.6, 3.1, 3.6), CFrame.new(0, 6.1, 0), Color3.fromRGB(119, 169, 105), Enum.Material.Grass)
         makePart("HarvestMark", Vector3.new(0.55, 0.18, 0.55), CFrame.new(0, 2.15, -0.68), Color3.fromRGB(221, 179, 105), Enum.Material.Wood)
+    elseif def.visual == "crystal" then
+        makePart("CrystalBase", Vector3.new(3.2, 1.1, 3.0), CFrame.new(0, 0.45, 0), Color3.fromRGB(75, 76, 103), Enum.Material.Slate)
+        makePart("CrystalMain", Vector3.new(1.35, 3.4, 1.35), CFrame.new(0, 2.1, 0) * CFrame.Angles(0, 0, math.rad(-7)), Color3.fromRGB(132, 102, 196), Enum.Material.Neon)
+        makePart("CrystalLeft", Vector3.new(0.9, 2.3, 0.9), CFrame.new(-0.95, 1.55, 0.35) * CFrame.Angles(0, 0, math.rad(12)), Color3.fromRGB(99, 166, 207), Enum.Material.Neon)
+        makePart("CrystalRight", Vector3.new(0.82, 1.9, 0.82), CFrame.new(0.92, 1.35, -0.32) * CFrame.Angles(0, 0, math.rad(-15)), Color3.fromRGB(191, 140, 225), Enum.Material.Neon)
+        local crystalGlow = Instance.new("PointLight")
+        crystalGlow.Color = Color3.fromRGB(160, 132, 238)
+        crystalGlow.Range = 11
+        crystalGlow.Brightness = 0.65
+        crystalGlow.Parent = model:FindFirstChild("CrystalMain")
     elseif def.visual == "rock" or def.visual == "ore" then
         makePart("StoneMain", Vector3.new(3.4, 2.7, 2.8), CFrame.new(0, 1.15, 0), Color3.fromRGB(125, 132, 132), Enum.Material.Slate)
         makePart("StoneLeft", Vector3.new(1.8, 1.55, 1.8), CFrame.new(-1.35, 0.72, 0.8), Color3.fromRGB(151, 157, 154), Enum.Material.Rock)
@@ -2270,6 +2282,18 @@ local resourceDefinitions = {
         kind = "renewable", respawnSeconds = 600,
     },
     {
+        key = "CrystalGrottoLumen01", amount = 1, requiredTool = "Pickaxe", hitsRequired = 6,
+        verb = "Добыть кристалл", itemId = "CrystalShard", displayName = "Люмен-кристалл",
+        area = "CrystalGrotto", offset = Vector3.new(-12, 0, 2), visual = "crystal",
+        kind = "renewable", respawnSeconds = 900,
+    },
+    {
+        key = "CrystalGrottoLumen02", amount = 1, requiredTool = "Pickaxe", hitsRequired = 6,
+        verb = "Добыть кристалл", itemId = "CrystalShard", displayName = "Люмен-кристалл",
+        area = "CrystalGrotto", offset = Vector3.new(12, 0, 3), visual = "crystal",
+        kind = "renewable", respawnSeconds = 900,
+    },
+    {
         key = "DuskIron02", amount = 2, requiredTool = "Pickaxe", hitsRequired = 5,
         verb = "Добыть железо", itemId = "IronOre", displayName = "Железная жила",
         area = "Dusk", offset = Vector3.new(42, 0, -29), visual = "ore",
@@ -2283,9 +2307,17 @@ local function spawnResource(def)
         return
     end
 
-    local island = workspace:FindFirstChild(def.area)
-    local bank = island and island:FindFirstChild("Bank")
-    if not island or not bank then return end
+    local island
+    local origin
+    if def.area == "CrystalGrotto" then
+        local glade = workspace:FindFirstChild("CombatTrainingGlade")
+        island = glade and glade:FindFirstChild("CrystalGrotto")
+        origin = island and island:FindFirstChild("CrystalGrottoFloor")
+    else
+        island = workspace:FindFirstChild(def.area)
+        origin = island and island:FindFirstChild("Bank")
+    end
+    if not island or not origin or not origin:IsA("BasePart") then return end
 
     local folder = island:FindFirstChild("ResourceNodes")
     if not folder then
@@ -2296,7 +2328,7 @@ local function spawnResource(def)
     if folder:FindFirstChild(def.key) then return end
 
     local position = CFrame.new(
-        bank.Position + Vector3.new(def.offset.X, bank.Size.Y / 2 + 0.18, def.offset.Z)
+        origin.Position + Vector3.new(def.offset.X, origin.Size.Y / 2 + 0.18, def.offset.Z)
     )
     local model, anchor = createResourceFlower(def, position)
     model.Parent = folder
@@ -2304,6 +2336,15 @@ local function spawnResource(def)
     prompt(anchor, def.displayName, def.verb or "Собрать", function(player)
         local session = sessions[player]
         if not session or not player:GetAttribute("Ready") then return end
+        if def.area == "CrystalGrotto" then
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            if player:GetAttribute("InCrystalGrotto") ~= true
+                or not root
+                or (root.Position - anchor.Position).Magnitude > 13 then
+                return tip(player, "Подойди к кристальной жиле внутри пещеры.")
+            end
+        end
 
         if def.requiredTool then
             local equippedTool = findPlayerTool(player, def.requiredTool)
