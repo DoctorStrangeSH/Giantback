@@ -506,7 +506,12 @@ local function petCompanion(player, companionId)
     progressData.bond = math.clamp((progressData.bond or 0) + 5, 0, 1000)
     setCompanionMood(player, companionId, "Радость")
     syncCompanionProgress(player)
-    event:FireClient(player, "CompanionPetted", {companionId = companionId})
+    local bondStage = progressData.bond >= 900 and 4
+        or progressData.bond >= 600 and 3
+        or progressData.bond >= 300 and 2
+        or progressData.bond >= 100 and 1
+        or 0
+    event:FireClient(player, "CompanionPetted", {companionId = companionId, bondStage = bondStage})
     tip(player, pets[companionId] .. " довольно прижался к тебе. Дружба +5.")
     if session.online and not save(player) then
         warn("Companion petting save will be retried:", player.UserId, companionId)
