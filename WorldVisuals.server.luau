@@ -5,6 +5,7 @@ local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local TweenService = game:GetService("TweenService")
+local CollectionService = game:GetService("CollectionService")
 
 local homeIslandTemplate = ServerStorage:WaitForChild("HomeIslandTemplate")
 local grove = workspace:WaitForChild("Grove")
@@ -930,6 +931,255 @@ if moth then
     end
 end
 
+
+-- First playable combat destination: a small training glade beyond the Grove.
+-- The bridge, arena and enemy are generated here so a fresh place build is playable
+-- without manually tagging parts or importing a placeholder NPC in Studio.
+local oldCombatGlade = workspace:FindFirstChild("CombatTrainingGlade")
+if oldCombatGlade then oldCombatGlade:Destroy() end
+
+local combatGlade = Instance.new("Model")
+combatGlade.Name = "CombatTrainingGlade"
+combatGlade.Parent = workspace
+
+local arenaCenter = Vector3.new(0, 12, 113)
+local bridgeFolder = Instance.new("Model")
+bridgeFolder.Name = "GroveApproach"
+bridgeFolder.Parent = combatGlade
+
+local function setSolid(part)
+    part.Anchored = true
+    part.CanCollide = true
+    part.CanTouch = true
+    part.CanQuery = true
+    return part
+end
+
+-- A continuous, broad timber path connects the Grove shoreline to the arena.
+for index = 1, 9 do
+    local z = 28 + (index - 1) * 7.5
+    local plank = makePart(
+        bridgeFolder,
+        "Approach plank",
+        Vector3.new(6.2, 0.48, 8.0),
+        CFrame.new(0, 12.0, z) * CFrame.Angles(0, math.rad((index % 2 == 0 and 1 or -1) * 1.5), 0),
+        index % 2 == 0 and palette.barkLight or palette.bark,
+        Enum.Material.WoodPlanks
+    )
+    setSolid(plank)
+    for side = -1, 1, 2 do
+        if index == 1 or index == 5 or index == 9 then
+            local post = makePart(
+                bridgeFolder,
+                "Approach lantern post",
+                Vector3.new(0.42, 2.4, 0.42),
+                CFrame.new(side * 3.05, 13.2, z),
+                palette.barkLight,
+                Enum.Material.Wood
+            )
+            setSolid(post)
+            local lamp = orb(bridgeFolder, "Approach lantern", Vector3.new(side * 3.05, 14.55, z), Vector3.new(0.62, 0.62, 0.62), palette.gold, Enum.Material.Neon)
+            addLight(lamp, palette.gold, 8, 0.5)
+        end
+    end
+end
+for side = -1, 1, 2 do
+    local rail = makePart(
+        bridgeFolder,
+        "Approach handrail",
+        Vector3.new(0.35, 1.15, 66),
+        CFrame.new(side * 3.15, 13.0, 61),
+        palette.bark,
+        Enum.Material.Wood
+    )
+    setSolid(rail)
+end
+
+local arena = Instance.new("Model")
+arena.Name = "TrainingRing"
+arena.Parent = combatGlade
+local platform = makePart(
+    arena,
+    "Training stone platform",
+    Vector3.new(2.4, 46, 46),
+    CFrame.new(arenaCenter.X, arenaCenter.Y - 1.2, arenaCenter.Z) * CFrame.Angles(0, 0, math.rad(90)),
+    Color3.fromRGB(103, 119, 105),
+    Enum.Material.Slate,
+    Enum.PartType.Cylinder
+)
+setSolid(platform)
+
+-- Warm stone inlays make the combat boundary readable from the approach.
+for index = 1, 16 do
+    local angle = index * math.pi * 2 / 16
+    local position = arenaCenter + Vector3.new(math.cos(angle) * 17.5, 0.28, math.sin(angle) * 17.5)
+    local marker = makePart(
+        arena,
+        "Ring marker",
+        Vector3.new(2.2, 0.42, 1.05),
+        CFrame.new(position) * CFrame.Angles(0, -angle, 0),
+        index % 2 == 0 and palette.gold or palette.mossLight,
+        Enum.Material.Slate
+    )
+    setSolid(marker)
+    if index % 2 == 0 then
+        local rune = makePart(
+            arena,
+            "Glowing ring rune",
+            Vector3.new(0.22, 0.12, 0.52),
+            CFrame.new(position + Vector3.new(0, 0.28, 0)),
+            palette.gold,
+            Enum.Material.Neon
+        )
+        addLight(rune, palette.gold, 5, 0.16)
+    end
+end
+
+for index = 1, 4 do
+    local angle = (index - 1) * math.pi / 2 + math.pi / 4
+    local position = arenaCenter + Vector3.new(math.cos(angle) * 19.5, 0, math.sin(angle) * 19.5)
+    local pillar = makePart(
+        arena,
+        "Training glade pillar",
+        Vector3.new(1.35, 4.2, 1.35),
+        CFrame.new(position + Vector3.new(0, 2.1, 0)),
+        palette.barkLight,
+        Enum.Material.Wood
+    )
+    setSolid(pillar)
+    local cap = orb(arena, "Pillar moonstone", position + Vector3.new(0, 4.35, 0), Vector3.new(1.05, 0.85, 1.05), palette.moon, Enum.Material.Neon)
+    addLight(cap, palette.moon, 9, 0.45)
+end
+
+-- Entrance arch and a short, legible sign identify this as the combat tutorial area.
+for side = -1, 1, 2 do
+    local post = makePart(
+        arena,
+        "Glade entrance post",
+        Vector3.new(0.9, 5.0, 1.0),
+        CFrame.new(arenaCenter + Vector3.new(side * 5.2, 2.5, -21)),
+        palette.bark,
+        Enum.Material.Wood
+    )
+    setSolid(post)
+end
+local arch = makePart(
+    arena,
+    "Glade entrance arch",
+    Vector3.new(11.2, 0.9, 1.1),
+    CFrame.new(arenaCenter + Vector3.new(0, 5.0, -21)),
+    palette.barkLight,
+    Enum.Material.Wood
+)
+setSolid(arch)
+
+local region = Instance.new("Part")
+region.Name = "GroveTrainingRegion"
+region.Size = Vector3.new(42, 22, 42)
+region.CFrame = CFrame.new(arenaCenter + Vector3.new(0, 9, 0))
+region.Anchored = true
+region.Transparency = 1
+region.CanCollide = false
+region.CanTouch = false
+region.CanQuery = false
+region.Parent = arena
+region:SetAttribute("RegionId", "GroveTraining")
+CollectionService:AddTag(region, "GiantbackCombatRegion")
+
+local function makeEnemyPart(model, name, size, frame, color, material, shape)
+    local part = Instance.new("Part")
+    part.Name = name
+    part.Size = size
+    part.CFrame = frame
+    part.Color = color
+    part.Material = material or Enum.Material.SmoothPlastic
+    part.Shape = shape or Enum.PartType.Block
+    part.Anchored = false
+    part.CanCollide = false
+    part.CanTouch = false
+    part.CanQuery = true
+    part.Massless = true
+    part.TopSurface = Enum.SurfaceType.Smooth
+    part.BottomSurface = Enum.SurfaceType.Smooth
+    part.Parent = model
+    return part
+end
+
+local function joinRig(model, name, part0, part1, c0, c1)
+    local joint = Instance.new("Motor6D")
+    joint.Name = name
+    joint.Part0 = part0
+    joint.Part1 = part1
+    joint.C0 = c0
+    joint.C1 = c1
+    joint.Parent = part0
+    return joint
+end
+
+local enemy = Instance.new("Model")
+enemy.Name = "GroveGrunt01"
+enemy:SetAttribute("EnemyId", "GroveGrunt01")
+enemy:SetAttribute("EncounterId", "GroveGrunt01")
+enemy:SetAttribute("RegionId", "GroveTraining")
+enemy:SetAttribute("CombatState", "Idle")
+enemy.Parent = combatGlade
+
+local enemyRoot = makeEnemyPart(enemy, "HumanoidRootPart", Vector3.new(2, 2, 1), CFrame.new(arenaCenter + Vector3.new(0, 3, -3)), palette.ink)
+enemyRoot.Transparency = 1
+local torso = makeEnemyPart(enemy, "Torso", Vector3.new(2.1, 2.25, 1.25), enemyRoot.CFrame, Color3.fromRGB(100, 111, 78), Enum.Material.Wood)
+torso.CanCollide = true
+local head = makeEnemyPart(enemy, "Head", Vector3.new(1.55, 1.5, 1.45), enemyRoot.CFrame * CFrame.new(0, 1.8, -0.03), Color3.fromRGB(133, 148, 94), Enum.Material.Wood, Enum.PartType.Ball)
+local rightArm = makeEnemyPart(enemy, "Right Arm", Vector3.new(0.95, 2.0, 1.0), enemyRoot.CFrame * CFrame.new(1.45, 0.05, 0), Color3.fromRGB(111, 126, 82), Enum.Material.Wood)
+local leftArm = makeEnemyPart(enemy, "Left Arm", Vector3.new(0.95, 2.0, 1.0), enemyRoot.CFrame * CFrame.new(-1.45, 0.05, 0), Color3.fromRGB(111, 126, 82), Enum.Material.Wood)
+local rightLeg = makeEnemyPart(enemy, "Right Leg", Vector3.new(0.95, 2.0, 1.0), enemyRoot.CFrame * CFrame.new(0.53, -2.0, 0), Color3.fromRGB(82, 91, 68), Enum.Material.Wood)
+local leftLeg = makeEnemyPart(enemy, "Left Leg", Vector3.new(0.95, 2.0, 1.0), enemyRoot.CFrame * CFrame.new(-0.53, -2.0, 0), Color3.fromRGB(82, 91, 68), Enum.Material.Wood)
+rightLeg.CanCollide = true
+leftLeg.CanCollide = true
+
+joinRig(enemy, "RootJoint", enemyRoot, torso, CFrame.new(), CFrame.new())
+joinRig(enemy, "Neck", torso, head, CFrame.new(0, 1.1, 0), CFrame.new(0, -0.72, 0))
+joinRig(enemy, "Right Shoulder", torso, rightArm, CFrame.new(1.05, 0.65, 0), CFrame.new(0, 0.65, 0))
+joinRig(enemy, "Left Shoulder", torso, leftArm, CFrame.new(-1.05, 0.65, 0), CFrame.new(0, 0.65, 0))
+joinRig(enemy, "Right Hip", torso, rightLeg, CFrame.new(0.53, -1.0, 0), CFrame.new(0, 1.0, 0))
+joinRig(enemy, "Left Hip", torso, leftLeg, CFrame.new(-0.53, -1.0, 0), CFrame.new(0, 1.0, 0))
+
+local function addEnemyDetail(name, size, frame, color, material, parentPart, shape)
+    local detail = makeEnemyPart(enemy, name, size, frame, color, material, shape)
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = parentPart
+    weld.Part1 = detail
+    weld.Parent = detail
+    return detail
+end
+
+addEnemyDetail("Bark crown left", Vector3.new(0.28, 1.35, 0.32), head.CFrame * CFrame.new(-0.48, 0.92, 0), palette.barkLight, Enum.Material.Wood, head)
+addEnemyDetail("Bark crown right", Vector3.new(0.28, 1.35, 0.32), head.CFrame * CFrame.new(0.48, 0.92, 0), palette.barkLight, Enum.Material.Wood, head)
+for side = -1, 1, 2 do
+    local eye = addEnemyDetail("Amber eye", Vector3.new(0.2, 0.2, 0.12), head.CFrame * CFrame.new(side * 0.36, 0.12, -0.68), palette.gold, Enum.Material.Neon, head, Enum.PartType.Ball)
+    addLight(eye, palette.gold, 4, 0.2)
+end
+addEnemyDetail("Moss shoulder mantle", Vector3.new(2.65, 0.45, 1.55), torso.CFrame * CFrame.new(0, 0.78, 0), palette.moss, Enum.Material.Grass, torso)
+local club = addEnemyDetail("Rootwood club", Vector3.new(0.55, 2.8, 0.55), rightArm.CFrame * CFrame.new(0.15, -0.8, -0.15) * CFrame.Angles(0, 0, math.rad(-18)), palette.barkLight, Enum.Material.Wood, rightArm)
+local clubCap = addEnemyDetail("Rootwood club cap", Vector3.new(0.9, 0.85, 0.9), club.CFrame * CFrame.new(0, 1.35, 0), palette.gold, Enum.Material.Wood, club, Enum.PartType.Ball)
+
+local enemyHumanoid = Instance.new("Humanoid")
+enemyHumanoid.Name = "Humanoid"
+enemyHumanoid.DisplayName = "Корневой страж"
+enemyHumanoid.MaxHealth = 100
+enemyHumanoid.Health = 100
+enemyHumanoid.WalkSpeed = 9
+enemyHumanoid.JumpPower = 0
+enemyHumanoid.BreakJointsOnDeath = false
+enemyHumanoid.RequiresNeck = true
+enemyHumanoid.NameDisplayDistance = 55
+enemyHumanoid.HealthDisplayDistance = 55
+enemyHumanoid.Parent = enemy
+enemy.PrimaryPart = enemyRoot
+enemyRoot:SetNetworkOwner(nil)
+CollectionService:AddTag(enemy, "GiantbackEnemy")
+
+local entranceGlow = orb(arena, "Training glade welcome light", arenaCenter + Vector3.new(0, 6.4, -21), Vector3.new(0.65, 0.65, 0.65), palette.gold, Enum.Material.Neon)
+addLight(entranceGlow, palette.gold, 12, 0.55)
 
 -- Let the gameplay bootstrap wait until the collectible models are fully decorated.
 local ready = ReplicatedStorage:FindFirstChild("GiantbackVisualsReady") or Instance.new("BoolValue")
