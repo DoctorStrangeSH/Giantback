@@ -490,7 +490,8 @@ RunService.RenderStepped:Connect(function()
         local state = enemy:GetAttribute("CombatState") or "Idle"
         local isBoss = enemy:GetAttribute("IsBoss") == true
         local isMinion = enemy:GetAttribute("ArchetypeId") == "SealMinion"
-        local moving = entry.humanoid.MoveDirection.Magnitude > 0.08
+        local horizontalVelocity = Vector3.new(entry.root.AssemblyLinearVelocity.X, 0, entry.root.AssemblyLinearVelocity.Z)
+        local moving = horizontalVelocity.Magnitude > 0.75
         local speed = isBoss and 5.2 or (isMinion and 9 or 7)
         local cycle = (now - entry.startedAt) * speed
         local swing = moving and math.sin(cycle) or 0
