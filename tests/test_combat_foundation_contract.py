@@ -133,6 +133,25 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn("GroveApproach", VISUALS)
         self.assertIn("Training stone platform", VISUALS)
 
+    def test_enemy_archetypes_use_server_clamped_per_enemy_combat_profiles(self):
+        self.assertIn('REWARD_ENCOUNTERS = { GroveGrunt01 = true, GroveScout02 = true }', COMBAT)
+        self.assertIn('AggroRange = math.clamp(tonumber(enemy:GetAttribute("AggroRange")) or ENEMY_AGGRO_RANGE, 8, 80)', COMBAT)
+        self.assertIn('AttackDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute("AttackDamage")) or ENEMY_ATTACK_DAMAGE), 1, 30)', COMBAT)
+        self.assertIn('task.wait(entry.telegraphSeconds)', COMBAT)
+        self.assertIn('local bestDistance = entry.aggroRange', COMBAT)
+        self.assertIn('elseif bestDistance > entry.attackRange then', COMBAT)
+        self.assertIn('GroveScout02 = {itemId = "SunPetal", amount = 2}', WORLD)
+
+    def test_forest_scout_has_distinct_speed_health_telegraph_and_reward(self):
+        self.assertIn('scout.Name = "GroveScout02"', VISUALS)
+        self.assertIn('scoutHumanoid.DisplayName = "Мшистый разведчик"', VISUALS)
+        self.assertIn('scoutHumanoid.MaxHealth = 65', VISUALS)
+        self.assertIn('scoutHumanoid.WalkSpeed = 14', VISUALS)
+        self.assertIn('scout:SetAttribute("TelegraphSeconds", 0.58)', VISUALS)
+        self.assertIn('scout:SetAttribute("AttackDamage", 8)', VISUALS)
+        self.assertIn('CollectionService:AddTag(scout, "GiantbackEnemy")', VISUALS)
+        self.assertIn('scoutWarningText.Text = "РЫВОК!"', VISUALS)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
