@@ -1,4 +1,4 @@
-- [~] Fox Hero: artifact #229 успешно прошёл Blender technical gate и просмотрен в четырёх ракурсах. Цвет и хвост читаются хорошо; paws уже orange, но шов на стыке лап/ног остаётся, три лобных tuft выглядят как рожки, брови тяжеловаты, переходы корпуса/лап сегментированы. Новый source pass закоммичен: forelock уменьшен, брови облегчены, paws подняты и углублены для скрытия стыка. Требуется новый render и ручная приёмка; Studio import NOT DONE.
+- [~] Fox Hero: artifact #239 успешно прошёл Blender technical gate и ручную проверку. Orange coat, глаза, мордочка и большой хвост читаются хорошо; уменьшенные forelock/brows стали аккуратнее, но лоб всё ещё имеет отдельные raised tufts, лапы остаются capsule-like с заметными cuff seams, а боковой силуэт корпуса/ног сегментирован. Нужен более органичный переход torso↔legs и встроенные лапы; не закрывать art acceptance и не импортировать до нового рендера.
 - [x] Усилить CI visual-review gate: workflow проверяет четыре ракурса/OBJ/BLEND, совпадение rig/mesh report (17 групп), непустую геометрию, zero-area/non-manifold faces/edges, UV и назначенные материалы. Source-contract + place validation #965 SUCCESS; Blender artifact после последнего цветового pass ещё ожидается.
 - [x] Soft-fur shader contract: `soft_fur`/`smooth` metadata and Sheen 0.08 are covered by tests. Current Fox Hero micro-relief is Noise scale 10, Detail 1, Bump strength 0.002/distance 0.001 (reduced after #187 manual review); next render must confirm gameplay-distance readability.
 - [x] Синхронизировать source-contract tests с текущей палитрой Fox Hero и soft-fur shader: удалены противоречивые проверки старых RGB-значений, добавлены проверки Sheen, Noise/Bump параметров и metadata surface profiles. `FOX_ART_BRIEF.md` обновлён теми же фактическими параметрами. GitHub Actions `Validate Giantback place` run #941 завершился SUCCESS (контрактные тесты, сборка place, embedded-script validation и artifact upload). Fox Hero Blender run #109 завершился SUCCESS и опубликовал review artifact (4 PNG, OBJ/MTL, BLEND, rig JSON, mesh report; artifact ID 14742851612). Артефакт проверен вручную: модель технически корректна, но художественно не принята; корректировки внесены отдельным следующим проходом.
@@ -26,14 +26,14 @@
 
 - [x] Добавить отдельный Blender 4.2 generator `tools/blender/build_moth_companion.py`; legacy `moth_companion.obj/.mtl` не перезаписываются.
 - [x] Создать четыре отдельных thickened wing mesh: upper/lower × left/right, каждому назначена UV-развёртка и отдельное имя для будущей анимации.
-- [x] Реальный Blender запуск подтвердил генерацию BLEND/OBJ и 4 PNG, но geometry gate обнаружил zero-area faces на верхнем крыле: причиной был нулевой профиль ширины у корня/кончика. Исправлен профиль с 10% минимальной шириной и добавлен regression test; новый Blender CI должен подтвердить исправление.
+- [x] Первый Blender запуск создал BLEND/OBJ и 4 PNG, но gate поймал zero-area faces на верхнем крыле. Исправлен профиль ширины с 10% minimum и добавлен regression test; последующий run #20 прошёл все geometry/UV/material gates.
 - [x] Исправлен Moth wing width profile: введён ненулевой floor 10%, чтобы корневая/концевая полосы не схлопывались в zero-area quads; добавлен regression guard. Первый render package собран, но acceptance gate корректно остановил артефакт из-за геометрии; новый run #15 ожидает перепроверки.
 - [x] Создать body/head/abdomen, antennae, moon-gold accents, moon-cyan core и согласованную lilac/rose/cyan palette.
 - [x] Зафиксировать 10 стабильных rig groups и пять планируемых состояний (idle_hover/follow/reveal_secret/ability_burst/rest); текущий JSON — контракт, не готовый Roblox rig.
 - [x] Добавить отдельный CI workflow `.github/workflows/lunar-moth-visual-review.yml`: BLEND/OBJ/MTL, rig JSON, mesh report, четыре ракурса, UV/geometry/material gates и artifact upload.
 - [x] Добавить source-contract tests `tests/test_lunar_moth_hero_workflow.py`.
-- [ ] Дождаться реального Blender run и устранить возможные геометрические/рендерные ошибки.
-- [ ] Вручную принять силуэт/материалы по четырём ракурсам; при необходимости исправить и повторить render.
+- [x] Дождаться реального Blender run #20: исправленная модель создана, zero-area/non-manifold/UV/material gates пройдены, артефакт опубликован.
+- [~] Вручную проверить четыре ракурса: геометрия чистая, но художественно отклонено — узкие острые крылья, сегментированное тело, bead-like antennae и недостаточно уникальный moon motif. Новый source pass расширяет крылья, объединяет тело и делает изогнутые усики; повторный render обязателен.
 - [ ] Импортировать в Roblox Studio; проверить масштаб, pivots, крылья, mobile readability и runtime animation.
 
 ## Следующий production-фокус — Lunar Moth
