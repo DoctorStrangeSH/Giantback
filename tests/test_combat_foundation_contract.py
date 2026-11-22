@@ -311,6 +311,18 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('TweenInfo.new(0.85, Enum.EasingStyle.Quad', CLIENT)
         self.assertIn('targetColor = phase == 2', CLIENT)
 
+    def test_enemy_health_bars_and_boss_phase_hud_are_client_side(self):
+        self.assertIn('bossHud.Name = "GiantbackBossHud"', CLIENT)
+        self.assertIn('bossPhaseLabel.Text = phase == 1 and "ФАЗА I"', CLIENT)
+        self.assertIn('local function updateBossHud(enemy)', CLIENT)
+        self.assertIn('billboard.Name = "LocalEnemyHealthBar"', CLIENT)
+        self.assertIn('billboard.MaxDistance = 90', CLIENT)
+        self.assertIn('enemy:GetAttributeChangedSignal("CombatHealth")', CLIENT)
+        self.assertIn('enemy:GetAttributeChangedSignal("CombatMaxHealth")', CLIENT)
+        self.assertIn('humanoid.HealthChanged:Connect(refresh)', CLIENT)
+        self.assertIn('CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(bindEnemyHealth)', CLIENT)
+        self.assertIn('if isBoss then updateBossHud(enemy) end', CLIENT)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
