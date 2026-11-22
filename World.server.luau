@@ -343,17 +343,37 @@ local function normalizeCompanionMutations(raw)
     return result
 end
 
-local function rollCompanionMutation(companionId)
+local function rollCompanionMutation(companionId, biomeId)
     local definitions = companionMutationDefinitions[companionId]
     if not definitions then return nil end
+
+    local eligible = {}
     local totalWeight = 0
-    for _, definition in definitions do totalWeight += definition.weight end
-    local roll = math.random(1, totalWeight)
     for _, definition in definitions do
+        if definition.biome == biomeId then
+            table.insert(eligible, definition)
+            totalWeight += definition.weight
+        end
+    end
+
+    -- Legacy profiles may be repaired outside the discovery prompt. In that
+    -- case, use the companion's own habitat rather than an unrelated biome.
+    if #eligible == 0 then
+        for _, definition in definitions do
+            if definition.biome == definitions[1].biome then
+                table.insert(eligible, definition)
+                totalWeight += definition.weight
+            end
+        end
+    end
+    if totalWeight <= 0 then return nil end
+
+    local roll = math.random(1, totalWeight)
+    for _, definition in eligible do
         roll -= definition.weight
         if roll <= 0 then return definition.id end
     end
-    return definitions[1].id
+    return eligible[1].id
 end
 
 local function ensureCompanionMutation(player, companionId)
@@ -361,7 +381,9 @@ local function ensureCompanionMutation(player, companionId)
     if not session or player:GetAttribute(companionId) ~= true then return false end
     if session.companionMutations[companionId] then return false end
 
-    session.companionMutations[companionId] = rollCompanionMutation(companionId)
+    local discoveryBiome = session.companionDiscoveryBiomes
+        and session.companionDiscoveryBiomes[companionId]
+    session.companionMutations[companionId] = rollCompanionMutation(companionId, discoveryBiome)
     local mutationId = session.companionMutations[companionId]
     local definition = mutationId and companionMutationLookup[companionId][mutationId]
     player:SetAttribute("Companion_" .. companionId .. "_Mutation", mutationId or "")
@@ -979,6 +1001,7 @@ local function init(player)
         companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth},
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
         companionMutations = normalizeCompanionMutations(nil),
+        companionDiscoveryBiomes = {},
         companionFeedReadyAt = {},
         companionPetReadyAt = {},
         companionPlayReadyAt = {},
@@ -2049,7 +2072,13 @@ local function encounter(id, island, height)
         if player:GetAttribute(id) then
             return tip(player, "Вы уже познакомились с " .. pets[id] .. ". Найти её повторно не нужно.")
         end
+        local session = sessions[player]
+        if session then
+            session.companionDiscoveryBiomes = session.companionDiscoveryBiomes or {}
+            session.companionDiscoveryBiomes[id] = island.Name
+        end
         player:SetAttribute(id,true)
+        ensureCompanionMutation(player, id)
         player:SetAttribute("Companion",id)
         tip(player,pets[id] .. " теперь с тобой!")
     end)
