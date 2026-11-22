@@ -82,7 +82,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
 
     def test_fox_hero_palette_and_layered_chest_ruff_are_present(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
-        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.105, 0.003), 0.90, soft_fur=True)', source)
+        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.065, 0.001), 0.90, soft_fur=True)', source)
         self.assertIn('"cream": material("cream", (0.92, 0.72, 0.48), 0.92, soft_fur=True)', source)
         self.assertIn('curved_plume("ChestRuffCenter"', source)
         self.assertIn('curved_plume("ChestRuffLeft"', source)
@@ -91,10 +91,10 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
 
     def test_review_lighting_preserves_fox_color_and_form_contrast(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
-        self.assertIn('("Key", (1.8, 2.8, -2.0), 250, 3.2)', source)
-        self.assertIn('("Fill", (-2.0, 1.0, -1.0), 120, 2.8)', source)
-        self.assertIn('("Rim", (0.0, 2.0, 2.8), 180, 2.4)', source)
-        self.assertIn('scene.view_settings.look = "AgX - Medium High Contrast"', source)
+        self.assertIn('("Key", (1.8, 2.8, -2.0), 175, 3.2)', source)
+        self.assertIn('("Fill", (-2.0, 1.0, -1.0), 75, 2.8)', source)
+        self.assertIn('("Rim", (0.0, 2.0, 2.8), 125, 2.4)', source)
+        self.assertIn('scene.view_settings.look = "AgX - High Contrast"', source)
 
     def test_review_cameras_use_explicit_y_up_basis_for_all_views(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
@@ -211,7 +211,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('bump.inputs["Distance"].default_value = 0.002', source)
         self.assertIn('"giantback_surface_profile"] = "soft_fur"', source)
         self.assertIn('"material_profiles": {', source)
-        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.105, 0.003), 0.90, soft_fur=True)', source)
+        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.065, 0.001), 0.90, soft_fur=True)', source)
         self.assertIn('"cream": material("cream", (0.92, 0.72, 0.48), 0.92, soft_fur=True)', source)
         self.assertIn("true single-vertex poles and clean topology", source)
         self.assertIn("verts, faces = [(cx, cy + sy, cz)], []", source)
@@ -232,8 +232,8 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('"ForeheadTuft_L", "ForeheadTuft_R"', source)
         self.assertIn('ellipsoid("CheekFluff_L"', source)
         self.assertIn('ellipsoid("CheekFluff_R"', source)
-        self.assertIn('(-0.315, 1.445, -0.955), (0.105, 0.070, 0.045)', source)
-        self.assertIn('(0.315, 1.445, -0.955), (0.105, 0.070, 0.045)', source)
+        self.assertIn('(-0.285, 1.435, -1.025), (0.072, 0.048, 0.022)', source)
+        self.assertIn('(0.285, 1.435, -1.025), (0.072, 0.048, 0.022)', source)
         self.assertIn("Rounded cream cheek pads blend into the muzzle", source)
         self.assertIn("def plush_tail(", source)
         self.assertIn('plush_tail("FoxTail"', source)
