@@ -1523,6 +1523,161 @@ for i = 1, 8 do
     rune.CanCollide = false
 end
 
+-- First compact Rootvault expedition: entrance, trapped passage, mechanism room and reward vault.
+local rootvault = Instance.new("Model")
+rootvault.Name = "RootvaultDungeon"
+rootvault.Parent = combatGlade
+local vaultFloorY = 10.8
+local function vaultRoom(name, center, size)
+    local room = Instance.new("Model")
+    room.Name = name
+    room.Parent = rootvault
+    local floor = makePart(room, name .. "Floor", Vector3.new(size.X, 2, size.Z), CFrame.new(center.X, vaultFloorY, center.Z), palette.stoneLight, Enum.Material.Slate)
+    setSolid(floor)
+    local wallHeight = 9
+    local wallY = vaultFloorY + wallHeight / 2 + 1
+    for _, side in { -1, 1 } do
+        local wall = makePart(room, name .. "SideWall", Vector3.new(1.4, wallHeight, size.Z), CFrame.new(center.X + side * (size.X / 2), wallY, center.Z), palette.stone, Enum.Material.Rock)
+        setSolid(wall)
+    end
+    local back = makePart(room, name .. "BackWall", Vector3.new(size.X, wallHeight, 1.4), CFrame.new(center.X, wallY, center.Z + size.Z / 2), palette.stone, Enum.Material.Rock)
+    setSolid(back)
+    local front = makePart(room, name .. "FrontWall", Vector3.new(size.X, wallHeight, 1.4), CFrame.new(center.X, wallY, center.Z - size.Z / 2), palette.stone, Enum.Material.Rock)
+    setSolid(front)
+    return room
+end
+
+local entryRoomCenter = Vector3.new(0, 0, 255)
+local mechanismRoomCenter = Vector3.new(0, 0, 300)
+local rewardRoomCenter = Vector3.new(0, 0, 345)
+local entryRoom = vaultRoom("RootvaultEntryRoom", entryRoomCenter, Vector3.new(28, 0, 28))
+local mechanismRoom = vaultRoom("RootvaultMechanismRoom", mechanismRoomCenter, Vector3.new(28, 0, 28))
+local rewardRoom = vaultRoom("RootvaultRewardRoom", rewardRoomCenter, Vector3.new(32, 0, 32))
+
+local passage = makePart(rootvault, "RootvaultTrapPassage", Vector3.new(13, 2, 20), CFrame.new(0, vaultFloorY, 277.5), palette.stoneLight, Enum.Material.Slate)
+setSolid(passage)
+for index, z in {270, 277.5, 285} do
+    local plate = makePart(
+        rootvault,
+        "RootvaultPressurePlate" .. index,
+        Vector3.new(8, 0.22, 1.8),
+        CFrame.new(0, vaultFloorY + 1.12, z),
+        palette.coral,
+        Enum.Material.Neon
+    )
+    plate.CanTouch = true
+    plate.CanQuery = true
+    plate:SetAttribute("TrapDamage", 10)
+    local glow = Instance.new("PointLight")
+    glow.Color = palette.coral
+    glow.Range = 7
+    glow.Brightness = 0.45
+    glow.Parent = plate
+end
+
+local vaultEntrance = makePart(
+    chamber,
+    "RootvaultEntrance",
+    Vector3.new(4.8, 5.8, 1.2),
+    CFrame.new(chamberCenter + Vector3.new(12, 3, 8)),
+    palette.lilac,
+    Enum.Material.ForceField,
+    nil,
+    0.3
+)
+vaultEntrance.CanCollide = false
+placeTrialPrompt(vaultEntrance, "Хранилище корней", "Войти")
+
+local vaultReturn = makePart(
+    entryRoom,
+    "RootvaultReturn",
+    Vector3.new(4.4, 5.5, 1.2),
+    CFrame.new(entryRoomCenter + Vector3.new(0, 3, -10)),
+    palette.moon,
+    Enum.Material.ForceField,
+    nil,
+    0.3
+)
+vaultReturn.CanCollide = false
+placeTrialPrompt(vaultReturn, "Лесная комната", "Вернуться")
+
+local leverBase = makePart(
+    mechanismRoom,
+    "RootvaultLeverBase",
+    Vector3.new(3.2, 1.1, 2.5),
+    CFrame.new(mechanismRoomCenter + Vector3.new(0, 1.55, 7)),
+    palette.bark,
+    Enum.Material.Wood
+)
+setSolid(leverBase)
+local leverHandle = makePart(
+    mechanismRoom,
+    "RootvaultLeverHandle",
+    Vector3.new(0.55, 3.2, 0.55),
+    CFrame.new(mechanismRoomCenter + Vector3.new(0, 3.4, 7)),
+    palette.gold,
+    Enum.Material.Metal
+)
+setSolid(leverHandle)
+placeTrialPrompt(leverBase, "Древний механизм", "Потянуть рычаг")
+
+local sealedDoor = makePart(
+    mechanismRoom,
+    "RootvaultSealedDoor",
+    Vector3.new(12, 8, 1.4),
+    CFrame.new(mechanismRoomCenter + Vector3.new(0, 5, 14)),
+    palette.bark,
+    Enum.Material.Slate
+)
+setSolid(sealedDoor)
+local doorPrompt = makePart(
+    mechanismRoom,
+    "RootvaultDoorPrompt",
+    Vector3.new(2.2, 2.2, 0.5),
+    CFrame.new(mechanismRoomCenter + Vector3.new(0, 2.2, 11.8)),
+    palette.gold,
+    Enum.Material.Neon,
+    nil,
+    0.65
+)
+doorPrompt.CanCollide = false
+placeTrialPrompt(doorPrompt, "Печать хранилища", "Открыть проход")
+
+local returnDoorPrompt = makePart(
+    rewardRoom,
+    "RootvaultReturnDoorPrompt",
+    Vector3.new(2.2, 2.2, 0.5),
+    CFrame.new(rewardRoomCenter + Vector3.new(0, 2.2, -14)),
+    palette.gold,
+    Enum.Material.Neon,
+    nil,
+    0.65
+)
+returnDoorPrompt.CanCollide = false
+placeTrialPrompt(returnDoorPrompt, "Проход в зал механизма", "Вернуться")
+
+local vaultChest = makePart(
+    rewardRoom,
+    "RootvaultRewardChest",
+    Vector3.new(4.5, 2.5, 3),
+    CFrame.new(rewardRoomCenter + Vector3.new(0, 1.8, 7)),
+    palette.barkLight,
+    Enum.Material.Wood
+)
+setSolid(vaultChest)
+local vaultChestGlow = orb(rootvault, "RootvaultRewardGlow", vaultChest.Position + Vector3.new(0, 2.5, 0), Vector3.new(1.2, 1.2, 1.2), palette.lilacLight, Enum.Material.Neon)
+addLight(vaultChestGlow, palette.lilacLight, 13, 0.8)
+placeTrialPrompt(vaultChest, "Сундук хранилища", "Забрать реликвию")
+
+for _, center in {entryRoomCenter, mechanismRoomCenter, rewardRoomCenter} do
+    for index = 1, 4 do
+        local x = (index % 2 == 0 and 1 or -1) * 10
+        local z = (index <= 2 and -1 or 1) * 10
+        local crystal = orb(rootvault, "RootvaultGlowCrystal", center + Vector3.new(x, 2.5, z), Vector3.new(1.1, 2.2, 1.1), palette.lilacLight, Enum.Material.Neon)
+        addLight(crystal, palette.lilacLight, 8, 0.35)
+    end
+end
+
 -- Let the gameplay bootstrap wait until the collectible models are fully decorated.
 local ready = ReplicatedStorage:FindFirstChild("GiantbackVisualsReady") or Instance.new("BoolValue")
 ready.Name = "GiantbackVisualsReady"
