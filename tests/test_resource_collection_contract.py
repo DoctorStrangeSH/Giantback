@@ -69,6 +69,15 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('session.equippedTool ~= def.requiredTool', WORLD)
         self.assertIn('event:FireServer("EquipTool", tool.id)', CLIENT)
 
+    def test_wood_and_stone_require_multiple_server_validated_hits(self):
+        self.assertEqual(WORLD.count('hitsRequired = 3'), 2)
+        self.assertEqual(WORLD.count('hitsRequired = 4'), 2)
+        self.assertIn('session.resourceHits[def.key] = hits', WORLD)
+        self.assertIn('hits < hitsRequired', WORLD)
+        self.assertIn('"ResourceHit"', WORLD)
+        self.assertIn('"ResourceHit"', CLIENT)
+        self.assertIn('node:PivotTo(origin * CFrame.new(offset))', CLIENT)
+
     def test_world_resource_yields_are_server_defined_and_positive(self):
         self.assertIn('amount = 2,', WORLD)
         self.assertIn('def.amount) or 1', WORLD)
