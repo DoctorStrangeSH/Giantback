@@ -154,6 +154,40 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('"ResourcePicked"', CLIENT)
         self.assertIn('event:FireServer("RequestResourceState")', CLIENT)
 
+    def test_tool_levels_persist_through_schema_nine_and_allow_level_three(self):
+        self.assertIn("old.schemaVersion = 9", WORLD)
+        self.assertIn("Axe = math.clamp(math.floor(tonumber(session.toolLevels.Axe) or 1), 1, 3)", WORLD)
+        self.assertIn("Pickaxe = math.clamp(math.floor(tonumber(session.toolLevels.Pickaxe) or 1), 1, 3)", WORLD)
+        self.assertIn("Axe = math.clamp(math.floor(tonumber(savedLevels.Axe) or 1), 1, 3)", WORLD)
+        self.assertIn("Pickaxe = math.clamp(math.floor(tonumber(savedLevels.Pickaxe) or 1), 1, 3)", WORLD)
+
+    def test_tier_three_requires_iron_ingots_and_consumes_recipe_server_side(self):
+        self.assertIn("[3] = {Wood = 12, Stone = 10, IronIngot = 2}", WORLD)
+        self.assertIn("[3] = {Wood = 10, Stone = 12, IronIngot = 2}", WORLD)
+        upgrade = WORLD.split('if action == "UpgradeTool" then', 1)[1].split('if action == "EquipTool" then', 1)[0]
+        self.assertIn("local nextLevel = currentLevel + 1", upgrade)
+        self.assertIn("local cost = toolUpgradeCosts[payload][nextLevel]", upgrade)
+        self.assertIn("for itemId, amount in cost do", upgrade)
+        self.assertIn("session.inventory[itemId] -= amount", upgrade)
+        self.assertIn("session.toolLevels[payload] = nextLevel", upgrade)
+        self.assertIn("if currentLevel >= 3 then", upgrade)
+
+    def test_tier_three_tool_visuals_and_harvest_speed_scale(self):
+        builder = WORLD.split("local function createHarvestTool(toolId, level)", 1)[1].split("local function findPlayerTool", 1)[0]
+        self.assertIn("1, 3", builder)
+        self.assertIn('attach("AxeCrystal"', builder)
+        self.assertIn('attach("PickaxeCrystal"', builder)
+        self.assertIn("Color3.fromRGB(113, 245, 221)", builder)
+        harvest = WORLD.split('local hitsRequired = math.clamp', 1)[1].split('if hitsRequired > 1 then', 1)[0]
+        self.assertIn("hitsRequired - (toolLevel - 1)", harvest)
+
+    def test_hud_displays_tier_three_cost_and_maximum_level(self):
+        tools = HUD.split("local function renderTools()", 1)[1].split("local function renderWorld()", 1)[0]
+        self.assertIn("Кристальный", tools)
+        self.assertIn("МАКС. УРОВЕНЬ", tools)
+        self.assertIn("IronIngot", WORLD)
+        self.assertIn("слитки ×2", tools)
+
     def test_smelter_is_persisted_in_island_buildings_and_offline_timer_is_absolute(self):
         self.assertIn('smelter = {readyAt = 0}', WORLD)
         self.assertIn('city.buildings.smelter = {', WORLD)
