@@ -32,3 +32,24 @@ Giantback keeps editable OBJ/MTL source meshes in Git. Roblox places reference u
 - Asset ownership and permissions are confirmed for the experience.
 
 Do not replace working production models with an untested import. The OBJ/MTL sources are ready, but the in-place game replacement remains pending until Roblox Studio has published MeshPart IDs.
+
+
+## Automatic staging after Studio import (Asset Pipeline 1.0)
+
+The repository includes `tools/roblox/organize_imported_assets.luau`, a Roblox Studio Command Bar helper. This **does not** import OBJ files, publish MeshPart IDs or replace current gameplay models. It only categorizes already-imported models.
+
+1. Import the six sources with Roblox Studio's 3D Importer as described above.
+2. Select the imported Model instances in Explorer (not their individual MeshPart children). Expected import names are `fox_companion`, `moth_companion`, `home_cottage`, `farm_bed`, `bridge_segment`, and `home_island`. Alternatively, set a Model's `GiantbackAssetKey` attribute to the matching source name.
+3. Copy `tools/roblox/organize_imported_assets.luau` into the Studio Command Bar. With `local APPLY = false`, it prints only a preview of placements and warnings.
+4. Inspect the plan and warnings in Output. To perform the moves, change `local APPLY = true` and run again with the same selection.
+5. Models are moved only into `AssetLibrary/Models` folders in `ReplicatedStorage` (Fox/Moth) or `ServerStorage` (buildings/environment). The script never deletes/replaces existing models.
+6. Imported models are marked `GiantbackImportStatus = NeedsStudioReview`. Review rigging, material fidelity, scale, permissions and collision, then record approved IDs in `assets/source_models/ASSET_MANIFEST.md`.
+
+The current world and follower scripts still use their existing blockout implementations. Staging a model **does not** enable it in gameplay. Switching to imported models is a separate, validated rollout after Studio acceptance.
+
+### Safety gates
+
+- Only selected `Model` instances containing at least one `MeshPart` qualify.
+- Unknown names, duplicates and occupied target names are skipped with warnings.
+- The source OBJ/MTL files and current `Workspace` / `HomeIslandTemplate` instances are not modified by the organizer.
+- Before saving/publishing the place, check all staged assets manually; rollback by undoing the move or reopening the last saved place.
