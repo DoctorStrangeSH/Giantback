@@ -373,6 +373,42 @@ local function renderPets()
     end
 end
 
+local function renderTools()
+    local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
+    local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
+    addInfo("Инструменты путешественника", "Выбирай инструмент кнопкой или через панель быстрого доступа. Для добычи нужен правильный инструмент в руках.", 78)
+    addInfo("Материалы", "🪵 Дерево: " .. tostring(wood) .. "   •   🪨 Камень: " .. tostring(stone), 58)
+    local catalog = {
+        {id = "Axe", name = "Топор путешественника", glyph = "🪓", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
+        {id = "Pickaxe", name = "Кирка путешественника", glyph = "⛏️", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
+    }
+    for _, definition in catalog do
+        local level = tonumber(player:GetAttribute("Tool_" .. definition.id .. "Level")) or 1
+        local owned = player:GetAttribute("Tool_" .. definition.id .. "Owned") == true
+        local equipped = player:GetAttribute("Tool_Equipped") == definition.id
+        local item = card(body, "Tool_" .. definition.id, 106)
+        local icon = label(item, "Icon", definition.glyph, UDim2.fromOffset(44, 48), UDim2.fromOffset(10, 22), 28, palette.gold)
+        icon.TextXAlignment = Enum.TextXAlignment.Center
+        label(item, "Name", definition.name, UDim2.new(1, -156, 0, 22), UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
+        label(item, "Details", definition.purpose .. " · уровень " .. tostring(level), UDim2.new(1, -156, 0, 25), UDim2.fromOffset(62, 33), 11, palette.muted)
+        local equip = button(item, "Equip", equipped and "В РУКАХ" or "ВЗЯТЬ", UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 8), equipped and palette.gold or palette.forest)
+        equip.TextSize = 10
+        equip.Activated:Connect(function()
+            if owned then event:FireServer("EquipTool", definition.id) end
+        end)
+        local upgradeText = level >= 2 and "МАКС. УРОВЕНЬ" or "УЛУЧШИТЬ"
+        local upgrade = button(item, "Upgrade", upgradeText, UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 52), level >= 2 and palette.muted or palette.coral)
+        upgrade.TextSize = 10
+        upgrade.Activated:Connect(function()
+            if level < 2 then
+                event:FireServer("UpgradeTool", definition.id)
+                showToast("Улучшение доступно у верстака на твоём острове: " .. definition.cost .. ".")
+            end
+        end)
+    end
+    addInfo("Как добывать", "Подойди к дереву или каменной жиле и нажимай действие несколько раз. Усиленный инструмент требует на один удар меньше.", 76)
+end
+
 local function renderWorld()
     addInfo("Твой архипелаг", "Все острова остаются на своих местах. Восемь домашних островов соединены мостами с общей Солнечной рощей.", 84)
     local bridgeHome = workspace:FindFirstChild("BridgeToGrove")
@@ -388,6 +424,7 @@ local renderers = {
     City = renderCity,
     Farm = renderFarm,
     Pets = renderPets,
+    Tools = renderTools,
     World = renderWorld,
 }
 
@@ -395,6 +432,7 @@ local panelTitles = {
     City = {"МОЙ ОСТРОВ", "Твой дом и будущий город"},
     Farm = {"МОЯ ФЕРМА", "Сажай, выращивай и собирай урожай"},
     Pets = {"МОИ ПИТОМЦЫ", "Друзья, которые помогают в приключениях"},
+    Tools = {"ИНСТРУМЕНТЫ", "Собирай ресурсы и улучшай снаряжение"},
     World = {"КАРТА МИРА", "Открывай острова и исследуй новые места"},
 }
 
@@ -423,11 +461,12 @@ local navDefinitions = {
     {id = "City", title = "ОСТРОВ", glyph = "⌂"},
     {id = "Farm", title = "ФЕРМА", glyph = "♧"},
     {id = "Pets", title = "ПИТОМЦЫ", glyph = "♡"},
+    {id = "Tools", title = "ИНСТРУМЕНТЫ", glyph = "⚒"},
     {id = "World", title = "КАРТА", glyph = "✧"},
 }
 
 for _, definition in navDefinitions do
-    local navButton = button(nav, definition.id, definition.glyph .. "\n" .. definition.title, UDim2.new(0.25, -6, 1, -12), UDim2.new(), palette.forestLight)
+    local navButton = button(nav, definition.id, definition.glyph .. "\n" .. definition.title, UDim2.new(0.2, -6, 1, -12), UDim2.new(), palette.forestLight)
     navButton.TextSize = 13
     navButton.TextYAlignment = Enum.TextYAlignment.Center
     navButton.Activated:Connect(function()
