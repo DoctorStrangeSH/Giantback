@@ -14,6 +14,11 @@ class TutorialProgressHudTests(unittest.TestCase):
         self.assertIn('{key = "Lit", title = "Пробуждение фонаря"}', HUD)
         self.assertIn('("ПУТЕШЕСТВИЕ • ШАГ " .. tostring(completed + 1) .. " ИЗ " .. tostring(total))', HUD)
         self.assertIn("objectiveGlyph.Text = completed >= total and", HUD)
+        self.assertIn('progressTrack.Name = "AdventureProgressTrack"', HUD)
+        self.assertIn('progressFill.Name = "AdventureProgressFill"', HUD)
+        self.assertIn('progressFill.Size = UDim2.fromScale(math.clamp(completed / total, 0, 1), 1)', HUD)
+        self.assertIn('progressCount.Text = tostring(completed) .. " / " .. tostring(total)', HUD)
+        self.assertIn('objective.Size = UDim2.new(1, -32, 0, 94)', HUD)
 
     def test_progress_uses_existing_server_attributes_without_client_mutation(self):
         self.assertIn('player:GetAttribute(milestone.key) == true', HUD)
