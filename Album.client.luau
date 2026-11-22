@@ -1377,8 +1377,11 @@ local function refresh()
 
         local xpValue = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. id .. "_XP")) or 0))
         local xpNeeded = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. id .. "_XPToNext")) or 0))
-        entry.level.Text = levelValue >= 5 and "УР. 5 · МАКСИМУМ"
-            or ("УР. " .. tostring(levelValue) .. " · " .. tostring(xpValue) .. "/" .. tostring(xpNeeded) .. " XP")
+        local growthStage = levelValue >= 5 and "ВЗРОСЛЫЙ"
+            or levelValue >= 3 and "ПОДРОСТОК"
+            or "МАЛЫШ"
+        entry.level.Text = levelValue >= 5 and (growthStage .. " · УР. 5")
+            or (growthStage .. " · УР. " .. tostring(levelValue) .. " · " .. tostring(xpValue) .. "/" .. tostring(xpNeeded))
         entry.xpFill.Size = UDim2.fromScale(xpNeeded > 0 and math.clamp(xpValue / xpNeeded, 0, 1) or 1, 1)
         entry.button.BackgroundColor3 = equipped and palette.surfaceLight or palette.surface
         entry.state.TextColor3 = equipped and palette.gold or owned and palette.mint or palette.muted
