@@ -157,6 +157,30 @@ def wing(name, side, upper, materials):
     return obj
 
 
+def moth_leg(name, side, start_y, end_y, material):
+    curve = bpy.data.curves.new(name + "Curve", "CURVE")
+    curve.dimensions = "3D"
+    curve.resolution_u = 12
+    curve.bevel_depth = 0.028
+    curve.bevel_resolution = 3
+    spline = curve.splines.new("BEZIER")
+    spline.bezier_points.add(2)
+    coords = [
+        (side * 0.22, start_y, -0.10),
+        (side * 0.39, (start_y + end_y) * 0.5, -0.16),
+        (side * 0.56, end_y, -0.12),
+    ]
+    for point, co in zip(spline.bezier_points, coords):
+        point.co = co
+        point.handle_left_type = "AUTO"
+        point.handle_right_type = "AUTO"
+    obj = bpy.data.objects.new(name, curve)
+    bpy.context.collection.objects.link(obj)
+    obj.data.materials.append(material)
+    foot = sphere(name + "Foot", coords[-1], (0.075, 0.045, 0.07), material, 16, 10)
+    return [obj, foot]
+
+
 def antenna(name, side, material):
     # A single curved, tapered stem with a soft club tip; no floating bead segments.
     curve = bpy.data.curves.new(name + "Curve", "CURVE")
@@ -300,10 +324,19 @@ def main():
     parts.append(sphere("MothHead",(0,1.91,-0.20),(0.40,0.37,0.34),ivory,40,28))
     
     for i in range(3):
-        parts.append(sphere(f"AbdomenBand{i}",(0,0.72+i*0.19,0.23),(0.235,0.025,0.245),gold,24,12))
+        parts.append(sphere(
+            f"AbdomenBand{i}",
+            (0,0.72+i*0.19,-0.145),
+            (0.235,0.025,0.045),
+            gold,
+            24,
+            12
+        ))
     for side,suffix in [(-1,"Left"),(1,"Right")]:
         parts.append(sphere("MothEye"+suffix,(side*0.20,1.97,-0.493),(0.075,0.095,0.035),plum,24,16))
         parts.extend(antenna("MothAntenna"+suffix,side,gold))
+        for leg_index, (start_y, end_y) in enumerate(((1.02,0.70),(0.84,0.52),(0.66,0.36))):
+            parts.extend(moth_leg("MothThoraxLeg"+suffix+str(leg_index+1),side,start_y,end_y,ivory))
     parts.append(sphere("MothGlowCore",(0,1.53,-0.34),(0.115,0.13,0.075),glow,32,20))
     wing_mats=[lilac,rose,cyan,gold]
     for side,suffix in [(-1,"Left"),(1,"Right")]:
