@@ -325,6 +325,12 @@ local function syncCompanionProgress(player)
             or progressData.bond >= 100 and "Знакомцы"
             or "Знакомство"
         player:SetAttribute("Companion_" .. id .. "_BondRank", bondRank)
+        local bondStage = progressData.bond >= 900 and 4
+            or progressData.bond >= 600 and 3
+            or progressData.bond >= 300 and 2
+            or progressData.bond >= 100 and 1
+            or 0
+        player:SetAttribute("Companion_" .. id .. "_BondStage", bondStage)
         local mood = session.companionMood and session.companionMood[id] or companionMoodDefaults[id]
         player:SetAttribute("Companion_" .. id .. "_Mood", mood)
         player:SetAttribute("Companion_" .. id .. "_Personality", session.companionPersonalities[id])
