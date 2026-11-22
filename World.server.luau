@@ -31,6 +31,8 @@ end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "MoonSeed", "StarShard"}
+local toolIds = {Axe = true, Pickaxe = true}
+local defaultTools = {Axe = true, Pickaxe = true}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCacheIdSet = {}
 for _, cacheId in foxCacheIds do
@@ -211,6 +213,14 @@ local function syncInventory(player)
     end
 end
 
+local function syncTools(player)
+    local session = sessions[player]
+    local tools = session and session.tools or {}
+    player:SetAttribute("Tool_AxeOwned", tools.Axe == true)
+    player:SetAttribute("Tool_PickaxeOwned", tools.Pickaxe == true)
+    player:SetAttribute("Tool_Equipped", session and session.equippedTool or "")
+end
+
 local function syncBridge(player)
     local session = sessions[player]
     player:SetAttribute("Bridge_HomeToGrove", session ~= nil and session.city.bridges.homeToGrove == true)
@@ -285,6 +295,11 @@ local function save(player)
             end
         end
 
+        local toolsSnapshot = {
+            Axe = session.tools.Axe == true,
+            Pickaxe = session.tools.Pickaxe == true,
+            equipped = toolIds[session.equippedTool] and session.equippedTool or "",
+        }
         local citySnapshot = normalizeCity(session.city)
         local foxScoutSnapshot = {
             activeCacheId = foxCacheIdSet[session.foxCacheActiveId] and session.foxCacheActiveId or nil,
@@ -298,7 +313,13 @@ local function save(player)
                 for _, key in progress do
                     old[key] = old[key] == true or snapshot[key]
                 end
-                old.schemaVersion = 6
+                old.schemaVersion = 7
+
+                local savedTools = type(old.tools) == "table" and old.tools or {}
+                savedTools.Axe = toolsSnapshot.Axe
+                savedTools.Pickaxe = toolsSnapshot.Pickaxe
+                savedTools.equipped = toolsSnapshot.equipped
+                old.tools = savedTools
 
                 local savedInventory = type(old.inventory) == "table" and old.inventory or {}
                 for _, key in inventoryKeys do
@@ -365,6 +386,8 @@ local function init(player)
     if sessions[player] then return end
     local session = {
         inventory = {},
+        tools = {Axe = true, Pickaxe = true},
+        equippedTool = "Axe",
         resourceCooldowns = {},
         collectedNodes = {},
         city = defaultCity(),
@@ -429,6 +452,17 @@ local function init(player)
                 end
                 session.inventory[key] = math.clamp(math.floor(amount), 0, 1000000)
             end
+            local savedTools = type(data.tools) == "table" and data.tools or {}
+            session.tools = {
+                Axe = savedTools.Axe == true or savedTools.Axe == nil,
+                Pickaxe = savedTools.Pickaxe == true or savedTools.Pickaxe == nil,
+            }
+            local savedEquippedTool = savedTools.equipped
+            if toolIds[savedEquippedTool] and session.tools[savedEquippedTool] then
+                session.equippedTool = savedEquippedTool
+            else
+                session.equippedTool = "Axe"
+            end
             session.city = normalizeCity(type(data.island) == "table" and data.island or data.city)
 
             local savedCooldowns = type(data.resourceCooldowns) == "table" and data.resourceCooldowns or {}
@@ -465,6 +499,7 @@ local function init(player)
     end
 
     syncInventory(player)
+    syncTools(player)
     syncFarm(player)
     syncBridge(player)
     syncFoxScout(player)
@@ -696,6 +731,21 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "CollectFoxCache" then
         collectFoxCache(player, payload)
+        return
+    end
+
+    if action == "EquipTool" then
+        local session = sessions[player]
+        if not session or typeof(payload) ~= "string" or not toolIds[payload] then return end
+        if session.tools[payload] ~= true then
+            return tip(player, "Этот инструмент ещё не открыт.")
+        end
+        session.equippedTool = payload
+        syncTools(player)
+        tip(player, payload == "Axe" and "Топор экипирован. Можно рубить деревья!" or "Кирка экипирована. Можно добывать камень!")
+        if session.online and not save(player) then
+            warn("Tool equip save will be retried:", player.UserId, payload)
+        end
         return
     end
 
@@ -1221,6 +1271,7 @@ local resourceDefinitions = {
     {
         key = "GroveWood01",
         amount = 2,
+        requiredTool = "Axe",
         verb = "Срубить дерево ×2",
         itemId = "Wood",
         displayName = "Лесная древесина",
@@ -1233,6 +1284,7 @@ local resourceDefinitions = {
     {
         key = "GroveWood02",
         amount = 2,
+        requiredTool = "Axe",
         verb = "Срубить дерево ×2",
         itemId = "Wood",
         displayName = "Лесная древесина",
@@ -1245,6 +1297,7 @@ local resourceDefinitions = {
     {
         key = "DuskStone01",
         amount = 2,
+        requiredTool = "Pickaxe",
         verb = "Добыть камень ×2",
         itemId = "Stone",
         displayName = "Каменная жила",
@@ -1257,6 +1310,7 @@ local resourceDefinitions = {
     {
         key = "DuskStone02",
         amount = 2,
+        requiredTool = "Pickaxe",
         verb = "Добыть камень ×2",
         itemId = "Stone",
         displayName = "Каменная жила",
@@ -1295,6 +1349,12 @@ local function spawnResource(def)
     prompt(anchor, def.displayName, def.verb or "Собрать", function(player)
         local session = sessions[player]
         if not session or not player:GetAttribute("Ready") then return end
+
+        if def.requiredTool and session.equippedTool ~= def.requiredTool then
+            return tip(player, def.requiredTool == "Axe"
+                and "Для дерева нужен экипированный топор. Открой вкладку «Инструменты»."
+                or "Для камня нужна экипированная кирка. Открой вкладку «Инструменты».")
+        end
 
         local now = os.time()
         local nextReadyAt
