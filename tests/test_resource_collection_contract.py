@@ -88,6 +88,12 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('toolSwingGeneration', CLIENT)
         self.assertIn('ColorSequence.new(Color3.fromRGB(183, 133, 83)', CLIENT)
         self.assertIn('ColorSequence.new(Color3.fromRGB(151, 164, 169)', CLIENT)
+        self.assertIn('local function ensureHarvestDamageOverlay', CLIENT)
+        self.assertIn('Instance.new("SurfaceGui")', CLIENT)
+        self.assertIn('"LocalHarvestCracks"', CLIENT)
+        self.assertIn('local function playResourceBreakFeedback', CLIENT)
+        self.assertIn('emitter:Emit(20)', CLIENT)
+        self.assertIn('playResourceBreakFeedback(payload.nodeId)', CLIENT)
 
     def test_world_resource_yields_are_server_defined_and_positive(self):
         self.assertIn('amount = 2,', WORLD)
