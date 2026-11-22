@@ -168,3 +168,9 @@ Roblox Studio acceptance remains required for sentinel navigation, pathfinding t
 The entry chamber now contains a distinct fast enemy, `RootvaultStalker01` (display name Корневой охотник): 75 HP, WalkSpeed 15, 8 damage, 1.8-second attack cooldown and 0.55-second telegraph. It uses the existing server-owned pursuit, attack validation and contributor tracking. Each player who contributes to its first defeat receives one persistent `RootvaultEssence` through the same idempotent reward/save pipeline. The sentinel continues to guard the mechanism room and award the separate RootvaultKey.
 
 Studio acceptance remains required for rig animation, navigation around the arrival point, combat balance and multiplayer reward persistence.
+
+## 17. Rootvault Seal Keeper boss — staged
+
+The reward chamber now contains `RootvaultSealKeeper01`, a 360-HP boss with a server-driven three-phase progression. Phase 1 uses 14 damage / 3.1s cooldown / 1.15s telegraph. At 60% health it advances once to phase 2 (9 speed, 18 damage, 2.5s cooldown, 0.9s telegraph); at 25% it advances once to phase 3 (12 speed, 22 damage, 1.9s cooldown, 0.65s telegraph). The server changes movement and attack values from Humanoid.HealthChanged; clients cannot select or trigger phases.
+
+Each contributor receives a persistent `RootvaultSigil` on first defeat. The Rootvault chest now refuses claims until that player's own saved `RootvaultSealKeeper01` encounter is complete. This is a first boss slice using the existing telegraphed melee pattern; unique area attacks, animations, and visual phase effects remain NOT DONE pending later iterations and Studio review.
