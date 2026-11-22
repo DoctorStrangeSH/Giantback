@@ -364,6 +364,18 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('ContextActionService:BindAction(', CLIENT)
 
 
+
+    def test_enemy_procedural_animation_normalizes_r6_and_r15_joint_names(self):
+        self.assertIn('string.gsub(descendant.Name, "%s+", "")', CLIENT)
+        self.assertIn("joints.rightshoulder", CLIENT)
+        self.assertIn("joints.leftshoulder", CLIENT)
+        self.assertIn("joints.righthip", CLIENT)
+        self.assertIn("joints.lefthip", CLIENT)
+        self.assertIn("joints.rootjoint", CLIENT)
+        self.assertIn("joints.neck", CLIENT)
+        self.assertIn("R6 joint names contain spaces", CLIENT)
+        self.assertIn("R15 names do not", CLIENT)
+
     def test_combat_reward_retries_transient_persistence_failures(self):
         self.assertIn("for attempt = 1, 5 do", COMBAT)
         self.assertIn("rewardFunction:Invoke(contributor, entry.encounterId)", COMBAT)
