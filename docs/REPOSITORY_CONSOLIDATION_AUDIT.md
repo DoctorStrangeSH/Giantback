@@ -178,3 +178,30 @@ PR #7 remains Draft because the following cannot be proven by source contracts o
 - Authored animation clips, final boss transformation, impact audio and final balance.
 
 Keep `feat/cozy-world-visual-pass` as canonical baseline and PR #7 as its linear integration candidate. Do not merge to `main` or mark PR ready until Studio acceptance is recorded. No branch was deleted and no history was rewritten.
+
+
+## Follow-up verification — 2026-11-22 (reward hardening + branch matrix)
+
+### Combat reward reliability
+
+- Added bounded retry (up to five attempts with exponential backoff) around the server-owned reward callback.
+- The profile reward callback now treats an already-persisted encounter completion as successful idempotent delivery; failed saves still roll back the in-session grant and allow retry.
+- Added two contract tests for retry/backoff/disconnect handling and duplicate-delivery semantics.
+- Updated `ROADMAP.md` and `docs/COMBAT_SYSTEM_1.0.md` to describe the full staged C1/Rootvault scope and remaining Studio gates.
+- The last confirmed CI result remains run `45021490760` on the earlier 222-test head. The two new tests and subsequent documentation/code commits have not yet been confirmed by a fresh Actions run; do not report the current head as CI-green.
+
+### Current branch comparison
+
+Compared each remaining branch against `feat/cozy-world-visual-pass` after the latest PR #7 commits:
+
+| Branch | Ahead | Behind | Handling |
+|---|---:|---:|---|
+| `feat/combat-c0-contract` | 179 | 0 | Active linear PR #7 integration candidate |
+| `feat/harvesting-feedback-on-latest` | 7 | 12 | Superseded recovery branch; do not merge wholesale |
+| `feat/world-resource-harvesting` | 68 | 209 | Historical source; do not merge wholesale |
+| `integration/giantback-consolidation` | 4 | 49 | Historical integration snapshot |
+| `integration/harvesting-on-cozy-world` | 9 | 143 | Historical integration snapshot |
+| `integration/harvesting-on-cozy-world-v2` | 74 | 136 | Archive/recovery source for selective migration only |
+| `main` | 4 | 756 | Release branch; not a safe target for syncing this development line |
+
+The PR #7 head is now 179 commits ahead and zero behind the canonical development base, so it remains a fast-forward integration candidate. The six other refs are divergent and must not be merged or deleted before their unique content is explicitly inventoried. No branch deletion capability is exposed in the connected GitHub actions used here; no branch was deleted and no history was rewritten.
