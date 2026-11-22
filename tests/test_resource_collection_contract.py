@@ -32,7 +32,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("for nodeId, collected in savedCollected do", WORLD)
 
     def test_profile_schema_and_migration_compatible_fields(self):
-        self.assertIn("old.schemaVersion = 9", WORLD)
+        self.assertIn("old.schemaVersion = 10", WORLD)
         self.assertIn("data.resourceCooldowns", WORLD)
         self.assertIn("data.collectedNodes", WORLD)
 
@@ -41,7 +41,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('Axe = math.clamp(math.floor(tonumber(savedLevels.Axe) or 1), 1, 3)', WORLD)
         self.assertIn('Pickaxe = math.clamp(math.floor(tonumber(savedLevels.Pickaxe) or 1), 1, 3)', WORLD)
         self.assertIn('savedTools.levels = toolsSnapshot.levels', WORLD)
-        self.assertIn('old.schemaVersion = 9', WORLD)
+        self.assertIn('old.schemaVersion = 10', WORLD)
 
     def test_workshop_upgrade_is_server_validated_and_charged_once(self):
         upgrade = WORLD.split('if action == "UpgradeTool" then', 1)[1].split('if action == "EquipTool" then', 1)[0]
@@ -67,6 +67,36 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("Enum.Material.Leather", tools)
         self.assertIn("Enum.Material.Neon", tools)
         self.assertIn("level >= 2", tools)
+
+    def test_iron_sword_recipe_is_server_validated_and_saved(self):
+        self.assertIn("Sword = true", WORLD)
+        self.assertIn("Wood = 8, Stone = 4, IronIngot = 3", WORLD)
+        craft = WORLD.split('if action == "CraftSword" then', 1)[1].split('if action == "UpgradeTool" then', 1)[0]
+        self.assertIn("session.tools.Sword", craft)
+        self.assertIn('session.cityModel and session.cityModel:FindFirstChild("Workshop")', craft)
+        self.assertIn('(root.Position - anchor.Position).Magnitude > 14', craft)
+        self.assertIn("session.inventory[itemId] -= amount", craft)
+        self.assertIn('session.equippedTool = "Sword"', craft)
+        self.assertIn("savedTools.Sword = toolsSnapshot.Sword", WORLD)
+        self.assertIn('player:SetAttribute("Tool_SwordOwned"', WORLD)
+
+    def test_sword_is_a_real_tool_with_owner_checked_training_combat(self):
+        sword = WORLD.split('if isSword then', 1)[1].split('return tool', 1)[0]
+        self.assertIn('attach("SwordBlade"', sword)
+        self.assertIn('attach("SwordGuard"', sword)
+        self.assertIn("tool.Activated:Connect", sword)
+        self.assertIn("humanoid:TakeDamage(20)", sword)
+        self.assertIn('dummy:GetAttribute("OwnerUserId") ~= player.UserId', sword)
+        self.assertIn("session.combatReadyAt = now + 0.8", sword)
+        self.assertIn("humanoid.Health = humanoid.MaxHealth", sword)
+        self.assertIn('(root.Position - dummyRoot.Position).Magnitude > 10', sword)
+
+    def test_hud_exposes_forge_crafting_and_training_dummy_health(self):
+        tools = HUD.split("local function renderTools()", 1)[1].split("local function renderWorld()", 1)[0]
+        self.assertIn("ВЫКОВАТЬ МЕЧ", tools)
+        self.assertIn("CraftSword", tools)
+        self.assertIn("Тренировочный манекен", tools)
+        self.assertIn("payload.health", HUD)
 
     def test_selected_tool_is_actually_equipped_and_restored_after_respawn(self):
         sync_tools = WORLD.split("local function syncTools(player)", 1)[1].split("local function syncBridge(player)", 1)[0]
@@ -155,7 +185,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("RequestResourceState")', CLIENT)
 
     def test_tool_levels_persist_through_schema_nine_and_allow_level_three(self):
-        self.assertIn("old.schemaVersion = 9", WORLD)
+        self.assertIn("old.schemaVersion = 10", WORLD)
         self.assertIn("Axe = math.clamp(math.floor(tonumber(session.toolLevels.Axe) or 1), 1, 3)", WORLD)
         self.assertIn("Pickaxe = math.clamp(math.floor(tonumber(session.toolLevels.Pickaxe) or 1), 1, 3)", WORLD)
         self.assertIn("Axe = math.clamp(math.floor(tonumber(savedLevels.Axe) or 1), 1, 3)", WORLD)
