@@ -209,3 +209,10 @@ Tagged custom enemy rigs now receive a lightweight local animation layer driven 
 The C1 reward resolver now retries a failed profile reward callback up to five times with exponential backoff (0.75s, 1.5s, 3s, 6s). The profile callback treats an encounter already present in the persisted completion ledger as successful idempotent delivery. A failed save still rolls back the in-session inventory and completion flag before returning failure, so a later retry can safely attempt the grant again.
 
 Contract tests cover retry count/backoff, disconnect cancellation, duplicate delivery success, and rollback markers. These source-contract checks do not prove DataStore reliability under live Roblox throttling; Studio acceptance must still exercise first-clear rewards, reconnects, and transient save failures.
+
+
+## 25. R6/R15 procedural rig joint compatibility
+
+The client procedural pose layer now normalizes Motor6D names by lowercasing and removing whitespace. This maps both classic R6 names such as `Right Shoulder` and R15 names such as `RightShoulder` to the same canonical joint keys. The same normalization is used for shoulders, hips, neck and root joint.
+
+A contract test checks the normalized mapping and the generated-place workflow now verifies that the compatibility markers are embedded in the published client script. This is source/build validation only: Roblox Studio acceptance must still confirm the actual joint orientations and pose quality on representative R6 and R15 enemy rigs.
