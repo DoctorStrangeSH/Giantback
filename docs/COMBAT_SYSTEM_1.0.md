@@ -1,6 +1,6 @@
 # Giantback — Combat System 1.0
 
-**Status:** C0 implemented; C1–C4 remain planned.  
+**Status:** C0 contract and C1 server combat loop implemented; Studio acceptance and enemy/arena setup remain NOT DONE; C2–C4 planned.  
 **Owner:** gameplay/server systems.  
 **Scope:** first reliable combat loop for the 1.0 adventure release.
 
@@ -119,3 +119,15 @@ Automated contract coverage lives in `tests/test_combat_foundation_contract.py`.
 ### C0 security hardening
 
 The server callback now captures all RemoteEvent trailing arguments with varargs and rejects any nonzero argument count. This also rejects an explicitly supplied `nil` and arguments beyond the former third parameter; checking only a single optional payload parameter would silently ignore later arguments.
+
+
+## 11. C1 server implementation record
+
+Implemented in `Combat.server.luau`:
+- Server-tagged combat volumes (`GiantbackCombatRegion`) with allow-listed `RegionId` values; the player must physically be inside the volume.
+- Server-tagged enemy Models (`GiantbackEnemy`) must contain a Humanoid and HumanoidRootPart and declare an allow-listed `EncounterId` and `RegionId`.
+- Server-owned sword hitbox, range, facing check, damage and attack cooldown. Client requests contain only the action name.
+- Enemy AI loop with idle/approach/telegraph/recover states, a telegraphed melee attack, and server-side range revalidation before damage.
+- Server-held block state reduces only frontal enemy damage; server-timed dodge grants a short invulnerability window and bounded impulse.
+- Enemy death resolves the reward through the profile-owned BindableFunction. The profile stores completed encounter IDs and inventory rewards idempotently (schema v10); failed profile saves roll back the in-session grant.
+- This code does not create the arena or enemy model. Studio setup must add one tagged training volume and one tagged enemy model for `GroveGrunt01`. No C1 release acceptance is claimed until this is configured and multiplayer-tested.
