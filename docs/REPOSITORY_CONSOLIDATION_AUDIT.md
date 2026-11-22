@@ -141,3 +141,40 @@ A code review found that the original callback accepted only a single named opti
 - Added PC, gamepad and touch input bindings through `Combat.client.luau`.
 - Added profile schema v10 idempotent reward ledger for `GroveGrunt01`.
 - CI is being rerun. Studio still needs one tagged combat region and one tagged enemy rig before gameplay acceptance.
+
+
+## PR #7 follow-up — C1 and Rootvault checkpoint (2026-11-22)
+
+This section supersedes the earlier PR #7/C1 status above.
+
+### Git ancestry verified
+
+GitHub compare confirms `feat/combat-c0-contract` is a strict fast-forward descendant of `feat/cozy-world-visual-pass`:
+
+- Canonical base SHA: `865c93ef84f1d59f2a808b81ee76b0ae883235bb`.
+- PR head SHA validated by Actions: `14b8b8585f0d06600d0269696bf508e3e2a241f1`.
+- 173 commits ahead, 0 behind; merge base equals canonical base.
+- Therefore PR #7 does not require cherry-picking or history reconciliation before merge. The previous description of this branch as stale/diverged was incorrect for this exact current ref comparison.
+
+### Current PR #7 scope
+
+The PR now contains the C1 combat loop, generated Grove training glade and enemy archetypes, per-contributor first-clear rewards, Forest Trial rune puzzle, Rootvault traversal/key gate, three Rootvault enemies and Seal Keeper three-phase boss with ground slam and minion activation. It also includes client-side combat input, feedback, enemy health display and procedural pose/VFX layers.
+
+### Latest automated validation
+
+- GitHub Actions run `45021490760` completed successfully.
+- Job `build-and-validate`: all steps completed with conclusion `success`.
+- PR description records 222 Python contract tests passing, Roblox place generation passing, and generated-place validation passing (71 named instances, 6 embedded scripts).
+- Artifact `Giantback-visual-build` exists, is not expired, and is associated with head SHA `14b8b8585f0d06600d0269696bf508e3e2a241f1`.
+
+### Remaining release gates
+
+PR #7 remains Draft because the following cannot be proven by source contracts or generated-place CI:
+
+- Roblox Studio playtest of the generated training glade, all NPC navigation and hitbox alignment.
+- Co-op reward isolation and DataStore persistence through reconnects.
+- Rootvault room traversal, pressure traps, lever/door state, key/sigil/chest progression.
+- Boss phase transitions, ground slam warning, minion activation and health UI on PC/mobile/gamepad.
+- Authored animation clips, final boss transformation, impact audio and final balance.
+
+Keep `feat/cozy-world-visual-pass` as canonical baseline and PR #7 as its linear integration candidate. Do not merge to `main` or mark PR ready until Studio acceptance is recorded. No branch was deleted and no history was rewritten.
