@@ -1804,10 +1804,11 @@ local function companionTemplate(id)
     if imported:GetAttribute("GiantbackAssetKey") ~= (id == "Fox" and "fox_companion" or "moth_companion") then
         return fallback
     end
-    local body = imported:FindFirstChild("Body", true)
+    -- The current CFrame animator resolves Body as a direct child of the model.
+    local body = imported:FindFirstChild("Body")
     if not body or not body:IsA("MeshPart") then return fallback end
     local movingPartName = id == "Fox" and "Tail" or "Wing"
-    local movingPart = imported:FindFirstChild(movingPartName, true)
+    local movingPart = imported:FindFirstChild(movingPartName)
     if not movingPart or not movingPart:IsA("MeshPart") then return fallback end
 
     return imported
