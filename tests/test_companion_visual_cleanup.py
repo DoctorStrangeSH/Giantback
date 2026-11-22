@@ -4,6 +4,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 CLIENT = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 RESOLVER = (ROOT / "modules/CompanionTemplateResolver.luau").read_text(encoding="utf-8")
 
 
@@ -22,7 +23,7 @@ class CompanionVisualCleanupTests(unittest.TestCase):
     def test_imported_rig_needs_direct_meshparts_as_runtime_animator_does(self):
         self.assertIn('model:FindFirstChild(name)', RESOLVER)
         self.assertNotIn('FindFirstChild(name, true)', RESOLVER)
-        self.assertIn('local body = model:FindFirstChild("Body")', CLIENT)
+        self.assertIn('local body = model:FindFirstChild("Body")', ANIMATION)
         self.assertIn('CompanionTemplateResolver.resolve(storage, id)', CLIENT)
 
 
