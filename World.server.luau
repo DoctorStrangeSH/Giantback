@@ -309,10 +309,82 @@ local function setCompanionMood(player, companionId, mood)
     player:SetAttribute("Companion_" .. companionId .. "_Mood", mood)
 end
 
+local companionMutationDefinitions = {
+    Fox = {
+        {id = "Mossback", name = "Мшистый", rarity = "Необычный", weight = 70},
+        {id = "Sunblessed", name = "Солнечный", rarity = "Редкий", weight = 24},
+        {id = "Prismtail", name = "Призматический", rarity = "Эпический", weight = 6},
+    },
+    Moth = {
+        {id = "Moonveil", name = "Лунная вуаль", rarity = "Необычный", weight = 70},
+        {id = "Stardust", name = "Звёздная пыль", rarity = "Редкий", weight = 24},
+        {id = "Aurora", name = "Аврора", rarity = "Эпический", weight = 6},
+    },
+}
+
+local companionMutationLookup = {}
+for companionId, definitions in companionMutationDefinitions do
+    companionMutationLookup[companionId] = {}
+    for _, definition in definitions do
+        companionMutationLookup[companionId][definition.id] = definition
+    end
+end
+
+local function normalizeCompanionMutations(raw)
+    raw = type(raw) == "table" and raw or {}
+    local result = {}
+    for _, id in COMPANION_IDS do
+        local saved = raw[id]
+        local definition = type(saved) == "string" and companionMutationLookup[id][saved] or nil
+        result[id] = definition and definition.id or nil
+    end
+    return result
+end
+
+local function rollCompanionMutation(companionId)
+    local definitions = companionMutationDefinitions[companionId]
+    if not definitions then return nil end
+    local totalWeight = 0
+    for _, definition in definitions do totalWeight += definition.weight end
+    local roll = math.random(1, totalWeight)
+    for _, definition in definitions do
+        roll -= definition.weight
+        if roll <= 0 then return definition.id end
+    end
+    return definitions[1].id
+end
+
+local function ensureCompanionMutation(player, companionId)
+    local session = sessions[player]
+    if not session or player:GetAttribute(companionId) ~= true then return false end
+    if session.companionMutations[companionId] then return false end
+
+    session.companionMutations[companionId] = rollCompanionMutation(companionId)
+    local mutationId = session.companionMutations[companionId]
+    local definition = mutationId and companionMutationLookup[companionId][mutationId]
+    player:SetAttribute("Companion_" .. companionId .. "_Mutation", mutationId or "")
+    player:SetAttribute("Companion_" .. companionId .. "_MutationName", definition and definition.name or "")
+    player:SetAttribute("Companion_" .. companionId .. "_MutationRarity", definition and definition.rarity or "")
+    if session.online then
+        task.defer(function()
+            if sessions[player] == session and player.Parent and not save(player) then
+                warn("Companion mutation save will be retried:", player.UserId, companionId)
+            end
+        end)
+    end
+    return true
+end
+
 local function syncCompanionProgress(player)
     local session = sessions[player]
     if not session then return end
     for _, id in COMPANION_IDS do
+        ensureCompanionMutation(player, id)
+        local mutationId = session.companionMutations[id]
+        local mutationDefinition = mutationId and companionMutationLookup[id][mutationId]
+        player:SetAttribute("Companion_" .. id .. "_Mutation", mutationId or "")
+        player:SetAttribute("Companion_" .. id .. "_MutationName", mutationDefinition and mutationDefinition.name or "")
+        player:SetAttribute("Companion_" .. id .. "_MutationRarity", mutationDefinition and mutationDefinition.rarity or "")
         local progressData = session.companionProgress[id]
         player:SetAttribute("Companion_" .. id .. "_Level", progressData.level)
         player:SetAttribute("Companion_" .. id .. "_XP", progressData.xp)
@@ -839,6 +911,7 @@ save = function(player)
                 for _, companionId in COMPANION_IDS do
                     local savedCompanion = companionProgressSnapshot[companionId]
                     savedCompanion.personality = session.companionPersonalities[companionId]
+                    savedCompanion.mutation = session.companionMutations[companionId]
                     savedCompanions[companionId] = savedCompanion
                 end
                 old.companions = savedCompanions
@@ -901,6 +974,7 @@ local function init(player)
         companionProgress = normalizeCompanionProgress(nil),
         companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth},
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
+        companionMutations = normalizeCompanionMutations(nil),
         companionFeedReadyAt = {},
         companionPetReadyAt = {},
         companionPlayReadyAt = {},
@@ -1035,6 +1109,12 @@ local function init(player)
                 savedPersonalities[id] = saved.personality
             end
             session.companionPersonalities = normalizeCompanionPersonalities(savedPersonalities, player.UserId)
+            local savedMutations = {}
+            for _, id in COMPANION_IDS do
+                local saved = type(savedCompanions[id]) == "table" and savedCompanions[id] or {}
+                savedMutations[id] = saved.mutation
+            end
+            session.companionMutations = normalizeCompanionMutations(savedMutations)
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     else
