@@ -238,41 +238,58 @@ end
 
 local function createHarvestTool(toolId, level)
     level = math.clamp(math.floor(tonumber(level) or 1), 1, 2)
+    local isAxe = toolId == "Axe"
     local tool = Instance.new("Tool")
-    tool.Name = toolId == "Axe" and "Топор путешественника" or "Кирка путешественника"
-    tool.ToolTip = level >= 2 and "Усиленный инструмент: добыча быстрее" or (toolId == "Axe" and "Нужен для добычи дерева" or "Нужна для добычи камня")
+    tool.Name = isAxe and "Топор путешественника" or "Кирка путешественника"
+    tool.ToolTip = level >= 2 and "Усиленный инструмент: добыча быстрее" or (isAxe and "Нужен для добычи дерева" or "Нужна для добычи камня")
     tool.RequiresHandle = true
     tool.CanBeDropped = false
     tool:SetAttribute("PetKingdomsToolId", toolId)
     tool:SetAttribute("PetKingdomsToolLevel", level)
 
-    local handle = createToolPart(tool, "Handle", Vector3.new(0.28, 0.28, 2.5), CFrame.new(), Color3.fromRGB(132, 91, 57), Enum.Material.Wood, Enum.PartType.Cylinder)
+    local wood = Color3.fromRGB(132, 91, 57)
+    local darkWood = Color3.fromRGB(83, 58, 43)
+    local iron = level >= 2 and Color3.fromRGB(218, 169, 83) or Color3.fromRGB(166, 181, 184)
+    local edgeColor = level >= 2 and Color3.fromRGB(255, 218, 132) or Color3.fromRGB(220, 225, 216)
+    local accent = level >= 2 and Color3.fromRGB(119, 220, 190) or Color3.fromRGB(112, 130, 128)
+    local handle = createToolPart(tool, "Handle", Vector3.new(0.28, 0.28, 2.5), CFrame.new(), wood, Enum.Material.Wood, Enum.PartType.Cylinder)
     handle.CFrame = CFrame.new() * CFrame.Angles(0, 0, math.rad(90))
 
-    if toolId == "Axe" then
-        local blade = createToolPart(tool, "AxeHead", Vector3.new(0.32, 1.0, 0.9), CFrame.new(0, 0.85, -0.05), level >= 2 and Color3.fromRGB(218, 169, 83) or Color3.fromRGB(178, 190, 190), Enum.Material.Metal)
-        local edge = createToolPart(tool, "AxeEdge", Vector3.new(0.12, 0.82, 0.72), CFrame.new(0, 0.87, -0.52), level >= 2 and Color3.fromRGB(255, 218, 132) or Color3.fromRGB(220, 225, 216), Enum.Material.Metal)
-        for _, part in {blade, edge} do
-            local weld = Instance.new("WeldConstraint")
-            weld.Part0 = handle
-            weld.Part1 = part
-            weld.Parent = handle
+    local function attach(name, size, offset, color, material, shape)
+        local part = createToolPart(tool, name, size, offset, color, material, shape)
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = handle
+        weld.Part1 = part
+        weld.Parent = handle
+        return part
+    end
+
+    -- Shared leather grip and ferrules make both starter tools readable as crafted equipment.
+    attach("GripLowerWrap", Vector3.new(0.34, 0.34, 0.18), CFrame.new(0, -0.78, 0) * CFrame.Angles(0, 0, math.rad(90)), darkWood, Enum.Material.Leather, Enum.PartType.Cylinder)
+    attach("GripUpperWrap", Vector3.new(0.34, 0.34, 0.16), CFrame.new(0, -0.48, 0) * CFrame.Angles(0, 0, math.rad(90)), darkWood, Enum.Material.Leather, Enum.PartType.Cylinder)
+    attach("HandleFerrule", Vector3.new(0.36, 0.36, 0.12), CFrame.new(0, 0.42, 0) * CFrame.Angles(0, 0, math.rad(90)), iron, Enum.Material.Metal, Enum.PartType.Cylinder)
+
+    if isAxe then
+        attach("AxeHead", Vector3.new(0.32, 1.0, 0.9), CFrame.new(0, 0.85, -0.05), iron, Enum.Material.Metal)
+        attach("AxeEdge", Vector3.new(0.12, 0.82, 0.72), CFrame.new(0, 0.87, -0.52), edgeColor, Enum.Material.Metal)
+        attach("AxeSocket", Vector3.new(0.39, 0.42, 0.32), CFrame.new(0, 0.82, 0.34), level >= 2 and Color3.fromRGB(255, 218, 132) or darkWood, Enum.Material.Metal)
+        if level >= 2 then
+            attach("AxeRune", Vector3.new(0.08, 0.3, 0.22), CFrame.new(0, 0.86, -0.18), accent, Enum.Material.Neon)
         end
     else
-        local head = createToolPart(tool, "PickaxeHead", Vector3.new(0.28, 0.32, 1.75), CFrame.new(0, 1.05, 0), level >= 2 and Color3.fromRGB(218, 169, 83) or Color3.fromRGB(166, 181, 184), Enum.Material.Metal)
-        local tipLeft = createToolPart(tool, "PickaxeTipLeft", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, -1.0), level >= 2 and Color3.fromRGB(255, 218, 132) or Color3.fromRGB(205, 211, 205), Enum.Material.Metal)
-        local tipRight = createToolPart(tool, "PickaxeTipRight", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, 1.0), level >= 2 and Color3.fromRGB(255, 218, 132) or Color3.fromRGB(205, 211, 205), Enum.Material.Metal)
-        for _, part in {head, tipLeft, tipRight} do
-            local weld = Instance.new("WeldConstraint")
-            weld.Part0 = handle
-            weld.Part1 = part
-            weld.Parent = handle
+        attach("PickaxeHead", Vector3.new(0.28, 0.32, 1.75), CFrame.new(0, 1.05, 0), iron, Enum.Material.Metal)
+        attach("PickaxeTipLeft", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, -1.0), edgeColor, Enum.Material.Metal)
+        attach("PickaxeTipRight", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, 1.0), edgeColor, Enum.Material.Metal)
+        attach("PickaxeSocket", Vector3.new(0.42, 0.42, 0.38), CFrame.new(0, 1.05, 0), level >= 2 and Color3.fromRGB(255, 218, 132) or darkWood, Enum.Material.Metal)
+        if level >= 2 then
+            attach("PickaxeRune", Vector3.new(0.12, 0.18, 0.24), CFrame.new(0, 1.05, 0), accent, Enum.Material.Neon)
         end
     end
 
     tool.Grip = CFrame.new(0, -0.8, -0.45) * CFrame.Angles(math.rad(-90), 0, math.rad(90))
     return tool
 end
+
 
 local function findPlayerTool(player, toolId)
     local toolName = toolId == "Axe" and "Топор путешественника" or "Кирка путешественника"
