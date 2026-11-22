@@ -6,11 +6,13 @@ on:
       - main
       - feat/cozy-world-visual-pass
       - feat/harvesting-feedback-on-latest
+      - feat/combat-c0-contract
   pull_request:
     branches:
       - main
       - integration/giantback-consolidation
       - feat/cozy-world-visual-pass
+      - feat/harvesting-feedback-on-latest
 
 permissions:
   contents: read
@@ -53,6 +55,7 @@ jobs:
               "ReplicatedStorage",
               "World",
               "WorldVisuals",
+              "Combat",
               "Album",
               "GiantbackHUD",
               "PublicSpawn",
@@ -89,6 +92,7 @@ jobs:
               "GiantbackAtmosphere",
               "QuestCard",
               "AlbumAction",
+              "CombatAction",
               "FoxEncounter",
               "LocalTransparencyModifier",
               "animateModelParts",
@@ -247,6 +251,9 @@ jobs:
               "BridgeDeck",
               "BridgeRail",
               "BridgePost",
+              "MAX_ACTIONS_PER_WINDOW = 10",
+              "CombatNotEnabled",
+              "CombatRegionRequired",
           ]
           combined = "\n".join(sources)
           missing_markers = [marker for marker in required_markers if marker not in combined]
