@@ -343,12 +343,14 @@ local function renderTools()
     for _, tool in tools do
         local equipped = player:GetAttribute("Tool_Equipped") == tool.id
         local owned = player:GetAttribute(tool.owned) == true
-        local item = card(body, tool.id .. "Card", 86)
+        local levelAttribute = tool.id == "Axe" and "Tool_AxeLevel" or "Tool_PickaxeLevel"
+        local level = math.clamp(tonumber(player:GetAttribute(levelAttribute)) or 1, 1, 2)
+        local item = card(body, tool.id .. "Card", 112)
         local icon = label(item, "Icon", tool.icon, UDim2.fromOffset(52, 52), UDim2.fromOffset(10, 16), 30, palette.ink)
         icon.TextXAlignment = Enum.TextXAlignment.Center
-        label(item, "Title", tool.title, UDim2.new(1, -160, 0, 24), UDim2.fromOffset(72, 10), 14, palette.ink, Enum.Font.GothamBold)
-        label(item, "Detail", tool.detail, UDim2.new(1, -160, 0, 38), UDim2.fromOffset(72, 36), 11, palette.muted)
-        local action = button(item, "Equip", owned and (equipped and "В РУКАХ" or "ВЗЯТЬ") or "ЗАКРЫТО", UDim2.fromOffset(106, 32), UDim2.new(1, -118, 0.5, -16), equipped and palette.gold or palette.forest)
+        label(item, "Title", tool.title .. (level >= 2 and " • Усиленный" or ""), UDim2.new(1, -160, 0, 24), UDim2.fromOffset(72, 8), 13, palette.ink, Enum.Font.GothamBold)
+        label(item, "Detail", tool.detail .. (level >= 2 and " На один удар меньше." or ""), UDim2.new(1, -160, 0, 42), UDim2.fromOffset(72, 32), 10, palette.muted)
+        local action = button(item, "Equip", owned and (equipped and "В РУКАХ" or "ВЗЯТЬ") or "ЗАКРЫТО", UDim2.fromOffset(106, 30), UDim2.new(1, -118, 0, 8), equipped and palette.gold or palette.forest)
         action.TextSize = 11
         action.TextColor3 = equipped and palette.ink or palette.white
         action.Activated:Connect(function()
@@ -366,8 +368,25 @@ local function renderTools()
                 end)
             end
         end)
+        local upgrade = button(item, "Upgrade", level >= 2 and "УЛУЧШЕН" or "УСИЛИТЬ", UDim2.fromOffset(106, 28), UDim2.new(1, -118, 0, 68), level >= 2 and palette.gold or palette.coral)
+        upgrade.TextSize = 10
+        upgrade.TextColor3 = level >= 2 and palette.ink or palette.white
+        upgrade.Activated:Connect(function()
+            if level >= 2 then
+                showToast("Инструмент уже максимального уровня.")
+            else
+                event:FireServer("UpgradeTool", tool.id)
+                task.delay(0.2, function()
+                    if activeTab == "Tools" and panel.Visible then
+                        clearBody()
+                        renderTools()
+                    end
+                end)
+            end
+        end)
     end
-    addInfo("Как работает добыча", "Подойди к дереву с топором или к каменной жиле с киркой. Каждый узел выдаёт ресурсы отдельно для твоего профиля и восстанавливается со временем.", 88)
+    addInfo("Мастерская", "Подойди к верстаку на своём острове. Усиление топора стоит дерево ×8 и камень ×6; усиление кирки — дерево ×6 и камень ×8. Улучшенный инструмент сокращает добычу на один удар.", 94)
+    addInfo("Как работает добыча", "Подойди к дереву с топором или к каменной жиле с киркой. Каждый узел выдаёт ресурсы отдельно для твоего профиля и восстанавливается со временем.", 78)
 end
 
 local function renderWorld()
@@ -551,7 +570,10 @@ local function refresh()
 end
 
 event.OnClientEvent:Connect(function(message, payload)
-    if type(message) == "string" and message ~= "ResourceState" and message ~= "ResourcePicked" then
+    if message == "OpenWorkshop" then
+        openTab("Tools")
+        showToast("Мастерская открыта. Выбери инструмент для усиления.")
+    elseif type(message) == "string" and message ~= "ResourceState" and message ~= "ResourcePicked" then
         showToast(message)
     end
 end)
