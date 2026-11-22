@@ -89,7 +89,7 @@ Decision: these four main-only commits are **functionally superseded**, not miss
 ## Latest CI status
 
 - PR #1 (reboot base): automated place validation and visual-review jobs passed; remains Draft and is not mergeable against historical `main`.
-- PR #4 is retained as a Draft V2 migration source; its automated place validation passed. Do not merge the divergent branch wholesale.
+- PR #4 is closed as an archive/migration reference; its V2 branch remains available for selective city/sword/progression migration. Do not merge the divergent branch wholesale.
 - PR #6 was closed without merging because its complete changes are included in consolidated PR #7.
 - PR #7 now targets `feat/cozy-world-visual-pass` directly and contains harvesting feedback plus Combat C0. Its automated contract tests and generated-place validation passed.
 - Roblox Studio acceptance remains outstanding for harvesting interaction and combat setup.
