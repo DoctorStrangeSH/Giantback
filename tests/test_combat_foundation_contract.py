@@ -395,6 +395,38 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('player:SetAttribute("CombatComboStep", comboStep)', COMBAT)
 
 
+
+    def test_charged_attack_is_server_timed_and_damage_is_server_calculated(self):
+        self.assertIn('action == "ChargeStart"', COMBAT)
+        self.assertIn('action == "ChargeRelease"', COMBAT)
+        self.assertIn("CHARGE_MIN_SECONDS = 0.45", COMBAT)
+        self.assertIn("CHARGE_MAX_SECONDS = 1.6", COMBAT)
+        self.assertIn("CHARGE_DAMAGE_MIN = 30", COMBAT)
+        self.assertIn("CHARGE_DAMAGE_MAX = 52", COMBAT)
+        self.assertIn("local chargeSeconds = math.clamp(now - startedAt, 0, CHARGE_MAX_SECONDS)", COMBAT)
+        self.assertIn("local chargeRatio =", COMBAT)
+        self.assertIn("entry.humanoid:TakeDamage(damage)", COMBAT)
+        self.assertIn('player:SetAttribute("CombatCharging", true)', COMBAT)
+        self.assertIn('player:SetAttribute("CombatCharging", false)', COMBAT)
+        self.assertIn('reject(player, "ChargeTooShort")', COMBAT)
+
+    def test_charge_is_canceled_on_defense_respawn_and_expiry(self):
+        self.assertIn('task.delay(4, function()', COMBAT)
+        self.assertIn('reject(player, "ChargeExpired")', COMBAT)
+        self.assertIn('if state.chargingStartedAt > 0 then', COMBAT)
+        self.assertIn('state.chargingStartedAt = 0', COMBAT)
+        self.assertIn('reject(player, "ChargeInProgress")', COMBAT)
+
+    def test_charged_attack_input_supports_keyboard_gamepad_and_touch(self):
+        self.assertIn('local function chargeAction(_, inputState)', CLIENT)
+        self.assertIn('remote:FireServer("ChargeStart")', CLIENT)
+        self.assertIn('remote:FireServer("ChargeRelease")', CLIENT)
+        self.assertIn('"GiantbackCharge"', CLIENT)
+        self.assertIn('Enum.KeyCode.R', CLIENT)
+        self.assertIn('Enum.KeyCode.ButtonX', CLIENT)
+        self.assertIn('ContextActionService:SetTitle("GiantbackCharge", "ЗАРЯД")', CLIENT)
+        self.assertIn('showFeedback("ЗАРЯЖЕННЫЙ УДАР · "', CLIENT)
+
     def test_finisher_applies_server_authoritative_enemy_knockback(self):
         self.assertIn("if isFinisher and entry.root.Parent then", COMBAT)
         self.assertIn("local resistance = entry.isBoss and 0.28 or 1", COMBAT)
