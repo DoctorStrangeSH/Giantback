@@ -10,7 +10,7 @@ BUILD = (ROOT / "build.py").read_text(encoding="utf-8")
 
 class PersonalCityFarmContractTests(unittest.TestCase):
     def test_profile_schema_v5_migrates_legacy_city_into_island(self):
-        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 6)", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 8)", WORLD)
         self.assertIn("local function defaultCity()", WORLD)
         self.assertIn("local function normalizeCity(raw)", WORLD)
         self.assertIn('normalizeCity(type(data.island) == "table" and data.island or data.city)', WORLD)
