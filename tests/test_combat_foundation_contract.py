@@ -16,8 +16,13 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('if remote and not remote:IsA("RemoteEvent") then', COMBAT)
 
     def test_client_cannot_supply_combat_payload_values(self):
-        self.assertIn("if payload ~= nil then", COMBAT)
+        self.assertIn("local function handleAction(player, action, ...)", COMBAT)
+        self.assertIn('select("#", ...) ~= 0', COMBAT)
         self.assertIn('reject(player, "UnexpectedPayload")', COMBAT)
+
+    def test_even_nil_and_extra_remote_arguments_are_rejected(self):
+        self.assertIn("select(\"#\", ...) ~= 0", COMBAT)
+        self.assertNotIn("function handleAction(player, action, payload)", COMBAT)
         self.assertNotIn("payload.damage", COMBAT.lower())
         self.assertNotIn("payload.reward", COMBAT.lower())
         self.assertNotIn("payload.target", COMBAT.lower())
