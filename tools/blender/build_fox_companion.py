@@ -68,9 +68,11 @@ def material(name, color, roughness=0.72, metallic=0.0, soft_fur=False):
 
 def make_palette():
     return {
-        "fox_orange": material("fox_orange", (0.48, 0.105, 0.018), 0.78, soft_fur=True),
-        "cream": material("cream", (0.76, 0.54, 0.30), 0.84, soft_fur=True),
-        "ear_pink": material("ear_pink", (0.58, 0.16, 0.13), 0.86),
+        # Richer storybook orange and warm ivory: the old values rendered too muted
+        # under neutral preview lighting. Keep the Fox brief's warm, restrained palette.
+        "fox_orange": material("fox_orange", (0.78, 0.12, 0.022), 0.82, soft_fur=True),
+        "cream": material("cream", (0.92, 0.73, 0.47), 0.86, soft_fur=True),
+        "ear_pink": material("ear_pink", (0.66, 0.19, 0.16), 0.88),
         "dark": material("dark", (0.08, 0.06, 0.05), 0.28),
         "white": material("white", (1.0, 0.98, 0.87), 0.22),
         "nose": material("nose", (0.12, 0.07, 0.06), 0.24),
