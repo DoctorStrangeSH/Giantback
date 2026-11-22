@@ -310,3 +310,8 @@ PROJECT_SPEC.md — источник требований версии 1.0. ROAD
 ## Harvesting 2.0 — current implementation status
 
 The current working branch now includes persistent starter Axe/Pickaxe tools, a dedicated Tools panel, a personal owner-only workbench for upgrades, and server-authoritative multi-hit gathering for forest wood and dusk stone. Tool ownership, level and selected tool are persisted under profile schema v8. The client displays per-node hit progress locally. Iron ore, smelting, combat and final tool animations remain planned and are not considered complete.
+
+
+## Ironworking 1.0 — implementation status
+
+The current working branch adds two Dusk-island iron veins requiring a Pickaxe and five hits, each yielding two IronOre with a 10-minute personal respawn. The personal island now has an owner-only furnace: 3 IronOre + 2 Wood produces one IronIngot after 60 seconds. The server persists the pending smelt and grants the ingot only when the owner returns to collect it after completion. The Tools panel displays ore, ingot and smelter status. Studio gameplay acceptance remains outstanding.
