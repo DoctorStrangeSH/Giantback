@@ -34,6 +34,7 @@ local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Strawbe
 local toolIds = {Axe = true, Pickaxe = true}
 local combatRewardDefinitions = {
     GroveGrunt01 = {itemId = "Wood", amount = 3},
+    GroveScout02 = {itemId = "SunPetal", amount = 2},
 }
 local toolUpgradeCosts = {Axe = {Wood = 8, Stone = 6}, Pickaxe = {Wood = 6, Stone = 8}}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
