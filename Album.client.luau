@@ -1642,39 +1642,6 @@ end)
 player.AttributeChanged:Connect(refresh)
 refresh()
 
-local function updateLayout()
-    local compact = gui.AbsoluteSize.X < 760
-    if compact then
-        quest.Position = UDim2.fromOffset(16, 16)
-        quest.Size = UDim2.new(1, -32, 0, 92)
-        toggle.AnchorPoint = Vector2.new(0, 0)
-        toggle.Position = UDim2.fromOffset(16, 118)
-        toggle.Size = UDim2.fromOffset(144, 48)
-        panel.AnchorPoint = Vector2.new(0, 0)
-        panel.Position = UDim2.fromOffset(16, 174)
-        panel.Size = UDim2.fromOffset(math.min(gui.AbsoluteSize.X - 32, 294), 440)
-    else
-        quest.Position = UDim2.fromOffset(20, 20)
-        quest.Size = UDim2.fromOffset(370, 104)
-        toggle.AnchorPoint = Vector2.new(1, 0)
-        toggle.Position = UDim2.new(1, -20, 0, 20)
-        toggle.Size = UDim2.fromOffset(156, 54)
-        panel.AnchorPoint = Vector2.new(1, 0)
-        panel.Position = UDim2.new(1, -20, 0, 84)
-        panel.Size = UDim2.fromOffset(294, 440)
-    end
-end
-
-gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateLayout)
-task.defer(updateLayout)
-
-task.spawn(function()
-    while gui.Parent do
-        updateRoute()
-        task.wait(0.3)
-    end
-end)
-
 -- Companion followers are local visual models. The wild encounter remains available
 -- to other players, but is hidden locally once this player has adopted that companion.
 local models = {}
