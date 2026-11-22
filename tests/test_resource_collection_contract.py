@@ -92,6 +92,28 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("local distance = (root.Position - dummyRoot.Position).Magnitude", sword)
         self.assertIn("distance > 10", sword)
 
+    def test_mossling_is_a_server_owned_enemy_with_chase_attack_reward_and_respawn(self):
+        enemy = WORLD.split("local function createMossling()", 1)[1].split("local function createHarvestTool", 1)[0]
+        self.assertIn('model:SetAttribute("GiantbackEnemy", true)', enemy)
+        self.assertIn('model:SetAttribute("EnemyId", "Mossling")', enemy)
+        self.assertIn("humanoid.MaxHealth = 80", enemy)
+        self.assertIn("closestDistance = 48", enemy)
+        self.assertIn("math.min(8 * 0.2, flat.Magnitude - 4.2)", enemy)
+        self.assertIn("now - lastAttack >= 1.8", enemy)
+        self.assertIn("targetHumanoid:TakeDamage(8)", enemy)
+        self.assertIn("session.inventory.Wood = (session.inventory.Wood or 0) + 2", enemy)
+        self.assertIn("session.inventory.SunPetal = (session.inventory.SunPetal or 0) + 1", enemy)
+        self.assertIn("task.delay(12", enemy)
+        self.assertIn("createMossling()", WORLD)
+
+    def test_sword_can_hit_wild_enemies_but_only_own_training_dummy(self):
+        sword = WORLD.split("if isSword then", 1)[1].split("return tool", 1)[0]
+        self.assertIn('dummy:GetAttribute("GiantbackEnemy") == true', sword)
+        self.assertIn('dummy:GetAttribute("GiantbackTrainingDummy") == true', sword)
+        self.assertIn('dummy:SetAttribute("LastHitUserId", player.UserId)', sword)
+        self.assertIn("distance > (isWildEnemy and 12 or 10)", sword)
+        self.assertIn("hit.Instance:IsDescendantOf(dummy)", sword)
+
     def test_training_dummy_has_live_health_bar_and_owner_safe_raycast_combat(self):
         dummy = WORLD.split("local function createTrainingDummy(session)", 1)[1].split("local function createHarvestTool", 1)[0]
         self.assertIn('billboard.Name = "HealthDisplay"', dummy)
