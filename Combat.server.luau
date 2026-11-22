@@ -21,6 +21,13 @@ local PLAYER_ATTACK_RANGE = 8
 local PLAYER_FINISHER_RANGE = 8.5
 local PLAYER_ATTACK_BOX = Vector3.new(6, 5, 5)
 local PLAYER_FINISHER_BOX = Vector3.new(7, 6, 6)
+local CHARGE_MIN_SECONDS = 0.45
+local CHARGE_MAX_SECONDS = 1.6
+local CHARGE_DAMAGE_MIN = 30
+local CHARGE_DAMAGE_MAX = 52
+local CHARGE_COOLDOWN = 1.35
+local CHARGE_ATTACK_BOX = Vector3.new(8, 6, 7)
+local CHARGE_ATTACK_RANGE = 9
 local ENEMY_AGGRO_RANGE = 34
 local ENEMY_PATH_REFRESH_SECONDS = 1.15
 local ENEMY_PATH_AGENT = {AgentRadius = 2, AgentHeight = 5, AgentCanJump = false, WaypointSpacing = 4}
@@ -80,6 +87,7 @@ local function newPlayerState()
         attackReadyAt = 0,
         comboStep = 0,
         comboExpiresAt = 0,
+        chargingStartedAt = 0,
     }
 end
 
@@ -134,6 +142,8 @@ local function clearTransientState(player)
     state.attackReadyAt = 0
     state.comboStep = 0
     state.comboExpiresAt = 0
+    state.chargingStartedAt = 0
+    player:SetAttribute("CombatCharging", false)
     player:SetAttribute("CombatComboStep", 0)
     player:SetAttribute("CombatBlocking", false)
     player:SetAttribute("CombatDodging", false)
@@ -496,6 +506,78 @@ local function performAttack(player, state, now)
     end
 end
 
+local function performChargedAttack(player, state, now)
+    local startedAt = state.chargingStartedAt
+    state.chargingStartedAt = 0
+    player:SetAttribute("CombatCharging", false)
+    if startedAt <= 0 then
+        reject(player, "ChargeNotStarted")
+        return
+    end
+    local chargeSeconds = math.clamp(now - startedAt, 0, CHARGE_MAX_SECONDS)
+    if chargeSeconds < CHARGE_MIN_SECONDS then
+        reject(player, "ChargeTooShort")
+        return
+    end
+    if now < state.attackReadyAt then
+        reject(player, "AttackCooldown")
+        return
+    end
+    if state.blocking then
+        reject(player, "CannotChargeWhileBlocking")
+        return
+    end
+
+    local _, root = getCharacterParts(player)
+    if not root then return end
+    local chargeRatio = (chargeSeconds - CHARGE_MIN_SECONDS)
+        / (CHARGE_MAX_SECONDS - CHARGE_MIN_SECONDS)
+    local damage = math.floor(CHARGE_DAMAGE_MIN
+        + (CHARGE_DAMAGE_MAX - CHARGE_DAMAGE_MIN) * chargeRatio + 0.5)
+    state.attackReadyAt = now + CHARGE_COOLDOWN
+    state.comboStep = 0
+    state.comboExpiresAt = 0
+    player:SetAttribute("CombatComboStep", 0)
+
+    local forward = root.CFrame.LookVector
+    local hitCFrame = CFrame.lookAt(root.Position + forward * 4, root.Position + forward * 5)
+    local overlap = OverlapParams.new()
+    overlap.FilterType = Enum.RaycastFilterType.Exclude
+    overlap.FilterDescendantsInstances = { player.Character }
+    local hitThisSwing = {}
+    for _, part in Workspace:GetPartBoundsInBox(hitCFrame, CHARGE_ATTACK_BOX, overlap) do
+        local enemy = isEnemyModel(part)
+        if enemy and not hitThisSwing[enemy] and isEnemyAlive(enemy) then
+            local entry = enemies[enemy]
+            if entry.regionId == getPlayerRegion(player) then
+                local offset = entry.root.Position - root.Position
+                if offset.Magnitude <= CHARGE_ATTACK_RANGE
+                    and root.CFrame.LookVector:Dot(offset.Unit) >= 0.2 then
+                    hitThisSwing[enemy] = true
+                    entry.contributors[player] = true
+                    entry.humanoid:TakeDamage(damage)
+                    if entry.root.Parent then
+                        local pushDirection = Vector3.new(forward.X, 0, forward.Z)
+                        if pushDirection.Magnitude > 0 then
+                            local resistance = entry.isBoss and 0.2 or 1
+                            local impulse = pushDirection.Unit * entry.root.AssemblyMass * 34 * resistance
+                                + Vector3.new(0, entry.root.AssemblyMass * 7 * resistance, 0)
+                            entry.root:ApplyImpulse(impulse)
+                        end
+                    end
+                    enemy:SetAttribute("CombatHealth", math.max(0, entry.humanoid.Health))
+                    remote:FireClient(player, "CombatHit", {
+                        enemyId = enemy:GetAttribute("EnemyId") or enemy.Name,
+                        charged = true,
+                        chargeRatio = chargeRatio,
+                        damage = damage,
+                    })
+                end
+            end
+        end
+    end
+end
+
 local function handleAction(player, action, ...)
     local state = playerStates[player]
     if not state then return end
@@ -516,7 +598,8 @@ local function handleAction(player, action, ...)
         sendState(player)
         return
     end
-    if action ~= "Attack" and action ~= "BlockStart" and action ~= "BlockEnd" and action ~= "Dodge" then
+    if action ~= "Attack" and action ~= "BlockStart" and action ~= "BlockEnd" and action ~= "Dodge"
+        and action ~= "ChargeStart" and action ~= "ChargeRelease" then
         reject(player, "UnknownAction")
         return
     end
@@ -527,6 +610,26 @@ local function handleAction(player, action, ...)
     if action == "BlockEnd" then
         state.blocking = false
         player:SetAttribute("CombatBlocking", false)
+        return
+    end
+    if action == "ChargeStart" then
+        if state.blocking then
+            reject(player, "CannotChargeWhileBlocking")
+            return
+        end
+        if state.chargingStartedAt > 0 then return end
+        if now < state.attackReadyAt then
+            reject(player, "AttackCooldown")
+            return
+        end
+        state.chargingStartedAt = now
+        state.comboStep = 0
+        state.comboExpiresAt = 0
+        player:SetAttribute("CombatComboStep", 0)
+        player:SetAttribute("CombatCharging", true)
+        return
+    elseif action == "ChargeRelease" then
+        performChargedAttack(player, state, now)
         return
     end
     if not getPlayerRegion(player) then
@@ -573,6 +676,7 @@ local function registerPlayer(player)
     player:SetAttribute("CombatDodging", false)
     player:SetAttribute("CombatWeaponId", "SwordShield")
     player:SetAttribute("CombatComboStep", 0)
+    player:SetAttribute("CombatCharging", false)
 
     player.CharacterAdded:Connect(function()
         clearTransientState(player)
