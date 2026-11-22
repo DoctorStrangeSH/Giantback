@@ -2709,9 +2709,9 @@ for _, runeName in crystalRuneSequence do
 end
 local crystalCache = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrottoCache")
 local crystalEchoGate = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoGate")
-local crystalEchoArrival = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoArrival")
-local crystalEchoReturn = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoReturn")
-local prismSeed = crystalGrotto and crystalGrotto:FindFirstChild("PrismSeed")
+local crystalEchoArrival = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoArrival", true)
+local crystalEchoReturn = crystalGrotto and crystalGrotto:FindFirstChild("CrystalEchoReturn", true)
+local prismSeed = crystalGrotto and crystalGrotto:FindFirstChild("PrismSeed", true)
 local crystalEchoInside = {}
 local crystalGrottoInside = {}
 local crystalRuneProgress = {}
@@ -2744,6 +2744,7 @@ if crystalReturn and crystalEntrance then
         if not session or not crystalGrottoInside[player] or not character or not root then return end
         if (root.Position - crystalReturn.Position).Magnitude > 11 then return end
         crystalGrottoInside[player] = nil
+        crystalEchoInside[player] = nil
         player:SetAttribute("InCrystalGrotto", false)
         character:PivotTo(crystalEntrance.CFrame * CFrame.new(0, 0, -7))
         tip(player, "Ты вернулся в Сумеречную долину.")
