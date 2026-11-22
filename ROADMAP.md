@@ -9,8 +9,11 @@
 - [x] Add player-facing four-crop seed selector to the Farm tab, showing seed counts, growth times and selected culture.
 - [x] Show the actual crop name and live remaining growth time on each plot card.
 - [x] Persist the selected crop in the player's island profile and restore it after rejoin.
-- [ ] Add distinct crop-specific growth meshes/stages (current visual crop remains a shared placeholder).
-- [ ] Complete Python contract suite and Roblox place validation after the latest UI/persistence changes.
+- [x] Add four distinct procedural crop silhouettes (carrot root, strawberry berries, pumpkin fruit/vine, cabbage head/leaves).
+- [x] Add five server-timestamp-driven visual growth stages with progressive scale and mature-fruit reveal.
+- [x] Persist selected crop ID inside the saved island farm profile (not only in the live session).
+- [x] Complete Python contract suite and Roblox place validation; latest Validate Giantback run #1192 passed.
+- [ ] Replace Parts-based crop blockout with polished MeshPart assets and crop-specific animation/harvest feedback.
 - [ ] Studio playtest save/rejoin, offline growth, two rapid harvest requests and all four crop types.
 
 ## Farm Plots — Readability visual pass
@@ -19,9 +22,9 @@
 - [x] Добавить три неглубокие борозды на каждую грядку, выровненные с поверхностью земли.
 - [x] Все декоративные детали создаются без коллизий, касаний и query; интерактивность остаётся на отдельном PromptAnchor.
 - [x] Добавить source-contract test для бортиков, борозд и их высоты.
-- [ ] Дождаться Validate Giantback после farm visual pass и проверить generated place.
+- [x] Generated place validation после обновления визуальных стадий прошла в CI.
 - [ ] Roblox Studio playtest: проверить посадку/сбор, prompt, рост культуры, камеру и читаемость на мобильном экране.
-- [ ] Следующий этап — отдельные визуальные стадии четырёх культур; текущая морковь остаётся временным прототипом.
+- [ ] Заменить процедурный Parts-blockout четырёх культур на авторские MeshPart-модели; текущая геометрия — рабочий прототип, не финальный арт.
 
 ## Home Island — Layered Canopy visual pass
 
