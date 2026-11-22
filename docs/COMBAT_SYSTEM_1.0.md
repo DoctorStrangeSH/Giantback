@@ -186,3 +186,7 @@ The server exposes the slam state through replicated attributes. The client now 
 At the 25% health transition, the server awakens two prebuilt dormant Seal Fragments in the Rootvault reward chamber. They are registered into the existing server combat loop only once, have 52 HP, 13 movement speed, 6 damage and a 0.55-second attack warning. The minions use a known encounter ID but are deliberately excluded from the reward allowlist: defeating them cannot grant the boss sigil or any duplicate first-clear reward. The boss records the number activated in its replicated `SummonedMinions` attribute.
 
 The dormant rigs are authored as part of the generated place; they do not pursue or attack before phase three. Studio testing is still required for their spawn clearance, rig movement, and multi-target combat balance.
+
+## 20. Client-side boss phase transformation pulse
+
+The client listens for the server-replicated `BossPhase` attribute. On phases 2 and 3 it plays a short local-only transformation cue: an occluded Highlight flash, an expanding neon floor pulse raycast-aligned to the arena floor, and a brief SealCore size/color pulse. Phase 2 uses violet; phase 3 uses ember red. The effect does not modify boss health, movement, attacks, or damage and cannot be invoked by client input. Full rig animation, persistent armor geometry changes, and audio remain NOT DONE.
