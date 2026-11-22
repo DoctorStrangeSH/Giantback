@@ -336,3 +336,61 @@ The active PR head is currently 464 commits ahead and 1 commit behind the canoni
 - [ ] Delete superseded refs through an authorized GitHub branch-delete operation. The connected GitHub actions available in this session expose no branch-delete operation; deletion has not been performed.
 - [ ] Keep PR #7 Draft until Roblox Studio multiplayer, save/rejoin, PC/mobile/gamepad and animation acceptance is complete.
 - [ ] Keep PR #1 Draft until the 1.0 release checklist is accepted.
+
+
+## Semantic recovery inventory — 2026-11-22 (live recheck)
+
+This section supersedes earlier broad statements that historical branches only differ by stale snapshots. A line-level comparison of the current active PR head with the V2 recovery branch identified gameplay slices that are **not yet present** in the active branch. Do not delete the V2 recovery ref.
+
+### Confirmed already present on active PR #7
+
+- Personal wood/stone/iron resource gathering and server-side hit limits.
+- Axe and pickaxe ownership/equipment, level-2 upgrade and workshop proximity/cost checks.
+- IronOre / IronIngot inventory registration.
+- Personal smelter interaction and persisted smelting state, including an absolute ready timestamp.
+- Current schema writer preserves monotonic profile version and writes the current tools/smelting/inventory state.
+- Existing contract coverage for tool upgrade, iron ore, smelter ownership, persistence and collection.
+- Current World.server.luau includes the harvesting feedback protocol and current combat/companion systems.
+
+### Unique V2 gameplay still absent from active PR #7
+
+Confirmed by checking current active source and test names against integration/harvesting-on-cozy-world-v2:
+
+- Craftable Sword of the Wanderer recipe and saved sword ownership/equipment.
+- Owner-checked sword combat against a training dummy, with dummy health UI and reset.
+- First wild enemy Mossling, including chase/attack, reward and respawn.
+- Third tool tier: iron-ingot recipes, level-three persistence and upgraded tool visuals/harvest speed.
+- The V2 HUD's sword crafting and training-dummy panel.
+- Additional harvest presentation work: local R6/R15 swing, camera shake toggle, material chips and distinct final-hit burst.
+- V2 has 33 resource-contract tests versus 20 in the current active file; several tests cover the systems above and older migration/equipment cases.
+
+These are not merely duplicate files. They are distinct gameplay behaviors living inside divergent versions of shared files. Do not merge the V2 branch wholesale: its World.server.luau, HUD.client.luau, Album.client.luau, schema and tests are older snapshots. Port these features selectively after reviewing their dependencies and reconciling them with current combat, save and UI architecture.
+
+### Other historical refs
+
+| Ref | Live comparison against feat/combat-c0-contract | Disposition |
+|---|---|---|
+| feat/harvesting-feedback-on-latest | 0 commits ahead; 471 behind; no file delta | Fully superseded at tree level; candidate for deletion only after backup |
+| feat/world-resource-harvesting | 68 commits ahead; 675 behind | Earlier harvesting/tool implementation; preserve only as recovery until its remaining line differences are reviewed |
+| integration/giantback-consolidation | 4 commits ahead; 515 behind | Historical Album/client and audit snapshot; do not merge wholesale |
+| integration/harvesting-on-cozy-world | 9 commits ahead; 609 behind | Earlier harvesting integration; superseded by newer V2/active implementation, but retain until reviewed |
+| integration/harvesting-on-cozy-world-v2 | 74 commits ahead; 602 behind | Recovery source for Sword, Mossling, tier-three tools and extra harvesting presentation |
+
+A recursive tree comparison found no historical-only file paths absent from the active PR head. This is not a reason to delete the branches: their unique content is embedded in changed versions of shared files.
+
+### Current PR and CI checkpoint
+
+- PR #7 remains open, Draft, targets feat/cozy-world-visual-pass, and GitHub currently reports mergeable_state=clean.
+- Current PR #7 head: 995dda91904ae7fbc34da056479504e51885bbd2.
+- Current PR #7 validation: Actions run #2047 PASS (contract tests, Roblox place build, generated-place validation and artifact upload).
+- Canonical branch validation: Actions run #2046 PASS.
+- PR #1 remains Draft and unmergeable against historical main; no release merge is authorized by this audit.
+- Eight branches remain. No branch was deleted and no history was rewritten.
+
+### Next safe engineering slice
+
+1. Keep PR #7 and the canonical branch unchanged while documenting recovery differences.
+2. Port the V2 Sword + training dummy + Mossling as a separate, reviewed gameplay slice onto the current active line. Do not copy the old World/HUD files.
+3. Port tier-three tools only after validating schema migration and iron-ingot economy against the active profile writer.
+4. Re-run all contract tests and generated-place validation after each slice.
+5. Retain all historical refs until each unique behavior has either been ported and tested or explicitly rejected.
