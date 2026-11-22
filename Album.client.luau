@@ -769,12 +769,51 @@ player:GetAttributeChangedSignal("MoonGateOpen"):Connect(updateMoonGatePuzzle)
 player:GetAttributeChangedSignal("MoonRelic"):Connect(updateMoonGatePuzzle)
 local resourceHitBars = {}
 local resourceHitEffects = {}
+local lastToolSwingAt = 0
+local toolSwingGeneration = 0
+
+local function playHarvestToolSwing(nodeId)
+    local character = player.Character
+    if not character then return end
+    local tool
+    for _, child in character:GetChildren() do
+        if child:IsA("Tool") and child:GetAttribute("PetKingdomsToolId") then
+            tool = child
+            break
+        end
+    end
+    if not tool then return end
+
+    local now = os.clock()
+    if now - lastToolSwingAt < 0.12 then return end
+    lastToolSwingAt = now
+    toolSwingGeneration += 1
+    local generation = toolSwingGeneration
+    local originalGrip = tool.Grip
+    local isWood = string.find(nodeId, "Wood", 1, true) ~= nil
+    local raise = originalGrip * CFrame.Angles(math.rad(18), 0, math.rad(isWood and 8 or -8))
+    local impact = originalGrip * CFrame.Angles(isWood and math.rad(-52) or math.rad(-68), 0, math.rad(isWood and -12 or 10))
+
+    local first = TweenService:Create(tool, TweenInfo.new(0.09, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Grip = raise})
+    local second = TweenService:Create(tool, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Grip = impact})
+    local recover = TweenService:Create(tool, TweenInfo.new(0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Grip = originalGrip})
+    first:Play()
+    first.Completed:Once(function()
+        if generation ~= toolSwingGeneration or not tool.Parent then return end
+        second:Play()
+    end)
+    second.Completed:Once(function()
+        if generation ~= toolSwingGeneration or not tool.Parent then return end
+        recover:Play()
+    end)
+end
 
 local function showResourceHitFeedback(payload)
     local nodeId = payload.nodeId
     if type(nodeId) ~= "string" then return end
     local node = findResourceNode(nodeId)
     if not node then return end
+    playHarvestToolSwing(nodeId)
 
     local anchor = node.PrimaryPart or node:FindFirstChild("PromptAnchor")
     if not anchor or not anchor:IsA("BasePart") then return end
@@ -861,7 +900,9 @@ local function showResourceHitFeedback(payload)
         emitter.Speed = NumberRange.new(2, 4)
         emitter.SpreadAngle = Vector2.new(150, 150)
         emitter.RotSpeed = NumberRange.new(-90, 90)
-        emitter.LightEmission = 0.65
+        emitter.LightEmission = 0.35
+        emitter.Color = nodeId:find("Wood") and ColorSequence.new(Color3.fromRGB(183, 133, 83), Color3.fromRGB(235, 202, 139))
+            or ColorSequence.new(Color3.fromRGB(151, 164, 169), Color3.fromRGB(220, 229, 226))
         emitter.Size = NumberSequence.new({
             NumberSequenceKeypoint.new(0, 0.18),
             NumberSequenceKeypoint.new(1, 0),
