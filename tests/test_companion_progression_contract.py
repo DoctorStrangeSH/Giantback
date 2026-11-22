@@ -33,7 +33,7 @@ class CompanionProgressionContractTests(unittest.TestCase):
 
     def test_progression_attributes_sync_to_the_collection_ui(self):
         for attribute in ("_Level", "_XP", "_XPToNext"):
-            self.assertIn('player:SetAttribute("Companion_" .. id .. "' + attribute,', WORLD)
+            self.assertIn('player:SetAttribute("Companion_" .. id .. "' + attribute + '",', WORLD)
         self.assertIn('player:GetAttribute("Companion_" .. id .. "_Level")', ALBUM)
         self.assertIn('player:GetAttribute("Companion_" .. id .. "_XP")', ALBUM)
         self.assertIn('player:GetAttribute("Companion_" .. id .. "_XPToNext")', ALBUM)
