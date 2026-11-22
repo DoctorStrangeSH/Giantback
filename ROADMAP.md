@@ -26,6 +26,7 @@
 
 - [x] Добавить отдельный Blender 4.2 generator `tools/blender/build_moth_companion.py`; legacy `moth_companion.obj/.mtl` не перезаписываются.
 - [x] Создать четыре отдельных thickened wing mesh: upper/lower × left/right, каждому назначена UV-развёртка и отдельное имя для будущей анимации.
+- [x] Реальный Blender запуск подтвердил генерацию BLEND/OBJ и 4 PNG, но geometry gate обнаружил zero-area faces на верхнем крыле: причиной был нулевой профиль ширины у корня/кончика. Исправлен профиль с 10% минимальной шириной и добавлен regression test; новый Blender CI должен подтвердить исправление.
 - [x] Создать body/head/abdomen, antennae, moon-gold accents, moon-cyan core и согласованную lilac/rose/cyan palette.
 - [x] Зафиксировать 10 стабильных rig groups и пять планируемых состояний (idle_hover/follow/reveal_secret/ability_burst/rest); текущий JSON — контракт, не готовый Roblox rig.
 - [x] Добавить отдельный CI workflow `.github/workflows/lunar-moth-visual-review.yml`: BLEND/OBJ/MTL, rig JSON, mesh report, четыре ракурса, UV/geometry/material gates и artifact upload.
