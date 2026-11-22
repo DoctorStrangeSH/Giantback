@@ -107,8 +107,8 @@ class RebootContractTests(unittest.TestCase):
         self.assertIn("Собрать", HUD)
         self.assertIn('"Farm_" .. plotId .. "_Unlocked"', HUD)
         self.assertIn('"Farm_" .. plotId .. "_ReadyAt"', HUD)
-        self.assertIn("Resource_CarrotSeed", HUD)
-        self.assertIn("Resource_Carrot", HUD)
+        self.assertIn('player:GetAttribute("Resource_" .. crop.seed)', HUD)
+        self.assertIn('player:GetAttribute("Resource_" .. crop.id)', HUD)
 
     def test_pet_screen_explains_roles_and_equipping(self):
         self.assertIn("Разведчик", HUD)
