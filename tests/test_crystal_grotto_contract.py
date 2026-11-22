@@ -73,7 +73,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('if player:GetAttribute("CrystalCache") then', WORLD)
         self.assertIn('player:SetAttribute("CrystalCache", true)', WORLD)
         self.assertIn('session.inventory.CrystalSigil = (session.inventory.CrystalSigil or 0) + 1', WORLD)
-        self.assertIn('"CrystalSigil"}', WORLD.split("local toolIds")[0])
+        self.assertIn('"CrystalSigil", "PrismSeed"}', WORLD.split("local toolIds")[0])
 
     def test_rune_puzzle_and_cache_are_real_visual_interactions(self):
         self.assertIn('name = "CrystalRuneMoon"', VISUALS)
