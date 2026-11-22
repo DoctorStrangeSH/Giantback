@@ -406,6 +406,12 @@ local function startCompanionPlay(player, companionId)
         sequence = sequence,
         symbols = companionPlaySymbols,
     })
+    task.delay(18, function()
+        local currentSession = sessions[player]
+        if currentSession and currentSession.companionPlay and currentSession.companionPlay.token == token then
+            finishCompanionPlay(player, false, "Игра закончилась по времени. Питомец будет рад сыграть с тобой позже!")
+        end
+    end)
 end
 
 local function submitCompanionPlayInput(player, payload)
