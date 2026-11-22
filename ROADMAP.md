@@ -20,10 +20,10 @@
 - [x] Include IronOre and IronIngot in the current inventory load/sync/save registry so existing V2 values are not silently omitted.
 - [x] Update contract tests for monotonic schema versions and preserved island-building payload.
 - [x] Update generated-place validation marker for the forward-compatible schema assignment.
-- [ ] Confirm the fresh Validate Giantback run after the validator update.
-- [ ] Port V2 tool ownership/equipment and server-authoritative multi-hit resource gathering.
-- [ ] Port smelter state/actions and tool upgrade/crafting systems with unified profile migration.
-- [ ] Port combat only after tool and server resource contracts are integrated and tested.
+- [x] Confirm fresh Validate Giantback run #1223 after the validator update; tests, place build, generated-place validation and artifact upload all passed.
+- [x] Port starter tool ownership/equipment and server-authoritative multi-hit wood/stone gathering.
+- [ ] Port smelter state/actions and iron ore processing; tool upgrade flow is now present, but iron crafting remains incomplete.
+- [ ] Port combat after iron/smelting integration and dedicated combat acceptance tests.
 
 ## Farming 2.0 — Four-crop server foundation
 
