@@ -5,7 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 COMBAT = (ROOT / "Combat.server.luau").read_text(encoding="utf-8")
-ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 CI = (ROOT / ".github/workflows/validate-place.yml").read_text(encoding="utf-8")
 
 
@@ -35,11 +35,11 @@ class CompanionProgressionContractTests(unittest.TestCase):
     def test_progression_attributes_sync_to_the_collection_ui(self):
         for attribute in ("_Level", "_XP", "_XPToNext"):
             self.assertIn('player:SetAttribute("Companion_" .. id .. "' + attribute + '",', WORLD)
-        self.assertIn('player:GetAttribute("Companion_" .. id .. "_Level")', ALBUM)
-        self.assertIn('player:GetAttribute("Companion_" .. id .. "_XP")', ALBUM)
-        self.assertIn('player:GetAttribute("Companion_" .. id .. "_XPToNext")', ALBUM)
-        self.assertIn('entry.xpFill.Size = UDim2.fromScale', ALBUM)
-        self.assertIn('growthStage .. " · УР. 5 · МАКСИМУМ"', ALBUM)
+        self.assertIn('player:GetAttribute("Companion_" .. pet.id .. "_Level")', HUD)
+        self.assertIn('player:GetAttribute("Companion_" .. pet.id .. "_XP")', HUD)
+        self.assertIn('player:GetAttribute("Companion_" .. pet.id .. "_XPToNext")', HUD)
+        self.assertIn('local companionXPToNext = math.max(0', HUD)
+        self.assertIn('companionLevel >= 5 and "УР. 5 · МАКСИМУМ"', HUD)
 
     def test_verified_exploration_milestones_award_the_matching_companion(self):
         self.assertIn('awardCompanionXp(player, "Fox", 30)', WORLD)
@@ -75,10 +75,10 @@ class CompanionProgressionContractTests(unittest.TestCase):
         self.assertIn("local healRadius = MOTH_HEAL_RADIUS + (companionLevel >= 5 and 4 or companionLevel >= 3 and 2 or 0)", COMBAT)
         self.assertIn("Magnitude <= healRadius", COMBAT)
         self.assertIn("healRadius = healRadius", COMBAT)
-        self.assertIn("Острый нюх: поиск каждые 60 сек.", ALBUM)
-        self.assertIn("Чуткий нюх: поиск каждые 90 сек.", ALBUM)
-        self.assertIn("Лунная аура: радиус лечения +4.", ALBUM)
-        self.assertIn("Лунная аура: радиус лечения +2.", ALBUM)
+        self.assertIn("Острый нюх: поиск каждые 60 сек.", HUD)
+        self.assertIn("Чуткий нюх: поиск каждые 90 сек.", HUD)
+        self.assertIn("Лунная аура: радиус лечения +4.", HUD)
+        self.assertIn("Лунная аура: радиус лечения +2.", HUD)
 
     def test_ci_checks_companion_progression_contract(self):
         for marker in (
