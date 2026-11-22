@@ -1540,10 +1540,7 @@ local function vaultRoom(name, center, size)
         local wall = makePart(room, name .. "SideWall", Vector3.new(1.4, wallHeight, size.Z), CFrame.new(center.X + side * (size.X / 2), wallY, center.Z), palette.stone, Enum.Material.Rock)
         setSolid(wall)
     end
-    local back = makePart(room, name .. "BackWall", Vector3.new(size.X, wallHeight, 1.4), CFrame.new(center.X, wallY, center.Z + size.Z / 2), palette.stone, Enum.Material.Rock)
-    setSolid(back)
-    local front = makePart(room, name .. "FrontWall", Vector3.new(size.X, wallHeight, 1.4), CFrame.new(center.X, wallY, center.Z - size.Z / 2), palette.stone, Enum.Material.Rock)
-    setSolid(front)
+    -- Room ends stay open; the trap passage and the sealed door provide the intended route.
     return room
 end
 
