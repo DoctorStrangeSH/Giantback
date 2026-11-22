@@ -334,6 +334,61 @@ local function renderPets()
     end
 end
 
+local function renderTools()
+    addInfo("Твои инструменты", "Базовые инструменты уже есть в рюкзаке. Выбери, чем будешь работать: для дерева нужен топор, для камня — кирка.", 76)
+    local tools = {
+        {id = "Axe", title = "Топор путешественника", icon = "🪓", detail = "Рубит деревья в Солнечной роще.", owned = "Tool_AxeOwned"},
+        {id = "Pickaxe", title = "Кирка путешественника", icon = "⛏️", detail = "Добывает камень в Лунной роще.", owned = "Tool_PickaxeOwned"},
+    }
+    for _, tool in tools do
+        local equipped = player:GetAttribute("Tool_Equipped") == tool.id
+        local owned = player:GetAttribute(tool.owned) == true
+        local levelAttribute = tool.id == "Axe" and "Tool_AxeLevel" or "Tool_PickaxeLevel"
+        local level = math.clamp(tonumber(player:GetAttribute(levelAttribute)) or 1, 1, 2)
+        local item = card(body, tool.id .. "Card", 112)
+        local icon = label(item, "Icon", tool.icon, UDim2.fromOffset(52, 52), UDim2.fromOffset(10, 16), 30, palette.ink)
+        icon.TextXAlignment = Enum.TextXAlignment.Center
+        label(item, "Title", tool.title .. (level >= 2 and " • Усиленный" or ""), UDim2.new(1, -160, 0, 24), UDim2.fromOffset(72, 8), 13, palette.ink, Enum.Font.GothamBold)
+        label(item, "Detail", tool.detail .. (level >= 2 and " На один удар меньше." or ""), UDim2.new(1, -160, 0, 42), UDim2.fromOffset(72, 32), 10, palette.muted)
+        local action = button(item, "Equip", owned and (equipped and "В РУКАХ" or "ВЗЯТЬ") or "ЗАКРЫТО", UDim2.fromOffset(106, 30), UDim2.new(1, -118, 0, 8), equipped and palette.gold or palette.forest)
+        action.TextSize = 11
+        action.TextColor3 = equipped and palette.ink or palette.white
+        action.Activated:Connect(function()
+            if not owned then
+                showToast("Этот инструмент пока недоступен.")
+            elseif equipped then
+                showToast("Этот инструмент уже экипирован.")
+            else
+                event:FireServer("EquipTool", tool.id)
+                task.delay(0.15, function()
+                    if activeTab == "Tools" and panel.Visible then
+                        clearBody()
+                        renderTools()
+                    end
+                end)
+            end
+        end)
+        local upgrade = button(item, "Upgrade", level >= 2 and "УЛУЧШЕН" or "УСИЛИТЬ", UDim2.fromOffset(106, 28), UDim2.new(1, -118, 0, 68), level >= 2 and palette.gold or palette.coral)
+        upgrade.TextSize = 10
+        upgrade.TextColor3 = level >= 2 and palette.ink or palette.white
+        upgrade.Activated:Connect(function()
+            if level >= 2 then
+                showToast("Инструмент уже максимального уровня.")
+            else
+                event:FireServer("UpgradeTool", tool.id)
+                task.delay(0.2, function()
+                    if activeTab == "Tools" and panel.Visible then
+                        clearBody()
+                        renderTools()
+                    end
+                end)
+            end
+        end)
+    end
+    addInfo("Мастерская", "Подойди к верстаку на своём острове. Усиление топора стоит дерево ×8 и камень ×6; усиление кирки — дерево ×6 и камень ×8. Улучшенный инструмент сокращает добычу на один удар.", 94)
+    addInfo("Как работает добыча", "Подойди к дереву с топором или к каменной жиле с киркой. Каждый узел выдаёт ресурсы отдельно для твоего профиля и восстанавливается со временем.", 78)
+end
+
 local function renderWorld()
     addInfo("Твой архипелаг", "Все острова остаются на своих местах. Восемь домашних островов соединены мостами с общей Солнечной рощей.", 84)
     local bridgeHome = workspace:FindFirstChild("BridgeToGrove")
@@ -350,6 +405,7 @@ local renderers = {
     Farm = renderFarm,
     Pets = renderPets,
     World = renderWorld,
+    Tools = renderTools,
 }
 
 local panelTitles = {
@@ -357,6 +413,7 @@ local panelTitles = {
     Farm = {"МОЯ ФЕРМА", "Сажай, выращивай и собирай урожай"},
     Pets = {"МОИ ПИТОМЦЫ", "Друзья, которые помогают в приключениях"},
     World = {"КАРТА МИРА", "Открывай острова и исследуй новые места"},
+    Tools = {"ИНСТРУМЕНТЫ", "Выбирай снаряжение для добычи ресурсов"},
 }
 
 local activeTab = nil
@@ -385,10 +442,11 @@ local navDefinitions = {
     {id = "Farm", title = "ФЕРМА", glyph = "♧"},
     {id = "Pets", title = "ПИТОМЦЫ", glyph = "♡"},
     {id = "World", title = "КАРТА", glyph = "✧"},
+    {id = "Tools", title = "ИНСТРУМ.", glyph = "⚒"},
 }
 
 for _, definition in navDefinitions do
-    local navButton = button(nav, definition.id, definition.glyph .. "\n" .. definition.title, UDim2.new(0.25, -6, 1, -12), UDim2.new(), palette.forestLight)
+    local navButton = button(nav, definition.id, definition.glyph .. "\n" .. definition.title, UDim2.new(0.2, -6, 1, -12), UDim2.new(), palette.forestLight)
     navButton.TextSize = 13
     navButton.TextYAlignment = Enum.TextYAlignment.Center
     navButton.Activated:Connect(function()
@@ -512,7 +570,15 @@ local function refresh()
 end
 
 event.OnClientEvent:Connect(function(message, payload)
-    if type(message) == "string" and message ~= "ResourceState" and message ~= "ResourcePicked" then
+    if message == "OpenWorkshop" then
+        openTab("Tools")
+        showToast("Мастерская открыта. Выбери инструмент для усиления.")
+    elseif message == "ToolUpgraded" then
+        if activeTab == "Tools" and panel.Visible then
+            clearBody()
+            renderTools()
+        end
+    elseif type(message) == "string" and message ~= "ResourceState" and message ~= "ResourcePicked" then
         showToast(message)
     end
 end)
