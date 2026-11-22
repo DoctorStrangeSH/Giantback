@@ -70,3 +70,43 @@ Recursive tree/blob comparison across all five branches found:
 ## Why merge/deletion was not forced
 
 Both open PRs currently report dirty merge states. The audit commit and latest cozy-world branch checks are green (#1195, #314, #95). Integration v2's own CI run #1182 is also green, but a passing branch build does not resolve its 85-commit divergence or shared-file conflicts. Integration v2 is materially behind the current cozy-world branch, and shared gameplay files diverged. Blind merging or branch deletion could discard newer farm/world work or the only copy of gameplay changes. The safe next action is a conflict-resolved integration commit followed by CI, not force-merging or deleting refs.
+
+
+## Follow-up audit — 2026-11-22 16:07 UTC+3
+
+This section supersedes the earlier branch/PR counts above where they differ. The historical findings are retained for traceability.
+
+### Current branch inventory
+
+The repository currently has seven branches besides `main`:
+
+- `feat/cozy-world-visual-pass`
+- `feat/harvesting-feedback-on-latest`
+- `feat/world-resource-harvesting`
+- `feat/combat-c0-contract`
+- `integration/harvesting-on-cozy-world`
+- `integration/harvesting-on-cozy-world-v2`
+- `integration/giantback-consolidation`
+
+### Current PR and validation snapshot
+
+- PR #7, `Giantback C1 — combat, Rootvault expedition and Seal Keeper boss`, remains Draft and targets `feat/cozy-world-visual-pass`.
+- PR #7 describes the consolidated combat/expedition slice: server-authoritative combat, telegraphed attacks, block/dodge, persistent first-clear rewards, the Rootvault rooms/traps/chests, three boss phases, minions and client-only procedural pose/VFX layers.
+- Latest validation recorded in PR #7: 222 Python contract tests PASS; Roblox place generation PASS; generated-place validation reports 71 named instances and 6 embedded scripts. This is automated validation only, not Roblox Studio acceptance.
+- PR #1 remains open as the original reboot PR. No merged PRs were returned by the current merged-PR search. `main` has not been changed by this follow-up.
+
+### Fresh divergence check
+
+Comparing `integration/giantback-consolidation` with `feat/cozy-world-visual-pass` now reports a diverged history: integration has 49 commits not in the feature branch, while the feature branch has 3 commits not in integration. The comparison identifies changes in `World.server.luau`, `HUD.client.luau`, `Album.client.luau`, `ROADMAP.md`, `PROJECT_SPEC.md`, validation workflow, tests and repository docs. This is not a fast-forward and must not be resolved by force-pushing either branch.
+
+Other old harvesting branches also diverge substantially from the current cozy-world branch; `feat/combat-c0-contract` is particularly stale. Their unique commits must be reviewed before any deletion.
+
+### Updated safe disposition
+
+1. Keep `feat/cozy-world-visual-pass` as the canonical product baseline.
+2. Treat the PR #7 integration head as the active consolidated gameplay candidate; inspect its exact base/head and conflict status before merging.
+3. Reconcile the three commits unique to the canonical base with the 49 integration commits, preserving the latest farm/profile work and the combat/Rootvault implementation.
+4. Re-run CI after reconciliation; require Roblox Studio acceptance for combat, multiplayer rewards, boss phases, mobile/gamepad controls and reconnect persistence.
+5. Only after the consolidated result is accepted and merged, close superseded PRs and delete old branches after confirming every unique change is preserved.
+
+No branch was deleted, no force push was performed, and `main` was not modified during this follow-up.
