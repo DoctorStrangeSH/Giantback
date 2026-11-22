@@ -94,7 +94,12 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('local function playResourceBreakFeedback', CLIENT)
         self.assertIn('emitter:Emit(20)', CLIENT)
         self.assertIn('playResourceBreakFeedback(payload.nodeId)', CLIENT)
-
+        self.assertIn('itemId = def.itemId', WORLD)
+        self.assertIn('amount = amount', WORLD)
+        self.assertIn('local function playResourceRewardPickup(payload)', CLIENT)
+        self.assertIn('"LocalResourceReward"', CLIENT)
+        self.assertIn('pickup:Destroy()', CLIENT)
+        self.assertIn('itemId ~= "Wood" and itemId ~= "Stone"', CLIENT)
     def test_world_resource_yields_are_server_defined_and_positive(self):
         self.assertIn('amount = 2,', WORLD)
         self.assertIn('def.amount) or 1', WORLD)
