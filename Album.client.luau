@@ -171,8 +171,8 @@ local names = {
     Moth = "Лунная моль",
 }
 local descriptions = {
-    Fox = "Нюх следопыта: находит спрятанные тайники и редкие находки.",
-    Moth = "Лунное сияние: раскрывает скрытые цветы и тайники в Лунной роще.",
+    Fox = "Ищет тайники и редкие находки.",
+    Moth = "Раскрывает цветы и древние руны.",
 }
 local companionButtons = {}
 
@@ -192,9 +192,30 @@ local function createCompanionCard(id, index)
 
     local name = label(card, "Name", names[id], UDim2.new(1, -145, 0, 20), UDim2.fromOffset(70, 11), Enum.Font.GothamBold, palette.cream)
     name.TextSize = 12
-    local description = label(card, "Description", descriptions[id], UDim2.new(1, -145, 0, 30), UDim2.fromOffset(70, 32), Enum.Font.Gotham, palette.muted)
+    local description = label(card, "Description", descriptions[id], UDim2.new(1, -145, 0, 18), UDim2.fromOffset(70, 32), Enum.Font.Gotham, palette.muted)
     description.TextSize = 9
     description.TextYAlignment = Enum.TextYAlignment.Top
+    description.TextTruncate = Enum.TextTruncate.AtEnd
+
+    local level = label(card, "Level", "УР. 1 · 0/100", UDim2.new(1, -155, 0, 12), UDim2.fromOffset(70, 51), Enum.Font.GothamBold, id == "Fox" and palette.gold or palette.lilac)
+    level.TextSize = 8
+    level.TextXAlignment = Enum.TextXAlignment.Left
+
+    local xpTrack = Instance.new("Frame")
+    xpTrack.Name = "XPTrack"
+    xpTrack.Position = UDim2.fromOffset(70, 66)
+    xpTrack.Size = UDim2.new(1, -155, 0, 4)
+    xpTrack.BackgroundColor3 = palette.deepSoft
+    xpTrack.BorderSizePixel = 0
+    xpTrack.Parent = card
+    round(xpTrack, 4)
+    local xpFill = Instance.new("Frame")
+    xpFill.Name = "XPFill"
+    xpFill.Size = UDim2.fromScale(0, 1)
+    xpFill.BackgroundColor3 = id == "Fox" and palette.gold or palette.lilac
+    xpFill.BorderSizePixel = 0
+    xpFill.Parent = xpTrack
+    round(xpFill, 4)
 
     local state = label(card, "State", "ЕЩЁ НЕ НАЙДЕН", UDim2.fromOffset(82, 18), UDim2.new(1, -92, 0, 12), Enum.Font.GothamBold, palette.gold)
     state.TextSize = 8
@@ -208,7 +229,7 @@ local function createCompanionCard(id, index)
             event:FireServer(id)
         end
     end)
-    companionButtons[id] = {button = card, state = state, action = action, description = description}
+    companionButtons[id] = {button = card, state = state, action = action, description = description, level = level, xpFill = xpFill}
 end
 
 createCompanionCard("Fox", 1)
@@ -1334,8 +1355,18 @@ local function refresh()
             entry.description.Text = descriptions[id]
         end
         if id == "Moth" and owned then
-            entry.description.Text = player:GetAttribute("MoonBloom") and "Лунное сияние уже пробудило тайный цветок." or equipped and "Сияние готово. Ищи скрытый цветок в Лунной роще." or "Позови моль, чтобы увидеть скрытый цветок."
+            entry.description.Text = player:GetAttribute("MoonBloom") and "Лунное сияние пробудило цветок." or equipped and "Сияние готово. Ищи цветок." or "Позови моль к лунному цветку."
+        elseif id == "Fox" and owned and type(player:GetAttribute("FoxCacheSpot")) == "string"
+            and player:GetAttribute("FoxCacheSpot") ~= "" then
+            entry.description.Text = "Тайник найден! Следуй по следам."
         end
+
+        local levelValue = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. id .. "_Level")) or 1), 1, 5)
+        local xpValue = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. id .. "_XP")) or 0))
+        local xpNeeded = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. id .. "_XPToNext")) or 0))
+        entry.level.Text = levelValue >= 5 and "УР. 5 · МАКСИМУМ"
+            or ("УР. " .. tostring(levelValue) .. " · " .. tostring(xpValue) .. "/" .. tostring(xpNeeded) .. " XP")
+        entry.xpFill.Size = UDim2.fromScale(xpNeeded > 0 and math.clamp(xpValue / xpNeeded, 0, 1) or 1, 1)
         entry.button.BackgroundColor3 = equipped and palette.surfaceLight or palette.surface
         entry.state.TextColor3 = equipped and palette.gold or owned and palette.mint or palette.muted
         entry.action.TextColor3 = owned and palette.mint or palette.gold
