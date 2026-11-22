@@ -2878,7 +2878,7 @@ local function runCrystalFallEvent()
     local warning = Instance.new("Part")
     warning.Name = "CrystalFallWarning"
     warning.Shape = Enum.PartType.Cylinder
-    warning.Size = Vector3.new(0.18, 13, 13)
+    warning.Size = Vector3.new(0.18, 16, 16)
     warning.CFrame = CFrame.new(impactPosition) * CFrame.Angles(0, 0, math.rad(90))
     warning.Anchored = true
     warning.CanCollide = false
