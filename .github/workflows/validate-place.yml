@@ -272,6 +272,8 @@ jobs:
               "local COMBO_DAMAGE = {18, 22, 32}",
               "local COMBO_WINDOW_SECONDS = 1.15",
               "PLAYER_FINISHER_BOX",
+              "local resistance = entry.isBoss and 0.28 or 1",
+              "entry.root:ApplyImpulse(impulse)",
               "comboStep = comboStep",
               "showFeedback(\"ФИНИШЕР!\"",
               "R6 joint names contain spaces",
