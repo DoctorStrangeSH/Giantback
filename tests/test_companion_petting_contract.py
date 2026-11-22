@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+ACTIVITY = (ROOT / "modules/CompanionActivity.luau").read_text(encoding="utf-8")
 ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 
 
@@ -46,9 +47,9 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn('part.Name == "Moth head" and petting', ANIMATION)
 
     def test_fox_has_periodic_idle_curiosity_and_moth_has_local_orbit_stardust(self):
-        self.assertIn("nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))", ALBUM)
+        self.assertIn("nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))", ACTIVITY)
         self.assertIn("foxSniffUntil = os.clock() + 2.2", ALBUM)
-        self.assertIn("activity.nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))", ALBUM)
+        self.assertIn("activity.nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))", ACTIVITY)
         self.assertIn("local function attachMothStardust(model)", ALBUM)
         self.assertIn('emitter.Name = "CompanionStardust"', ALBUM)
         self.assertIn("emitter.Rate = mothStardustRate(personality, bondStage)", ALBUM)
