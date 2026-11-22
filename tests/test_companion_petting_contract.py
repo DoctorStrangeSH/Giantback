@@ -50,7 +50,7 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn("activity.nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))", ALBUM)
         self.assertIn("local function attachMothStardust(model)", ALBUM)
         self.assertIn('emitter.Name = "CompanionStardust"', ALBUM)
-        self.assertIn("emitter.Rate = math.min(16, (personalityRates[personality] or 7) + math.floor(bondStage / 2))", ALBUM)
+        self.assertIn("emitter.Rate = mothStardustRate(personality, bondStage)", ALBUM)
         self.assertIn('id == "Moth" and owner == player', ALBUM)
         self.assertIn("local orbitAngle = phase * (orbitSpeeds[personality] or 0.72)", ALBUM)
         self.assertIn("attachMothStardust(model)", ALBUM)
