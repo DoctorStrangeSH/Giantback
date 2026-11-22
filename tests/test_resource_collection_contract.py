@@ -29,7 +29,9 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("for nodeId, collected in savedCollected do", WORLD)
 
     def test_profile_schema_and_migration_compatible_fields(self):
-        self.assertIn("old.schemaVersion = 6", WORLD)
+        self.assertIn("old.schemaVersion = 7", WORLD)
+        self.assertIn("data.resourceCooldowns", WORLD)
+        self.assertIn("data.collectedNodes", WORLD)
         self.assertIn("data.resourceCooldowns", WORLD)
         self.assertIn("data.collectedNodes", WORLD)
 
@@ -47,6 +49,20 @@ class ResourceCollectionContractTests(unittest.TestCase):
     def test_renewable_nodes_have_explicit_personal_cooldowns(self):
         self.assertEqual(WORLD.count('kind = "renewable"'), 8)
         self.assertEqual(WORLD.count("respawnSeconds = 300"), 8)
+
+    def test_tools_are_persisted_and_equipped_server_side(self):
+        self.assertIn('local toolIds = {Axe = true, Pickaxe = true}', WORLD)
+        self.assertIn('tools = {Axe = true, Pickaxe = true}', WORLD)
+        self.assertIn('old.tools = savedTools', WORLD)
+        self.assertIn('action == "EquipTool"', WORLD)
+        self.assertIn('session.equippedTool = payload', WORLD)
+        self.assertIn('player:SetAttribute("Tool_Equipped"', WORLD)
+
+    def test_resource_nodes_require_the_matching_equipped_tool(self):
+        self.assertEqual(WORLD.count('requiredTool = "Axe"'), 2)
+        self.assertEqual(WORLD.count('requiredTool = "Pickaxe"'), 2)
+        self.assertIn('session.equippedTool ~= def.requiredTool', WORLD)
+        self.assertIn('event:FireServer("EquipTool", tool.id)', CLIENT)
 
     def test_world_resource_yields_are_server_defined_and_positive(self):
         self.assertIn('amount = 2,', WORLD)
