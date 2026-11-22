@@ -427,6 +427,35 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('ContextActionService:SetTitle("GiantbackCharge", "ЗАРЯД")', CLIENT)
         self.assertIn('showFeedback("ЗАРЯЖЕННЫЙ УДАР · "', CLIENT)
 
+
+    def test_fox_companion_skill_is_server_owned_and_targets_nearest_same_region_enemy(self):
+        self.assertIn("local FOX_SKILL_DAMAGE = 24", COMBAT)
+        self.assertIn("local FOX_SKILL_RANGE = 18", COMBAT)
+        self.assertIn('local companionId = player:GetAttribute("Companion")', COMBAT)
+        self.assertIn('player:GetAttribute(companionId) ~= true', COMBAT)
+        self.assertIn('if entry.regionId == regionId and isEnemyAlive(enemy) then', COMBAT)
+        self.assertIn("targetEntry.humanoid:TakeDamage(FOX_SKILL_DAMAGE)", COMBAT)
+        self.assertIn("targetEntry.contributors[player] = true", COMBAT)
+
+    def test_moth_companion_skill_heals_nearby_ready_allies_in_same_region(self):
+        self.assertIn("local MOTH_HEAL_AMOUNT = 18", COMBAT)
+        self.assertIn("local MOTH_HEAL_RADIUS = 14", COMBAT)
+        self.assertIn('ally:GetAttribute("Ready") == true and getPlayerRegion(ally) == regionId', COMBAT)
+        self.assertIn("allyHumanoid.Health = math.min(allyHumanoid.MaxHealth, before + MOTH_HEAL_AMOUNT)", COMBAT)
+        self.assertIn('reject(player, "CompanionNoOneToHeal")', COMBAT)
+
+    def test_companion_skill_has_server_cooldown_and_multiplatform_input(self):
+        self.assertIn("local COMPANION_SKILL_COOLDOWN = 14", COMBAT)
+        self.assertIn('action == "CompanionSkill"', COMBAT)
+        self.assertIn("state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN", COMBAT)
+        self.assertIn("Companion skill cooldown survives character respawns", COMBAT)
+        self.assertIn('remote:FireServer("CompanionSkill")', CLIENT)
+        self.assertIn('"GiantbackCompanion"', CLIENT)
+        self.assertIn("Enum.KeyCode.C", CLIENT)
+        self.assertIn("Enum.KeyCode.ButtonY", CLIENT)
+        self.assertIn('showFeedback("ЛИСЁНОК · "', CLIENT)
+        self.assertIn('showFeedback("ЛУННАЯ МОЛЬ · ЛЕЧЕНИЕ ×"', CLIENT)
+
     def test_finisher_applies_server_authoritative_enemy_knockback(self):
         self.assertIn("if isFinisher and entry.root.Parent then", COMBAT)
         self.assertIn("local resistance = entry.isBoss and 0.28 or 1", COMBAT)
