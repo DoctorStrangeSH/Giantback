@@ -11,7 +11,8 @@ class CompanionMoodContractTests(unittest.TestCase):
     def test_each_companion_has_a_distinct_non_punitive_default_mood(self):
         self.assertIn('Fox = "Любопытство"', WORLD)
         self.assertIn('Moth = "Спокойствие"', WORLD)
-        self.assertIn('companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth}', WORLD)
+        self.assertIn('CrystalWisp = "Любопытство"', WORLD)
+        self.assertIn('CrystalWisp = companionMoodDefaults.CrystalWisp', WORLD)
 
     def test_mood_is_server_owned_and_synced_as_a_player_attribute(self):
         self.assertIn("local function setCompanionMood(player, companionId, mood)", WORLD)
