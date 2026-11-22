@@ -161,7 +161,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('CrystalGrottoPrismVein02 = true', WORLD)
         self.assertIn('hiddenByPrismSense = true', WORLD)
         self.assertIn('resourcePrompt.Enabled = false', WORLD)
-        self.assertIn('def.hiddenByPrismSense and (tonumber(player:GetAttribute("PrismSenseUntil")) or 0) < os.clock()', WORLD)
+        self.assertIn('def.hiddenByPrismSense and (tonumber(player:GetAttribute("PrismSenseUntil")) or 0) < workspace:GetServerTimeNow()', WORLD)
         self.assertIn('PrismSenseOriginalTransparency', WORLD)
         self.assertIn('CrystalShard', WORLD)
 
@@ -173,11 +173,15 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('local PRISM_SENSE_COOLDOWN = 45', COMBAT)
         self.assertIn('companionXpFunction:Invoke(player, "CrystalWisp", 8)', COMBAT)
         self.assertIn('PrismSenseRevealUntil', COMBAT)
+        self.assertIn('Workspace:GetServerTimeNow() + revealDuration', COMBAT)
+        self.assertIn('Workspace:GetServerTimeNow()', COMBAT)
 
     def test_prism_sense_feedback_and_collection_description_are_connected(self):
         self.assertIn('data.companionId == "CrystalWisp"', COMBAT_CLIENT)
         self.assertIn('КРИСТАЛЬНЫЙ СВЕТЛЯК · ПРИЗМЕННОЕ ЧУТЬЁ', COMBAT_CLIENT)
         self.assertIn('Призменное чутьё: скрытые жилы на ', ALBUM)
+        self.assertIn('local prismSenseActive = state.id == "CrystalWisp"', ALBUM)
+        self.assertIn('^OrbitCrystal', ALBUM)
 
     def test_crystal_wisp_is_in_expedition_journal(self):
         self.assertIn('{key = "CrystalWisp", title = "Подружиться с кристальным светляком"', HUD)
