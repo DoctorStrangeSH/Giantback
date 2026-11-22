@@ -1725,7 +1725,7 @@ local function spawnResource(def)
     local model, anchor = createResourceFlower(def, position)
     model.Parent = folder
 
-    prompt(anchor, def.displayName, "Собрать", function(player)
+    prompt(anchor, def.displayName, def.verb or "Собрать", function(player)
         local session = sessions[player]
         if not session or not player:GetAttribute("Ready") then return end
 
