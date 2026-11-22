@@ -18,7 +18,7 @@ class CompanionMutationContractTests(unittest.TestCase):
         self.assertIn('id = "Stardust"', WORLD)
         self.assertIn('id = "Aurora"', WORLD)
         self.assertIn("local function normalizeCompanionMutations(raw)", WORLD)
-        self.assertIn("local function rollCompanionMutation(companionId)", WORLD)
+        self.assertIn("local function rollCompanionMutation(companionId, biomeId)", WORLD)
 
     def test_mutation_is_rolled_once_when_companion_is_owned_and_saved(self):
         self.assertIn("ensureCompanionMutation(player, id)", WORLD)
