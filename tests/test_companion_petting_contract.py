@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 
 
 class CompanionPettingContractTests(unittest.TestCase):
@@ -38,11 +39,11 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn("attachWorldPetPrompt(model, id)", ALBUM)
 
     def test_species_play_distinct_affection_poses(self):
-        self.assertIn("local affectionateDip = math.sin(time * 6.5)", ALBUM)
-        self.assertIn("math.rad(-4)", ALBUM)
-        self.assertIn("petting and 0.11", ALBUM)
-        self.assertIn("local affectionateNod = math.sin(time * 7)", ALBUM)
-        self.assertIn('part.Name == "Moth head" and petting', ALBUM)
+        self.assertIn("local affectionateDip = math.sin(time * 6.5)", ANIMATION)
+        self.assertIn("math.rad(-4)", ANIMATION)
+        self.assertIn("petting and 0.11", ANIMATION)
+        self.assertIn("local affectionateNod = math.sin(time * 7)", ANIMATION)
+        self.assertIn('part.Name == "Moth head" and petting', ANIMATION)
 
     def test_fox_has_periodic_idle_curiosity_and_moth_has_local_orbit_stardust(self):
         self.assertIn("nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))", ALBUM)
@@ -69,9 +70,9 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn('message == "CompanionPetted"', ALBUM)
         self.assertIn("pettingUntil", ALBUM)
         self.assertIn("playCompanionPettingBurst(model, id, bondStage)", ALBUM)
-        self.assertIn("swaySpeed = 10.5", ALBUM)
-        self.assertIn("if petting and not mothAbility then", ALBUM)
-        self.assertIn("flapSpeed = 17", ALBUM)
+        self.assertIn("swaySpeed = 10.5", ANIMATION)
+        self.assertIn("if petting and not mothAbility then", ANIMATION)
+        self.assertIn("flapSpeed = 17", ANIMATION)
         self.assertIn("CompanionPettingBurstLocal", ALBUM)
 
 
