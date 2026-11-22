@@ -40,6 +40,24 @@ class HomeIslandVisualApproachTests(unittest.TestCase):
         self.assertIn('"Companion nook stepping stone"', VISUALS)
         self.assertIn('"Sanctuary border pebble"', VISUALS)
 
+    def test_home_island_has_layered_canopy_and_understory_without_using_plot_space(self):
+        self.assertIn('makeFolder(homeDetails, "HomeCanopy")', VISUALS)
+        self.assertIn('local homeTreeSites = {', VISUALS)
+        self.assertIn('Vector3.new(-28.0, 12.0, 15.5)', VISUALS)
+        self.assertIn('Vector3.new(1.5, 12.0, -23.0)', VISUALS)
+        self.assertIn('Vector3.new(22.0, 12.0, -16.5)', VISUALS)
+        self.assertIn('addTree(homeCanopy, treeSite.position, treeSite.scale, treeSite.color, treeSite.seed)', VISUALS)
+        self.assertIn('"Canopy glow berry"', VISUALS)
+        self.assertIn('local homeGardenPockets = {', VISUALS)
+        self.assertIn('"Rounded berry shrub"', VISUALS)
+        self.assertIn('local homeMushroomSites = {', VISUALS)
+        self.assertIn('addMushroom(', VISUALS)
+        # Farm plots occupy the south-west quadrant; the new canopy stays around
+        # the outer rim and does not consume the crop grid or companion rest pad.
+        self.assertNotIn('Vector3.new(-14.5, 12.0, 8.8)', VISUALS)
+        self.assertNotIn('Vector3.new(-10.5, 12.0, 12.4)', VISUALS)
+        self.assertNotIn('Vector3.new(-23.0, 12.0, -8.5)', VISUALS)
+
     def test_garden_details_use_existing_non_colliding_visual_helpers(self):
         helper_start = VISUALS.index("local function makePart")
         helper_end = VISUALS.index("\nend", helper_start)
