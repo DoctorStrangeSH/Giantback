@@ -302,6 +302,15 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('CollectionService:AddTag(minion, "GiantbackDormantBossMinion")', VISUALS)
         self.assertNotIn('RootvaultSealMinion = true', COMBAT.split('local REWARD_ENCOUNTERS =', 1)[1].split('}', 1)[0])
 
+    def test_boss_phase_transitions_have_client_only_visual_pulse(self):
+        self.assertIn('local function showBossPhaseTransition(enemy, phase)', CLIENT)
+        self.assertIn('localBossPhaseHighlight', CLIENT)
+        self.assertIn('localBossPhasePulse', CLIENT)
+        self.assertIn('enemy:GetAttributeChangedSignal("BossPhase")', CLIENT)
+        self.assertIn('showBossPhaseTransition(enemy, enemy:GetAttribute("BossPhase"))', CLIENT)
+        self.assertIn('TweenInfo.new(0.85, Enum.EasingStyle.Quad', CLIENT)
+        self.assertIn('targetColor = phase == 2', CLIENT)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
