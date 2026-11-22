@@ -1376,6 +1376,9 @@ local function refresh()
             entry.description.Text = levelValue >= 5 and "Лунная аура: радиус лечения +4."
                 or levelValue >= 3 and "Лунная аура: радиус лечения +2."
                 or "Ур. 3: расширенная аура лечения."
+        elseif owned and id == "CrystalWisp" then
+            local senseDuration = 16 + (levelValue - 1) * 3
+            entry.description.Text = "Призменное чутьё: скрытые жилы на " .. tostring(senseDuration) .. " сек."
         end
 
         local xpValue = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. id .. "_XP")) or 0))
