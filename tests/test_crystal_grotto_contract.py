@@ -7,6 +7,8 @@ WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 VISUALS = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+COMBAT = (ROOT / "Combat.server.luau").read_text(encoding="utf-8")
+COMBAT_CLIENT = (ROOT / "Combat.client.luau").read_text(encoding="utf-8")
 
 
 class CrystalGrottoContractTests(unittest.TestCase):
@@ -153,6 +155,29 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('encounterModel.Name = "CrystalWispEncounter"', WORLD)
         self.assertIn('CrystalWisp = "CombatTrainingGlade"', ALBUM)
         self.assertIn('createCompanionCard("CrystalWisp", 3)', ALBUM)
+
+    def test_prism_sense_reveals_two_hidden_renewable_crystal_veins(self):
+        self.assertIn('CrystalGrottoPrismVein01 = true', WORLD)
+        self.assertIn('CrystalGrottoPrismVein02 = true', WORLD)
+        self.assertIn('hiddenByPrismSense = true', WORLD)
+        self.assertIn('resourcePrompt.Enabled = false', WORLD)
+        self.assertIn('def.hiddenByPrismSense and (tonumber(player:GetAttribute("PrismSenseUntil")) or 0) < os.clock()', WORLD)
+        self.assertIn('PrismSenseOriginalTransparency', WORLD)
+        self.assertIn('CrystalShard', WORLD)
+
+    def test_prism_sense_is_server_authoritative_and_level_scaled(self):
+        self.assertIn('companionId ~= "CrystalWisp"', COMBAT)
+        self.assertIn('player:GetAttribute("InCrystalGrotto") ~= true', COMBAT)
+        self.assertIn('local revealDuration = 16 + (companionLevel - 1) * 3', COMBAT)
+        self.assertIn('player:SetAttribute("PrismSenseUntil", revealUntil)', COMBAT)
+        self.assertIn('local PRISM_SENSE_COOLDOWN = 45', COMBAT)
+        self.assertIn('companionXpFunction:Invoke(player, "CrystalWisp", 8)', COMBAT)
+        self.assertIn('PrismSenseRevealUntil', COMBAT)
+
+    def test_prism_sense_feedback_and_collection_description_are_connected(self):
+        self.assertIn('data.companionId == "CrystalWisp"', COMBAT_CLIENT)
+        self.assertIn('КРИСТАЛЬНЫЙ СВЕТЛЯК · ПРИЗМЕННОЕ ЧУТЬЁ', COMBAT_CLIENT)
+        self.assertIn('Призменное чутьё: скрытые жилы на ', ALBUM)
 
     def test_crystal_wisp_is_in_expedition_journal(self):
         self.assertIn('{key = "CrystalWisp", title = "Подружиться с кристальным светляком"', HUD)
