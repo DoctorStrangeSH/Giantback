@@ -14,7 +14,7 @@
 - [x] Проложить пять крупных stepping stones от входа коттеджа к фермерской зоне, чтобы новичок визуально понимал направление.
 - [x] Добавить деревянную садовую арку с лунным светильником и небольшими вьющимися листьями; арка стоит перед грядками и не закрывает интерактивные точки.
 - [x] Добавить source-contract tests `tests/test_home_island_visual_approach.py` для пути, арки и non-colliding visual helpers.
-- [ ] Подтвердить Python/gameplay/place validation после коммита.
+- [x] Python/gameplay/place validation подтверждена: runs #1100 и #1113 SUCCESS (source-contract tests, сборка place, embedded-script validation и artifact upload).
 - [ ] Проверить композицию и проход игрока в Roblox Studio на PC/mobile; убедиться, что декор не перекрывает фермерские interaction prompts.
 - [ ] Следующий визуальный проход: мягкие края острова, разнообразие растительности и читаемая зона питомцев; не перегружать стартовую площадку.
 
