@@ -68,9 +68,9 @@ def material(name, color, roughness=0.72, metallic=0.0, soft_fur=False):
 
 def make_palette():
     return {
-        "fox_orange": material("fox_orange", (0.91, 0.36, 0.13), 0.82, soft_fur=True),
-        "cream": material("cream", (0.98, 0.86, 0.66), 0.88, soft_fur=True),
-        "ear_pink": material("ear_pink", (0.82, 0.39, 0.35), 0.9),
+        "fox_orange": material("fox_orange", (0.48, 0.105, 0.018), 0.78, soft_fur=True),
+        "cream": material("cream", (0.76, 0.54, 0.30), 0.84, soft_fur=True),
+        "ear_pink": material("ear_pink", (0.58, 0.16, 0.13), 0.86),
         "dark": material("dark", (0.08, 0.06, 0.05), 0.28),
         "white": material("white", (1.0, 0.98, 0.87), 0.22),
         "nose": material("nose", (0.12, 0.07, 0.06), 0.24),
@@ -350,6 +350,19 @@ def create_fox(p):
         (-0.18, 0.36, 0.12, 0.00), (0.08, 0.37, 0.12, 0.00),
         (0.31, 0.27, 0.10, 0.00), (0.40, 0.08, 0.07, 0.00),
     ], p["cream"])
+    # Layered chest ruff gives the neck-to-body transition a softer fox-like silhouette.
+    curved_plume("ChestRuffCenter",
+        [(-0.10, 1.42, -0.69), (-0.06, 1.30, -0.82),
+         (0.00, 1.16, -0.86), (0.045, 1.08, -0.81)],
+        [0.012, 0.105, 0.082, 0.006], p["cream"], sides=18, steps_per_segment=6)
+    curved_plume("ChestRuffLeft",
+        [(-0.19, 1.43, -0.66), (-0.25, 1.32, -0.77),
+         (-0.28, 1.20, -0.78)],
+        [0.008, 0.075, 0.004], p["cream"], sides=16, steps_per_segment=5)
+    curved_plume("ChestRuffRight",
+        [(0.12, 1.43, -0.68), (0.20, 1.32, -0.77),
+         (0.25, 1.20, -0.78)],
+        [0.008, 0.075, 0.004], p["cream"], sides=16, steps_per_segment=5)
 
     # Head silhouette: broad forehead, soft cheeks and a shorter, friendlier muzzle.
     sculpted_head("FoxHead", (0, 1.73, -0.62), (0.62, 0.61, 0.56), p["fox_orange"], 64, 40)
@@ -463,7 +476,7 @@ def create_fox(p):
     # Recreate exactly the rig-facing group names; detailed subforms stay in their group.
     grouped = {
         "FoxBody": ["FoxBody"],
-        "FoxBelly": ["FoxBelly"],
+        "FoxBelly": ["FoxBelly", "ChestRuffCenter", "ChestRuffLeft", "ChestRuffRight"],
         "FoxHead": ["FoxHead", "ForeheadTuft", "ForeheadTuft_L", "ForeheadTuft_R", "BrowLeft", "BrowRight"],
         "FoxMuzzle": ["FoxMuzzle", "CheekFluff_L", "CheekFluff_R", "Smile"],
         "FoxEarLeft": ["FoxEarLeft"],
