@@ -52,10 +52,10 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("RequestResourceState")', CLIENT)
 
     def test_renewable_nodes_have_explicit_personal_cooldowns(self):
-        self.assertEqual(WORLD.count('kind = "renewable"'), 12)
+        self.assertEqual(WORLD.count('kind = "renewable"'), 14)
         self.assertEqual(WORLD.count("respawnSeconds = 300"), 8)
         self.assertEqual(WORLD.count("respawnSeconds = 600"), 2)
-        self.assertEqual(WORLD.count("respawnSeconds = 900"), 2)
+        self.assertEqual(WORLD.count("respawnSeconds = 900"), 4)
 
 
     def test_tools_are_persisted_and_restored_after_respawn(self):
