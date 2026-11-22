@@ -221,6 +221,10 @@ prop(resolver, "ProtectedString", "Source",
 resource_visibility = obj(storage, "ModuleScript", "ResourceNodeVisibility")
 prop(resource_visibility, "ProtectedString", "Source",
      (root / "modules" / "ResourceNodeVisibility.luau").read_text(encoding="utf-8"))
+
+harvest_motion = obj(storage, "ModuleScript", "HarvestMotion")
+prop(harvest_motion, "ProtectedString", "Source",
+     (root / "modules" / "HarvestMotion.luau").read_text(encoding="utf-8"))
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
     if name == "Fox":
