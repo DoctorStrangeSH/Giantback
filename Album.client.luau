@@ -1320,13 +1320,19 @@ event.OnClientEvent:Connect(function(message, payload)
         end
         return
     elseif message == "ResourcePicked" and type(payload) == "table" then
-        playResourceRewardPickup(payload)
-        playResourceBreakFeedback(payload.nodeId)
-        playResourceBreakAnimation(payload.nodeId)
         clearResourceHitFeedback(payload.nodeId)
-        task.delay(0.3, function()
+        if payload.itemId ~= nil and payload.amount ~= nil then
+            playResourceRewardPickup(payload)
+            playResourceBreakFeedback(payload.nodeId)
+            playResourceBreakAnimation(payload.nodeId)
+            task.delay(0.3, function()
+                applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
+            end)
+        else
+            -- Cooldown and already-collected responses only synchronize visibility;
+            -- they must never replay a reward or a destruction animation.
             applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
-        end)
+        end
         return
     elseif message == "ResourceHit" and type(payload) == "table" then
         showResourceHitFeedback(payload)
