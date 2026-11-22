@@ -90,14 +90,14 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("session.combatReadyAt = now + 0.8", sword)
         self.assertIn("humanoid.Health = humanoid.MaxHealth", sword)
         self.assertIn("local distance = (root.Position - dummyRoot.Position).Magnitude", sword)
-        self.assertIn("distance > 10", sword)
+        self.assertIn("distance > (isWildEnemy and 12 or 10)", sword)
 
     def test_mossling_is_a_server_owned_enemy_with_chase_attack_reward_and_respawn(self):
         enemy = WORLD.split("local function createMossling()", 1)[1].split("local function createHarvestTool", 1)[0]
         self.assertIn('model:SetAttribute("GiantbackEnemy", true)', enemy)
         self.assertIn('model:SetAttribute("EnemyId", "Mossling")', enemy)
         self.assertIn("humanoid.MaxHealth = 80", enemy)
-        self.assertIn("closestDistance = 48", enemy)
+        self.assertIn("local targetRoot, closestDistance = nil, 48", enemy)
         self.assertIn("math.min(8 * 0.2, flat.Magnitude - 4.2)", enemy)
         self.assertIn("now - lastAttack >= 1.8", enemy)
         self.assertIn("targetHumanoid:TakeDamage(8)", enemy)
