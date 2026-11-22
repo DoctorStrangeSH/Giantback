@@ -131,7 +131,7 @@ The paired cream cheek accents now use tapered curved-plume geometry, widening t
 
 ## Soft-fur material pass
 
-Fox orange and cream materials use restrained Noise Texture → Bump micro-relief (scale 34, strength 0.10, distance 0.022) to break the overly plastic highlight while preserving a clean stylized silhouette. Facial glossy materials are intentionally unchanged. Validate under neutral studio lighting and at gameplay distance; this is a subtle surface treatment, not painted fur strands.
+Fox orange and cream materials use restrained Noise Texture → Bump micro-relief (scale 28, strength 0.075, distance 0.014) plus a subtle Principled BSDF sheen (weight 0.18, roughness 0.72) to soften broad highlights without producing noisy speckling. The generator records `soft_fur`/`smooth` surface profiles in the mesh report; CI requires `soft_fur` on body, head, ears, paws and tail. Facial glossy materials are intentionally unchanged. Validate under neutral studio lighting and at gameplay distance; this is a subtle surface treatment, not painted fur strands.
 
 
 ## Forelock silhouette pass
