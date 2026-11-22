@@ -221,3 +221,10 @@ A contract test checks the normalized mapping and the generated-place workflow n
 ## 26. R15 torso-chain pose support
 
 The procedural pose binder now maps the R15 `Root` joint as the canonical root fallback and applies subtle torso lean through the R15 `Waist` joint. Classic R6 `RootJoint` remains supported. Wind-up, recovery, phase-transition, locomotion and idle poses now update the waist when present, without requiring it on R6 rigs. Contract tests and generated-place validation markers cover the aliases. Final orientation and animation blending still require Studio playtests on real R6 and R15 rigs.
+
+
+## 27. Three-strike sword combo
+
+The C1 sword now has a server-timed three-strike chain. The first two strikes deal 18 and 22 damage with 0.48s recovery; the third is a 32-damage finisher with 0.72s recovery, a slightly larger hit volume and reach. The next strike must arrive within 1.15 seconds or the chain restarts at strike one. The server selects combo step and damage; clients cannot submit a step, damage value or target. Character respawn clears the combo state. Hit-confirm feedback displays the server-confirmed combo number or finisher callout.
+
+This is a first-pass PvE tuning baseline, not final balance. Contract tests and generated-place source markers cover the combo rules. Studio acceptance must validate hit feel, animation timing, mobile touch controls, gamepad input, latency and whether the finisher's larger volume feels fair.
