@@ -50,19 +50,28 @@ def material(name, color, roughness=0.72, metallic=0.0, soft_fur=False):
     shader.inputs["Roughness"].default_value = roughness
     shader.inputs["Metallic"].default_value = metallic
     if soft_fur:
-        # Restrained procedural micro-relief: broad enough to read as soft groomed fur,
+        # Soft fabric-like sheen keeps the companion readable under warm island light.
+        # Guard optional sockets so the material remains compatible with Blender 4.2.
+        if "Sheen Weight" in shader.inputs:
+            shader.inputs["Sheen Weight"].default_value = 0.18
+        if "Sheen Roughness" in shader.inputs:
+            shader.inputs["Sheen Roughness"].default_value = 0.72
+        mat["giantback_surface_profile"] = "soft_fur"
+        # Restrained procedural micro-relief: broad enough to read as groomed fur,
         # not noisy scales. Keep bump subtle so the low-poly silhouette stays clean.
         noise = nodes.new("ShaderNodeTexNoise")
         noise.name = name + "_SoftFurNoise"
-        noise.inputs["Scale"].default_value = 34.0
+        noise.inputs["Scale"].default_value = 28.0
         noise.inputs["Detail"].default_value = 2.0
         noise.inputs["Roughness"].default_value = 0.62
         bump = nodes.new("ShaderNodeBump")
         bump.name = name + "_SoftFurBump"
-        bump.inputs["Strength"].default_value = 0.10
-        bump.inputs["Distance"].default_value = 0.022
+        bump.inputs["Strength"].default_value = 0.075
+        bump.inputs["Distance"].default_value = 0.014
         links.new(noise.outputs["Fac"], bump.inputs["Height"])
         links.new(bump.outputs["Normal"], shader.inputs["Normal"])
+    else:
+        mat["giantback_surface_profile"] = "smooth"
     return mat
 
 
@@ -677,6 +686,10 @@ def write_mesh_quality_report(output, objects):
             "normals": "recalculated_outward",
             "uv_layers": len(obj.data.uv_layers),
             "materials": [mat.name for mat in obj.data.materials],
+            "material_profiles": {
+                mat.name: mat.get("giantback_surface_profile", "unspecified")
+                for mat in obj.data.materials
+            },
             "bounds": {"min": minimum, "max": maximum},
         }
     payload = {
