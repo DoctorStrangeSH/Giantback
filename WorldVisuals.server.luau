@@ -1451,6 +1451,29 @@ local chestGlow = orb(
 addLight(chestGlow, palette.moon, 12, 0.7)
 placeTrialPrompt(trialChest, "Сундук двух стражей", "Забрать награду")
 
+local runeClue = makePart(
+    chamber,
+    "ForestTrialRuneClue",
+    Vector3.new(8, 2.2, 0.35),
+    CFrame.new(chamberCenter + Vector3.new(0, 2.2, -10)),
+    palette.bark,
+    Enum.Material.Wood
+)
+local clueGui = Instance.new("SurfaceGui")
+clueGui.Name = "RuneClueSurface"
+clueGui.Face = Enum.NormalId.Front
+clueGui.CanvasSize = Vector2.new(700, 180)
+clueGui.Parent = runeClue
+local clueText = Instance.new("TextLabel")
+clueText.Size = UDim2.fromScale(1, 1)
+clueText.BackgroundTransparency = 1
+clueText.Text = "ПАМЯТЬ ЛЕСА\nЛуна → Рассвет → Прилив"
+clueText.TextColor3 = palette.cream
+clueText.TextStrokeTransparency = 0.55
+clueText.Font = Enum.Font.GothamBold
+clueText.TextScaled = true
+clueText.Parent = clueGui
+
 -- Three readable, interactable runes form the chamber's small memory puzzle.
 local puzzleRunes = {
     {name = "ForestTrialRuneMoon", label = "Луна", color = palette.moon, offset = Vector3.new(-8, 0.55, 0)},
