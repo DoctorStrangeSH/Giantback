@@ -45,7 +45,7 @@ Do not introduce random extra hues. Any new markings must remain inside this war
 
 - Premium stylized 3D game art with hand-painted surface breakup and soft sculpted forms.
 - Broad clean forms first; small details only where they improve expression.
-- Soft roughness variation on fur; restrained gloss on eyes and nose. Fur micro-relief must remain subtle at gameplay distance (current review target: Noise scale 16, Bump strength 0.022, distance 0.006); avoid visible sand-like grain.
+- Soft roughness variation on fur; restrained gloss on eyes and nose. Fur micro-relief must remain subtle at gameplay distance (current review target: Noise scale 16, Bump strength 0.004, distance 0.002, Sheen weight 0.08); avoid visible sand-like grain.
 - No realistic individual hair strands, photoreal fur, plastic toy shine, harsh outlines, or noisy procedural speckling.
 - Use warm key light, gentle fill, soft rim light and contact shadows.
 - Character must remain legible without relying on bloom or post-processing.
@@ -55,8 +55,8 @@ Do not introduce random extra hues. Any new markings must remain inside this war
 The first successful Blender visual review (four orthographic views; 17 rig groups; clean UV/material/mesh report) is a technical pass, not an art approval. The rendered coat read pink-coral instead of fox orange, procedural fur relief looked grainy, and the cheek tufts projected like whisker spikes. The corrective generator pass therefore:
 - shifts the coat to a more saturated orange and the cream to a deeper warm ivory;
 - lowers key/fill/rim and world illumination to retain color saturation;
-- reduces fur noise scale to 16 and bump to strength 0.022 / distance 0.006;
-- shortens and narrows cheek tufts so they merge into the muzzle silhouette.
+- reduces fur noise scale to 16, bump to strength 0.004 / distance 0.002 and sheen weight 0.08;
+- replaces pointed cheek tufts with rounded cream cheek pads integrated into the muzzle silhouette.
 The updated render must be reviewed again before Fox Hero can be artist-approved. Do not mark the model final based on the successful technical package alone.
 
 ## 5. Existing rig groups — preserve names
