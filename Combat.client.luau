@@ -1,5 +1,7 @@
 -- Combat input adapter. It sends intent only; the server owns all combat outcomes.
 local ContextActionService = game:GetService("ContextActionService")
+local CollectionService = game:GetService("CollectionService")
+local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -144,5 +146,69 @@ remote.OnClientEvent:Connect(function(message, data)
         showFeedback("ПОПАЛ!", Color3.fromRGB(187, 236, 164))
     end
 end)
+
+local function showBossSlamTelegraph(enemy)
+    if not enemy or not enemy:IsA("Model") or not enemy:IsDescendantOf(Workspace) then return end
+    local root = enemy:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local phase = math.clamp(tonumber(enemy:GetAttribute("BossPhase")) or 1, 1, 3)
+    local prefix = "Phase" .. tostring(phase)
+    local radius = math.clamp(tonumber(enemy:GetAttribute(prefix .. "SlamRadius")) or 16, 8, 28)
+    local warning = math.max(tonumber(enemy:GetAttribute(prefix .. "TelegraphSeconds")) or 0.9, 0.9)
+
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    rayParams.FilterDescendantsInstances = {enemy}
+    local floorHit = Workspace:Raycast(root.Position, Vector3.new(0, -24, 0), rayParams)
+    local floorPosition = floorHit and floorHit.Position or (root.Position - Vector3.new(0, 3, 0))
+
+    local marker = Instance.new("Part")
+    marker.Name = "LocalBossSlamTelegraph"
+    marker.Shape = Enum.PartType.Cylinder
+    marker.Anchored = true
+    marker.CanCollide = false
+    marker.CanTouch = false
+    marker.CanQuery = false
+    marker.CastShadow = false
+    marker.Material = Enum.Material.Neon
+    marker.Color = Color3.fromRGB(255, 111, 74)
+    marker.Transparency = 0.42
+    marker.Size = Vector3.new(0.16, 1, 1)
+    marker.CFrame = CFrame.new(floorPosition + Vector3.new(0, 0.12, 0)) * CFrame.Angles(0, 0, math.rad(90))
+    marker.Parent = Workspace
+
+    local grow = TweenService:Create(
+        marker,
+        TweenInfo.new(warning, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = Vector3.new(0.16, radius * 2, radius * 2), Transparency = 0.78}
+    )
+    grow:Play()
+    task.delay(warning + 0.45, function()
+        if not marker.Parent then return end
+        local fade = TweenService:Create(marker, TweenInfo.new(0.22), {Transparency = 1})
+        fade:Play()
+        fade.Completed:Once(function()
+            if marker.Parent then marker:Destroy() end
+        end)
+    end)
+end
+
+local function bindBossTelegraph(enemy)
+    if not enemy:IsA("Model") or enemy:GetAttribute("IsBoss") ~= true then return end
+    enemy:GetAttributeChangedSignal("BossAttack"):Connect(function()
+        if enemy:GetAttribute("BossAttack") == "GroundSlam" then
+            showBossSlamTelegraph(enemy)
+        end
+    end)
+    if enemy:GetAttribute("BossAttack") == "GroundSlam" then
+        showBossSlamTelegraph(enemy)
+    end
+end
+
+CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(bindBossTelegraph)
+for _, enemy in CollectionService:GetTagged("GiantbackEnemy") do
+    bindBossTelegraph(enemy)
+end
 
 remote:FireServer("RequestCombatState")
