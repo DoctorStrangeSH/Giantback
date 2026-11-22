@@ -205,3 +205,10 @@ Compared each remaining branch against `feat/cozy-world-visual-pass` after the l
 | `main` | 4 | 756 | Release branch; not a safe target for syncing this development line |
 
 The PR #7 head is now 179 commits ahead and zero behind the canonical development base, so it remains a fast-forward integration candidate. The six other refs are divergent and must not be merged or deleted before their unique content is explicitly inventoried. No branch deletion capability is exposed in the connected GitHub actions used here; no branch was deleted and no history was rewritten.
+
+
+### Enemy rig compatibility follow-up
+
+A source review of the client animation binder found that it only recognized R6 Motor6D names with spaces (for example `Right Shoulder`). Standard R15 rigs use compact names (for example `RightShoulder`), so those rigs could silently skip the procedural animation layer. The binder now normalizes joint names by lowercasing and removing whitespace, and uses canonical shoulder/hip/root/neck keys. Added a contract test and generated-place workflow markers for this compatibility path. Actual R6/R15 pose quality still requires Studio review.
+
+Latest PR #7 head after this fix is a linear descendant of the canonical base; automated CI for the new commits is not yet confirmed by the available commit-run lookup. Keep the PR Draft and do not merge until current CI and Studio acceptance are recorded.
