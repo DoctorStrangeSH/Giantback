@@ -106,7 +106,7 @@ jobs:
               "local function startSmelting(player)",
               "local function collectSmelting(player)",
               "smelter.readyAt = os.time() + 120",
-              \"furnace.Name = \\\"Smelter\\\"\"
+              "furnace.Name",
               "CollectionPanel",
               "МАТЕРИАЛЫ И ФЕРМА",
               "Vector3.new(0.95, 0.14, 0.14)",
