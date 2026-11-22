@@ -37,6 +37,16 @@ Recursive tree/blob comparison across all five branches found:
 - Current `tests/test_resource_collection_contract.py` explicitly expects schema 6; V2 tests expect schema 10. Tests must be consolidated to validate the final migration path and old-profile fixtures, not merely string-replaced.
 - PR #4 description has been corrected to reflect the actual divergence and required migration work. It remains Draft and unmergeable.
 
+## Forward-compatible profile safety patch — 2026-11-22
+
+- The current schema-v6 save path previously assigned `old.schemaVersion = 6` unconditionally. That could downgrade a profile previously written by the V2 schema-v10 branch.
+- Updated the write to `math.max(tonumber(old.schemaVersion) or 0, 6)`, preserving a newer version marker rather than decreasing it.
+- Added `IronOre` and `IronIngot` to the current inventory key registry so these V2 inventory values are loaded, exposed to attributes, and included in the existing inventory snapshot rather than being omitted.
+- Added regression assertions in resource collection tests; updated fox-scout and farm schema tests for monotonic schema versioning.
+- Updated generated-place workflow marker to assert the new forward-compatible schema expression.
+- CI run #1204: contract tests and Roblox place build passed, but generated-place marker validation failed because the workflow still expected the old literal schema-v6 assignment. That stale marker has now been corrected in commit `bc95193`; a fresh run is required before marking this patch green.
+- This is a preservation patch only. It does not yet implement V2 tools, resource hit state, smelting or combat.
+
 ## Recommended consolidation order
 
 1. Keep feat/cozy-world-visual-pass as canonical reboot/world base. It has the latest farm UI and four-crop implementation.
