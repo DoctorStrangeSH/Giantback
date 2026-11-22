@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COMBAT = (ROOT / "Combat.server.luau").read_text(encoding="utf-8")
 BUILD = (ROOT / "build.py").read_text(encoding="utf-8")
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
+CLIENT = (ROOT / "Combat.client.luau").read_text(encoding="utf-8")
 WORKFLOW = (ROOT / ".github/workflows/validate-place.yml").read_text(encoding="utf-8")
 
 
@@ -44,7 +45,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('player:GetAttribute("Ready") == true', COMBAT)
         self.assertIn("humanoid.Health > 0", COMBAT)
         self.assertIn("ALLOWED_REGIONS[regionId]", COMBAT)
-        self.assertIn("COMBAT_WEAPONS[weaponId] == true", COMBAT)
+        self.assertIn("ALLOWED_WEAPONS[weaponId]", COMBAT)
         self.assertIn('reject(player, "CombatRegionRequired")', COMBAT)
         self.assertIn('reject(player, "NoServerEquippedWeapon")', COMBAT)
 
@@ -98,10 +99,23 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('phase = "C1"', COMBAT)
         self.assertIn('regionId = regionId', COMBAT)
 
-    def test_place_builder_embeds_combat_server_script(self):
+    def test_place_builder_embeds_server_and_client_combat_scripts(self):
         self.assertIn('"Combat.server.luau"', BUILD)
+        self.assertIn('"Combat.client.luau"', BUILD)
+        self.assertIn('"CombatControls"', BUILD)
         self.assertIn('"Combat"', WORKFLOW)
         self.assertIn('"CombatAction"', WORKFLOW)
+
+    def test_client_supports_keyboard_gamepad_and_touch_intents(self):
+        self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
+        self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
+        self.assertIn("Enum.KeyCode.ButtonL2", CLIENT)
+        self.assertIn("Enum.KeyCode.ButtonB", CLIENT)
+        self.assertIn('remote:FireServer("Attack")', CLIENT)
+        self.assertIn('remote:FireServer("BlockStart")', CLIENT)
+        self.assertIn('remote:FireServer("BlockEnd")', CLIENT)
+        self.assertIn('remote:FireServer("Dodge")', CLIENT)
+        self.assertIn('ContextActionService:BindAction(', CLIENT)
 
 
 if __name__ == "__main__":
