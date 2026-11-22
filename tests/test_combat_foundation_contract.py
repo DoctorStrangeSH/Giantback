@@ -136,7 +136,7 @@ class CombatFoundationContractTests(unittest.TestCase):
     def test_enemy_archetypes_use_server_clamped_per_enemy_combat_profiles(self):
         self.assertIn('REWARD_ENCOUNTERS = { GroveGrunt01 = true, GroveScout02 = true }', COMBAT)
         self.assertIn('aggroRange = math.clamp(tonumber(enemy:GetAttribute("AggroRange")) or ENEMY_AGGRO_RANGE, 8, 80)', COMBAT)
-        self.assertIn('AttackDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute("AttackDamage")) or ENEMY_ATTACK_DAMAGE), 1, 30)', COMBAT)
+        self.assertIn('attackDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute("AttackDamage")) or ENEMY_ATTACK_DAMAGE), 1, 30)', COMBAT)
         self.assertIn('task.wait(entry.telegraphSeconds)', COMBAT)
         self.assertIn('local bestDistance = entry.aggroRange', COMBAT)
         self.assertIn('if bestDistance > entry.attackRange then', COMBAT)
