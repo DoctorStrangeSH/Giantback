@@ -164,6 +164,24 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('CollectionService:AddTag(scout, "GiantbackEnemy")', VISUALS)
         self.assertIn('scoutWarningText.Text = "РЫВОК!"', VISUALS)
 
+    def test_forest_trial_chamber_requires_both_server_victories(self):
+        self.assertIn('trialPortal', VISUALS)
+        self.assertIn('"ForestTrialGate"', VISUALS)
+        self.assertIn('"ForestTrialChamber"', VISUALS)
+        self.assertIn('"ForestTrialArrival"', VISUALS)
+        self.assertIn('"ForestTrialReturn"', VISUALS)
+        self.assertIn('"ForestTrialChest"', VISUALS)
+        self.assertIn("session.completedCombatEncounters.GroveGrunt01 == true", WORLD)
+        self.assertIn("session.completedCombatEncounters.GroveScout02 == true", WORLD)
+        self.assertIn("hasCompletedForestTrial(session)", WORLD)
+        self.assertIn("validTrialInteraction(player, gatePart)", WORLD)
+        self.assertIn("validTrialInteraction(player, chestPart)", WORLD)
+        self.assertIn("(root.Position - anchorPart.Position).Magnitude > 13", WORLD)
+        self.assertIn('GroveTrialChest01 = {itemId = "StarShard", amount = 1}', WORLD)
+        self.assertIn('combatRewardFunction:Invoke(player, "GroveTrialChest01")', WORLD)
+        self.assertIn("if trialBusy[player] then return end", WORLD)
+        self.assertIn("if session.completedCombatEncounters.GroveTrialChest01 then", WORLD)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
