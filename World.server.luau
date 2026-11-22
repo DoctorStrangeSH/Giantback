@@ -277,6 +277,14 @@ local companionMoodDefaults = {
     Moth = "Спокойствие",
 }
 
+local companionPersonalities = {"Любопытный", "Озорной", "Смелый", "Застенчивый"}
+
+local function getCompanionPersonality(userId, companionId)
+    local speciesOffset = companionId == "Moth" and 2 or 0
+    local index = ((math.abs(userId) + speciesOffset) % #companionPersonalities) + 1
+    return companionPersonalities[index]
+end
+
 local function setCompanionMood(player, companionId, mood)
     local session = sessions[player]
     if not session or (companionId ~= "Fox" and companionId ~= "Moth") then return end
@@ -303,6 +311,7 @@ local function syncCompanionProgress(player)
         player:SetAttribute("Companion_" .. id .. "_BondRank", bondRank)
         local mood = session.companionMood and session.companionMood[id] or companionMoodDefaults[id]
         player:SetAttribute("Companion_" .. id .. "_Mood", mood)
+        player:SetAttribute("Companion_" .. id .. "_Personality", getCompanionPersonality(player.UserId, id))
     end
 end
 
