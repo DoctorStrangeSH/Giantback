@@ -51,9 +51,21 @@ Do not introduce random extra hues. Any new markings must remain inside this war
 - Character must remain legible without relying on bloom or post-processing.
 
 
-**Current generator review palette (not yet visually approved):** `fox_orange` RGB `(0.90, 0.065, 0.001)`; `cream` RGB `(0.92, 0.72, 0.48)`. Review lighting is reduced to Key 175 / Fill 75 / Rim 125, world strength 0.22 and AgX High Contrast. The latest review render still reads too salmon/pastel under AgX lighting, so the orange channel is being made more saturated; cheek pads are also reduced and tucked into the muzzle to avoid detached whisker-dot shapes. The increased green channel is intentional: prior renders read red/coral rather than recognizable fox orange under AgX studio lighting. Re-render and inspect under the same four views before changing the approved color standard.
+**Current generator review palette (not yet visually approved):** `fox_orange` RGB `(0.90, 0.065, 0.001)`; `cream` RGB `(0.92, 0.72, 0.48)`. Previous review lighting was Key 175 / Fill 75 / Rim 125, world strength 0.22 and AgX High Contrast. Current pending source pass uses Standard color transform, Key 95 / Fill 42 / Rim 72, and smaller embedded cheek accents. The latest review render still reads too salmon/pastel under AgX lighting, so the orange channel is being made more saturated; cheek pads are also reduced and tucked into the muzzle to avoid detached whisker-dot shapes. The increased green channel is intentional: prior renders read red/coral rather than recognizable fox orange under AgX studio lighting. Re-render and inspect under the same four views before changing the approved color standard.
 
 **Visual review of artifact #145:** all four views are technically clean and the silhouette reads as a friendly collectible fox, with a strong tail and readable eyes. However, the coat still renders salmon/pastel rather than unmistakably orange; the cream cheek pads protrude as separate white dots. This is a visual rejection, not an approval. Latest corrective source pass pushes green/blue channels down and scales/tucks the cheek pads; new render is required before reconsideration.
+
+## 4.3 Visual review — artifact #173
+
+Artifact #173 shows a meaningful improvement: the torso and tail read closer to a saturated orange, and the cheek pads are less prominent. The head still renders noticeably peach/salmon under the review pipeline, so the overall coat is not yet visually consistent. The body/leg intersections remain too segmented and the paws still read as separate cuffs. This is a rejection for final art, but the improvement is worth preserving.
+
+Next source pass:
+- switch the review transform from AgX to Standard to avoid highlight desaturation;
+- reduce Key / Fill / Rim to 95 / 42 / 72 and world strength to 0.22;
+- tuck the cheek accents further into the muzzle (0.042 × 0.026 × 0.010);
+- preserve the large tail and the friendly face proportions while improving color consistency.
+
+The next Blender artifact must be inspected before any further shape edits. Do not mark Fox Hero accepted based on CI success alone.
 
 ## 4.2 Visual review — artifact #163
 
