@@ -37,6 +37,13 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("PetCompanion", companionId)', ALBUM)
         self.assertIn("attachWorldPetPrompt(model, id)", ALBUM)
 
+    def test_species_play_distinct_affection_poses(self):
+        self.assertIn("local affectionateDip = math.sin(time * 6.5)", ALBUM)
+        self.assertIn("math.rad(-4)", ALBUM)
+        self.assertIn("petting and 0.11", ALBUM)
+        self.assertIn("local affectionateNod = math.sin(time * 7)", ALBUM)
+        self.assertIn('part.Name == "Moth head" and petting', ALBUM)
+
     def test_client_plays_species_specific_reaction_and_visual_feedback(self):
         self.assertIn('message == "CompanionPetted"', ALBUM)
         self.assertIn("pettingUntil", ALBUM)
