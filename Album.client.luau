@@ -1996,6 +1996,31 @@ local function playCompanionPettingBurst(model, companionId)
     Debris:AddItem(folder, 0.9)
 end
 
+local function attachWorldPetPrompt(model, companionId)
+    if not model or not model.Parent then return end
+    local anchor = model:FindFirstChild("Body") or model.PrimaryPart
+    if not anchor or not anchor:IsA("BasePart") then return end
+    if anchor:FindFirstChild("WorldPetPrompt") then return end
+
+    local prompt = Instance.new("ProximityPrompt")
+    prompt.Name = "WorldPetPrompt"
+    prompt.ObjectText = companionId == "Fox" and "Лисёнок-корешок" or "Лунная моль"
+    prompt.ActionText = "Погладить"
+    prompt.KeyboardKeyCode = Enum.KeyCode.E
+    prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
+    prompt.HoldDuration = 0.35
+    prompt.MaxActivationDistance = 7
+    prompt.RequiresLineOfSight = false
+    prompt.ClickablePrompt = true
+    prompt.Parent = anchor
+
+    prompt.Triggered:Connect(function(triggeringPlayer)
+        if triggeringPlayer and triggeringPlayer ~= player then return end
+        if player:GetAttribute("Companion") ~= companionId then return end
+        event:FireServer("PetCompanion", companionId)
+    end)
+end
+
 local function follow(dt)
     local now = workspace:GetServerTimeNow()
 
@@ -2028,6 +2053,9 @@ local function follow(dt)
                 model:PivotTo(target)
                 models[owner] = model
                 captureAnimation(model, id, false, owner == player)
+                if owner == player then
+                    attachWorldPetPrompt(model, id)
+                end
                 if owner == player and id == "Moth" and pendingMothBurst then
                     playMothAbilityBurst(model)
                 end
