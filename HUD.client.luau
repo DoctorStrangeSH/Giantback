@@ -387,6 +387,20 @@ local function renderTools()
     end
     addInfo("Мастерская", "Подойди к верстаку на своём острове. Усиление топора стоит дерево ×8 и камень ×6; усиление кирки — дерево ×6 и камень ×8. Улучшенный инструмент сокращает добычу на один удар.", 94)
     addInfo("Как работает добыча", "Подойди к дереву с топором или к каменной жиле с киркой. Каждый узел выдаёт ресурсы отдельно для твоего профиля и восстанавливается со временем.", 78)
+
+    local shakeEnabled = player:GetAttribute("HarvestCameraShakeEnabled") ~= false
+    local settings = card(body, "HarvestFeedbackSettings", 78)
+    label(settings, "Title", "Реакция камеры", UDim2.new(1, -132, 0, 24), UDim2.fromOffset(14, 9), 13, palette.ink, Enum.Font.GothamBold)
+    label(settings, "Detail", "Лёгкая вибрация при ударе", UDim2.new(1, -132, 0, 22), UDim2.fromOffset(14, 34), 10, palette.muted)
+    local toggleShake = button(settings, "CameraShake", shakeEnabled and "ВКЛ" or "ВЫКЛ", UDim2.fromOffset(94, 34), UDim2.new(1, -108, 0.5, -17), shakeEnabled and palette.forest or palette.coral)
+    toggleShake.TextSize = 12
+    toggleShake.Activated:Connect(function()
+        local nextEnabled = player:GetAttribute("HarvestCameraShakeEnabled") == false
+        player:SetAttribute("HarvestCameraShakeEnabled", nextEnabled)
+        clearBody()
+        renderTools()
+        showToast(nextEnabled and "Вибрация камеры включена." or "Вибрация камеры отключена.")
+    end)
 end
 
 local function renderWorld()
