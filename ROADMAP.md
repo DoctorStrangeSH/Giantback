@@ -1,3 +1,15 @@
+## Farming 2.0 — Four-crop server foundation
+
+- [x] Expand server-owned crop registry to Carrot, Strawberry, Pumpkin and Cabbage with growth duration, seed item, harvest item and reward.
+- [x] Add strawberry regrowth cycle (8 minutes after each harvest); other crops clear the plot after harvest.
+- [x] Add persistent inventory keys and starter seed stock for the three new crops; legacy profiles receive safe defaults when those keys are absent.
+- [x] Add server-side SelectCrop action; selection is accepted only for known crops with available seed.
+- [x] Add per-plot in-flight guard to prevent overlapping harvest/plant requests.
+- [x] Add regression tests for registry, inventory, selection, timestamps and strawberry regrowth.
+- [ ] Run Python test suite and Roblox place validation; fix any failures before considering this milestone validated.
+- [ ] Add distinct crop-specific growth meshes/stages and a player-facing seed selector UI.
+- [ ] Studio playtest save/rejoin, offline growth, two rapid harvest requests and all four crop types.
+
 ## Farm Plots — Readability visual pass
 
 - [x] Добавить четыре деревянных бортика на каждую грядку; борта визуально отделяют почву от дорожек.
