@@ -436,8 +436,7 @@ local function getTutorialProgress()
         end
     end
     local total = #tutorialMilestones
-    local nextMilestone = tutorialMilestones[math.min(completed + 1, total)]
-    return completed, total, nextMilestone and nextMilestone.title or "Первые шаги завершены"
+    return completed, total
 end
 
 getObjective = function()
@@ -475,7 +474,7 @@ local function refresh()
     woodLabel.Text = "🪵  Дерево  " .. tostring(player:GetAttribute("Resource_Wood") or 0)
     stoneLabel.Text = "🪨  Камень  " .. tostring(player:GetAttribute("Resource_Stone") or 0)
     objectiveText.Text = getObjective()
-    local completed, total, milestoneTitle = getTutorialProgress()
+    local completed, total = getTutorialProgress()
     objectiveEyebrow.Text = completed >= total
         and "ПРИКЛЮЧЕНИЕ ПРОДОЛЖАЕТСЯ"
         or ("ПУТЕШЕСТВИЕ • ШАГ " .. tostring(completed + 1) .. " ИЗ " .. tostring(total))
