@@ -128,3 +128,8 @@ The following figures are from GitHub compare against `feat/cozy-world-visual-pa
 - The old refs are not active development lines. They remain recovery/archive refs until their unique commits have been verified as preserved or deliberately archived.
 - No branch was deleted and no history was rewritten during this audit. The connected GitHub actions available in this session support branch listing/comparison and file/PR updates, but do not expose a branch-ref deletion operation. Do not claim the refs were removed.
 - Do not merge any of the divergent integration branches wholesale. Port only a reviewed unique feature onto the canonical branch, then run CI and Studio acceptance.
+
+
+### C0 remote argument validation hardening
+
+A code review found that the original callback accepted only a single named optional payload. Roblox RemoteEvent can forward more than one trailing argument, and Lua would silently discard arguments beyond the named parameter. The callback now captures all trailing arguments and rejects any argument count above zero, including explicit nil. A regression contract test covers this case. CI is rerun on the updated PR head.
