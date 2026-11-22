@@ -17,7 +17,7 @@ from pathlib import Path
 
 import bpy
 import bmesh
-from mathutils import Vector
+from mathutils import Matrix, Vector
 from fox_rig_contract import validate_rig_payload
 
 BLENDER_MIN = (4, 2, 0)
@@ -574,7 +574,14 @@ def render_review_views(camera, center, radius, output):
     }
     for view_name, direction in views.items():
         camera.location = center + direction * distance
-        camera.rotation_euler = (center-camera.location).to_track_quat("-Z", "Y").to_euler()
+        # The character is Y-up. Build an explicit camera basis so horizontal
+        # side/back views cannot inherit a 90-degree roll from track_quat.
+        forward = (center - camera.location).normalized()
+        world_up = Vector((0.0, 1.0, 0.0))
+        right = forward.cross(world_up).normalized()
+        camera_up = right.cross(forward).normalized()
+        back = -forward
+        camera.rotation_euler = Matrix((right, camera_up, back)).transposed().to_quaternion().to_euler()
         bpy.context.scene.render.filepath = str(output / f"fox_companion_hero_{view_name}.png")
         bpy.ops.render.render(write_still=True)
 
