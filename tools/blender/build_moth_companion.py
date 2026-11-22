@@ -146,7 +146,7 @@ def abdomen_band(name, y, rx, rz, material, segments=40):
 def crescent(name, center, side, material):
     # Build a crescent as a curved strip between two arcs, not a concave ngon.
     cx, cy, cz = center
-    outer_radius, inner_radius, inner_offset = 0.22, 0.185, 0.105
+    outer_radius, inner_radius, inner_offset = 0.31, 0.255, 0.145
     steps = 28
     outer_front, inner_front = [], []
     for step in range(steps + 1):
@@ -211,7 +211,7 @@ def wing(name, side, upper, materials):
         for r in range(rows + 1):
             t = r / rows
             # Wide outer lobe, pinched root, softly scalloped trailing edge.
-            width = (0.10 + 0.90 * (math.sin(math.pi * (t ** 0.78)) ** 0.72)) * (0.30 + 0.70 * t) * span * 1.42
+            width = (0.08 + 0.92 * (math.sin(math.pi * t) ** 0.75)) * span * 1.05
             if t > 0.72:
                 width *= 1.0 + 0.055 * math.sin((t - 0.72) * math.pi * 7.0)
             for col in range(cols + 1):
@@ -260,7 +260,7 @@ def moth_leg(name, side, start_y, end_y, material):
     curve = bpy.data.curves.new(name + "Curve", "CURVE")
     curve.dimensions = "3D"
     curve.resolution_u = 12
-    curve.bevel_depth = 0.028
+    curve.bevel_depth = 0.042
     curve.bevel_resolution = 3
     spline = curve.splines.new("BEZIER")
     spline.bezier_points.add(2)
@@ -276,7 +276,7 @@ def moth_leg(name, side, start_y, end_y, material):
     obj = bpy.data.objects.new(name, curve)
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(material)
-    foot = sphere(name + "Foot", coords[-1], (0.075, 0.045, 0.055), material, 16, 10)
+    foot = sphere(name + "Foot", coords[-1], (0.095, 0.060, 0.070), material, 20, 12)
     return [obj, foot]
 
 
@@ -420,15 +420,17 @@ def main():
     glow=mat("moon_core",(0.48,0.88,0.88),0.28,emission=1.2)
     parts=[]
     body_profile = [
-        (0.34,0.075,0.085),
-        (0.46,0.13,0.145),
-        (0.62,0.18,0.19),
-        (0.82,0.22,0.225),
-        (1.04,0.255,0.25),
-        (1.27,0.275,0.265),
-        (1.48,0.255,0.245),
-        (1.66,0.19,0.19),
-        (1.78,0.12,0.13),
+        (0.24,0.045,0.055),
+        (0.34,0.105,0.115),
+        (0.48,0.17,0.18),
+        (0.66,0.225,0.225),
+        (0.86,0.275,0.265),
+        (1.08,0.315,0.295),
+        (1.28,0.345,0.315),
+        (1.46,0.335,0.305),
+        (1.62,0.275,0.255),
+        (1.76,0.17,0.17),
+        (1.84,0.085,0.095),
     ]
     parts.append(tapered_body("MothThorax",body_profile,ivory))
     parts.append(sphere("MothHead",(0,1.91,-0.20),(0.40,0.37,0.34),ivory,40,28))
