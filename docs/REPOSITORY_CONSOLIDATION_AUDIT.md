@@ -45,6 +45,16 @@ Recursive tree/blob comparison across all five branches found:
 4. Run full Python contract tests, Roblox place build, embedded-script validation and Studio acceptance before updating main.
 5. After consolidated PR is merged and verified, close superseded PRs and delete obsolete branches only after confirming their unique commits are preserved.
 
+## Incremental integration slice — PR #5
+
+- Created `integration/giantback-consolidation` from the latest cozy-world HEAD.
+- Imported only additive client-side harvesting feedback from V2 into `Album.client.luau`: local tool swing, hit progress/crack overlays, impact particles, final break feedback, reward pickup and optional camera shake.
+- Left `World.server.luau`, `HUD.client.luau`, farm logic, profile schema and world visuals untouched. The client can display V2 `ResourceHit`/resource-state events, but the current server has not yet been ported to emit multi-hit events; the complete harvesting feature is not yet live.
+- Added the consolidation branch to the push validation matrix and added it as an allowed PR target in the base workflow.
+- Draft PR #5 opened against `feat/cozy-world-visual-pass`.
+- Validation run #1198 on the consolidation branch passed: Python contract tests, Roblox place build, generated-place/embedded-script validation and artifact upload.
+- This is a deliberately isolated client visual slice, not the complete gameplay merge and not ready to merge into `main`.
+
 ## Current status
 
 - [x] Enumerated branches and PRs.
