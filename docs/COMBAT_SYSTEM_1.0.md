@@ -156,3 +156,9 @@ Roblox Studio acceptance remains required for prompt reachability, label readabi
 A compact three-room dungeon is generated beyond the first forest trial chamber: an entry room, a connected pressure-plate passage, a mechanism room with a per-player lever and sealed door, and a reward vault. The entrance requires the player's saved first-trial chest completion. The server owns the in-dungeon state, lever progression, prompt distance checks, trap damage cooldown, and one-time reward claim. Pressure plates deal bounded damage with a per-player cooldown; the vault chest grants **IronOre ×3** once per profile via the existing idempotent reward function.
 
 This is the first traversal slice, not yet the final dungeon: enemy encounters, a boss, a key-drop loop, room randomization and Studio playtesting remain NOT DONE.
+
+## 15. Rootvault sentinel and key gate — staged
+
+Rootvault now has its own tagged combat region (`RegionId = Rootvault`), so combat validation works while the player is inside the dungeon rather than requiring the Grove training ring. A dedicated 145-HP R6 sentinel guards the mechanism room. Its server-registered encounter is `RootvaultSentinel01`; each contributing player receives one persistent `RootvaultKey` on first clear through the existing reward/save path. The sealed-door prompt requires both that player's key and their own activated lever state. The key is retained after opening, while the final reward chest remains separately one-time.
+
+Roblox Studio acceptance remains required for sentinel navigation, pathfinding through the room openings, key persistence after reconnect, multiplayer contribution rewards and door progression.
