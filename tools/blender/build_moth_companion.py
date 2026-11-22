@@ -81,8 +81,15 @@ def crescent(name, center, side, material):
             cy + inner_radius * math.sin(angle),
             cz,
         ))
+    count = len(points)
+    thickness = 0.018
+    vertices = points + [(x, y, z + thickness) for x, y, z in points]
+    faces = [tuple(range(count)), tuple(range(count * 2 - 1, count - 1, -1))]
+    for index in range(count):
+        next_index = (index + 1) % count
+        faces.append((index, next_index, next_index + count, index + count))
     mesh = bpy.data.meshes.new(name + "Mesh")
-    mesh.from_pydata(points, [], [tuple(range(len(points)))])
+    mesh.from_pydata(vertices, [], faces)
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
@@ -93,8 +100,6 @@ def crescent(name, center, side, material):
         for loop_index in polygon.loop_indices:
             vertex = mesh.vertices[mesh.loops[loop_index].vertex_index].co
             uv.data[loop_index].uv = (vertex.x - cx + 0.5, vertex.y - cy + 0.5)
-    solidify = obj.modifiers.new("Moon inlay thickness", "SOLIDIFY")
-    solidify.thickness = 0.018
     bevel = obj.modifiers.new("Soft moon edge", "BEVEL")
     bevel.width = 0.008
     bevel.segments = 2
