@@ -102,6 +102,8 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('Size = geometry.size * 0.12', CLIENT)
         self.assertIn('restoreResourceGrowth(model)', CLIENT)
         self.assertIn('task.delay(0.3, function()', CLIENT)
+        self.assertIn('if payload.itemId ~= nil and payload.amount ~= nil then', CLIENT)
+        self.assertIn('Cooldown and already-collected responses only synchronize visibility', CLIENT)
         self.assertIn('itemId = def.itemId', WORLD)
         self.assertIn('amount = amount', WORLD)
         self.assertIn('local function playResourceRewardPickup(payload)', CLIENT)
