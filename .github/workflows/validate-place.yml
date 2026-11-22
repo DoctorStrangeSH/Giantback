@@ -142,7 +142,7 @@ jobs:
               "session.resourceHitCooldowns[def.key]",
               "GroveWood01",
               "DuskStone01",
-              "if action == \\"UpgradeTool\\" then",
+              "if action == \"UpgradeTool\" then",
               "Resource_Stone",
               "FOX_SCOUT_COOLDOWN_SECONDS",
               "foxCacheActiveId",
