@@ -194,3 +194,7 @@ The client listens for the server-replicated `BossPhase` attribute. On phases 2 
 ## 21. Enemy health UI
 
 The client now creates local-only BillboardGui health/name bars for regular enemies and summoned minions, with distance culling at 90 studs and health color bands. The Seal Keeper receives a dedicated top-center boss panel with localized phase label, numeric HP and phase-colored health bar. UI follows replicated server health attributes and Humanoid.HealthChanged; it does not accept client-supplied health. Bars are cleaned up when an enemy dies or leaves Workspace. Studio review is still needed for mobile readability, overlap in co-op, and camera positioning.
+
+## 22. Seal Fragment awakening cue
+
+When a Seal Fragment is activated and enters the tagged enemy collection, each client plays a local-only awakening cue: violet Highlight flash, a short spark particle burst, and an expanding floor ring aligned by raycast. The cue is guarded per client per minion and does not affect combat or enemy visibility/authority. The same collection-added callback binds its local health bar. Studio acceptance must confirm particle readability, floor alignment and performance with both minions and multiple players.
