@@ -1,5 +1,6 @@
 ## Asset Pipeline 1.0 — Studio import and asset staging
 
+- [x] Extract approved Fox/Moth template selection and fallback policy from Album.client.luau into a ReplicatedStorage ModuleScript, and embed it through build.py with regression coverage.
 - [x] Require imported Fox/Moth Body and animated Tail/Wing MeshParts to be direct children compatible with current procedural animation; keep fallback when incomplete.
 - [x] Deduplicate Moth stardust particle-rate calculation and refresh particles on personality changes as well as friendship-stage changes, with regression tests.
 - [x] Retire disabled GiantbackJournal UI and its old quest polling; migrate companion collection (including CrystalWisp), levels/XP, growth, mutation names, talents, scout readiness and rare material counters into active GiantbackHUD.
