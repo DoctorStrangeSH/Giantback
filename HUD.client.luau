@@ -359,19 +359,39 @@ local function renderPets()
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
         local equipped = player:GetAttribute("Companion") == pet.id
-        local item = card(body, pet.id .. "Card", 104)
-        local icon = label(item, "Icon", pet.icon, UDim2.fromOffset(58, 58), UDim2.fromOffset(10, 20), 34, palette.ink)
+        local item = card(body, pet.id .. "Card", 124)
+        local icon = label(item, "Icon", pet.icon, UDim2.fromOffset(58, 58), UDim2.fromOffset(10, 24), 34, palette.ink)
         icon.TextXAlignment = Enum.TextXAlignment.Center
-        label(item, "Name", pet.name .. " • " .. pet.role, UDim2.new(1, -90, 0, 24), UDim2.fromOffset(76, 9), 15, palette.ink, Enum.Font.GothamBold)
+        label(item, "Name", pet.name .. " • " .. pet.role, UDim2.new(1, -210, 0, 24), UDim2.fromOffset(76, 8), 14, palette.ink, Enum.Font.GothamBold)
         local desc = owned and pet.description or pet.location
-        label(item, "Description", desc, UDim2.new(1, -90, 0, 34), UDim2.fromOffset(76, 34), 12, palette.muted)
-        local action = button(item, "Action", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН", UDim2.fromOffset(108, 28), UDim2.new(1, -120, 1, -36), equipped and palette.gold or palette.forest)
-        action.TextSize = 11
+        label(item, "Description", desc, UDim2.new(1, -210, 0, 38), UDim2.fromOffset(76, 33), 11, palette.muted)
+        local bond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_Bond")) or 0), 0, 1000)
+        local bondRank = player:GetAttribute("Companion_" .. pet.id .. "_BondRank") or "Знакомство"
+        label(item, "Friendship", owned and ("Дружба " .. tostring(bond) .. "/1000 · " .. bondRank) or "Сначала найди питомца", UDim2.new(1, -90, 0, 18), UDim2.fromOffset(76, 82), 10, palette.forest, Enum.Font.GothamBold)
+
+        local action = button(item, "Action", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН", UDim2.fromOffset(108, 28), UDim2.new(1, -120, 0, 8), equipped and palette.gold or palette.forest)
+        action.TextSize = 10
         action.Activated:Connect(function()
             if owned then
                 event:FireServer(pet.id)
             else
                 showToast(pet.location)
+            end
+        end)
+
+        local foodCount = (tonumber(player:GetAttribute("Resource_Pumpkin")) or 0)
+            + (tonumber(player:GetAttribute("Resource_Strawberry")) or 0)
+            + (tonumber(player:GetAttribute("Resource_Cabbage")) or 0)
+            + (tonumber(player:GetAttribute("Resource_Carrot")) or 0)
+        local feedText = not owned and "НЕТ ПИТОМЦА" or not equipped and "СНАЧАЛА ПОЗОВИ" or foodCount <= 0 and "НЕТ УРОЖАЯ" or "УГОСТИТЬ"
+        local feed = button(item, "Feed", feedText, UDim2.fromOffset(108, 28), UDim2.new(1, -120, 0, 44), palette.forestLight)
+        feed.TextSize = 9
+        feed.Active = owned and equipped and foodCount > 0
+        feed.AutoButtonColor = feed.Active
+        feed.BackgroundTransparency = feed.Active and 0 or 0.35
+        feed.Activated:Connect(function()
+            if owned and equipped and foodCount > 0 then
+                event:FireServer("FeedCompanion", pet.id)
             end
         end)
     end
