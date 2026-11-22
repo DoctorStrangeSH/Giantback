@@ -38,7 +38,7 @@
 - [x] Confirm fresh Validate Giantback run #1223 after the validator update; tests, place build, generated-place validation and artifact upload all passed.
 - [x] Port starter tool ownership/equipment and server-authoritative multi-hit wood/stone gathering.
 - [x] Port smelter state/actions and iron ore processing; owner-only furnace, persistent timer and collect-after-completion flow are implemented.
-- [~] Combat C1 implementation is staged in PR #7: server-owned sword hitbox/damage, telegraphed enemy melee, block/dodge, persistent one-time reward, and generated training glade connected to Grove with a tagged R6 `Корневой страж`. Studio acceptance remains NOT DONE: NPC navigation, hitbox/animation alignment, reconnect persistence and multiplayer reward isolation.
+- [~] Combat C1 implementation is staged in PR #7: server-owned sword hitbox/damage, telegraphed enemy melee, block/dodge, persistent one-time rewards, and generated training glade connected to Grove. Two server-configured enemy archetypes now exist: 100-health `Корневой страж` and faster 65-health `Мшистый разведчик` with distinct telegraph/damage/cooldown and reward. Studio acceptance remains NOT DONE: NPC navigation, hitbox/animation alignment, reconnect persistence and multiplayer reward isolation.
 
 ## Farming 2.0 — Four-crop server foundation
 
