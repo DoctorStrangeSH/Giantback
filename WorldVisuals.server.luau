@@ -1122,6 +1122,13 @@ enemy:SetAttribute("EnemyId", "GroveGrunt01")
 enemy:SetAttribute("EncounterId", "GroveGrunt01")
 enemy:SetAttribute("RegionId", "GroveTraining")
 enemy:SetAttribute("CombatState", "Idle")
+enemy:SetAttribute("ArchetypeId", "Guardian")
+enemy:SetAttribute("AggroRange", 34)
+enemy:SetAttribute("AttackRange", 6)
+enemy:SetAttribute("AttackDamage", 12)
+enemy:SetAttribute("AttackCooldown", 2.4)
+enemy:SetAttribute("TelegraphSeconds", 0.85)
+enemy:SetAttribute("PathRefreshSeconds", 1.15)
 enemy.Parent = combatGlade
 
 local enemySpawn = arenaCenter + Vector3.new(0, 3, -3)
@@ -1245,6 +1252,96 @@ enemy:GetAttributeChangedSignal("CombatState"):Connect(function()
         }):Play()
     end
 end)
+
+-- A faster, lighter scout makes the first arena encounter readable but less repetitive.
+-- It reuses the authored rig and telegraph components while receiving its own server profile.
+local scout = enemy:Clone()
+scout.Name = "GroveScout02"
+scout:SetAttribute("EnemyId", "GroveScout02")
+scout:SetAttribute("EncounterId", "GroveScout02")
+scout:SetAttribute("RegionId", "GroveTraining")
+scout:SetAttribute("ArchetypeId", "Scout")
+scout:SetAttribute("CombatState", "Idle")
+scout:SetAttribute("AggroRange", 42)
+scout:SetAttribute("AttackRange", 5)
+scout:SetAttribute("AttackDamage", 8)
+scout:SetAttribute("AttackCooldown", 1.75)
+scout:SetAttribute("TelegraphSeconds", 0.58)
+scout:SetAttribute("PathRefreshSeconds", 0.85)
+scout.Parent = combatGlade
+scout:PivotTo(CFrame.lookAt(arenaCenter + Vector3.new(9, 3, 7), arenaCenter + Vector3.new(0, 3, -3)))
+local scoutHumanoid = scout:FindFirstChildOfClass("Humanoid")
+if scoutHumanoid then
+    scoutHumanoid.DisplayName = "Мшистый разведчик"
+    scoutHumanoid.MaxHealth = 65
+    scoutHumanoid.Health = 65
+    scoutHumanoid.WalkSpeed = 14
+end
+local scoutRoot = scout:FindFirstChild("HumanoidRootPart")
+if scoutRoot and scoutRoot:IsA("BasePart") then
+    scoutRoot:SetNetworkOwner(nil)
+end
+for _, descendant in scout:GetDescendants() do
+    if descendant:IsA("BasePart") and descendant.Name ~= "HumanoidRootPart" then
+        if descendant.Name == "Amber eye" then
+            descendant.Color = Color3.fromRGB(154, 225, 211)
+            descendant.Material = Enum.Material.Neon
+        elseif descendant.Name == "Rootwood club cap" then
+            descendant.Color = Color3.fromRGB(130, 190, 173)
+        elseif descendant.Name == "Rootwood club" or descendant.Name:find("Bark crown") then
+            descendant.Color = Color3.fromRGB(76, 111, 92)
+        else
+            descendant.Color = Color3.fromRGB(92, 126, 103)
+        end
+    end
+end
+local scoutTorso = scout:FindFirstChild("Torso")
+local scoutShoulder = scoutTorso and scoutTorso:FindFirstChild("Right Shoulder")
+local scoutHighlight = scout:FindFirstChild("CombatTelegraphHighlight")
+local scoutWarning = scout:FindFirstChild("CombatTelegraphWarning")
+local scoutWarningText = scoutWarning and scoutWarning:FindFirstChild("WarningText")
+if scoutWarningText and scoutWarningText:IsA("TextLabel") then
+    scoutWarningText.Text = "БЕРЕГИСЬ!"
+    scoutWarningText.BackgroundColor3 = Color3.fromRGB(63, 112, 100)
+end
+if scoutHighlight and scoutHighlight:IsA("Highlight") then
+    scoutHighlight.FillColor = Color3.fromRGB(110, 203, 176)
+    scoutHighlight.OutlineColor = Color3.fromRGB(187, 244, 219)
+end
+if scoutShoulder and scoutShoulder:IsA("Motor6D") and scoutHighlight and scoutWarning and scoutWarningText then
+    scout:GetAttributeChangedSignal("CombatState"):Connect(function()
+        local state = scout:GetAttribute("CombatState")
+        local telegraphing = state == "Telegraph"
+        scoutHighlight.Enabled = telegraphing
+        scoutWarning.Enabled = telegraphing
+        if telegraphing then
+            scoutWarningText.Text = "БЕРЕГИСЬ!"
+            TweenService:Create(scoutShoulder, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                Transform = CFrame.Angles(math.rad(-105), 0, math.rad(-14)),
+            }):Play()
+        elseif state == "Recover" then
+            scoutWarningText.Text = "РЫВОК!"
+            scoutWarning.Enabled = true
+            TweenService:Create(scoutShoulder, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                Transform = CFrame.Angles(math.rad(72), 0, math.rad(12)),
+            }):Play()
+            task.delay(0.22, function()
+                if scout.Parent and scout:GetAttribute("CombatState") == "Recover" then
+                    TweenService:Create(scoutShoulder, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                        Transform = CFrame.new(),
+                    }):Play()
+                    scoutWarning.Enabled = false
+                end
+            end)
+        else
+            scoutWarning.Enabled = false
+            TweenService:Create(scoutShoulder, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                Transform = CFrame.new(),
+            }):Play()
+        end
+    end)
+end
+CollectionService:AddTag(scout, "GiantbackEnemy")
 
 local entranceGlow = orb(arena, "Training glade welcome light", arenaCenter + Vector3.new(0, 6.4, -21), Vector3.new(0.65, 0.65, 0.65), palette.gold, Enum.Material.Neon)
 addLight(entranceGlow, palette.gold, 12, 0.55)
