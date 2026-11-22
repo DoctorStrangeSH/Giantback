@@ -767,6 +767,276 @@ player:GetAttributeChangedSignal("Companion"):Connect(updateMoonGatePuzzle)
 player:GetAttributeChangedSignal("MoonGateTrace"):Connect(updateMoonGatePuzzle)
 player:GetAttributeChangedSignal("MoonGateOpen"):Connect(updateMoonGatePuzzle)
 player:GetAttributeChangedSignal("MoonRelic"):Connect(updateMoonGatePuzzle)
+local resourceHitBars = {}
+local resourceHitEffects = {}
+local lastToolSwingAt = 0
+local toolSwingGeneration = 0
+
+local function playHarvestToolSwing(nodeId)
+    local character = player.Character
+    if not character then return end
+    local tool
+    for _, child in character:GetChildren() do
+        if child:IsA("Tool") and child:GetAttribute("PetKingdomsToolId") then
+            tool = child
+            break
+        end
+    end
+    if not tool then return end
+
+    local now = os.clock()
+    if now - lastToolSwingAt < 0.12 then return end
+    lastToolSwingAt = now
+    toolSwingGeneration += 1
+    local generation = toolSwingGeneration
+    local originalGrip = tool.Grip
+    local isWood = string.find(nodeId, "Wood", 1, true) ~= nil
+    local raise = originalGrip * CFrame.Angles(math.rad(18), 0, math.rad(isWood and 8 or -8))
+    local impact = originalGrip * CFrame.Angles(isWood and math.rad(-52) or math.rad(-68), 0, math.rad(isWood and -12 or 10))
+
+    local first = TweenService:Create(tool, TweenInfo.new(0.09, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Grip = raise})
+    local second = TweenService:Create(tool, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Grip = impact})
+    local recover = TweenService:Create(tool, TweenInfo.new(0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Grip = originalGrip})
+    first:Play()
+    first.Completed:Once(function()
+        if generation ~= toolSwingGeneration or not tool.Parent then return end
+        second:Play()
+    end)
+    second.Completed:Once(function()
+        if generation ~= toolSwingGeneration or not tool.Parent then return end
+        recover:Play()
+    end)
+end
+
+local function ensureHarvestDamageOverlay(node, nodeId, hits, maximum)
+    local targetName = nodeId:find("Wood", 1, true) and "Trunk" or "StoneMain"
+    local target = node:FindFirstChild(targetName)
+    if not target or not target:IsA("BasePart") then return end
+
+    local gui = target:FindFirstChild("LocalHarvestCracks")
+    if not gui then
+        gui = Instance.new("SurfaceGui")
+        gui.Name = "LocalHarvestCracks"
+        gui.Face = Enum.NormalId.Front
+        gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+        gui.PixelsPerStud = 48
+        gui.LightInfluence = 0.25
+        gui.AlwaysOnTop = false
+        gui.Parent = target
+    end
+
+    for _, child in gui:GetChildren() do child:Destroy() end
+    local count = math.clamp(math.floor(hits), 0, math.max(1, maximum))
+    local crackColor = nodeId:find("Wood", 1, true)
+        and Color3.fromRGB(62, 39, 27)
+        or Color3.fromRGB(55, 62, 64)
+    local paths = {
+        {x = 0.42, y = 0.18, w = 0.035, h = 0.35, r = -28},
+        {x = 0.53, y = 0.39, w = 0.03, h = 0.3, r = 36},
+        {x = 0.32, y = 0.55, w = 0.028, h = 0.28, r = -48},
+        {x = 0.62, y = 0.65, w = 0.025, h = 0.24, r = 22},
+    }
+    local visibleCracks = math.clamp(math.ceil(count / math.max(1, maximum) * #paths), 1, #paths)
+    for index = 1, visibleCracks do
+        local path = paths[index]
+        local line = Instance.new("Frame")
+        line.Name = "Crack" .. tostring(index)
+        line.AnchorPoint = Vector2.new(0.5, 0.5)
+        line.Position = UDim2.fromScale(path.x, path.y)
+        line.Size = UDim2.fromScale(path.w, path.h)
+        line.Rotation = path.r
+        line.BackgroundColor3 = crackColor
+        line.BackgroundTransparency = 0.08
+        line.BorderSizePixel = 0
+        line.Parent = gui
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = line
+    end
+end
+
+local function playResourceRewardPickup(payload)
+    if type(payload) ~= "table" then return end
+    local itemId = payload.itemId
+    if itemId ~= "Wood" and itemId ~= "Stone" then return end
+    local node = findResourceNode(payload.nodeId)
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not node or not root then return end
+
+    local origin = node:GetPivot().Position + Vector3.new(0, 1.1, 0)
+    local count = math.clamp(math.floor(tonumber(payload.amount) or 1), 1, 5)
+    for index = 1, count do
+        local pickup = Instance.new("Part")
+        pickup.Name = "LocalResourceReward"
+        pickup.Anchored = true
+        pickup.CanCollide = false
+        pickup.CanTouch = false
+        pickup.CanQuery = false
+        pickup.CastShadow = false
+        pickup.Material = itemId == "Wood" and Enum.Material.Wood or Enum.Material.Slate
+        pickup.Color = itemId == "Wood" and Color3.fromRGB(151, 101, 63) or Color3.fromRGB(151, 164, 169)
+        pickup.Shape = itemId == "Wood" and Enum.PartType.Cylinder or Enum.PartType.Block
+        pickup.Size = itemId == "Wood" and Vector3.new(0.34, 0.72, 0.34) or Vector3.new(0.48, 0.42, 0.46)
+        local angle = (index - 1) * math.pi * 2 / count
+        local spread = Vector3.new(math.cos(angle) * 0.5, 0.15 + index * 0.04, math.sin(angle) * 0.5)
+        pickup.CFrame = CFrame.new(origin + spread) * CFrame.Angles(math.rad(20 + index * 13), angle, math.rad(18))
+        pickup.Parent = workspace
+
+        local start = pickup.CFrame
+        local bounce = TweenService:Create(pickup, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            CFrame = start + Vector3.new(0, 0.65 + index * 0.06, 0),
+        })
+        bounce:Play()
+        task.delay(0.2, function()
+            if not pickup.Parent then return end
+            local currentRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            if not currentRoot then pickup:Destroy() return end
+            local destination = currentRoot.Position + Vector3.new(0, 1.1, 0)
+            local collect = TweenService:Create(pickup, TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                CFrame = CFrame.new(destination),
+                Transparency = 1,
+                Size = pickup.Size * 0.35,
+            })
+            collect:Play()
+            collect.Completed:Once(function()
+                if pickup.Parent then pickup:Destroy() end
+            end)
+        end)
+    end
+end
+
+local function playResourceBreakFeedback(nodeId)
+    local node = findResourceNode(nodeId)
+    if not node then return end
+    local anchor = node.PrimaryPart or node:FindFirstChild("PromptAnchor")
+    if not anchor or not anchor:IsA("BasePart") then return end
+    local emitter = anchor:FindFirstChild("HarvestImpact")
+    if emitter and emitter:IsA("ParticleEmitter") then
+        emitter:Emit(20)
+    end
+end
+
+local function showResourceHitFeedback(payload)
+    local nodeId = payload.nodeId
+    if type(nodeId) ~= "string" then return end
+    local node = findResourceNode(nodeId)
+    if not node then return end
+    playHarvestToolSwing(nodeId)
+
+    local anchor = node.PrimaryPart or node:FindFirstChild("PromptAnchor")
+    if not anchor or not anchor:IsA("BasePart") then return end
+
+    local bar = resourceHitBars[nodeId]
+    if not bar or not bar.Parent then
+        bar = Instance.new("BillboardGui")
+        bar.Name = "LocalHarvestProgress"
+        bar.Adornee = anchor
+        bar.AlwaysOnTop = true
+        bar.LightInfluence = 0
+        bar.MaxDistance = 70
+        bar.Size = UDim2.fromOffset(142, 34)
+        bar.StudsOffset = nodeId:find("Wood") and Vector3.new(0, 5.1, 0) or Vector3.new(0, 3.1, 0)
+        bar.Parent = player:WaitForChild("PlayerGui")
+
+        local background = Instance.new("Frame")
+        background.Name = "Background"
+        background.Size = UDim2.fromScale(1, 1)
+        background.BackgroundColor3 = Color3.fromRGB(31, 45, 39)
+        background.BackgroundTransparency = 0.12
+        background.BorderSizePixel = 0
+        background.Parent = bar
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 9)
+        corner.Parent = background
+
+        local fill = Instance.new("Frame")
+        fill.Name = "Fill"
+        fill.Size = UDim2.fromScale(0, 1)
+        fill.BackgroundColor3 = nodeId:find("Wood") and Color3.fromRGB(128, 190, 116) or Color3.fromRGB(151, 190, 207)
+        fill.BorderSizePixel = 0
+        fill.Parent = background
+        local fillCorner = Instance.new("UICorner")
+        fillCorner.CornerRadius = UDim.new(0, 9)
+        fillCorner.Parent = fill
+
+        local label = Instance.new("TextLabel")
+        label.Name = "Count"
+        label.BackgroundTransparency = 1
+        label.Size = UDim2.fromScale(1, 1)
+        label.Font = Enum.Font.GothamBold
+        label.TextColor3 = Color3.fromRGB(255, 248, 224)
+        label.TextStrokeTransparency = 0.65
+        label.TextSize = 13
+        label.ZIndex = 2
+        label.Parent = background
+        resourceHitBars[nodeId] = bar
+    end
+
+    local background = bar:FindFirstChild("Background")
+    local fill = background and background:FindFirstChild("Fill")
+    local label = background and background:FindFirstChild("Count")
+    local hits = math.max(0, math.floor(tonumber(payload.hits) or 0))
+    local maximum = math.max(1, math.floor(tonumber(payload.maxHits) or 1))
+    ensureHarvestDamageOverlay(node, nodeId, hits, maximum)
+    if fill then
+        TweenService:Create(fill, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.fromScale(math.clamp(hits / maximum, 0, 1), 1),
+        }):Play()
+    end
+    if label then label.Text = "Добыча " .. tostring(hits) .. "/" .. tostring(maximum) end
+
+    local effectGeneration = (resourceHitEffects[nodeId] or 0) + 1
+    resourceHitEffects[nodeId] = effectGeneration
+    local origin = node:GetPivot()
+    task.spawn(function()
+        for _, offset in {Vector3.new(0, 0.13, 0), Vector3.new(0, -0.09, 0), Vector3.zero} do
+            if resourceHitEffects[nodeId] ~= effectGeneration or not node.Parent then return end
+            node:PivotTo(origin * CFrame.new(offset))
+            task.wait(0.04)
+        end
+        if resourceHitEffects[nodeId] == effectGeneration and node.Parent then
+            node:PivotTo(origin)
+        end
+    end)
+
+    local emitter = anchor:FindFirstChild("HarvestImpact")
+    if not emitter then
+        emitter = Instance.new("ParticleEmitter")
+        emitter.Name = "HarvestImpact"
+        emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+        emitter.Rate = 0
+        emitter.Lifetime = NumberRange.new(0.18, 0.38)
+        emitter.Speed = NumberRange.new(2, 4)
+        emitter.SpreadAngle = Vector2.new(150, 150)
+        emitter.RotSpeed = NumberRange.new(-90, 90)
+        emitter.LightEmission = 0.35
+        emitter.Color = nodeId:find("Wood") and ColorSequence.new(Color3.fromRGB(183, 133, 83), Color3.fromRGB(235, 202, 139))
+            or ColorSequence.new(Color3.fromRGB(151, 164, 169), Color3.fromRGB(220, 229, 226))
+        emitter.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.18),
+            NumberSequenceKeypoint.new(1, 0),
+        })
+        emitter.Parent = anchor
+    end
+    emitter:Emit(7)
+end
+
+local function clearResourceHitFeedback(nodeId)
+    local node = findResourceNode(nodeId)
+    if node then
+        for _, name in {"Trunk", "StoneMain"} do
+            local target = node:FindFirstChild(name)
+            local overlay = target and target:FindFirstChild("LocalHarvestCracks")
+            if overlay then overlay:Destroy() end
+        end
+    end
+    local bar = resourceHitBars[nodeId]
+    resourceHitBars[nodeId] = nil
+    resourceHitEffects[nodeId] = (resourceHitEffects[nodeId] or 0) + 1
+    if bar then bar:Destroy() end
+end
+
 workspace.DescendantAdded:Connect(function(descendant)
     if descendant.Name == "FoxCache01" or descendant.Name == "FoxCache02" or descendant.Name == "FoxCache03" or descendant.Name == "FoxCacheVisuals" or descendant.Name == "FoxCacheVisual01" or descendant.Name == "FoxCacheVisual02" or descendant.Name == "FoxCacheVisual03" or descendant.Name == "Trail" or descendant.Name == "Bank" then
         task.defer(updateFoxCacheMarkers)
@@ -898,6 +1168,85 @@ local function findResourceNode(nodeId)
     return nil
 end
 
+local resourceOriginalGeometry = setmetatable({}, {__mode = "k"})
+
+local function captureResourceGeometry(model)
+    local saved = resourceOriginalGeometry[model]
+    if saved then return saved end
+    saved = {}
+    for _, descendant in model:GetDescendants() do
+        if descendant:IsA("BasePart") and descendant.Name ~= "PromptAnchor" then
+            saved[descendant] = {size = descendant.Size, cframe = descendant.CFrame}
+        end
+    end
+    resourceOriginalGeometry[model] = saved
+    return saved
+end
+
+local function playResourceBreakAnimation(nodeId)
+    local model = findResourceNode(nodeId)
+    if not model then return end
+    local saved = captureResourceGeometry(model)
+    local isWood = string.find(nodeId, "Wood", 1, true) ~= nil
+    for part, geometry in saved do
+        if part.Parent then
+            local targetCFrame = geometry.cframe * CFrame.new(
+                isWood and 0 or (math.random() - 0.5) * 0.7,
+                isWood and -0.7 or -0.45,
+                isWood and 0 or (math.random() - 0.5) * 0.7
+            ) * CFrame.Angles(math.rad(isWood and 12 or math.random(-24, 24)), 0, math.rad(math.random(-20, 20)))
+            TweenService:Create(part, TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                Size = geometry.size * 0.12,
+                CFrame = targetCFrame,
+                LocalTransparencyModifier = 1,
+            }):Play()
+        end
+    end
+end
+
+local function playResourceRegrowthBurst(model)
+    local anchor = model.PrimaryPart or model:FindFirstChild("PromptAnchor")
+    if not anchor or not anchor:IsA("BasePart") then return end
+    local emitter = Instance.new("ParticleEmitter")
+    emitter.Name = "LocalResourceRegrowth"
+    emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+    emitter.Rate = 0
+    emitter.Lifetime = NumberRange.new(0.35, 0.7)
+    emitter.Speed = NumberRange.new(1.2, 2.8)
+    emitter.SpreadAngle = Vector2.new(180, 180)
+    emitter.RotSpeed = NumberRange.new(-70, 70)
+    emitter.LightEmission = 0.7
+    emitter.Color = string.find(model.Name, "Wood", 1, true)
+        and ColorSequence.new(Color3.fromRGB(145, 207, 123), Color3.fromRGB(226, 231, 153))
+        or ColorSequence.new(Color3.fromRGB(155, 193, 205), Color3.fromRGB(221, 226, 215))
+    emitter.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.16),
+        NumberSequenceKeypoint.new(1, 0),
+    })
+    emitter.Parent = anchor
+    emitter:Emit(12)
+    task.delay(1.1, function()
+        if emitter.Parent then emitter:Destroy() end
+    end)
+end
+
+local function restoreResourceGrowth(model)
+    local saved = captureResourceGeometry(model)
+    playResourceRegrowthBurst(model)
+    for part, geometry in saved do
+        if part.Parent then
+            part.Size = geometry.size * 0.12
+            part.CFrame = geometry.cframe * CFrame.new(0, -0.45, 0)
+            part.LocalTransparencyModifier = 1
+            TweenService:Create(part, TweenInfo.new(0.42, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = geometry.size,
+                CFrame = geometry.cframe,
+                LocalTransparencyModifier = 0,
+            }):Play()
+        end
+    end
+end
+
 local function applyResourceNodeVisibility(model, visible)
     for _, descendant in model:GetDescendants() do
         if descendant:IsA("BasePart") then
@@ -912,6 +1261,9 @@ local function setResourceNodeVisible(nodeId, visible)
     resourceNodeHidden[nodeId] = not visible
     local model = findResourceNode(nodeId)
     if not model then return false end
+    if visible then
+        restoreResourceGrowth(model)
+    end
     applyResourceNodeVisibility(model, visible)
     return true
 end
@@ -968,7 +1320,22 @@ event.OnClientEvent:Connect(function(message, payload)
         end
         return
     elseif message == "ResourcePicked" and type(payload) == "table" then
-        applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
+        clearResourceHitFeedback(payload.nodeId)
+        if payload.itemId ~= nil and payload.amount ~= nil then
+            playResourceRewardPickup(payload)
+            playResourceBreakFeedback(payload.nodeId)
+            playResourceBreakAnimation(payload.nodeId)
+            task.delay(0.3, function()
+                applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
+            end)
+        else
+            -- Cooldown and already-collected responses only synchronize visibility;
+            -- they must never replay a reward or a destruction animation.
+            applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
+        end
+        return
+    elseif message == "ResourceHit" and type(payload) == "table" then
+        showResourceHitFeedback(payload)
         return
     end
 
