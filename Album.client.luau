@@ -1380,7 +1380,7 @@ local function refresh()
         local growthStage = levelValue >= 5 and "ВЗРОСЛЫЙ"
             or levelValue >= 3 and "ПОДРОСТОК"
             or "МАЛЫШ"
-        entry.level.Text = levelValue >= 5 and (growthStage .. " · УР. 5")
+        entry.level.Text = levelValue >= 5 and (growthStage .. " · УР. 5 · МАКСИМУМ")
             or (growthStage .. " · УР. " .. tostring(levelValue) .. " · " .. tostring(xpValue) .. "/" .. tostring(xpNeeded))
         local mutationName = player:GetAttribute("Companion_" .. id .. "_MutationName")
         local mutationRarity = player:GetAttribute("Companion_" .. id .. "_MutationRarity")
