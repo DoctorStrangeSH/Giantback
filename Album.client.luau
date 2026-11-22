@@ -970,6 +970,23 @@ event.OnClientEvent:Connect(function(message, payload)
     elseif message == "ResourcePicked" and type(payload) == "table" then
         applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
         return
+    elseif message == "ResourceHit" and type(payload) == "table" then
+        local grove = workspace:FindFirstChild("Grove")
+        local dusk = workspace:FindFirstChild("Dusk")
+        local node = (grove and grove:FindFirstChild("ResourceNodes") and grove.ResourceNodes:FindFirstChild(payload.nodeId))
+            or (dusk and dusk:FindFirstChild("ResourceNodes") and dusk.ResourceNodes:FindFirstChild(payload.nodeId))
+        if node and node:IsA("Model") then
+            local origin = node:GetPivot()
+            task.spawn(function()
+                for _, offset in {Vector3.new(0, 0.12, 0), Vector3.new(0, -0.08, 0), Vector3.zero} do
+                    if not node.Parent then return end
+                    node:PivotTo(origin * CFrame.new(offset))
+                    task.wait(0.045)
+                end
+                if node.Parent then node:PivotTo(origin) end
+            end)
+        end
+        return
     end
 
     lastTip = os.clock() + 3.5
