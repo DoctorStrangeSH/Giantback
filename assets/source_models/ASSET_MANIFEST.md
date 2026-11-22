@@ -3,7 +3,7 @@
 | Source file | Roblox MeshPart asset ID | Scale | Pivot | Studio checked | Notes |
 |---|---|---|---|---|---|
 | fox_companion.obj | pending import | pending | pending | no | current source; retained as rollback baseline |
-| fox_companion_hero.obj | not generated yet | pending | see generated `fox_companion_hero_rig.json` | no | 17 groups; left/right inner ears split; rig sidecar + per-part mesh/UV/material/bounds report generated with OBJ; Blender preview and Studio review pending |
+| fox_companion_hero.obj | generated in CI review artifact; no Roblox ID yet | pending | see generated `fox_companion_hero_rig.json` | no | 17 groups; left/right inner ears split; rig sidecar + per-part mesh/UV/material/bounds report available in review artifact; palette refinement and sculpted chest ruff need a fresh render/art review before Studio import |
 | moth_companion.obj | pending import | pending | pending | no | keep wing groups separate |
 | home_cottage.obj | pending import | pending | pending | no | static building |
 | farm_bed.obj | pending import | pending | pending | no | crop visuals may be separate |
