@@ -29,11 +29,11 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("for nodeId, collected in savedCollected do", WORLD)
 
     def test_profile_schema_and_migration_compatible_fields(self):
-        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 8)", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 9)", WORLD)
         self.assertIn('"IronOre", "IronIngot"', WORLD)
 
     def test_saving_legacy_schema_never_downgrades_newer_profile(self):
-        self.assertIn("math.max(tonumber(old.schemaVersion) or 0, 8)", WORLD)
+        self.assertIn("math.max(tonumber(old.schemaVersion) or 0, 9)", WORLD)
         self.assertIn("local savedIsland = type(old.island) == \"table\" and old.island", WORLD)
         self.assertIn("if type(savedIsland.buildings) ~= \"table\" then", WORLD)
         self.assertIn("savedIsland.buildings = {}", WORLD)
@@ -52,8 +52,9 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("RequestResourceState")', CLIENT)
 
     def test_renewable_nodes_have_explicit_personal_cooldowns(self):
-        self.assertEqual(WORLD.count('kind = "renewable"'), 8)
+        self.assertEqual(WORLD.count('kind = "renewable"'), 10)
         self.assertEqual(WORLD.count("respawnSeconds = 300"), 8)
+        self.assertEqual(WORLD.count("respawnSeconds = 600"), 2)
 
 
     def test_tools_are_persisted_and_restored_after_respawn(self):
@@ -100,6 +101,38 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("EquipTool", definition.id)', hud)
         self.assertIn('event:FireServer("UpgradeTool", definition.id)', hud)
         self.assertIn('Tools = renderTools', hud)
+
+
+    def test_iron_nodes_require_pickaxe_and_award_ore(self):
+        for node_id in ("DuskIron01", "DuskIron02"):
+            self.assertIn(f'key = "{node_id}"', WORLD)
+        self.assertIn('itemId = "IronOre"', WORLD)
+        self.assertIn('requiredTool = "Pickaxe", hitsRequired = 5', WORLD)
+        self.assertIn('visual = "ore"', WORLD)
+        self.assertIn('def.visual == "ore"', WORLD)
+
+    def test_resource_definition_amount_is_actually_awarded(self):
+        self.assertIn('local rewardAmount = math.max(1, math.floor(tonumber(def.amount) or 1))', WORLD)
+        self.assertIn('+ rewardAmount', WORLD)
+        self.assertIn('tostring(rewardAmount)', WORLD)
+
+    def test_smelter_is_persistent_and_only_collects_after_timer(self):
+        self.assertIn('local function useHomeSmelter(player, ownerUserId, smelterAnchor)', WORLD)
+        self.assertIn('session.smeltingReadyAt = now + duration', WORLD)
+        self.assertIn('session.smeltingAmount = 1', WORLD)
+        self.assertIn('session.inventory.IronOre -= oreCost', WORLD)
+        self.assertIn('session.inventory.Wood -= woodCost', WORLD)
+        self.assertIn('session.inventory.IronIngot = (session.inventory.IronIngot or 0) + amount', WORLD)
+        self.assertIn('old.smelting = smeltingSnapshot', WORLD)
+        self.assertIn('data.smelting', WORLD)
+        self.assertIn('smelter.Name = "Smelter"', WORLD)
+
+    def test_smelter_requires_owner_and_materials(self):
+        smelter = WORLD.split('local function useHomeSmelter', 1)[1].split('local function repairHomeBridge', 1)[0]
+        self.assertIn('if player.UserId ~= ownerUserId then return end', smelter)
+        self.assertIn('session.inventory.IronOre or 0) < oreCost', smelter)
+        self.assertIn('session.inventory.Wood or 0) < woodCost', smelter)
+        self.assertIn('(root.Position - smelterAnchor.Position).Magnitude > 14', smelter)
 
     def test_remote_handshake_is_registered_before_player_initialization(self):
         self.assertLess(WORLD.index("event.OnServerEvent:Connect"), WORLD.index("Players.PlayerAdded:Connect(init)"))
