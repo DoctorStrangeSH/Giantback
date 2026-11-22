@@ -359,7 +359,7 @@ local function renderPets()
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
         local equipped = player:GetAttribute("Companion") == pet.id
-        local item = card(body, pet.id .. "Card", 168)
+        local item = card(body, pet.id .. "Card", 214)
         local icon = label(item, "Icon", pet.icon, UDim2.fromOffset(58, 58), UDim2.fromOffset(10, 24), 34, palette.ink)
         icon.TextXAlignment = Enum.TextXAlignment.Center
         label(item, "Name", pet.name .. " • " .. pet.role, UDim2.new(1, -210, 0, 24), UDim2.fromOffset(76, 8), 14, palette.ink, Enum.Font.GothamBold)
@@ -373,6 +373,26 @@ local function renderPets()
         local bond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_Bond")) or 0), 0, 1000)
         local bondRank = player:GetAttribute("Companion_" .. pet.id .. "_BondRank") or "Знакомство"
         label(item, "Friendship", owned and ("Дружба " .. tostring(bond) .. "/1000 · " .. bondRank) or "Сначала найди питомца", UDim2.new(1, -220, 0, 18), UDim2.fromOffset(76, 84), 10, palette.forest, Enum.Font.GothamBold)
+
+        local companionLevel = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_Level")) or 1), 1, 5)
+        local companionXP = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_XP")) or 0))
+        local companionXPToNext = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_XPToNext")) or 0))
+        local mutationName = player:GetAttribute("Companion_" .. pet.id .. "_MutationName")
+        local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
+        local levelText = companionLevel >= 5 and "УР. 5 · МАКСИМУМ"
+            or ("УР. " .. tostring(companionLevel) .. " · " .. tostring(companionXP) .. "/" .. tostring(companionXPToNext) .. " XP")
+        local mutationText = owned and type(mutationName) == "string" and mutationName ~= ""
+            and (" · ✦ " .. mutationName .. " (" .. tostring(mutationRarity or "Необычный") .. ")") or ""
+        label(item, "Progression", owned and (levelText .. mutationText) or "Уровень и мутация откроются при знакомстве",
+            UDim2.new(1, -28, 0, 20), UDim2.fromOffset(16, 151), 11, palette.ink, Enum.Font.GothamBold)
+        local foxTalent = companionLevel >= 5 and "Острый нюх: поиск каждые 60 сек."
+            or companionLevel >= 3 and "Чуткий нюх: поиск каждые 90 сек."
+            or "Следопыт: найди тайники в роще."
+        local mothTalent = companionLevel >= 5 and "Лунная аура: радиус лечения +4."
+            or companionLevel >= 3 and "Лунная аура: радиус лечения +2."
+            or "Лунная аура развивается вместе с дружбой."
+        label(item, "Talent", owned and (pet.id == "Fox" and foxTalent or mothTalent) or "Найди питомца, чтобы открыть талант",
+            UDim2.new(1, -28, 0, 20), UDim2.fromOffset(16, 179), 10, palette.forest)
 
         local action = button(item, "Action", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН", UDim2.fromOffset(108, 28), UDim2.new(1, -120, 0, 8), equipped and palette.gold or palette.forest)
         action.TextSize = 10
