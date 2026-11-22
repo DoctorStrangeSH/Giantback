@@ -2026,6 +2026,38 @@ local function attachWorldPetPrompt(model, companionId)
     end)
 end
 
+local function attachMothStardust(model)
+    if not model or not model.Parent then return end
+    local glow = model:FindFirstChild("Moonlight glow", true)
+    if not glow or not glow:IsA("BasePart") or glow:FindFirstChild("CompanionStardust") then return end
+
+    local attachment = Instance.new("Attachment")
+    attachment.Name = "CompanionStardustAttachment"
+    attachment.Parent = glow
+
+    local emitter = Instance.new("ParticleEmitter")
+    emitter.Name = "CompanionStardust"
+    emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+    emitter.Color = ColorSequence.new(palette.lilacLight, palette.moon)
+    emitter.LightEmission = 0.8
+    emitter.Rate = 7
+    emitter.Lifetime = NumberRange.new(0.28, 0.55)
+    emitter.Speed = NumberRange.new(0.12, 0.42)
+    emitter.SpreadAngle = Vector2.new(150, 150)
+    emitter.Rotation = NumberRange.new(0, 360)
+    emitter.RotSpeed = NumberRange.new(-70, 70)
+    emitter.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.12),
+        NumberSequenceKeypoint.new(0.55, 0.075),
+        NumberSequenceKeypoint.new(1, 0),
+    })
+    emitter.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.12),
+        NumberSequenceKeypoint.new(1, 1),
+    })
+    emitter.Parent = attachment
+end
+
 local function follow(dt)
     local now = workspace:GetServerTimeNow()
 
@@ -2047,8 +2079,19 @@ local function follow(dt)
         if root and names[id] then
             local phase = now + (owner.UserId % 19) * 0.17
             local bob = math.sin(phase * 2.8) * 0.14
+            local followOffset
+            if id == "Moth" and owner == player then
+                local orbitAngle = phase * 0.72
+                followOffset = CFrame.new(
+                    2.25 + math.cos(orbitAngle) * 0.38,
+                    1.05 + bob + math.sin(orbitAngle * 1.35) * 0.16,
+                    1.75 + math.sin(orbitAngle) * 0.42
+                )
+            else
+                followOffset = CFrame.new(2.8, (id == "Fox" and -1.35 or 1.05) + bob, 2.1)
+            end
             local target = root.CFrame
-                * CFrame.new(2.8, (id == "Fox" and -1.35 or 1.05) + bob, 2.1)
+                * followOffset
                 * CFrame.Angles(0, math.sin(phase * 1.6) * 0.06, 0)
 
             if not model then
@@ -2060,6 +2103,9 @@ local function follow(dt)
                 captureAnimation(model, id, false, owner == player)
                 if owner == player then
                     attachWorldPetPrompt(model, id)
+                    if id == "Moth" then
+                        attachMothStardust(model)
+                    end
                 end
                 if owner == player and id == "Moth" and pendingMothBurst then
                     playMothAbilityBurst(model)
@@ -2075,12 +2121,20 @@ local function follow(dt)
 
             local activity = companionActivity[owner]
             if not activity or activity.companionId ~= id then
-                activity = {companionId = id, idleSince = now}
+                activity = {
+                    companionId = id,
+                    idleSince = now,
+                    nextCuriosityAt = now + math.random(7, 14),
+                }
                 companionActivity[owner] = activity
             end
             local moving = humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.08
             if moving then
                 activity.idleSince = now
+                activity.nextCuriosityAt = now + math.random(9, 16)
+            elseif owner == player and id == "Fox" and now >= (activity.nextCuriosityAt or now + 10) then
+                foxSniffUntil = os.clock() + 2.2
+                activity.nextCuriosityAt = now + math.random(13, 23)
             end
             local idleSeconds = now - activity.idleSince
             local resting = not moving and idleSeconds >= 12
