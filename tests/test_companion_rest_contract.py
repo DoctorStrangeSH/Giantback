@@ -10,7 +10,7 @@ class CompanionRestContractTests(unittest.TestCase):
     def test_rest_starts_only_after_a_short_owner_idle_period(self):
         self.assertIn("local companionActivity = {}", ALBUM)
         self.assertIn("idleSince = now", ALBUM)
-        self.assertIn("now - activity.idleSince >= 12", ALBUM)
+        self.assertIn("idleSeconds >= 12", ALBUM)
         self.assertIn("if moving then", ALBUM)
         self.assertIn("activity.idleSince = now", ALBUM)
 
