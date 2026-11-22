@@ -114,7 +114,7 @@ jobs:
               "ResourcePicked",
               "p.MaxActivationDistance + 1",
               "kind = \"renewable\"",
-              "old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 9)",
+              "old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 10)",
               "old.resourceCooldowns = savedCooldowns",
               "old.collectedNodes = savedCollected",
               "LocalTransparencyModifier = visible and 0 or 1",
@@ -252,8 +252,14 @@ jobs:
               "BridgeRail",
               "BridgePost",
               "MAX_ACTIONS_PER_WINDOW = 10",
-              "CombatNotEnabled",
+              "PLAYER_DAMAGE = 22",
+              "GiantbackEnemy",
+              "ENEMY_TELEGRAPH_SECONDS = 0.85",
+              "GiantbackGrantCombatReward",
+              "old.completedCombatEncounters = savedCombatEncounters",
               "CombatRegionRequired",
+              "completedCombatEncounters",
+              "GroveGrunt01",
           ]
           combined = "\n".join(sources)
           missing_markers = [marker for marker in required_markers if marker not in combined]
