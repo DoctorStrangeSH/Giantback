@@ -14,10 +14,13 @@ local PathfindingService = game:GetService("PathfindingService")
 
 local ACTION_RATE_WINDOW = 1
 local MAX_ACTIONS_PER_WINDOW = 10
-local PLAYER_DAMAGE = 22
-local PLAYER_ATTACK_COOLDOWN = 0.65
+local COMBO_DAMAGE = {18, 22, 32}
+local COMBO_COOLDOWN = {0.48, 0.48, 0.72}
+local COMBO_WINDOW_SECONDS = 1.15
 local PLAYER_ATTACK_RANGE = 8
+local PLAYER_FINISHER_RANGE = 8.5
 local PLAYER_ATTACK_BOX = Vector3.new(6, 5, 5)
+local PLAYER_FINISHER_BOX = Vector3.new(7, 6, 6)
 local ENEMY_AGGRO_RANGE = 34
 local ENEMY_PATH_REFRESH_SECONDS = 1.15
 local ENEMY_PATH_AGENT = {AgentRadius = 2, AgentHeight = 5, AgentCanJump = false, WaypointSpacing = 4}
@@ -75,6 +78,8 @@ local function newPlayerState()
         dodgingUntil = 0,
         dodgeReadyAt = 0,
         attackReadyAt = 0,
+        comboStep = 0,
+        comboExpiresAt = 0,
     }
 end
 
@@ -127,6 +132,8 @@ local function clearTransientState(player)
     state.dodgingUntil = 0
     state.dodgeReadyAt = 0
     state.attackReadyAt = 0
+    state.comboStep = 0
+    state.comboExpiresAt = 0
     player:SetAttribute("CombatBlocking", false)
     player:SetAttribute("CombatDodging", false)
 end
@@ -435,7 +442,16 @@ local function performAttack(player, state, now)
     end
     local _, root = getCharacterParts(player)
     if not root then return end
-    state.attackReadyAt = now + PLAYER_ATTACK_COOLDOWN
+    -- Three deliberate server-timed strikes. Missing the input window resets to strike one.
+    if now > state.comboExpiresAt then
+        state.comboStep = 0
+    end
+    state.comboStep = state.comboStep % #COMBO_DAMAGE + 1
+    local comboStep = state.comboStep
+    local isFinisher = comboStep == #COMBO_DAMAGE
+    state.comboExpiresAt = now + COMBO_WINDOW_SECONDS
+    state.attackReadyAt = now + COMBO_COOLDOWN[comboStep]
+    player:SetAttribute("CombatComboStep", comboStep)
 
     local forward = root.CFrame.LookVector
     local hitCFrame = CFrame.lookAt(root.Position + forward * 3.5, root.Position + forward * 4.5)
@@ -444,18 +460,24 @@ local function performAttack(player, state, now)
     overlap.FilterDescendantsInstances = { player.Character }
 
     local hitThisSwing = {}
-    for _, part in Workspace:GetPartBoundsInBox(hitCFrame, PLAYER_ATTACK_BOX, overlap) do
+    local attackBox = isFinisher and PLAYER_FINISHER_BOX or PLAYER_ATTACK_BOX
+    local attackRange = isFinisher and PLAYER_FINISHER_RANGE or PLAYER_ATTACK_RANGE
+    for _, part in Workspace:GetPartBoundsInBox(hitCFrame, attackBox, overlap) do
         local enemy = isEnemyModel(part)
         if enemy and not hitThisSwing[enemy] and isEnemyAlive(enemy) then
             local entry = enemies[enemy]
             if entry.regionId == getPlayerRegion(player) then
                 local offset = entry.root.Position - root.Position
-                if offset.Magnitude <= PLAYER_ATTACK_RANGE and root.CFrame.LookVector:Dot(offset.Unit) >= 0.25 then
+                if offset.Magnitude <= attackRange and root.CFrame.LookVector:Dot(offset.Unit) >= 0.25 then
                     hitThisSwing[enemy] = true
                     entry.contributors[player] = true
-                    entry.humanoid:TakeDamage(PLAYER_DAMAGE)
+                    entry.humanoid:TakeDamage(COMBO_DAMAGE[comboStep])
                     enemy:SetAttribute("CombatHealth", math.max(0, entry.humanoid.Health))
-                    remote:FireClient(player, "CombatHit", { enemyId = enemy:GetAttribute("EnemyId") or enemy.Name })
+                    remote:FireClient(player, "CombatHit", {
+                        enemyId = enemy:GetAttribute("EnemyId") or enemy.Name,
+                        comboStep = comboStep,
+                        finisher = isFinisher,
+                    })
                 end
             end
         end
@@ -538,6 +560,7 @@ local function registerPlayer(player)
     player:SetAttribute("CombatBlocking", false)
     player:SetAttribute("CombatDodging", false)
     player:SetAttribute("CombatWeaponId", "SwordShield")
+    player:SetAttribute("CombatComboStep", 0)
 
     player.CharacterAdded:Connect(function()
         clearTransientState(player)
