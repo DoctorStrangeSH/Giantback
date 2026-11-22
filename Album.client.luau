@@ -1878,7 +1878,7 @@ local function setSleepIndicator(model, enabled)
                 glyph.BackgroundTransparency = 1
                 glyph.Text = glyphText
                 glyph.TextColor3 = index == 1 and palette.cream or palette.lilac
-                glyph.TextStrokeColor3 = palette.ink
+                glyph.TextStrokeColor3 = palette.shadow
                 glyph.TextStrokeTransparency = 0.35
                 glyph.TextTransparency = 0.05
                 glyph.Font = Enum.Font.GothamBlack
@@ -1898,7 +1898,7 @@ local function setSleepIndicator(model, enabled)
                 )
                 tween:Play()
                 task.wait(0.48)
-                Debris:AddItem(glyph, 0.05)
+                Debris:AddItem(glyph, 1.4)
             end
             task.wait(0.28)
         end
