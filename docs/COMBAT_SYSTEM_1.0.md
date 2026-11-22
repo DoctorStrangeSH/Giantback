@@ -150,3 +150,9 @@ Implemented in `Combat.server.luau`:
 The forest trial chamber contains three interactable runes. The visible clue gives the sequence **Moon → Dawn → Tide**. The server tracks progress independently per player, rejects incorrect order, resets an abandoned sequence after 20 seconds, and only enables the chest after all three runes are activated in order. Puzzle progress is session-scoped; the final chest reward remains profile-persistent and idempotent.
 
 Roblox Studio acceptance remains required for prompt reachability, label readability, room layout and multiplayer isolation.
+
+## 14. Rootvault expedition — staged
+
+A compact three-room dungeon is generated beyond the first forest trial chamber: an entry room, a connected pressure-plate passage, a mechanism room with a per-player lever and sealed door, and a reward vault. The entrance requires the player's saved first-trial chest completion. The server owns the in-dungeon state, lever progression, prompt distance checks, trap damage cooldown, and one-time reward claim. Pressure plates deal bounded damage with a per-player cooldown; the vault chest grants **IronOre ×3** once per profile via the existing idempotent reward function.
+
+This is the first traversal slice, not yet the final dungeon: enemy encounters, a boss, a key-drop loop, room randomization and Studio playtesting remain NOT DONE.
