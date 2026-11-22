@@ -1750,6 +1750,7 @@ end
 local function animateModelParts(model, state, time, moving, resting)
     local pivot = model:GetPivot()
     local now = os.clock()
+    local growthStage = math.clamp(math.floor(tonumber(model:GetAttribute("AppliedGrowthStage")) or 1), 1, 3)
     local sniffing = state.id == "Fox" and not state.isEncounter and now < foxSniffUntil
     local mothAbility = state.id == "Moth" and state.isLocal and now < mothAbilityUntil
     local petting = not state.isEncounter and now < (pettingUntil[state.id] or 0)
@@ -1772,7 +1773,8 @@ local function animateModelParts(model, state, time, moving, resting)
                     transform = CFrame.new(0, -0.14, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 12) * 0.045, 0, 0))
                 elseif part.Name == "Tail" or part.Name == "Tail tip" then
                     local swaySpeed = sniffing and 9 or 4.2
-                    local swayStrength = sniffing and 0.48 or 0.3
+                    local growthSway = ({[1] = 0.82, [2] = 1, [3] = 1.22})[growthStage]
+                    local swayStrength = (sniffing and 0.48 or 0.3) * growthSway
                     if resting then
                         swaySpeed = 1.6
                         swayStrength = 0.12
@@ -1788,7 +1790,9 @@ local function animateModelParts(model, state, time, moving, resting)
                         or CFrame.Angles(sway * 0.45, sway, sway * 0.2)
                     transform = aroundPoint(tailHinge, tailRotation)
                 elseif part.Name == "Paw" or part.Name == "Paw toe" then
+                    local growthStride = ({[1] = 0.82, [2] = 1, [3] = 1.12})[growthStage]
                     local stride = resting and 0 or moving and 0.32 or sniffing and 0.16 or petting and 0.11 or 0.055
+                    stride *= growthStride
                     local phase = (math.abs(offset.Position.X) + math.abs(offset.Position.Z)) * 1.8
                     local step = math.sin(time * (moving and 10 or sniffing and 8 or petting and 7 or 2.4) + phase) * stride
                     transform = CFrame.new(0, math.max(0, step) * 0.16, 0)
@@ -1804,8 +1808,9 @@ local function animateModelParts(model, state, time, moving, resting)
                 local side = offset.Position.X >= rigOrigin.X and 1 or -1
                 if part.Name == "Wing" or part.Name == "Wing lower" or part.Name == "Wing tip"
                     or part.Name == "Wing lower tip" or part.Name == "Wing jewel" or part.Name == "Wing spot" then
-                    local flapSpeed = mothAbility and 21 or 11.5
-                    local flapStrength = mothAbility and 0.76 or 0.42
+                    local growthFlap = ({[1] = 0.88, [2] = 1, [3] = 1.16})[growthStage]
+                    local flapSpeed = (mothAbility and 21 or 11.5) * growthFlap
+                    local flapStrength = (mothAbility and 0.76 or 0.42) * growthFlap
                     if resting and not mothAbility then
                         flapSpeed = 3.2
                         flapStrength = 0.13
@@ -1827,7 +1832,8 @@ local function animateModelParts(model, state, time, moving, resting)
                     local antennaHinge = rigOrigin + Vector3.new(side * 0.34, 0.9, -0.55)
                     transform = aroundPoint(antennaHinge, CFrame.Angles(0, 0, math.sin(time * twitchSpeed + side) * twitchStrength * side))
                 elseif part.Name == "Moonlight glow" then
-                    local pulse = mothAbility and (1.15 + math.sin(time * 12) * 0.35) or resting and 0.38 or 0.65
+                    local adultGlow = growthStage == 3 and 1.18 or growthStage == 2 and 1.06 or 1
+                    local pulse = (mothAbility and (1.15 + math.sin(time * 12) * 0.35) or resting and 0.38 or 0.65) * adultGlow
                     if petting and not mothAbility then
                         pulse = 0.95 + math.sin(time * 8) * 0.2
                     end
