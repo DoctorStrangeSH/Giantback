@@ -244,3 +244,15 @@ The sword supports a hold-and-release charged strike. The server records the sta
 The action is available on keyboard (R), gamepad (ButtonX) and ContextActionService touch controls. A charge expires after four seconds if abandoned, and blocking, dodging, respawning or starting a normal attack cannot preserve or bypass the charge state. A too-short charge is rejected. Contract tests and generated-place markers cover the server timing, input mapping and cancellation rules.
 
 This is a first tuning pass. Roblox Studio playtests must validate the touch button's hold behavior, charge readability, latency, hit volume, boss displacement, animation/VFX timing and whether the risk/reward feels fair.
+
+
+## 30. First companion combat abilities (Fox / Moth)
+
+The first combat companion slice adds one active ability for each currently implemented companion. The player sends only the `CompanionSkill` action; the server reads the equipped `Companion` attribute and verifies the corresponding ownership attribute. Clients cannot choose the skill, target, damage, healing amount or affected players.
+
+- **Fox — Корешковый выпад:** selects the nearest living registered enemy in the player's current combat region within 18 studs and deals 24 damage. A successful hit records the player as an encounter contributor for reward eligibility.
+- **Moth — Лунный импульс:** heals ready allies in the same combat region within 14 studs for up to 18 HP each, capped at each target's MaxHealth. It fails without consuming cooldown when nobody nearby needs healing.
+- Both skills share a 14-second per-player cooldown. The cooldown is session state and survives character respawn. Skill use is unavailable while blocking or charging.
+- Keyboard C, gamepad ButtonY and a ContextActionService touch button trigger the same server action. The client only displays server-confirmed feedback.
+
+The skills are intentionally supportive: Fox adds a modest damage assist and Moth improves co-op sustain, but neither replaces player combat. Contract tests and generated-place markers cover ownership, region filtering, server damage/healing, cooldown and input mapping. Studio acceptance must verify real companion ownership/equip flows, multiplayer healing boundaries, hit feedback, mobile button layout and balance.
