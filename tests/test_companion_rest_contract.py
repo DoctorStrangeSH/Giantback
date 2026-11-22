@@ -26,6 +26,17 @@ class CompanionRestContractTests(unittest.TestCase):
         self.assertIn("resting and 1.1", ALBUM)
         self.assertIn("resting and 0.38", ALBUM)
 
+    def test_deep_idle_adds_local_sleep_z_glyphs_and_cleans_them_up(self):
+        self.assertIn('local sleepIndicators = {}', ALBUM)
+        self.assertIn('idleSeconds >= 45', ALBUM)
+        self.assertIn('setSleepIndicator(model, sleeping)', ALBUM)
+        self.assertIn('CompanionSleepZLocal', ALBUM)
+        self.assertIn('AlwaysOnTop = true', ALBUM)
+        self.assertIn('glyph.Text = glyphText', ALBUM)
+        self.assertIn('Debris:AddItem(glyph, 1.4)', ALBUM)
+        self.assertIn('setSleepIndicator(model, false)', ALBUM)
+        self.assertIn('sleepIndicators[model] = nil', ALBUM)
+
     def test_rest_is_visual_only_and_activity_state_is_cleaned_up(self):
         self.assertIn("animateModelParts(model, state, phase, moving, resting)", ALBUM)
         self.assertIn("companionActivity[owner] = nil", ALBUM)
