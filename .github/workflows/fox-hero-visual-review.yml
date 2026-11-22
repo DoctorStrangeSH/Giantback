@@ -67,8 +67,22 @@ jobs:
               assert part["non_manifold_edges"] == 0, f"{name}: non-manifold edges detected"
               assert part["uv_layers"] >= 1, f"{name}: UV layer missing"
               assert part["materials"], f"{name}: material assignment missing"
+              profiles = part["material_profiles"]
+              assert set(profiles) == set(part["materials"]), f"{name}: incomplete material profile metadata"
+              assert all(value in {"soft_fur", "smooth"} for value in profiles.values()), f"{name}: unknown surface profile"
 
-          print("Fox Hero review package passed: 17 rig groups, mesh/UV/material checks, four renders.")
+          fur_groups = {
+              "FoxBody", "FoxBelly", "FoxHead", "FoxMuzzle",
+              "FoxEarLeft", "FoxEarRight",
+              "FoxLegFrontLeft", "FoxLegFrontRight",
+              "FoxLegBackLeft", "FoxLegBackRight",
+              "FoxTail", "FoxTailTip",
+          }
+          for name in fur_groups:
+              profiles = report["parts"][name]["material_profiles"].values()
+              assert "soft_fur" in profiles, f"{name}: soft-fur material profile missing"
+
+          print("Fox Hero review package passed: 17 rig groups, mesh/UV/material checks, soft-fur profiles, four renders.")
           PY
       - uses: actions/upload-artifact@v4
         with:
