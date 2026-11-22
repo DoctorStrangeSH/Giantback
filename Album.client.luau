@@ -2047,7 +2047,8 @@ local function attachMothStardust(model)
         ["Смелый"] = 7,
         ["Застенчивый"] = 4,
     }
-    emitter.Rate = personalityRates[personality] or 7
+    local bondStage = math.clamp(tonumber(player:GetAttribute("Companion_Moth_BondStage")) or 0, 0, 4)
+    emitter.Rate = math.min(16, (personalityRates[personality] or 7) + math.floor(bondStage / 2))
     emitter.Lifetime = NumberRange.new(0.28, 0.55)
     emitter.Speed = NumberRange.new(0.12, 0.42)
     emitter.SpreadAngle = Vector2.new(150, 150)
@@ -2096,7 +2097,9 @@ local function follow(dt)
                     ["Застенчивый"] = 0.52,
                 }
                 local orbitAngle = phase * (orbitSpeeds[personality] or 0.72)
-                local orbitRadius = personality == "Застенчивый" and 0.24 or personality == "Озорной" and 0.52 or 0.38
+                local personalityRadius = personality == "Застенчивый" and 0.24 or personality == "Озорной" and 0.52 or 0.38
+                local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_Moth_BondStage")) or 0, 0, 4)
+                local orbitRadius = math.max(0.2, personalityRadius - bondStage * 0.035)
                 followOffset = CFrame.new(
                     2.25 + math.cos(orbitAngle) * orbitRadius,
                     1.05 + bob + math.sin(orbitAngle * 1.35) * (personality == "Застенчивый" and 0.09 or 0.16),
@@ -2144,10 +2147,13 @@ local function follow(dt)
                     ["Застенчивый"] = {15, 23},
                 }
                 local window = curiosityWindows[personality] or {7, 14}
+                local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_" .. id .. "_BondStage")) or 0, 0, 4)
+                local minDelay = math.max(4, window[1] - bondStage * 1.5)
+                local maxDelay = math.max(minDelay + 1, window[2] - bondStage * 2)
                 activity = {
                     companionId = id,
                     idleSince = now,
-                    nextCuriosityAt = now + math.random(window[1], window[2]),
+                    nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay)),
                 }
                 companionActivity[owner] = activity
             end
@@ -2165,7 +2171,10 @@ local function follow(dt)
                     ["Застенчивый"] = {20, 29},
                 }
                 local window = curiosityWindows[personality] or {13, 23}
-                activity.nextCuriosityAt = now + math.random(window[1], window[2])
+                local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_Fox_BondStage")) or 0, 0, 4)
+                local minDelay = math.max(5, window[1] - bondStage * 1.5)
+                local maxDelay = math.max(minDelay + 1, window[2] - bondStage * 2)
+                activity.nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))
             end
             local idleSeconds = now - activity.idleSince
             local resting = not moving and idleSeconds >= 12
