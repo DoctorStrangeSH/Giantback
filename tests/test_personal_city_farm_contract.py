@@ -83,12 +83,12 @@ class PersonalCityFarmContractTests(unittest.TestCase):
         self.assertIn("farm.level >= 3", WORLD)
 
     def test_carrot_is_planted_and_harvested_on_server(self):
-        self.assertIn("growthSeconds = 180", WORLD)
-        self.assertIn('state.cropId = "Carrot"', WORLD)
-        self.assertIn("session.inventory.CarrotSeed -= 1", WORLD)
-        self.assertIn("state.readyAt = now + cropDefinitions.Carrot.growthSeconds", WORLD)
+        self.assertIn("growthSeconds = 300", WORLD)
+        self.assertIn("state.cropId = cropId", WORLD)
+        self.assertIn("session.inventory[definition.seedItemId] -= 1", WORLD)
+        self.assertIn("state.readyAt = now + definition.growthSeconds", WORLD)
         self.assertIn("if now < state.readyAt then", WORLD)
-        self.assertIn("session.inventory.Carrot = (session.inventory.Carrot or 0) + 1", WORLD)
+        self.assertIn("session.inventory[definition.harvestItemId]", WORLD)
 
     def test_plot_interactions_capture_stable_owner_and_plot_ids(self):
         self.assertIn("local ownerUserId = player.UserId", WORLD)
