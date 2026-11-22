@@ -167,3 +167,15 @@ The visual-review workflow now serializes renders per branch, cancels superseded
 ## CI preview render performance
 
 For reliable headless software rendering, the four CI review views now use 768×768 output and 16 Eevee TAA render samples. This is a preview/acceptance setting intended to shorten CPU-only render time; it is not the final high-resolution art export. Final presentation renders can be produced at higher resolution after the model is visually accepted.
+
+
+## First generated visual review — findings (2026-11-22)
+
+The first successful Blender artifact contains four 768×768 PNGs, OBJ, BLEND, rig metadata and mesh report. The mesh report confirms 17 parts, UV layers, zero zero-area faces and zero non-manifold edges. This is a technical geometry pass only, not art approval.
+
+Visual inspection found:
+- The front view is upright and readable.
+- Side, back and three-quarter review views are rolled, making those views unsuitable for proportion review.
+- The current character reads as a simple smooth blockout with separate rounded components; it does not yet meet the requested experienced-artist finish, sculpted fur, or premium companion silhouette.
+
+The review camera now constructs an explicit Y-up orthonormal basis with Matrix instead of relying on track_quat roll behavior. A fresh render is required to verify orientation. After that, prioritize sculptural silhouette, connected transitions, layered cheek/chest/tail forms, ear shaping, paw anatomy, and richer controlled materials. Do not mark Fox Hero art-approved until all views are inspected.
