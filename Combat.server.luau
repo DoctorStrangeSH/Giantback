@@ -631,16 +631,18 @@ local function performCompanionSkill(player, state, now)
             reject(player, "CompanionNoTarget")
             return
         end
+        state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN
+        player:SetAttribute("CompanionSkillReadyAt", state.companionSkillReadyAt)
         targetEntry.contributors[player] = true
         local companionLevel = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_Fox_Level")) or 1), 1, 5)
         local damage = FOX_SKILL_DAMAGE + (companionLevel - 1) * FOX_SKILL_DAMAGE_PER_LEVEL
         targetEntry.humanoid:TakeDamage(damage)
         target:SetAttribute("CombatHealth", math.max(0, targetEntry.humanoid.Health))
         if companionXpFunction then
-            pcall(function() companionXpFunction:Invoke(player, "Fox", 12) end)
+            task.spawn(function()
+                pcall(function() companionXpFunction:Invoke(player, "Fox", 12) end)
+            end)
         end
-        state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN
-        player:SetAttribute("CompanionSkillReadyAt", state.companionSkillReadyAt)
         remote:FireClient(player, "CompanionSkillUsed", {
             companionId = "Fox",
             targetId = target:GetAttribute("EnemyId") or target.Name,
@@ -668,12 +670,14 @@ local function performCompanionSkill(player, state, now)
         reject(player, "CompanionNoOneToHeal")
         return
     end
-    if companionXpFunction then
-        local xpReward = math.min(24, #healedPlayers * 6)
-        pcall(function() companionXpFunction:Invoke(player, "Moth", xpReward) end)
-    end
     state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN
     player:SetAttribute("CompanionSkillReadyAt", state.companionSkillReadyAt)
+    if companionXpFunction then
+        local xpReward = math.min(24, #healedPlayers * 6)
+        task.spawn(function()
+            pcall(function() companionXpFunction:Invoke(player, "Moth", xpReward) end)
+        end)
+    end
     remote:FireClient(player, "CompanionSkillUsed", {
         companionId = "Moth",
         healedCount = #healedPlayers,
