@@ -233,6 +233,10 @@ prop(harvest_feedback, "ProtectedString", "Source",
 companion_animation = obj(storage, "ModuleScript", "CompanionAnimation")
 prop(companion_animation, "ProtectedString", "Source",
      (root / "modules" / "CompanionAnimation.luau").read_text(encoding="utf-8"))
+
+companion_activity = obj(storage, "ModuleScript", "CompanionActivity")
+prop(companion_activity, "ProtectedString", "Source",
+     (root / "modules" / "CompanionActivity.luau").read_text(encoding="utf-8"))
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
     if name == "Fox":
