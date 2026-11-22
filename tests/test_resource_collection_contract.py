@@ -72,6 +72,18 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("p.MaxActivationDistance + 1", WORLD)
         self.assertIn("(root.Position-part.Position).Magnitude", WORLD)
 
+    def test_harvest_hit_spawns_local_material_chips_without_server_physics(self):
+        chips = CLIENT.split("local function spawnHarvestChips(anchor, nodeId)", 1)[1].split("local function showResourceHitFeedback(payload)", 1)[0]
+        self.assertIn('chip.Name = "LocalHarvestChip"', chips)
+        self.assertIn("Enum.Material.Wood", chips)
+        self.assertIn("Enum.Material.Slate", chips)
+        self.assertIn("chip.Anchored = true", chips)
+        self.assertIn("chip.CanCollide = false", chips)
+        self.assertIn("chip.Parent = workspace", chips)
+        self.assertIn("Debris:AddItem(chip, 0.5)", chips)
+        feedback = CLIENT.split("local function showResourceHitFeedback(payload)", 1)[1].split("local function clearResourceHitFeedback(nodeId)", 1)[0]
+        self.assertIn("spawnHarvestChips(anchor, nodeId)", feedback)
+
     def test_client_hides_only_its_local_resource_copy(self):
         self.assertIn("LocalTransparencyModifier = visible and 0 or 1", CLIENT)
         self.assertIn("descendant.Enabled = visible", CLIENT)
