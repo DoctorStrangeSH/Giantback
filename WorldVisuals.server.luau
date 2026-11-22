@@ -1832,6 +1832,86 @@ stalkerRoot:SetNetworkOwner(nil)
 CollectionService:AddTag(stalker, "GiantbackEnemy")
 
 
+-- Final guardian of the first Rootvault expedition: a three-phase Seal Keeper.
+local sealKeeper = Instance.new("Model")
+sealKeeper.Name = "RootvaultSealKeeper01"
+sealKeeper:SetAttribute("EnemyId", "RootvaultSealKeeper01")
+sealKeeper:SetAttribute("EncounterId", "RootvaultSealKeeper01")
+sealKeeper:SetAttribute("RegionId", "Rootvault")
+sealKeeper:SetAttribute("ArchetypeId", "SealKeeper")
+sealKeeper:SetAttribute("IsBoss", true)
+sealKeeper:SetAttribute("AggroRange", 34)
+sealKeeper:SetAttribute("AttackRange", 7)
+sealKeeper:SetAttribute("AttackDamage", 14)
+sealKeeper:SetAttribute("AttackCooldown", 3.1)
+sealKeeper:SetAttribute("TelegraphSeconds", 1.15)
+sealKeeper:SetAttribute("PathRefreshSeconds", 1.1)
+sealKeeper:SetAttribute("Phase2WalkSpeed", 9)
+sealKeeper:SetAttribute("Phase2AttackDamage", 18)
+sealKeeper:SetAttribute("Phase2AttackCooldown", 2.5)
+sealKeeper:SetAttribute("Phase2TelegraphSeconds", 0.9)
+sealKeeper:SetAttribute("Phase2PathRefreshSeconds", 0.85)
+sealKeeper:SetAttribute("Phase3WalkSpeed", 12)
+sealKeeper:SetAttribute("Phase3AttackDamage", 22)
+sealKeeper:SetAttribute("Phase3AttackCooldown", 1.9)
+sealKeeper:SetAttribute("Phase3TelegraphSeconds", 0.65)
+sealKeeper:SetAttribute("Phase3PathRefreshSeconds", 0.65)
+sealKeeper.Parent = rootvault
+
+local keeperSpawn = rewardRoomCenter + Vector3.new(0, 4, -2)
+local keeperRoot = makeEnemyPart(sealKeeper, "HumanoidRootPart", Vector3.new(3, 3, 2), CFrame.lookAt(keeperSpawn, keeperSpawn + Vector3.new(0, 0, 1)), palette.ink)
+keeperRoot.Transparency = 1
+keeperRoot.Massless = false
+local keeperTorso = makeEnemyPart(sealKeeper, "Torso", Vector3.new(4, 4.2, 2.5), keeperRoot.CFrame, palette.stone, Enum.Material.Slate)
+local keeperHead = makeEnemyPart(sealKeeper, "Head", Vector3.new(2.4, 2.3, 2.2), keeperRoot.CFrame * CFrame.new(0, 3.1, 0), palette.lilac, Enum.Material.Slate, Enum.PartType.Ball)
+local keeperRightArm = makeEnemyPart(sealKeeper, "Right Arm", Vector3.new(1.5, 3.6, 1.6), keeperRoot.CFrame * CFrame.new(2.6, 0, 0), palette.stone, Enum.Material.Slate)
+local keeperLeftArm = makeEnemyPart(sealKeeper, "Left Arm", Vector3.new(1.5, 3.6, 1.6), keeperRoot.CFrame * CFrame.new(-2.6, 0, 0), palette.stone, Enum.Material.Slate)
+local keeperRightLeg = makeEnemyPart(sealKeeper, "Right Leg", Vector3.new(1.6, 3, 1.7), keeperRoot.CFrame * CFrame.new(1.0, -3.1, 0), palette.ink, Enum.Material.Slate)
+local keeperLeftLeg = makeEnemyPart(sealKeeper, "Left Leg", Vector3.new(1.6, 3, 1.7), keeperRoot.CFrame * CFrame.new(-1.0, -3.1, 0), palette.ink, Enum.Material.Slate)
+joinRig(sealKeeper, "RootJoint", keeperRoot, keeperTorso, CFrame.new(), CFrame.new())
+joinRig(sealKeeper, "Neck", keeperTorso, keeperHead, CFrame.new(0, 2.0, 0), CFrame.new(0, -1.15, 0))
+joinRig(sealKeeper, "Right Shoulder", keeperTorso, keeperRightArm, CFrame.new(2.0, 1.25, 0), CFrame.new(0, 1.25, 0))
+joinRig(sealKeeper, "Left Shoulder", keeperTorso, keeperLeftArm, CFrame.new(-2.0, 1.25, 0), CFrame.new(0, 1.25, 0))
+joinRig(sealKeeper, "Right Hip", keeperTorso, keeperRightLeg, CFrame.new(1.0, -1.9, 0), CFrame.new(0, 1.45, 0))
+joinRig(sealKeeper, "Left Hip", keeperTorso, keeperLeftLeg, CFrame.new(-1.0, -1.9, 0), CFrame.new(0, 1.45, 0))
+
+local keeperCore = makeEnemyPart(sealKeeper, "SealCore", Vector3.new(1.45, 1.45, 0.45), keeperTorso.CFrame * CFrame.new(0, 0.15, -1.35), palette.lilacLight, Enum.Material.Neon, Enum.PartType.Ball)
+local coreWeld = Instance.new("WeldConstraint")
+coreWeld.Part0 = keeperTorso
+coreWeld.Part1 = keeperCore
+coreWeld.Parent = keeperCore
+addLight(keeperCore, palette.lilacLight, 12, 0.9)
+
+for side = -1, 1, 2 do
+    local eye = makeEnemyPart(sealKeeper, "SealEye", Vector3.new(0.28, 0.28, 0.16), keeperHead.CFrame * CFrame.new(side * 0.55, 0.18, -1.02), palette.gold, Enum.Material.Neon, Enum.PartType.Ball)
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = keeperHead
+    weld.Part1 = eye
+    weld.Parent = eye
+    addLight(eye, palette.gold, 6, 0.4)
+end
+
+for side = -1, 1, 2 do
+    local shoulder = makeEnemyPart(sealKeeper, "SealShoulderPlate", Vector3.new(2.0, 1.0, 2.0), keeperTorso.CFrame * CFrame.new(side * 2.0, 1.55, 0), palette.bark, Enum.Material.Slate)
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = keeperTorso
+    weld.Part1 = shoulder
+    weld.Parent = shoulder
+end
+
+local keeperHumanoid = Instance.new("Humanoid")
+keeperHumanoid.DisplayName = "Страж печатей"
+keeperHumanoid.MaxHealth = 360
+keeperHumanoid.Health = 360
+keeperHumanoid.WalkSpeed = 7
+keeperHumanoid.JumpPower = 0
+keeperHumanoid.BreakJointsOnDeath = false
+keeperHumanoid.RequiresNeck = true
+keeperHumanoid.Parent = sealKeeper
+sealKeeper.PrimaryPart = keeperRoot
+keeperRoot:SetNetworkOwner(nil)
+CollectionService:AddTag(sealKeeper, "GiantbackEnemy")
+
 -- Let the gameplay bootstrap wait until the collectible models are fully decorated.
 local ready = ReplicatedStorage:FindFirstChild("GiantbackVisualsReady") or Instance.new("BoolValue")
 ready.Name = "GiantbackVisualsReady"
