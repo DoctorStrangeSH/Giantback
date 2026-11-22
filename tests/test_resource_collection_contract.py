@@ -88,6 +88,19 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("session.inventory.Stone", upgrade)
         self.assertIn("session.toolLevels[payload] = 2", upgrade)
 
+    def test_client_shows_hit_progress_and_clears_it_after_collection(self):
+        self.assertIn('message == "ResourceHit"', CLIENT)
+        self.assertIn('showResourceHitFeedback(payload)', CLIENT)
+        self.assertIn('LocalHarvestProgress', CLIENT)
+        self.assertIn('clearResourceHitFeedback(payload.nodeId)', CLIENT)
+
+    def test_tools_hud_supports_equipping_and_upgrading_both_tools(self):
+        hud = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
+        self.assertIn("local function renderTools()", hud)
+        self.assertIn('event:FireServer("EquipTool", definition.id)', hud)
+        self.assertIn('event:FireServer("UpgradeTool", definition.id)', hud)
+        self.assertIn('Tools = renderTools', hud)
+
     def test_remote_handshake_is_registered_before_player_initialization(self):
         self.assertLess(WORLD.index("event.OnServerEvent:Connect"), WORLD.index("Players.PlayerAdded:Connect(init)"))
 
