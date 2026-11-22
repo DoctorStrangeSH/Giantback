@@ -1760,7 +1760,9 @@ local function animateModelParts(model, state, time, moving, resting)
 
             if state.id == "Fox" then
                 if part.Name == "Body" and petting then
-                    transform = CFrame.new(0, math.sin(time * 8) * 0.075, 0)
+                    local affectionateDip = math.sin(time * 6.5) * 0.025
+                    transform = CFrame.new(0, -0.09 + affectionateDip, 0.06)
+                        * aroundPoint(offset.Position, CFrame.Angles(math.rad(-4), 0, 0))
                 elseif part.Name == "Body" and resting then
                     transform = CFrame.new(0, math.sin(time * 1.8) * 0.035, 0)
                 elseif part.Name == "Muzzle" and sniffing then
@@ -1783,9 +1785,9 @@ local function animateModelParts(model, state, time, moving, resting)
                         or CFrame.Angles(sway * 0.45, sway, sway * 0.2)
                     transform = aroundPoint(tailHinge, tailRotation)
                 elseif part.Name == "Paw" or part.Name == "Paw toe" then
-                    local stride = resting and 0 or moving and 0.32 or sniffing and 0.16 or 0.055
+                    local stride = resting and 0 or moving and 0.32 or sniffing and 0.16 or petting and 0.11 or 0.055
                     local phase = (math.abs(offset.Position.X) + math.abs(offset.Position.Z)) * 1.8
-                    local step = math.sin(time * (moving and 10 or sniffing and 8 or 2.4) + phase) * stride
+                    local step = math.sin(time * (moving and 10 or sniffing and 8 or petting and 7 or 2.4) + phase) * stride
                     transform = CFrame.new(0, math.max(0, step) * 0.16, 0)
                         * aroundPoint(offset.Position, CFrame.Angles(step, 0, 0))
                 elseif part.Name == "Ear" or part.Name == "Inner ear" then
@@ -1813,6 +1815,9 @@ local function animateModelParts(model, state, time, moving, resting)
                     local flap = math.sin(time * flapSpeed + lowerPhase) * flapStrength
                     local wingHinge = rigOrigin + Vector3.new(side * 0.42, 0.28, 0)
                     transform = aroundPoint(wingHinge, CFrame.Angles(0, 0, flap * side))
+                elseif part.Name == "Moth head" and petting then
+                    local affectionateNod = math.sin(time * 7) * 0.055
+                    transform = aroundPoint(offset.Position, CFrame.Angles(math.rad(5) + affectionateNod, 0, 0))
                 elseif part.Name == "Antenna" or part.Name == "Antenna tip" then
                     local twitchSpeed = mothAbility and 7 or resting and 1.1 or 2.8
                     local twitchStrength = mothAbility and 0.14 or resting and 0.025 or 0.07
