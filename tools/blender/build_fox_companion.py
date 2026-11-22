@@ -546,9 +546,9 @@ def add_review_camera(objects):
     world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.55
 
     for name, offset, power, size in (
-        ("Key", (1.8, 2.8, -2.0), 1200, 3.2),
-        ("Fill", (-2.0, 1.0, -1.0), 650, 2.8),
-        ("Rim", (0.0, 2.0, 2.8), 950, 2.4),
+        ("Key", (1.8, 2.8, -2.0), 520, 3.2),
+        ("Fill", (-2.0, 1.0, -1.0), 260, 2.8),
+        ("Rim", (0.0, 2.0, 2.8), 380, 2.4),
     ):
         data = bpy.data.lights.new(name, "AREA")
         data.energy = power
@@ -712,6 +712,7 @@ def main():
     scene.render.image_settings.file_format = "PNG"
     scene.render.filepath = str(output / "fox_companion_hero_three_quarter.png")
     scene.view_settings.view_transform = "AgX"
+    scene.view_settings.look = "AgX - Medium High Contrast"
     blend_path = output / "fox_companion_hero.blend"
     obj_path = output / "fox_companion_hero.obj"
     rig_path = write_rig_metadata(output, objects)
