@@ -81,3 +81,41 @@ Both open PRs currently report dirty merge states. The audit commit and latest c
 - Added the new branch to push validation and the canonical branch as a PR validation target. GitHub Actions run #45007978624 passed: gameplay/world contract tests, Roblox place build, generated-place/embedded-script validation and artifact upload.
 - PR #6 remains Draft pending Roblox Studio acceptance (R6/R15 animation, impact alignment, resource break/regrowth, local-only behavior and mobile readability). It is not merged to `main`.
 - PR #5 is superseded by this fresh-base port. Keep the old integration branch until PR #6 is merged and all remaining unique audit/history content is confirmed preserved.
+
+
+## Full branch inventory and consolidation decision — 2026-11-22
+
+There are exactly seven non-`main` branches at the time of this audit:
+
+| Branch | Role | Decision |
+|---|---|---|
+| `feat/cozy-world-visual-pass` | Current reboot/world base; PR #1 to `main` | **Canonical development line**. Do not replace it with an old integration branch. |
+| `feat/harvesting-feedback-on-latest` | Fresh-base harvesting feedback, PR #6 | Keep as a staged change until Studio acceptance; then integrate into canonical. |
+| `feat/combat-c0-contract` | Combat C0, PR #7 stacked on PR #6 | Keep as a staged change; integrate after #6 and CI verification. |
+| `integration/harvesting-on-cozy-world-v2` | Older, divergent harvesting/city/economy implementation, PR #4 | **Preserve as migration source**. Not safe to merge wholesale. |
+| `feat/world-resource-harvesting` | Earlier harvesting implementation, schema 8, PR #2 closed | Superseded as an active line by V2; retain until V2 feature inventory is migrated. |
+| `integration/harvesting-on-cozy-world` | Earlier integration attempt, PR #3 closed | Superseded by V2; retain only as temporary recovery history. |
+| `integration/giantback-consolidation` | Stale PR #5 source, 37 commits behind canonical | Superseded by the fresh-base PR #6; do not merge wholesale. |
+
+### Important compatibility finding
+
+The V2 branch is not just another copy of harvesting. Its `World.server.luau` has schema 10, sword ownership/equipment, level-3 tool progression, a city-building smelter and additional resource/building state. The canonical branch has schema 9, level-2 tool progression and a personal home smelter. These are competing implementations with different profile shapes and gameplay assumptions.
+
+Therefore:
+- Do not delete or merge V2 until its unique city/sword/progression features are explicitly ported or deliberately removed from the 1.0 scope.
+- The older schema-8 harvesting branch is not a merge target; V2 is the richer migration source for those overlapping systems.
+- The old consolidation branch is superseded by PR #6's fresh-base client feedback port.
+- PR #2, #3 and #5 are already closed. PR #1 remains the eventual release PR; PR #6 and #7 are staged feature PRs; PR #4 is the outstanding legacy feature source.
+
+### Single-line development policy
+
+- Canonical branch: `feat/cozy-world-visual-pass`.
+- No new parallel feature branches for routine work.
+- Keep PR #6 and #7 staged until acceptance, then integrate sequentially into the canonical branch.
+- Port selected V2 features into the canonical line as small, tested changes; never merge its 74-commit divergent history wholesale.
+- `main` is release-only. Do not attempt the 744-commit divergence as a blind merge; first reconcile the four main-only commits and the canonical release history.
+- The second AI is working on a different project; no Giantback two-agent file ownership or conflict protocol is required.
+
+### Branch deletion limitation
+
+The connected GitHub capability available for this session can inspect refs, create/update refs and manage PRs, but does not expose a branch-delete operation. Superseded branch refs must therefore remain as recovery points until they can be deleted through GitHub's branch UI or a connection with repository ref-deletion permission. Do not simulate deletion by force-moving a branch.
