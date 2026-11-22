@@ -232,5 +232,8 @@ prop(client_script, "ProtectedString", "Source", (root / "Album.client.luau").re
 hud_script = obj(starter_scripts, "LocalScript", "GiantbackHUD")
 prop(hud_script, "ProtectedString", "Source", (root / "HUD.client.luau").read_text(encoding="utf-8"))
 
+combat_client_script = obj(starter_scripts, "LocalScript", "CombatControls")
+prop(combat_client_script, "ProtectedString", "Source", (root / "Combat.client.luau").read_text(encoding="utf-8"))
+
 X.indent(doc)
 X.ElementTree(doc).write(root / "Giantback.rbxlx", encoding="utf-8", xml_declaration=True)
