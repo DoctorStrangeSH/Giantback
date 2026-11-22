@@ -286,6 +286,20 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('enemy:GetAttribute("BossAttack") == "GroundSlam"', CLIENT)
         self.assertIn('CollectionService:GetInstanceAddedSignal("GiantbackEnemy")', CLIENT)
 
+    def test_seal_keeper_phase_three_awakens_two_rewardless_minions_once(self):
+        self.assertIn('RootvaultSealMinion = true', COMBAT)
+        self.assertIn('local function activateRootvaultBossMinions()', COMBAT)
+        self.assertIn('CollectionService:GetTagged("GiantbackDormantBossMinion")', COMBAT)
+        self.assertIn('CollectionService:RemoveTag(minion, "GiantbackDormantBossMinion")', COMBAT)
+        self.assertIn('CollectionService:AddTag(minion, "GiantbackEnemy")', COMBAT)
+        self.assertIn('if nextPhase == 3 and not entry.minionsSummoned then', COMBAT)
+        self.assertIn('enemy:SetAttribute("SummonedMinions", activated)', COMBAT)
+        self.assertIn('minionHumanoid.MaxHealth = 52', VISUALS)
+        self.assertIn('minionHumanoid.WalkSpeed = 13', VISUALS)
+        self.assertIn('minionHumanoid.DisplayName = "Осколок печати"', VISUALS)
+        self.assertIn('CollectionService:AddTag(minion, "GiantbackDormantBossMinion")', VISUALS)
+        self.assertNotIn('RootvaultSealMinion = true', COMBAT.split('local REWARD_ENCOUNTERS =', 1)[1].split('}', 1)[0])
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
