@@ -13,7 +13,8 @@ class CompanionCareContractTests(unittest.TestCase):
         self.assertIn('bond = bond}', WORLD)
         self.assertIn('player:SetAttribute("Companion_" .. id .. "_Bond", progressData.bond)', WORLD)
         self.assertIn('player:SetAttribute("Companion_" .. id .. "_BondRank", bondRank)', WORLD)
-        self.assertIn('savedCompanions[companionId] = companionProgressSnapshot[companionId]', WORLD)
+        self.assertIn('savedCompanion = companionProgressSnapshot[companionId]', WORLD)
+        self.assertIn('savedCompanions[companionId] = savedCompanion', WORLD)
 
     def test_feeding_is_server_validated_and_requires_the_equipped_owned_pet(self):
         self.assertIn('local function feedCompanion(player, companionId)', WORLD)
