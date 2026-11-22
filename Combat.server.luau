@@ -186,11 +186,26 @@ local function resolveEnemyReward(enemy, entry)
     -- This keeps co-op fair without trusting client-supplied party or damage data.
     for contributor in entry.contributors do
         if contributor.Parent == Players then
-            local ok, granted = pcall(function()
-                return rewardFunction:Invoke(contributor, entry.encounterId)
-            end)
-            if not ok or granted ~= true then
-                warn("Combat reward was not granted:", entry.encounterId, contributor.UserId)
+            local granted = false
+            local lastError = nil
+            -- DataStore writes can fail transiently. The reward callback is idempotent,
+            -- so retrying is safe; an already-completed encounter is treated as success.
+            for attempt = 1, 5 do
+                local ok, result = pcall(function()
+                    return rewardFunction:Invoke(contributor, entry.encounterId)
+                end)
+                if ok and result == true then
+                    granted = true
+                    break
+                end
+                lastError = ok and "RewardSaveRejected" or tostring(result)
+                if contributor.Parent ~= Players then break end
+                if attempt < 5 then
+                    task.wait(0.75 * (2 ^ (attempt - 1)))
+                end
+            end
+            if not granted then
+                warn("Combat reward retries exhausted:", entry.encounterId, contributor.UserId, lastError)
             end
         end
     end
