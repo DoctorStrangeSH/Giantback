@@ -251,7 +251,7 @@ def mesh_report(objects, output):
     def group_for(name):
         if name == "MothHead" or name.startswith("MothEye"):
             return "MothHead"
-        if name == "MothThorax":
+        if name == "MothThorax" or name.startswith("MothThoraxLeg"):
             return "MothThorax"
         if name == "MothAbdomen" or name.startswith("AbdomenBand"):
             return "MothAbdomen"
