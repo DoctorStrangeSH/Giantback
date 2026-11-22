@@ -627,7 +627,7 @@ local function performCompanionSkill(player, state, now)
 
         local companionLevel = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_CrystalWisp_Level")) or 1), 1, 5)
         local revealDuration = 16 + (companionLevel - 1) * 3
-        local revealUntil = os.clock() + revealDuration
+        local revealUntil = Workspace:GetServerTimeNow() + revealDuration
         player:SetAttribute("PrismSenseUntil", revealUntil)
         state.companionSkillReadyAt = now + PRISM_SENSE_COOLDOWN
         player:SetAttribute("CompanionSkillReadyAt", state.companionSkillReadyAt)
@@ -651,7 +651,7 @@ local function performCompanionSkill(player, state, now)
         local sharedRevealUntil = math.max(tonumber(Workspace:GetAttribute("PrismSenseRevealUntil")) or 0, revealUntil)
         Workspace:SetAttribute("PrismSenseRevealUntil", sharedRevealUntil)
         local function hideExpiredVeins()
-            local remaining = (tonumber(Workspace:GetAttribute("PrismSenseRevealUntil")) or 0) - os.clock()
+            local remaining = (tonumber(Workspace:GetAttribute("PrismSenseRevealUntil")) or 0) - Workspace:GetServerTimeNow()
             if remaining > 0 then
                 task.delay(remaining, hideExpiredVeins)
                 return
