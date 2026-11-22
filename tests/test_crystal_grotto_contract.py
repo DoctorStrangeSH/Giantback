@@ -87,6 +87,23 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('crystalRuneProgress[player] = nil', WORLD)
 
 
+    def test_crystal_fall_event_warns_before_damage_and_uses_a_visible_impact_zone(self):
+        self.assertIn('local function runCrystalFallEvent()', WORLD)
+        self.assertIn('warning.Name = "CrystalFallWarning"', WORLD)
+        self.assertIn('warning.Size = Vector3.new(0.18, 16, 16)', WORLD)
+        self.assertIn('task.wait(3)', WORLD)
+        self.assertIn('TweenService:Create(', WORLD)
+        self.assertIn('shard.Name = "CrystalFallShard"', WORLD)
+        self.assertIn('humanoid:TakeDamage(18)', WORLD)
+        self.assertIn('(root.Position - impactPosition).Magnitude <= 8', WORLD)
+
+    def test_crystal_fall_only_runs_when_players_are_inside_the_grotto(self):
+        self.assertIn('local function getCrystalGrottoPlayers()', WORLD)
+        self.assertIn('for player, inside in crystalGrottoInside do', WORLD)
+        self.assertIn('if #getCrystalGrottoPlayers() > 0 then', WORLD)
+        self.assertIn('crystalFallRandom:NextNumber(-16, 16)', WORLD)
+        self.assertIn('crystalFallRandom:NextNumber(-13, 13)', WORLD)
+
     def test_expedition_journal_tracks_both_grotto_milestones(self):
         self.assertIn('{key = "CrystalGrottoDiscovered"', HUD)
         self.assertIn('{key = "CrystalHeart"', HUD)
