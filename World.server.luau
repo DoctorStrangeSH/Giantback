@@ -35,6 +35,7 @@ local toolIds = {Axe = true, Pickaxe = true}
 local combatRewardDefinitions = {
     GroveGrunt01 = {itemId = "Wood", amount = 3},
     GroveScout02 = {itemId = "SunPetal", amount = 2},
+    GroveTrialChest01 = {itemId = "StarShard", amount = 1},
 }
 local toolUpgradeCosts = {Axe = {Wood = 8, Stone = 6}, Pickaxe = {Wood = 6, Stone = 8}}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
@@ -1863,6 +1864,89 @@ prompt(workspace.Grove.Driftwood,"Коряга на берегу","Искать 
     if player:GetAttribute("Companion") ~= "Fox" then return tip(player,"Позови лисёнка. Он найдёт крепкие ветви.") end
     player:SetAttribute("Timber",true)
     tip(player,"Лисёнок нашёл ветви для садового фонаря!")
+end)
+
+-- First-clear forest trial: only players who defeated both enemy archetypes
+-- may enter the chamber. Prompts have independent distance/ready checks server-side.
+local trial = workspace:FindFirstChild("CombatTrainingGlade")
+local trialChamber = trial and trial:FindFirstChild("ForestTrialChamber")
+local trialArena = trial and trial:FindFirstChild("TrainingRing")
+local trialBusy = {}
+
+local function validTrialInteraction(player, anchorPart)
+    local session = sessions[player]
+    if not session or player:GetAttribute("Ready") ~= true then return nil end
+    if not anchorPart or not anchorPart:IsA("BasePart") then return nil end
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or humanoid.Health <= 0 or not root then return nil end
+    if (root.Position - anchorPart.Position).Magnitude > 13 then return nil end
+    return session, character
+end
+
+local function hasCompletedForestTrial(session)
+    return session.completedCombatEncounters.GroveGrunt01 == true
+        and session.completedCombatEncounters.GroveScout02 == true
+end
+
+local function connectTrialPrompt(anchorPart, callback)
+    local interaction = anchorPart and anchorPart:FindFirstChildOfClass("ProximityPrompt")
+    if interaction then
+        interaction.Triggered:Connect(callback)
+    else
+        warn("Forest trial interaction is missing:", anchorPart and anchorPart.Name)
+    end
+end
+
+local gatePart = trialArena and trialArena:FindFirstChild("ForestTrialGate")
+local arrivalPart = trialChamber and trialChamber:FindFirstChild("ForestTrialArrival")
+local returnPart = trialChamber and trialChamber:FindFirstChild("ForestTrialReturn")
+local chestPart = trialChamber and trialChamber:FindFirstChild("ForestTrialChest")
+if gatePart and arrivalPart then
+    connectTrialPrompt(gatePart, function(player)
+        local session, character = validTrialInteraction(player, gatePart)
+        if not session then return end
+        if not hasCompletedForestTrial(session) then
+            return tip(player, "Сначала победи Корневого стража и Мшистого разведчика!")
+        end
+        character:PivotTo(arrivalPart.CFrame * CFrame.new(0, 4, 0))
+        tip(player, "Тайная комната открыта. Найди сундук испытания!")
+    end)
+end
+
+if returnPart and gatePart then
+    connectTrialPrompt(returnPart, function(player)
+        local session, character = validTrialInteraction(player, returnPart)
+        if not session then return end
+        character:PivotTo(gatePart.CFrame * CFrame.new(0, 0, -6))
+    end)
+end
+
+if chestPart then
+    connectTrialPrompt(chestPart, function(player)
+        local session = validTrialInteraction(player, chestPart)
+        if not session then return end
+        if not hasCompletedForestTrial(session) then
+            return tip(player, "Испытание ещё не завершено.")
+        end
+        if session.completedCombatEncounters.GroveTrialChest01 then
+            return tip(player, "Ты уже получил награду этого испытания.")
+        end
+        if trialBusy[player] then return end
+        trialBusy[player] = true
+        local ok, granted = pcall(function()
+            return combatRewardFunction:Invoke(player, "GroveTrialChest01")
+        end)
+        trialBusy[player] = nil
+        if not ok or granted ~= true then
+            tip(player, "Не удалось сохранить награду. Попробуй ещё раз.")
+        end
+    end)
+end
+
+Players.PlayerRemoving:Connect(function(player)
+    trialBusy[player] = nil
 end)
 
 -- All islands are fixed. Eight personal bridges lead into the shared Grove hub.
