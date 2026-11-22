@@ -31,7 +31,7 @@ local BLOCK_DAMAGE_MULTIPLIER = 0.25
 
 local ALLOWED_REGIONS = { GroveTraining = true, DuskTraining = true, Rootvault = true }
 local ALLOWED_WEAPONS = { SwordShield = true }
-local REWARD_ENCOUNTERS = { GroveGrunt01 = true, GroveScout02 = true, RootvaultSentinel01 = true, RootvaultStalker01 = true }
+local REWARD_ENCOUNTERS = { GroveGrunt01 = true, GroveScout02 = true, RootvaultSentinel01 = true, RootvaultStalker01 = true, RootvaultSealKeeper01 = true }
 
 local remote = ReplicatedStorage:FindFirstChild("CombatAction")
 if remote and not remote:IsA("RemoteEvent") then
