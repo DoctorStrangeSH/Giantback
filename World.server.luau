@@ -310,6 +310,20 @@ local function awardCompanionXp(player, companionId, amount)
     return true, {level = progressData.level, xp = progressData.xp, levelsGained = levelsGained}
 end
 
+local companionXpFunction = ServerStorage:FindFirstChild("GiantbackGrantCompanionXP")
+if companionXpFunction and not companionXpFunction:IsA("BindableFunction") then
+    companionXpFunction:Destroy()
+    companionXpFunction = nil
+end
+if not companionXpFunction then
+    companionXpFunction = Instance.new("BindableFunction")
+    companionXpFunction.Name = "GiantbackGrantCompanionXP"
+    companionXpFunction.Parent = ServerStorage
+end
+companionXpFunction.OnInvoke = function(player, companionId, amount)
+    return awardCompanionXp(player, companionId, amount)
+end
+
 local function createToolPart(parent, name, size, offset, color, material, shape)
     local part = Instance.new("Part")
     part.Name = name
@@ -864,6 +878,7 @@ local function collectFoxCache(player, cacheId)
     if session.online and not save(player) then
         warn("Fox cache reward save will be retried:", player.UserId, cacheId)
     end
+    awardCompanionXp(player, "Fox", 30)
 end
 
 local function searchMoonGate(player)
@@ -891,6 +906,7 @@ local function searchMoonGate(player)
     if session.online and not save(player) then
         warn("MoonGate Fox trace save will be retried:", player.UserId)
     end
+    awardCompanionXp(player, "Fox", 20)
 end
 
 local function revealMoonGate(player)
@@ -918,6 +934,7 @@ local function revealMoonGate(player)
     if session.online and not save(player) then
         warn("MoonGate Moth reveal save will be retried:", player.UserId)
     end
+    awardCompanionXp(player, "Moth", 25)
 end
 
 local function collectMoonRelic(player)
@@ -970,6 +987,7 @@ local function collectMoonBloom(player)
     if session.online and not save(player) then
         warn("MoonBloom discovery save will be retried:", player.UserId)
     end
+    awardCompanionXp(player, "Moth", 35)
 end
 
 local function startFoxSearch(player)
