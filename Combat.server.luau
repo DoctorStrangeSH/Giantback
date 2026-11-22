@@ -149,8 +149,7 @@ local function clearTransientState(player)
     state.comboStep = 0
     state.comboExpiresAt = 0
     state.chargingStartedAt = 0
-    state.companionSkillReadyAt = 0
-    player:SetAttribute("CompanionSkillReadyAt", 0)
+    -- Companion skill cooldown survives character respawns; it is session state.
     player:SetAttribute("CombatCharging", false)
     player:SetAttribute("CombatComboStep", 0)
     player:SetAttribute("CombatBlocking", false)
