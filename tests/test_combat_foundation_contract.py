@@ -245,6 +245,22 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('AttackCooldown", 1.8', VISUALS)
         self.assertIn('CollectionService:AddTag(stalker, "GiantbackEnemy")', VISUALS)
 
+    def test_rootvault_seal_keeper_has_three_server_driven_phases_and_gates_relic(self):
+        self.assertIn('RootvaultSealKeeper01 = {itemId = "RootvaultSigil", amount = 1}', WORLD)
+        self.assertIn('session.completedCombatEncounters.RootvaultSealKeeper01 ~= true', WORLD)
+        self.assertIn('Страж печатей. Победи его, чтобы открыть сундук.', WORLD)
+        self.assertIn('RootvaultSealKeeper01 = true', COMBAT)
+        self.assertIn('IsBoss", true', VISUALS)
+        self.assertIn('MaxHealth = 360', VISUALS)
+        self.assertIn('Phase2WalkSpeed', VISUALS)
+        self.assertIn('Phase3WalkSpeed', VISUALS)
+        self.assertIn('local nextPhase = ratio <= 0.25 and 3 or (ratio <= 0.6 and 2 or 1)', COMBAT)
+        self.assertIn('enemy:SetAttribute("BossPhase", nextPhase)', COMBAT)
+        self.assertIn('entry.attackDamage = math.clamp', COMBAT)
+        self.assertIn('humanoid.WalkSpeed = math.clamp', COMBAT)
+        self.assertIn('DisplayName = "Страж печатей"', VISUALS)
+        self.assertIn('SealCore', VISUALS)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
