@@ -98,7 +98,7 @@ local function allowRequest(player, state, now)
     return true
 end
 
-local function handleAction(player, action, payload)
+local function handleAction(player, action, ...)
     local state = playerStates[player]
     if not state then return end
 
@@ -106,7 +106,9 @@ local function handleAction(player, action, payload)
         reject(player, "InvalidAction")
         return
     end
-    if payload ~= nil then
+    -- RemoteEvent forwards every client argument. Count varargs so even an
+    -- explicitly supplied nil or a fourth+ argument is rejected.
+    if select("#", ...) ~= 0 then
         reject(player, "UnexpectedPayload")
         return
     end
