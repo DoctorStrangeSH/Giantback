@@ -353,6 +353,8 @@ local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCachePrompts = {}
 local foxCacheHighlights = {}
 local foxSniffUntil = 0
+local pettingUntil = {Fox = 0, Moth = 0}
+local pendingPetBurst = {}
 local lastFoxCacheSpot = ""
 local foxScentTrailFolder = nil
 local foxScentTrailCacheId = ""
@@ -1562,7 +1564,14 @@ workspace.DescendantAdded:Connect(function(descendant)
 end)
 
 event.OnClientEvent:Connect(function(message, payload)
-    if message == "ResourceState" and type(payload) == "table" then
+    if message == "CompanionPetted" and type(payload) == "table" then
+        local companionId = payload.companionId
+        if companionId == "Fox" or companionId == "Moth" then
+            pettingUntil[companionId] = os.clock() + 2.8
+            pendingPetBurst[companionId] = true
+        end
+        return
+    elseif message == "ResourceState" and type(payload) == "table" then
         for nodeId in payload.collected or {} do
             applyResourceNodeState(nodeId, nil, true)
         end
@@ -1739,6 +1748,7 @@ local function animateModelParts(model, state, time, moving)
     local now = os.clock()
     local sniffing = state.id == "Fox" and not state.isEncounter and now < foxSniffUntil
     local mothAbility = state.id == "Moth" and state.isLocal and now < mothAbilityUntil
+    local petting = not state.isEncounter and now < (pettingUntil[state.id] or 0)
     local body = model:FindFirstChild("Body")
     local bodyOffset = body and state.offsets[body]
     local rigOrigin = bodyOffset and bodyOffset.Position or Vector3.zero
@@ -1748,10 +1758,13 @@ local function animateModelParts(model, state, time, moving)
             local transform = CFrame.new()
 
             if state.id == "Fox" then
-                if part.Name == "Muzzle" and sniffing then
+                if part.Name == "Body" and petting then
+                    transform = CFrame.new(0, math.sin(time * 8) * 0.075, 0)
+                elseif part.Name == "Muzzle" and sniffing then
                     transform = CFrame.new(0, -0.14, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 12) * 0.045, 0, 0))
                 elseif part.Name == "Tail" or part.Name == "Tail tip" then
-                    local sway = math.sin(time * (sniffing and 9 or 4.2)) * (sniffing and 0.48 or 0.3)
+                    local sway = math.sin(time * (sniffing and 9 or petting and 10.5 or 4.2))
+                        * (sniffing and 0.48 or petting and 0.72 or 0.3)
                     local tailHinge = rigOrigin + Vector3.new(0, 0.25, 0.95)
                     local tailRotation = part.Name == "Tail tip"
                         and CFrame.Angles(sway * 0.35, sway * 0.8, 0)
@@ -1765,7 +1778,8 @@ local function animateModelParts(model, state, time, moving)
                         * aroundPoint(offset.Position, CFrame.Angles(step, 0, 0))
                 elseif part.Name == "Ear" or part.Name == "Inner ear" then
                     local side = offset.Position.X >= rigOrigin.X and 1 or -1
-                    local twitch = math.sin(time * (sniffing and 5 or 2.2) + side) * (sniffing and 0.09 or 0.055)
+                    local twitch = math.sin(time * (sniffing and 5 or petting and 6.5 or 2.2) + side)
+                        * (sniffing and 0.09 or petting and 0.13 or 0.055)
                     local earHinge = rigOrigin + Vector3.new(side * 0.8, 0.55, -0.4)
                     transform = aroundPoint(earHinge, CFrame.Angles(0, 0, twitch * side))
                 end
@@ -1773,8 +1787,8 @@ local function animateModelParts(model, state, time, moving)
                 local side = offset.Position.X >= rigOrigin.X and 1 or -1
                 if part.Name == "Wing" or part.Name == "Wing lower" or part.Name == "Wing tip"
                     or part.Name == "Wing lower tip" or part.Name == "Wing jewel" or part.Name == "Wing spot" then
-                    local flapSpeed = mothAbility and 21 or 11.5
-                    local flapStrength = mothAbility and 0.76 or 0.42
+                    local flapSpeed = mothAbility and 21 or petting and 17 or 11.5
+                    local flapStrength = mothAbility and 0.76 or petting and 0.62 or 0.42
                     local lowerPhase = string.find(part.Name, "lower") and 0.38 or 0
                     local flap = math.sin(time * flapSpeed + lowerPhase) * flapStrength
                     local wingHinge = rigOrigin + Vector3.new(side * 0.42, 0.28, 0)
@@ -1785,7 +1799,8 @@ local function animateModelParts(model, state, time, moving)
                     local antennaHinge = rigOrigin + Vector3.new(side * 0.34, 0.9, -0.55)
                     transform = aroundPoint(antennaHinge, CFrame.Angles(0, 0, math.sin(time * twitchSpeed + side) * twitchStrength * side))
                 elseif part.Name == "Moonlight glow" then
-                    local pulse = mothAbility and (1.15 + math.sin(time * 12) * 0.35) or 0.65
+                    local pulse = mothAbility and (1.15 + math.sin(time * 12) * 0.35)
+                        or petting and (0.95 + math.sin(time * 8) * 0.2) or 0.65
                     local light = part:FindFirstChildOfClass("PointLight")
                     if light then
                         light.Brightness = pulse
@@ -1839,6 +1854,55 @@ workspace.DescendantAdded:Connect(function(instance)
     end
 end)
 
+local function playCompanionPettingBurst(model, companionId)
+    if not model or not model.Parent then return end
+    local origin = model:GetPivot().Position + Vector3.new(0, companionId == "Fox" and 1.2 or 1.5, 0)
+    local folder = Instance.new("Folder")
+    folder.Name = "CompanionPettingBurstLocal"
+    folder.Parent = workspace
+
+    for index = 1, 5 do
+        local anchor = Instance.new("Part")
+        anchor.Name = "PettingSpark"
+        anchor.Size = Vector3.new(0.1, 0.1, 0.1)
+        anchor.Transparency = 1
+        anchor.Anchored = true
+        anchor.CanCollide = false
+        anchor.CanTouch = false
+        anchor.CanQuery = false
+        anchor.CFrame = CFrame.new(origin + Vector3.new((index - 3) * 0.42, 0, 0))
+        anchor.Parent = folder
+
+        local billboard = Instance.new("BillboardGui")
+        billboard.Size = UDim2.fromOffset(34, 34)
+        billboard.AlwaysOnTop = true
+        billboard.LightInfluence = 0
+        billboard.Parent = anchor
+
+        local glyph = Instance.new("TextLabel")
+        glyph.Size = UDim2.fromScale(1, 1)
+        glyph.BackgroundTransparency = 1
+        glyph.Text = companionId == "Fox" and (index % 2 == 0 and "♥" or "✦") or (index % 2 == 0 and "✧" or "☾")
+        glyph.TextColor3 = companionId == "Fox" and palette.coral or palette.lilac
+        glyph.TextStrokeTransparency = 0.55
+        glyph.Font = Enum.Font.GothamBold
+        glyph.TextScaled = true
+        glyph.Parent = billboard
+
+        local drift = Vector3.new((index - 3) * 0.18, 1.05 + (index % 2) * 0.28, 0)
+        TweenService:Create(anchor, TweenInfo.new(0.78, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            CFrame = anchor.CFrame + drift,
+        }):Play()
+        TweenService:Create(glyph, TweenInfo.new(0.78, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            TextTransparency = 1,
+            TextStrokeTransparency = 1,
+            Rotation = (index % 2 == 0 and 1 or -1) * 22,
+        }):Play()
+    end
+
+    Debris:AddItem(folder, 0.9)
+end
+
 local function follow(dt)
     local now = workspace:GetServerTimeNow()
 
@@ -1875,6 +1939,11 @@ local function follow(dt)
                 end
             else
                 model:PivotTo(model:GetPivot():Lerp(target, 1 - math.exp(-9 * dt)))
+            end
+
+            if owner == player and pendingPetBurst[id] then
+                pendingPetBurst[id] = nil
+                playCompanionPettingBurst(model, id)
             end
 
             local state = animationStates[model]
