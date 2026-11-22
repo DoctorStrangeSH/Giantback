@@ -328,6 +328,12 @@ local function renderCity()
     local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
     local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
     addInfo("Материалы для моста", "🪵 Дерево: " .. tostring(wood) .. " / 5    •    🪨 Камень: " .. tostring(stone) .. " / 3", 66)
+    local moonSeeds = tonumber(player:GetAttribute("Resource_MoonSeed")) or 0
+    local starShards = tonumber(player:GetAttribute("Resource_StarShard")) or 0
+    local carrotSeeds = tonumber(player:GetAttribute("Resource_CarrotSeed")) or 0
+    local carrots = tonumber(player:GetAttribute("Resource_Carrot")) or 0
+    addInfo("Находки и ферма", "🌙 Лунные семена: " .. tostring(moonSeeds) .. "   •   ✦ Звёздный осколок: " .. tostring(starShards)
+        .. "   •   🥕 Семена: " .. tostring(carrotSeeds) .. "   •   Урожай: " .. tostring(carrots), 76)
     addInfo("Ферма: уровень " .. tostring(farmLevel), "У тебя есть четыре места для грядок. Открой вкладку «Ферма», чтобы посмотреть их состояние.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
 end
@@ -379,11 +385,13 @@ local function renderPets()
         local companionXPToNext = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_XPToNext")) or 0))
         local mutationName = player:GetAttribute("Companion_" .. pet.id .. "_MutationName")
         local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
+        local growthStage = companionLevel >= 5 and "ВЗРОСЛЫЙ"
+            or companionLevel >= 3 and "ПОДРОСТОК" or "МАЛЫШ"
         local levelText = companionLevel >= 5 and "УР. 5 · МАКСИМУМ"
             or ("УР. " .. tostring(companionLevel) .. " · " .. tostring(companionXP) .. "/" .. tostring(companionXPToNext) .. " XP")
         local mutationText = owned and type(mutationName) == "string" and mutationName ~= ""
             and (" · ✦ " .. mutationName .. " (" .. tostring(mutationRarity or "Необычный") .. ")") or ""
-        label(item, "Progression", owned and (levelText .. mutationText) or "Уровень и мутация откроются при знакомстве",
+        label(item, "Progression", owned and (growthStage .. " · " .. levelText .. mutationText) or "Уровень и мутация откроются при знакомстве",
             UDim2.new(1, -28, 0, 20), UDim2.fromOffset(16, 151), 11, palette.ink, Enum.Font.GothamBold)
         local foxTalent = companionLevel >= 5 and "Острый нюх: поиск каждые 60 сек."
             or companionLevel >= 3 and "Чуткий нюх: поиск каждые 90 сек."
@@ -391,6 +399,14 @@ local function renderPets()
         local mothTalent = companionLevel >= 5 and "Лунная аура: радиус лечения +4."
             or companionLevel >= 3 and "Лунная аура: радиус лечения +2."
             or "Лунная аура развивается вместе с дружбой."
+        if owned and pet.id == "Fox" then
+            local foxReadyAt = tonumber(player:GetAttribute("FoxSearchReadyAt")) or 0
+            if foxReadyAt <= os.time() then
+                foxTalent = foxTalent .. " · Нюх следопыта готов"
+            else
+                foxTalent = foxTalent .. " · Нюх отдыхает"
+            end
+        end
         label(item, "Talent", owned and (pet.id == "Fox" and foxTalent or mothTalent) or "Найди питомца, чтобы открыть талант",
             UDim2.new(1, -28, 0, 20), UDim2.fromOffset(16, 179), 10, palette.forest)
 
