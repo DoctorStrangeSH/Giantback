@@ -1,3 +1,19 @@
+## Harvesting 2.0 — Starter tools and multi-hit resource nodes
+
+- [x] Add persistent Axe/Pickaxe ownership, selected tool and level-1/2 progression to player profiles (schema v8, monotonic version writes).
+- [x] Restore tools on join and respawn; track actual tool equips so the server validates the tool currently held.
+- [x] Add a dedicated Russian Tools tab with equip and upgrade actions.
+- [x] Add an owner-only personal workbench with server-side distance checks for upgrades.
+- [x] Add two forest wood nodes and two dusk stone nodes with distinct tree/rock visuals.
+- [x] Require the correct equipped tool for each resource family.
+- [x] Add server-authoritative multi-hit progress with a 0.4-second per-node hit throttle and faster harvesting at tool level 2.
+- [x] Add client-local hit progress display; collected-node visibility remains per-player.
+- [x] Add regression tests for tool persistence, equip validation, multi-hit state, workshop distance/material costs and local hit feedback.
+- [ ] Add iron ore nodes and a server-authoritative smelting loop; do not grant IronIngot until a completed smelt is collected.
+- [ ] Add polished tool swing/impact animations and resource-specific break effects.
+- [ ] Studio playtest: verify Backpack switching, correct-tool checks, hit progress, respawn restoration, upgrade cost consumption and save/rejoin.
+- [ ] Add mobile-friendly touch controls and tool selection UX after Studio testing.
+
 ## Repository consolidation — profile safety
 
 - [x] Prevent schema-v6 saves from downgrading a newer profile schema marker.
