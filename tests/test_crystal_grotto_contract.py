@@ -154,7 +154,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('wispModel.PrimaryPart = wispBody', VISUALS)
         self.assertIn('encounterModel.Name = "CrystalWispEncounter"', WORLD)
         self.assertIn('CrystalWisp = "CombatTrainingGlade"', ALBUM)
-        self.assertIn('createCompanionCard("CrystalWisp", 3)', ALBUM)
+        self.assertIn('{id = "CrystalWisp", name = "Кристальный светляк"', HUD)
 
     def test_prism_sense_reveals_two_hidden_renewable_crystal_veins(self):
         self.assertIn('CrystalGrottoPrismVein01 = true', WORLD)
@@ -179,7 +179,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
     def test_prism_sense_feedback_and_collection_description_are_connected(self):
         self.assertIn('data.companionId == "CrystalWisp"', COMBAT_CLIENT)
         self.assertIn('КРИСТАЛЬНЫЙ СВЕТЛЯК · ПРИЗМЕННОЕ ЧУТЬЁ', COMBAT_CLIENT)
-        self.assertIn('Призменное чутьё: скрытые жилы на ', ALBUM)
+        self.assertIn('Призменное чутьё: скрытые жилы на ', HUD)
         self.assertIn('local prismSenseActive = state.id == "CrystalWisp"', ALBUM)
         self.assertIn('^OrbitCrystal', ALBUM)
 
