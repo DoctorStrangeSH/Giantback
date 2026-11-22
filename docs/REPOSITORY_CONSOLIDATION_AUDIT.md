@@ -270,3 +270,52 @@ Repository currently exposes eight branches total: the seven refs above plus the
 3. Do not merge `integration/giantback-consolidation` or either harvesting integration branch wholesale.
 4. After Studio acceptance and release review, merge PR #7 into the canonical development base; only then prepare a separate, tested release integration into `main`.
 5. Branch deletion is not performed by the available connected GitHub operations in this session; do not report cleanup as complete until refs are actually deleted through an authorized GitHub operation.
+
+
+## Branch and CI cleanup follow-up — 2026-11-22 16:33 UTC
+
+### Live state after workflow cleanup
+
+- Canonical development branch: `feat/cozy-world-visual-pass`.
+- Active integration branch: `feat/combat-c0-contract`, PR #7 targets the canonical branch.
+- Release branch: `main`; PR #1 remains Draft and must not be merged before 1.0 acceptance.
+- Current branch inventory remains eight refs total. No ref was deleted and no history was rewritten.
+- PR #7 is still Draft and GitHub reports it mergeable, but it remains unmerged pending Studio acceptance.
+
+### Duplicate Actions trigger reduction
+
+Updated `.github/workflows/validate-place.yml` on both the canonical branch and PR #7 head:
+- `push` now runs only for `main` and `feat/cozy-world-visual-pass`.
+- `pull_request` now runs only when targeting `main` or `feat/cozy-world-visual-pass`.
+- Feature-branch commits with an open PR are therefore validated by the PR event instead of also launching a duplicate push run.
+- Historical integration branches were removed from the trigger list.
+
+Validation after this change:
+- Canonical push run #2043: PASS (contract tests, place build, generated-place validation, artifact upload).
+- PR #7 run #2044: all validation steps reported success; final run completion was still pending at the time of this note.
+- Previous PR #7 head run #2042: PASS.
+
+### Branch tree comparison against active PR head
+
+A recursive tree comparison found no file paths that exist only on any of the five historical refs below and are absent from `feat/combat-c0-contract`. This does **not** prove that their older file contents are identical: several branches still have divergent blobs for gameplay, UI, build, tests, asset briefs and workflow files.
+
+| Historical ref | Relation to active PR head | Current disposition |
+|---|---|---|
+| `feat/harvesting-feedback-on-latest` | Active PR head is a descendant; no branch-only paths | Superseded recovery ref; candidate for deletion after backup |
+| `feat/world-resource-harvesting` | Diverged; 68 branch-only commits | Historical source; preserve until semantic diff is signed off |
+| `integration/giantback-consolidation` | Diverged; 4 branch-only commits | Historical snapshot; do not merge wholesale |
+| `integration/harvesting-on-cozy-world` | Diverged; 9 branch-only commits | Historical snapshot; preserve until semantic diff is signed off |
+| `integration/harvesting-on-cozy-world-v2` | Diverged; 74 branch-only commits | Archive/recovery source; preserve until semantic diff is signed off |
+
+The active PR head is currently 464 commits ahead and 1 commit behind the canonical branch because the workflow trigger cleanup was committed independently to both refs. The workflow contents are aligned. Do not force-reset either ref; if GitHub offers a normal update-branch operation, use it and rerun PR validation.
+
+### Remaining cleanup gates
+
+- [x] Reduce duplicate feature push + PR validation triggers.
+- [x] Confirm the latest canonical validation after the trigger edit.
+- [x] Confirm PR #7 validation steps after the trigger edit.
+- [ ] Complete semantic review of divergent historical file blobs, especially `World.server.luau`, `Album.client.luau`, `HUD.client.luau`, `build.py` and tests.
+- [ ] Create an explicit recovery backup before deleting any historical ref.
+- [ ] Delete superseded refs through an authorized GitHub branch-delete operation. The connected GitHub actions available in this session expose no branch-delete operation; deletion has not been performed.
+- [ ] Keep PR #7 Draft until Roblox Studio multiplayer, save/rejoin, PC/mobile/gamepad and animation acceptance is complete.
+- [ ] Keep PR #1 Draft until the 1.0 release checklist is accepted.
