@@ -66,7 +66,8 @@ class CombatFoundationContractTests(unittest.TestCase):
     def test_melee_hitbox_range_facing_and_cooldown_are_server_owned(self):
         self.assertIn("COMBO_COOLDOWN = {0.48, 0.48, 0.72}", COMBAT)
         self.assertIn("state.attackReadyAt = now + COMBO_COOLDOWN[comboStep]", COMBAT)
-        self.assertIn("Workspace:GetPartBoundsInBox(hitCFrame, PLAYER_ATTACK_BOX, overlap)", COMBAT)
+        self.assertIn("local attackBox = isFinisher and PLAYER_FINISHER_BOX or PLAYER_ATTACK_BOX", COMBAT)
+        self.assertIn("Workspace:GetPartBoundsInBox(hitCFrame, attackBox, overlap)", COMBAT)
         self.assertIn("root.CFrame.LookVector:Dot(offset.Unit) >= 0.25", COMBAT)
 
     def test_block_and_dodge_are_server_timed(self):
