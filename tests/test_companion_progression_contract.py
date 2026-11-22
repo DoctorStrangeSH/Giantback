@@ -56,10 +56,15 @@ class CompanionProgressionContractTests(unittest.TestCase):
         self.assertIn("local xpReward = math.min(24, #healedPlayers * 6)", COMBAT)
 
     def test_combat_cooldown_is_committed_before_async_progression_write(self):
-        fox = COMBAT[COMBAT.index('if companionId == "Fox" then', COMBAT.index("local function performCompanionSkill")):COMBAT.index("local companionLevel = math.clamp", COMBAT.index("local function performCompanionSkill"))]
-        self.assertIn("state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN", fox)
-        self.assertIn('task.spawn(function()', fox)
-        self.assertIn('state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN', COMBAT)
+        skill_start = COMBAT.index("local function performCompanionSkill")
+        fox_start = COMBAT.index('if companionId == "Fox" then', skill_start)
+        fox_cooldown = COMBAT.index("state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN", fox_start)
+        fox_xp_spawn = COMBAT.index("task.spawn(function()", fox_cooldown)
+        self.assertLess(fox_cooldown, fox_xp_spawn)
+        moth_start = COMBAT.index("local companionLevel = math.clamp", fox_xp_spawn)
+        moth_cooldown = COMBAT.index("state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN", moth_start)
+        moth_xp_spawn = COMBAT.index("task.spawn(function()", moth_cooldown)
+        self.assertLess(moth_cooldown, moth_xp_spawn)
 
     def test_ci_checks_companion_progression_contract(self):
         for marker in (
