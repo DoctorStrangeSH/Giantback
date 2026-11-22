@@ -10,10 +10,10 @@ Routine work is committed directly to the canonical line. Do not create another 
 
 - PR #7 — consolidated harvesting feedback + Combat C0 integration directly into the canonical branch. Keep Draft until Roblox Studio acceptance.
 - PR #6 — closed as superseded by PR #7; its commits remain in PR #7's head history.
-- PR #4 — legacy V2 migration source. It is not an integration candidate as a whole; selectively port city/sword/progression features after profile migration design.
+- PR #4 — closed archive reference for V2 city/sword/progression features; selectively port only after profile migration design.
 - PR #1 — eventual release PR to `main`; do not merge while the 1.0 acceptance checklist is incomplete.
 
-PRs #2, #3, #5 and #6 are closed and superseded. Their branches are recovery references, not active development lines.
+PRs #2, #3, #4, #5 and #6 are closed and superseded or archived. Their branches are recovery references, not active development lines.
 
 ## Rules
 
