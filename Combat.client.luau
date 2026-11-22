@@ -179,6 +179,81 @@ local rejectionMessages = {
     CompanionNoOneToHeal = "Рядом никому не требуется лечение",
 }
 
+local function showCompanionImpact(root, accent, radius)
+    if not root or not root:IsA("BasePart") or not root:IsDescendantOf(Workspace) then return end
+
+    local attachment = Instance.new("Attachment")
+    attachment.Name = "LocalCompanionSkillBurst"
+    attachment.Position = Vector3.new(0, 0.8, 0)
+    attachment.Parent = root
+
+    local particles = Instance.new("ParticleEmitter")
+    particles.Name = "CompanionSkillSparkles"
+    particles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+    particles.Color = ColorSequence.new(accent, Color3.fromRGB(255, 239, 190))
+    particles.LightEmission = 0.9
+    particles.Lifetime = NumberRange.new(0.35, 0.8)
+    particles.Speed = NumberRange.new(4, 8)
+    particles.SpreadAngle = Vector2.new(160, 160)
+    particles.Rotation = NumberRange.new(0, 360)
+    particles.RotSpeed = NumberRange.new(-90, 90)
+    particles.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.28),
+        NumberSequenceKeypoint.new(1, 0),
+    })
+    particles.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.08),
+        NumberSequenceKeypoint.new(1, 1),
+    })
+    particles.Rate = 0
+    particles.Parent = attachment
+    particles:Emit(20)
+
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    rayParams.FilterDescendantsInstances = {root.Parent}
+    local floorHit = Workspace:Raycast(root.Position, Vector3.new(0, -14, 0), rayParams)
+    local floorPosition = floorHit and floorHit.Position or (root.Position - Vector3.new(0, 2, 0))
+
+    local ring = Instance.new("Part")
+    ring.Name = "LocalCompanionSkillPulse"
+    ring.Shape = Enum.PartType.Cylinder
+    ring.Anchored = true
+    ring.CanCollide = false
+    ring.CanTouch = false
+    ring.CanQuery = false
+    ring.CastShadow = false
+    ring.Material = Enum.Material.Neon
+    ring.Color = accent
+    ring.Transparency = 0.22
+    ring.Size = Vector3.new(0.12, 1, 1)
+    ring.CFrame = CFrame.new(floorPosition + Vector3.new(0, 0.1, 0)) * CFrame.Angles(0, 0, math.rad(90))
+    ring.Parent = Workspace
+
+    local pulse = TweenService:Create(
+        ring,
+        TweenInfo.new(0.72, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = Vector3.new(0.12, radius * 2, radius * 2), Transparency = 1}
+    )
+    pulse:Play()
+    pulse.Completed:Once(function()
+        if ring.Parent then ring:Destroy() end
+    end)
+    task.delay(1.1, function()
+        if attachment.Parent then attachment:Destroy() end
+    end)
+end
+
+local function findEnemyRoot(enemyId)
+    if type(enemyId) ~= "string" or enemyId == "" then return nil end
+    for _, enemy in CollectionService:GetTagged("GiantbackEnemy") do
+        if enemy:IsA("Model") and tostring(enemy:GetAttribute("EnemyId") or enemy.Name) == enemyId then
+            return enemy:FindFirstChild("HumanoidRootPart")
+        end
+    end
+    return nil
+end
+
 remote.OnClientEvent:Connect(function(message, data)
     if message == "CombatRejected" and type(data) == "table" then
         local copy = rejectionMessages[data.code]
@@ -186,8 +261,19 @@ remote.OnClientEvent:Connect(function(message, data)
     elseif message == "CompanionSkillUsed" and type(data) == "table" then
         if data.companionId == "Fox" then
             showFeedback("ЛИСЁНОК · " .. tostring(data.damage or 0) .. " УРОНА", Color3.fromRGB(244, 190, 111))
+            local targetRoot = findEnemyRoot(data.targetId) or (player.Character and player.Character:FindFirstChild("HumanoidRootPart"))
+            showCompanionImpact(targetRoot, Color3.fromRGB(244, 178, 94), 7)
         elseif data.companionId == "Moth" then
             showFeedback("ЛУННАЯ МОЛЬ · ЛЕЧЕНИЕ ×" .. tostring(data.healedCount or 0), Color3.fromRGB(190, 164, 232))
+            if type(data.healedUserIds) == "table" then
+                for _, userId in data.healedUserIds do
+                    if type(userId) == "number" then
+                        local ally = Players:GetPlayerByUserId(userId)
+                        local allyRoot = ally and ally.Character and ally.Character:FindFirstChild("HumanoidRootPart")
+                        showCompanionImpact(allyRoot, Color3.fromRGB(190, 164, 232), 5)
+                    end
+                end
+            end
         end
     elseif message == "CombatHit" then
         if type(data) == "table" and data.charged == true then
