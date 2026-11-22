@@ -40,8 +40,8 @@
 - [x] Confirm fresh Validate Giantback run #1223 after the validator update; tests, place build, generated-place validation and artifact upload all passed.
 - [x] Port starter tool ownership/equipment and server-authoritative multi-hit wood/stone gathering.
 - [x] Confirm the current cozy-world base already contains server-authoritative iron ore harvesting, personal smelter actions, 60-second processing and persisted pending output; do not re-port the older V2 implementation.
-- [ ] Port combat only after dedicated combat acceptance tests and Studio playtest.
-- [ ] Port combat after iron/smelting integration and dedicated combat acceptance tests.
+- [x] C0 server-owned CombatAction remote, action allow-list, strict empty-payload contract, request rate limit, ready/alive/region/equipped-weapon gates, sanitized state snapshot and transient-state cleanup; contract tests and place embedding added.
+- [ ] C1 first playable sword-and-shield loop; do not enable damage until server hit validation and acceptance tests exist.
 
 ## Farming 2.0 — Four-crop server foundation
 
