@@ -16,6 +16,24 @@ The original `moth_companion.obj` was parsed directly before planning the hero r
 
 This confirms the original source is a useful shape/layout BLOCKOUT with separable wing objects, but not a finished hero asset. Preserve it unchanged as rollback baseline. The new hero model must add authored UVs, closed/thickened wing surfaces where appropriate, hand-painted wing motifs and an independently validated four-wing rig.
 
+## 0.3 Visual review — first successful Hero artifact (#20)
+
+The corrected generator passed the full Blender geometry/material/UV gate and produced all four views. This is a successful technical milestone, but the art review is **rejected for final approval**.
+
+Observed in the actual renders:
+- The four wing meshes are distinct and clean, but the silhouette reads as narrow pointed panels rather than broad, soft moth wings; upper/lower wings overlap awkwardly in 3/4 and side views.
+- The body reads as three stacked primitive spheres (head/thorax/abdomen), not one soft plush insect silhouette.
+- Antennae read as disconnected gold beads rather than curved sensory feelers.
+- Wing colors are present and readable, but the design lacks a memorable moon motif and the creature is still too generic/blockout-like.
+
+Corrective source pass:
+- broaden the upper/lower wing silhouettes and shorten their spanwise length to create softer, rounded wings;
+- replace bead antennae with curved Bezier feelers and club tips;
+- combine thorax/abdomen into one elongated body shell while retaining gold abdomen bands as decoration;
+- preserve the four separate UV-mapped wing groups and existing palette.
+
+This pass still requires a fresh render and manual review. Do not treat the first successful geometry gate as art approval or as a Roblox-ready rig.
+
 ## 0.2 First Blender CI finding and correction
 
 The first real Blender execution successfully generated the BLEND/OBJ and all four renders, but the geometry gate rejected zero-area faces on `MothWingUpperLeft`. Root cause: the wing-width profile collapsed to zero at the root/tip rows while still emitting quad strips. The width profile now has a small nonzero floor (10% of the broad profile), preserving a narrow root/tip silhouette without collapsing the surface. A regression test locks this minimum-width rule.
