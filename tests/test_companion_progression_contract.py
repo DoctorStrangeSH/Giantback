@@ -89,8 +89,7 @@ class CompanionProgressionContractTests(unittest.TestCase):
             "FOX_SKILL_DAMAGE_PER_LEVEL = 3",
             "MOTH_HEAL_PER_LEVEL = 2",
             "FeedCompanion",
-            "Companion_Fox_Bond",
-            "Companion_Moth_Bond",
+            'player:SetAttribute("Companion_" .. id .. "_Bond"',
             "УР. 5 · МАКСИМУМ",
         ):
             self.assertIn(marker, CI)
