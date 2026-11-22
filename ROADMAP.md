@@ -1,3 +1,12 @@
+## Home Island — Companion Sanctuary visual pass
+
+- [x] Добавить отдельную зону `HandcraftedDetails/PetSanctuary` на домашнем острове.
+- [x] Сделать мягкую зелёную площадку с каменным центром и тремя цветными лежанками для компаньонов.
+- [x] Добавить лунный фонарь, каменные бортики, цветы и четыре плиты подходной дорожки.
+- [x] Добавить source-contract test на расположение трёх лежанок и элементов зоны.
+- [ ] Проверить расположение и проходимость в Roblox Studio на PC/mobile; убедиться, что зона не пересекается с хвостом/декором острова.
+- [ ] Связать лежанки с будущей системой назначения/отдыха питомцев; сейчас это только визуальная декорация.
+
 ## Lunar Moth — fourth visual correction pass
 
 - [x] Artifact #56 passed Blender technical gates and generated front/side/back/three-quarter views.
