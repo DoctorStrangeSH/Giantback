@@ -477,12 +477,77 @@ local function renderWorld()
     addInfo("Скоро новые земли", "Каменный кряж, древние руины и кристальная пещера станут следующими большими открытиями.", 78)
 end
 
+local expeditionTracks = {
+    {
+        id = "Grove", title = "СОЛНЕЧНАЯ РОЩА", subtitle = "Следопытство и первые тайники",
+        icon = "🌿", color = palette.mint,
+        steps = {
+            {key = "Fox", title = "Познакомиться с лисёнком", hint = "Найди гнездо лисёнка в Солнечной роще."},
+            {key = "Seed", title = "Найти лунное семя", hint = "Позови лисёнка у следов на тропе."},
+            {key = "FoxCaches", title = "Открыть три тайника", hint = "Попроси лисёнка искать тайники и забери три находки."},
+        },
+    },
+    {
+        id = "Dusk", title = "СУМЕРЕЧНАЯ ДОЛИНА", subtitle = "Лунные цветы и древние руны",
+        icon = "🌙", color = palette.lilac,
+        steps = {
+            {key = "Moth", title = "Познакомиться с лунной молью", hint = "Найди её в Сумеречной долине."},
+            {key = "MoonBloom", title = "Пробудить лунный цветок", hint = "Позови моль к скрытому цветку."},
+            {key = "MoonGateTrace", title = "Найти след древних корней", hint = "Вернись с лисёнком к древним корням."},
+            {key = "MoonGateOpen", title = "Зажечь древние руны", hint = "Позови моль к рунам у тайного прохода."},
+            {key = "MoonRelic", title = "Забрать звёздный осколок", hint = "Пройди через открытую арку."},
+        },
+    },
+}
+
+local function isExpeditionStepComplete(step)
+    if step.key == "FoxCaches" then
+        return (tonumber(player:GetAttribute("FoxSearchCount")) or 0) >= 3
+    end
+    return player:GetAttribute(step.key) == true
+end
+
+local function renderExpeditions()
+    addInfo("ДНЕВНИК ЭКСПЕДИЦИЙ", "Собирай открытия по всему архипелагу. Каждая отметка сохраняется вместе с твоим приключением.", 78)
+    local totalCompleted = 0
+    local totalSteps = 0
+    for _, track in expeditionTracks do
+        local completed = 0
+        for _, step in track.steps do
+            totalSteps += 1
+            if isExpeditionStepComplete(step) then
+                completed += 1
+                totalCompleted += 1
+            end
+        end
+
+        local header = card(body, track.id .. "Expedition", 70)
+        header.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
+        label(header, "Icon", track.icon, UDim2.fromOffset(42, 46), UDim2.fromOffset(12, 12), 27, track.color, Enum.Font.GothamBold)
+        label(header, "Title", track.title, UDim2.new(1, -130, 0, 22), UDim2.fromOffset(60, 10), 13, palette.ink, Enum.Font.GothamBlack)
+        label(header, "Subtitle", track.subtitle, UDim2.new(1, -130, 0, 18), UDim2.fromOffset(60, 34), 10, palette.muted)
+        local count = label(header, "Count", tostring(completed) .. "/" .. tostring(#track.steps), UDim2.fromOffset(52, 28), UDim2.new(1, -62, 0.5, -14), 14, track.color, Enum.Font.GothamBlack)
+        count.TextXAlignment = Enum.TextXAlignment.Center
+
+        for index, step in track.steps do
+            local done = isExpeditionStepComplete(step)
+            local item = card(body, track.id .. "Step" .. tostring(index), 58)
+            item.BackgroundColor3 = done and Color3.fromRGB(235, 242, 224) or palette.paper
+            label(item, "State", done and "✓" or tostring(index), UDim2.fromOffset(30, 34), UDim2.fromOffset(12, 12), 18, done and palette.forestLight or palette.muted, Enum.Font.GothamBlack)
+            label(item, "Title", step.title, UDim2.new(1, -62, 0, 22), UDim2.fromOffset(48, 6), 13, palette.ink, Enum.Font.GothamBold)
+            label(item, "Hint", done and "Открытие записано в дневник." or step.hint, UDim2.new(1, -62, 0, 23), UDim2.fromOffset(48, 29), 10, palette.muted)
+        end
+    end
+    addInfo("ПРОГРЕСС ИССЛЕДОВАНИЯ", "Открыто " .. tostring(totalCompleted) .. " из " .. tostring(totalSteps) .. " записей. Новые экспедиции появятся вместе с неизведанными землями.", 66)
+end
+
 local renderers = {
     City = renderCity,
     Farm = renderFarm,
     Pets = renderPets,
     Tools = renderTools,
     World = renderWorld,
+    Expeditions = renderExpeditions,
 }
 
 local panelTitles = {
@@ -491,6 +556,7 @@ local panelTitles = {
     Pets = {"МОИ ПИТОМЦЫ", "Друзья, которые помогают в приключениях"},
     Tools = {"ИНСТРУМЕНТЫ", "Собирай ресурсы и улучшай снаряжение"},
     World = {"КАРТА МИРА", "Открывай острова и исследуй новые места"},
+    Expeditions = {"ДНЕВНИК", "Твои открытия в Солнечной роще и Сумеречной долине"},
 }
 
 local activeTab = nil
@@ -520,10 +586,11 @@ local navDefinitions = {
     {id = "Pets", title = "ПИТОМЦЫ", glyph = "♡"},
     {id = "Tools", title = "ИНСТРУМЕНТЫ", glyph = "⚒"},
     {id = "World", title = "КАРТА", glyph = "✧"},
+    {id = "Expeditions", title = "ДНЕВНИК", glyph = "📖"},
 }
 
 for _, definition in navDefinitions do
-    local navButton = button(nav, definition.id, definition.glyph .. "\n" .. definition.title, UDim2.new(0.2, -6, 1, -12), UDim2.new(), palette.forestLight)
+    local navButton = button(nav, definition.id, definition.glyph .. "\n" .. definition.title, UDim2.new(1 / #navDefinitions, -6, 1, -12), UDim2.new(), palette.forestLight)
     navButton.TextSize = 13
     navButton.TextYAlignment = Enum.TextYAlignment.Center
     navButton.Activated:Connect(function()
