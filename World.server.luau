@@ -30,8 +30,8 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
-local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil"}
+local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "Flower", "Timber", "Lantern", "Lit"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard"}
 local toolIds = {Axe = true, Pickaxe = true}
 local combatRewardDefinitions = {
     GroveGrunt01 = {itemId = "Wood", amount = 3},
@@ -2649,6 +2649,70 @@ if rootvaultChest then
             tip(player, "Не удалось сохранить реликвию. Попробуй ещё раз.")
         else
             tip(player, "Хранилище покорено! Получено: Железная руда ×3.")
+        end
+    end)
+end
+
+-- Crystal Grotto: a small optional exploration pocket unlocked by the Moon Relic.
+local crystalGrotto = trial and trial:FindFirstChild("CrystalGrotto")
+local crystalEntrance = workspace.Dusk and workspace.Dusk:FindFirstChild("CrystalGrottoEntrance")
+local crystalArrival = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrottoArrival")
+local crystalReturn = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrottoReturn")
+local crystalHeart = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrottoHeart")
+local crystalGrottoInside = {}
+
+if crystalEntrance and crystalArrival then
+    prompt(crystalEntrance, "Кристальная пещера", "Исследовать", function(player)
+        local session = sessions[player]
+        local character = player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if not session or not player:GetAttribute("Ready") or not root or not humanoid or humanoid.Health <= 0 then return end
+        if not player:GetAttribute("MoonRelic") then
+            return tip(player, "Сначала найди звёздный осколок в Лунных руинах. Он пробудит кристаллы у входа.")
+        end
+        if (root.Position - crystalEntrance.Position).Magnitude > 11 then return end
+        crystalGrottoInside[player] = true
+        player:SetAttribute("InCrystalGrotto", true)
+        player:SetAttribute("CrystalGrottoDiscovered", true)
+        character:PivotTo(crystalArrival.CFrame * CFrame.new(0, 4, 0))
+        tip(player, "Кристальная пещера открыта! Исследуй зал и найди древнее сердце.")
+        if session.online then save(player) end
+    end)
+end
+
+if crystalReturn and crystalEntrance then
+    prompt(crystalReturn, "Выход из пещеры", "Вернуться в долину", function(player)
+        local session = sessions[player]
+        local character = player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        if not session or not crystalGrottoInside[player] or not character or not root then return end
+        if (root.Position - crystalReturn.Position).Magnitude > 11 then return end
+        crystalGrottoInside[player] = nil
+        player:SetAttribute("InCrystalGrotto", false)
+        character:PivotTo(crystalEntrance.CFrame * CFrame.new(0, 0, -7))
+        tip(player, "Ты вернулся в Сумеречную долину.")
+    end)
+end
+
+if crystalHeart then
+    prompt(crystalHeart, "Сердце кристальной пещеры", "Собрать осколок", function(player)
+        local session = sessions[player]
+        local character = player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if not session or not crystalGrottoInside[player] or not root or not humanoid or humanoid.Health <= 0 then return end
+        if (root.Position - crystalHeart.Position).Magnitude > 11 then return end
+        if player:GetAttribute("CrystalHeart") then
+            return tip(player, "Сердце уже пробуждено. Его осколок хранится в твоей коллекции.")
+        end
+        player:SetAttribute("CrystalHeart", true)
+        session.inventory.CrystalShard = (session.inventory.CrystalShard or 0) + 1
+        syncInventory(player)
+        tip(player, "Редкая находка! Получен кристальный осколок ×1.")
+        if session.online and not save(player) then
+            warn("Crystal Grotto reward save will be retried:", player.UserId)
+            tip(player, "Осколок получен. Сохранение временно задерживается и будет повторено автоматически.")
         end
     end)
 end
