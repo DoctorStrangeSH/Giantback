@@ -48,6 +48,27 @@ class BlenderUVPipelineContractTests(unittest.TestCase):
         self.assertIn("material_file.name not in export_stats[\"material_libraries\"]", source)
 
 
+class FoxHeroVisualWorkflowContractTests(unittest.TestCase):
+    def test_visual_workflow_does_not_cancel_active_renders(self):
+        workflow = ROOT / ".github" / "workflows" / "fox-hero-visual-review.yml"
+        self.assertTrue(workflow.is_file())
+        source = workflow.read_text(encoding="utf-8")
+        self.assertIn("bpy==4.2.0", source)
+        self.assertIn("cancel-in-progress: false", source)
+        self.assertNotIn("cancel-in-progress: true", source)
+        self.assertIn("timeout-minutes: 35", source)
+
+    def test_visual_workflow_keeps_four_view_and_mesh_quality_gate(self):
+        source = (ROOT / ".github" / "workflows" / "fox-hero-visual-review.yml").read_text(encoding="utf-8")
+        for view in ("three_quarter", "front", "side", "back"):
+            self.assertIn(f"fox_companion_hero_{view}.png", source)
+        for check in (
+            "zero_area_faces", "non_manifold_edges", "uv_layers",
+            "material_profiles", "soft_fur",
+        ):
+            self.assertIn(check, source)
+
+
 class FoxHeroMeshGeneratorTests(unittest.TestCase):
     def test_hero_generator_is_valid_python_and_keeps_source_non_destructive(self):
         path = ROOT / "tools" / "blender" / "build_fox_companion.py"
