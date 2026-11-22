@@ -272,6 +272,19 @@ local function normalizeCompanionProgress(raw)
     return result
 end
 
+local companionMoodDefaults = {
+    Fox = "Любопытство",
+    Moth = "Спокойствие",
+}
+
+local function setCompanionMood(player, companionId, mood)
+    local session = sessions[player]
+    if not session or (companionId ~= "Fox" and companionId ~= "Moth") then return end
+    session.companionMood = session.companionMood or {}
+    session.companionMood[companionId] = mood
+    player:SetAttribute("Companion_" .. companionId .. "_Mood", mood)
+end
+
 local function syncCompanionProgress(player)
     local session = sessions[player]
     if not session then return end
@@ -288,6 +301,8 @@ local function syncCompanionProgress(player)
             or progressData.bond >= 100 and "Знакомцы"
             or "Знакомство"
         player:SetAttribute("Companion_" .. id .. "_BondRank", bondRank)
+        local mood = session.companionMood and session.companionMood[id] or companionMoodDefaults[id]
+        player:SetAttribute("Companion_" .. id .. "_Mood", mood)
     end
 end
 
@@ -354,6 +369,7 @@ local function finishCompanionPlay(player, success, reason)
 
     local progressData = session.companionProgress[challenge.companionId]
     progressData.bond = math.clamp((progressData.bond or 0) + 15, 0, 1000)
+    setCompanionMood(player, challenge.companionId, "Радость")
     syncCompanionProgress(player)
     local xpGranted = awardCompanionXp(player, challenge.companionId, 8)
     if not xpGranted and session.online then
@@ -469,6 +485,7 @@ local function feedCompanion(player, companionId)
     session.inventory[foodId] -= 1
     local progressData = session.companionProgress[companionId]
     progressData.bond = math.clamp((progressData.bond or 0) + food.bond, 0, 1000)
+    setCompanionMood(player, companionId, "Довольство")
     session.companionFeedReadyAt[companionId] = now + 8
     syncInventory(player)
     syncCompanionProgress(player)
@@ -817,6 +834,7 @@ local function init(player)
         foxSearchCount = 0,
         completedCombatEncounters = {},
         companionProgress = normalizeCompanionProgress(nil),
+        companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth},
         companionFeedReadyAt = {},
         companionPlayReadyAt = {},
         companionPlay = nil,
@@ -1312,6 +1330,7 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if pets[action] and player:GetAttribute(action) then
         player:SetAttribute("Companion",action)
+        setCompanionMood(player, action, action == "Fox" and "Любопытство" or "Спокойствие")
     end
 end)
 
