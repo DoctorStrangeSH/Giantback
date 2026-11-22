@@ -715,7 +715,8 @@ combatRewardFunction.OnInvoke = function(player, encounterId)
     local session = sessions[player]
     local reward = combatRewardDefinitions[encounterId]
     if not session or not player:GetAttribute("Ready") or not reward then return false end
-    if session.completedCombatEncounters[encounterId] then return false end
+    -- Repeated delivery is success: the reward was already persisted previously.
+    if session.completedCombatEncounters[encounterId] then return true end
 
     session.completedCombatEncounters[encounterId] = true
     session.inventory[reward.itemId] = (session.inventory[reward.itemId] or 0) + reward.amount
