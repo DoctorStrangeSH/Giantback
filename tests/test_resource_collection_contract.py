@@ -83,6 +83,11 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('Instance.new("ParticleEmitter")', CLIENT)
         self.assertIn('emitter:Emit(7)', CLIENT)
         self.assertIn('clearResourceHitFeedback(payload.nodeId)', CLIENT)
+        self.assertIn('local function playHarvestToolSwing(nodeId)', CLIENT)
+        self.assertIn('TweenService:Create(tool', CLIENT)
+        self.assertIn('toolSwingGeneration', CLIENT)
+        self.assertIn('ColorSequence.new(Color3.fromRGB(183, 133, 83)', CLIENT)
+        self.assertIn('ColorSequence.new(Color3.fromRGB(151, 164, 169)', CLIENT)
 
     def test_world_resource_yields_are_server_defined_and_positive(self):
         self.assertIn('amount = 2,', WORLD)
