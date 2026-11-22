@@ -1700,6 +1700,75 @@ for _, center in {entryRoomCenter, mechanismRoomCenter, rewardRoomCenter} do
     end
 end
 
+-- Rootvault is its own combat region; players do not need to stand in the Grove arena.
+local rootvaultRegion = makePart(
+    rootvault,
+    "RootvaultCombatRegion",
+    Vector3.new(38, 24, 112),
+    CFrame.new(0, 13, 300),
+    palette.lilac,
+    Enum.Material.ForceField,
+    nil,
+    1
+)
+rootvaultRegion.CanCollide = false
+rootvaultRegion.CanTouch = false
+rootvaultRegion.CanQuery = true
+rootvaultRegion:SetAttribute("RegionId", "Rootvault")
+CollectionService:AddTag(rootvaultRegion, "GiantbackCombatRegion")
+
+-- A distinct R6 Rootvault sentinel guards the mechanism room and drops its key.
+local sentinel = Instance.new("Model")
+sentinel.Name = "RootvaultSentinel01"
+sentinel:SetAttribute("EnemyId", "RootvaultSentinel01")
+sentinel:SetAttribute("EncounterId", "RootvaultSentinel01")
+sentinel:SetAttribute("RegionId", "Rootvault")
+sentinel:SetAttribute("ArchetypeId", "VaultWarden")
+sentinel:SetAttribute("AggroRange", 28)
+sentinel:SetAttribute("AttackRange", 5.5)
+sentinel:SetAttribute("AttackDamage", 16)
+sentinel:SetAttribute("AttackCooldown", 2.8)
+sentinel:SetAttribute("TelegraphSeconds", 1.05)
+sentinel:SetAttribute("PathRefreshSeconds", 1.0)
+sentinel.Parent = rootvault
+local sentinelSpawn = mechanismRoomCenter + Vector3.new(0, 3, -4)
+local sentinelRoot = makeEnemyPart(sentinel, "HumanoidRootPart", Vector3.new(2, 2, 1), CFrame.lookAt(sentinelSpawn, sentinelSpawn + Vector3.new(0, 0, 1)), palette.ink)
+sentinelRoot.Transparency = 1
+sentinelRoot.Massless = false
+local sentinelTorso = makeEnemyPart(sentinel, "Torso", Vector3.new(2.3, 2.5, 1.35), sentinelRoot.CFrame, palette.stone, Enum.Material.Slate)
+local sentinelHead = makeEnemyPart(sentinel, "Head", Vector3.new(1.6, 1.5, 1.5), sentinelRoot.CFrame * CFrame.new(0, 1.9, 0), palette.lilac, Enum.Material.Slate, Enum.PartType.Ball)
+local sentinelRightArm = makeEnemyPart(sentinel, "Right Arm", Vector3.new(0.9, 2.1, 1), sentinelRoot.CFrame * CFrame.new(1.5, 0, 0), palette.stone, Enum.Material.Slate)
+local sentinelLeftArm = makeEnemyPart(sentinel, "Left Arm", Vector3.new(0.9, 2.1, 1), sentinelRoot.CFrame * CFrame.new(-1.5, 0, 0), palette.stone, Enum.Material.Slate)
+local sentinelRightLeg = makeEnemyPart(sentinel, "Right Leg", Vector3.new(0.95, 2, 1), sentinelRoot.CFrame * CFrame.new(0.55, -2, 0), palette.ink, Enum.Material.Slate)
+local sentinelLeftLeg = makeEnemyPart(sentinel, "Left Leg", Vector3.new(0.95, 2, 1), sentinelRoot.CFrame * CFrame.new(-0.55, -2, 0), palette.ink, Enum.Material.Slate)
+joinRig(sentinel, "RootJoint", sentinelRoot, sentinelTorso, CFrame.new(), CFrame.new())
+joinRig(sentinel, "Neck", sentinelTorso, sentinelHead, CFrame.new(0, 1.2, 0), CFrame.new(0, -0.75, 0))
+joinRig(sentinel, "Right Shoulder", sentinelTorso, sentinelRightArm, CFrame.new(1.15, 0.7, 0), CFrame.new(0, 0.7, 0))
+joinRig(sentinel, "Left Shoulder", sentinelTorso, sentinelLeftArm, CFrame.new(-1.15, 0.7, 0), CFrame.new(0, 0.7, 0))
+joinRig(sentinel, "Right Hip", sentinelTorso, sentinelRightLeg, CFrame.new(0.55, -1.1, 0), CFrame.new(0, 1, 0))
+joinRig(sentinel, "Left Hip", sentinelTorso, sentinelLeftLeg, CFrame.new(-0.55, -1.1, 0), CFrame.new(0, 1, 0))
+local sentinelEyes = {}
+for side = -1, 1, 2 do
+    local eye = makeEnemyPart(sentinel, "VioletEye", Vector3.new(0.22, 0.22, 0.12), sentinelHead.CFrame * CFrame.new(side * 0.36, 0.1, -0.68), palette.lilacLight, Enum.Material.Neon, Enum.PartType.Ball)
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = sentinelHead
+    weld.Part1 = eye
+    weld.Parent = eye
+    addLight(eye, palette.lilacLight, 5, 0.35)
+end
+local sentinelHumanoid = Instance.new("Humanoid")
+sentinelHumanoid.DisplayName = "Страж хранилища"
+sentinelHumanoid.MaxHealth = 145
+sentinelHumanoid.Health = 145
+sentinelHumanoid.WalkSpeed = 8
+sentinelHumanoid.JumpPower = 0
+sentinelHumanoid.BreakJointsOnDeath = false
+sentinelHumanoid.RequiresNeck = true
+sentinelHumanoid.Parent = sentinel
+sentinel.PrimaryPart = sentinelRoot
+sentinelRoot:SetNetworkOwner(nil)
+CollectionService:AddTag(sentinel, "GiantbackEnemy")
+
 -- Let the gameplay bootstrap wait until the collectible models are fully decorated.
 local ready = ReplicatedStorage:FindFirstChild("GiantbackVisualsReady") or Instance.new("BoolValue")
 ready.Name = "GiantbackVisualsReady"
