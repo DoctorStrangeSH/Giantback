@@ -57,6 +57,10 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('action == "EquipTool"', WORLD)
         self.assertIn('session.equippedTool = payload', WORLD)
         self.assertIn('player:SetAttribute("Tool_Equipped"', WORLD)
+        self.assertIn('Instance.new("Tool")', WORLD)
+        self.assertIn('Instance.new("WeldConstraint")', WORLD)
+        self.assertIn('humanoid:EquipTool(equipped)', WORLD)
+        self.assertIn('session.toolCharacterConnection', WORLD)
 
     def test_resource_nodes_require_the_matching_equipped_tool(self):
         self.assertEqual(WORLD.count('requiredTool = "Axe"'), 2)
