@@ -16,6 +16,14 @@ The original `moth_companion.obj` was parsed directly before planning the hero r
 
 This confirms the original source is a useful shape/layout BLOCKOUT with separable wing objects, but not a finished hero asset. Preserve it unchanged as rollback baseline. The new hero model must add authored UVs, closed/thickened wing surfaces where appropriate, hand-painted wing motifs and an independently validated four-wing rig.
 
+## 0.1 Hero generator milestone — 2026-11-22
+
+A separate Blender 4.2 generator now exists at `tools/blender/build_moth_companion.py`; it does not overwrite the legacy OBJ. It builds four distinct thick wing meshes with UV layers and separate upper/lower left/right names, the ivory body, face, antenna segments, gold abdomen bands and luminous core. It exports a BLEND, OBJ/MTL, rig-contract JSON, grouped mesh report and four review renders.
+
+A dedicated CI workflow `.github/workflows/lunar-moth-visual-review.yml` validates the 10 stable rig groups, four wing groups, UVs, geometry and materials, then uploads a review artifact. Source-contract tests live in `tests/test_lunar_moth_hero_workflow.py`.
+
+**Important:** this is the first hero-model generation pass, not an approved final asset. The JSON documents intended wing pivots and animation states; it is not yet a Roblox animation rig. Blender execution, artifact review, wing silhouette/material polish, Studio import and runtime animation remain open gates.
+
 ## 1. Character identity
 
 A tiny, gentle moon-moth that feels like a magical forest spirit: curious, calm, welcoming and quietly luminous. It should be instantly distinguishable from the Fox by its hovering silhouette, broad patterned wings, delicate antennae and soft light core.
