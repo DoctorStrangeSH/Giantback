@@ -193,8 +193,9 @@ local function createCompanionCard(id, index)
     local name = label(card, "Name", names[id], UDim2.new(1, -145, 0, 20), UDim2.fromOffset(70, 11), Enum.Font.GothamBold, palette.cream)
     name.TextSize = 12
     local description = label(card, "Description", descriptions[id], UDim2.new(1, -145, 0, 18), UDim2.fromOffset(70, 32), Enum.Font.Gotham, palette.muted)
-    description.TextSize = 9
+    description.TextSize = 8
     description.TextYAlignment = Enum.TextYAlignment.Top
+    description.TextWrapped = true
     description.TextTruncate = Enum.TextTruncate.AtEnd
 
     local level = label(card, "Level", "УР. 1 · 0/100", UDim2.new(1, -155, 0, 12), UDim2.fromOffset(70, 51), Enum.Font.GothamBold, id == "Fox" and palette.gold or palette.lilac)
@@ -1362,6 +1363,16 @@ local function refresh()
         end
 
         local levelValue = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. id .. "_Level")) or 1), 1, 5)
+        if owned and id == "Fox" then
+            entry.description.Text = levelValue >= 5 and "Острый нюх: поиск каждые 60 сек."
+                or levelValue >= 3 and "Чуткий нюх: поиск каждые 90 сек."
+                or "Ур. 3: ускоренный поиск тайников."
+        elseif owned and id == "Moth" then
+            entry.description.Text = levelValue >= 5 and "Лунная аура: радиус лечения +4."
+                or levelValue >= 3 and "Лунная аура: радиус лечения +2."
+                or "Ур. 3: расширенная аура лечения."
+        end
+
         local xpValue = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. id .. "_XP")) or 0))
         local xpNeeded = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. id .. "_XPToNext")) or 0))
         entry.level.Text = levelValue >= 5 and "УР. 5 · МАКСИМУМ"
