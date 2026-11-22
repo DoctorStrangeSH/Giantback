@@ -1568,7 +1568,7 @@ event.OnClientEvent:Connect(function(message, payload)
         local companionId = payload.companionId
         if companionId == "Fox" or companionId == "Moth" then
             pettingUntil[companionId] = os.clock() + 2.8
-            pendingPetBurst[companionId] = true
+            pendingPetBurst[companionId] = math.clamp(math.floor(tonumber(payload.bondStage) or 0), 0, 4)
         end
         return
     elseif message == "ResourceState" and type(payload) == "table" then
@@ -1952,14 +1952,18 @@ workspace.DescendantAdded:Connect(function(instance)
     end
 end)
 
-local function playCompanionPettingBurst(model, companionId)
+local function playCompanionPettingBurst(model, companionId, bondStage)
     if not model or not model.Parent then return end
+    bondStage = math.clamp(math.floor(tonumber(bondStage) or 0), 0, 4)
+    local sparkCount = 5 + bondStage * 2
+    local baseColor = companionId == "Fox" and palette.coral or palette.lilac
+    local sparkColor = baseColor:Lerp(palette.gold, bondStage / 4)
     local origin = model:GetPivot().Position + Vector3.new(0, companionId == "Fox" and 1.2 or 1.5, 0)
     local folder = Instance.new("Folder")
     folder.Name = "CompanionPettingBurstLocal"
     folder.Parent = workspace
 
-    for index = 1, 5 do
+    for index = 1, sparkCount do
         local anchor = Instance.new("Part")
         anchor.Name = "PettingSpark"
         anchor.Size = Vector3.new(0.1, 0.1, 0.1)
@@ -1968,7 +1972,7 @@ local function playCompanionPettingBurst(model, companionId)
         anchor.CanCollide = false
         anchor.CanTouch = false
         anchor.CanQuery = false
-        anchor.CFrame = CFrame.new(origin + Vector3.new((index - 3) * 0.42, 0, 0))
+        anchor.CFrame = CFrame.new(origin + Vector3.new((index - (sparkCount + 1) / 2) * 0.28, 0, 0))
         anchor.Parent = folder
 
         local billboard = Instance.new("BillboardGui")
@@ -1980,14 +1984,16 @@ local function playCompanionPettingBurst(model, companionId)
         local glyph = Instance.new("TextLabel")
         glyph.Size = UDim2.fromScale(1, 1)
         glyph.BackgroundTransparency = 1
-        glyph.Text = companionId == "Fox" and (index % 2 == 0 and "♥" or "✦") or (index % 2 == 0 and "✧" or "☾")
-        glyph.TextColor3 = companionId == "Fox" and palette.coral or palette.lilac
+        glyph.Text = bondStage >= 4 and (index % 2 == 0 and "♥" or "✧")
+            or companionId == "Fox" and (index % 2 == 0 and "♥" or "✦")
+            or (index % 2 == 0 and "✧" or "☾")
+        glyph.TextColor3 = sparkColor
         glyph.TextStrokeTransparency = 0.55
         glyph.Font = Enum.Font.GothamBold
         glyph.TextScaled = true
         glyph.Parent = billboard
 
-        local drift = Vector3.new((index - 3) * 0.18, 1.05 + (index % 2) * 0.28, 0)
+        local drift = Vector3.new((index - (sparkCount + 1) / 2) * 0.12, 1.05 + (index % 2) * 0.28 + bondStage * 0.08, 0)
         TweenService:Create(anchor, TweenInfo.new(0.78, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             CFrame = anchor.CFrame + drift,
         }):Play()
@@ -2155,9 +2161,10 @@ local function follow(dt)
                 model:PivotTo(model:GetPivot():Lerp(target, 1 - math.exp(-9 * dt)))
             end
 
-            if owner == player and pendingPetBurst[id] then
+            if owner == player and pendingPetBurst[id] ~= nil then
+                local bondStage = pendingPetBurst[id]
                 pendingPetBurst[id] = nil
-                playCompanionPettingBurst(model, id)
+                playCompanionPettingBurst(model, id, bondStage)
             end
 
             local activity = companionActivity[owner]
