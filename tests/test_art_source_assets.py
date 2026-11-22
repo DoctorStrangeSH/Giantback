@@ -59,6 +59,13 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('if output.exists() and any(output.iterdir()) and not args.overwrite', source)
         self.assertNotIn('fox_companion.obj"', source)
 
+    def test_review_lighting_preserves_fox_color_and_form_contrast(self):
+        source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
+        self.assertIn('("Key", (1.8, 2.8, -2.0), 520, 3.2)', source)
+        self.assertIn('("Fill", (-2.0, 1.0, -1.0), 260, 2.8)', source)
+        self.assertIn('("Rim", (0.0, 2.0, 2.8), 380, 2.4)', source)
+        self.assertIn('scene.view_settings.look = "AgX - Medium High Contrast"', source)
+
     def test_review_cameras_use_explicit_y_up_basis_for_all_views(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
         self.assertIn("from mathutils import Matrix, Vector", source)
