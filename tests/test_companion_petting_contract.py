@@ -55,6 +55,16 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn("local orbitAngle = phase * 0.72", ALBUM)
         self.assertIn("attachMothStardust(model)", ALBUM)
 
+    def test_petting_feedback_visuals_scale_with_server_relationship_stage(self):
+        self.assertIn("bondStage = bondStage", WORLD)
+        self.assertIn("payload.bondStage", ALBUM)
+        self.assertIn("local function playCompanionPettingBurst(model, companionId, bondStage)", ALBUM)
+        self.assertIn("local sparkCount = 5 + bondStage * 2", ALBUM)
+        self.assertIn("baseColor:Lerp(palette.gold, bondStage / 4)", ALBUM)
+        self.assertIn('bondStage >= 4 and (index % 2 == 0 and "♥" or "✧")', ALBUM)
+        self.assertIn("playCompanionPettingBurst(model, id, bondStage)", ALBUM)
+        self.assertIn("pendingPetBurst[id] ~= nil", ALBUM)
+
     def test_client_plays_species_specific_reaction_and_visual_feedback(self):
         self.assertIn('message == "CompanionPetted"', ALBUM)
         self.assertIn("pettingUntil", ALBUM)
