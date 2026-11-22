@@ -1,5 +1,7 @@
 ## Asset Pipeline 1.0 — Studio import and asset staging
 
+- [x] Extract client-only resource visibility/cooldown scheduler to ReplicatedStorage/ResourceNodeVisibility ModuleScript; preserve generation guards and late-spawn node hiding.
+- [x] Fix resource node lookup forward declaration in Album.client.luau so earlier reward and harvest callbacks use the local function.
 - [x] Extract approved Fox/Moth template selection and fallback policy from Album.client.luau into a ReplicatedStorage ModuleScript, and embed it through build.py with regression coverage.
 - [x] Require imported Fox/Moth Body and animated Tail/Wing MeshParts to be direct children compatible with current procedural animation; keep fallback when incomplete.
 - [x] Deduplicate Moth stardust particle-rate calculation and refresh particles on personality changes as well as friendship-stage changes, with regression tests.
