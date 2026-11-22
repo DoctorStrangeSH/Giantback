@@ -1,5 +1,6 @@
 ## Asset Pipeline 1.0 — Studio import and asset staging
 
+- [x] Extract local harvest camera feedback and character/tool swing sequencing into ReplicatedStorage/HarvestMotion ModuleScript, preserving per-player timing guards and server-authoritative item awards.
 - [x] Extract client-only resource visibility/cooldown scheduler to ReplicatedStorage/ResourceNodeVisibility ModuleScript; preserve generation guards and late-spawn node hiding.
 - [x] Fix resource node lookup forward declaration in Album.client.luau so earlier reward and harvest callbacks use the local function.
 - [x] Extract approved Fox/Moth template selection and fallback policy from Album.client.luau into a ReplicatedStorage ModuleScript, and embed it through build.py with regression coverage.
