@@ -14,9 +14,10 @@ class ImportedCompanionFallbackTests(unittest.TestCase):
 
     def test_only_expected_mesh_parts_can_be_selected(self):
         self.assertIn('Fox = "FoxCompanion", Moth = "MothCompanion"', CLIENT)
-        self.assertIn('local body = imported:FindFirstChild("Body", true)', CLIENT)
+        self.assertIn('local body = imported:FindFirstChild("Body")', CLIENT)
         self.assertIn('local movingPartName = id == "Fox" and "Tail" or "Wing"', CLIENT)
         self.assertIn('movingPart:IsA("MeshPart")', CLIENT)
+        self.assertIn('local movingPart = imported:FindFirstChild(movingPartName)', CLIENT)
         self.assertIn('body:IsA("MeshPart")', CLIENT)
 
     def test_fallback_is_retained_for_unapproved_or_missing_assets(self):
