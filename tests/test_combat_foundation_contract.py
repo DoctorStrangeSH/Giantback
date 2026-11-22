@@ -220,6 +220,19 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('"RootvaultPressurePlate"', VISUALS)
         self.assertIn('"RootvaultEntrance"', VISUALS)
 
+    def test_rootvault_sentinel_drops_persistent_key_and_owns_its_combat_region(self):
+        self.assertIn('RootvaultSentinel01 = {itemId = "RootvaultKey", amount = 1}', WORLD)
+        self.assertIn('"RootvaultKey"', WORLD)
+        self.assertIn('RootvaultSentinel01 = true', COMBAT)
+        self.assertIn('Rootvault = true', COMBAT)
+        self.assertIn('EncounterId", "RootvaultSentinel01"', VISUALS)
+        self.assertIn('DisplayName = "Страж хранилища"', VISUALS)
+        self.assertIn('CollectionService:AddTag(rootvaultRegion, "GiantbackCombatRegion")', VISUALS)
+        self.assertIn('RegionId", "Rootvault"', VISUALS)
+        self.assertIn('if (session.inventory.RootvaultKey or 0) < 1 then', WORLD)
+        self.assertIn('Победи Стража хранилища и забери ключ.', WORLD)
+        self.assertIn('RootvaultKey', WORLD)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
