@@ -21,6 +21,8 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         ):
             self.assertIn(name, source)
         self.assertIn('uv=mesh.uv_layers.new(name="WingUV")', source)
+        self.assertIn("span = 1.42 if upper else 1.04", source)
+        self.assertIn("length = 0.82 if upper else 0.66", source)
         self.assertIn("0.10 + 0.90 * (math.sin", source)
         self.assertIn("width = (0.10 + 0.90 * (math.sin", source)
         self.assertIn('"wing_groups":["MothWingUpperLeft","MothWingUpperRight","MothWingLowerLeft","MothWingLowerRight"]', source)
@@ -31,6 +33,10 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
             self.assertIn(f'mat("{material}"', source)
         for state in ("idle_hover", "follow", "reveal_secret", "ability_burst", "rest"):
             self.assertIn(state, source)
+        self.assertIn('curve.splines.new("BEZIER")', source)
+        self.assertIn('curve.bevel_depth = 0.022', source)
+        self.assertIn('parts.append(sphere("MothThorax",(0,1.20,0),(0.30,0.72,0.27)', source)
+        self.assertNotIn('parts.append(sphere("MothAbdomen"', source)
 
     def test_mesh_report_uses_stable_ten_group_contract(self):
         source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
