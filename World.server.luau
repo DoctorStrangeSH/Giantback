@@ -33,8 +33,14 @@ local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGate
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard"}
 local toolIds = {Axe = true, Pickaxe = true}
 local toolUpgradeCosts = {
-    Axe = {Wood = 8, Stone = 6},
-    Pickaxe = {Wood = 6, Stone = 8},
+    Axe = {
+        [2] = {Wood = 8, Stone = 6},
+        [3] = {Wood = 12, Stone = 10, IronIngot = 2},
+    },
+    Pickaxe = {
+        [2] = {Wood = 6, Stone = 8},
+        [3] = {Wood = 10, Stone = 12, IronIngot = 2},
+    },
 }
 local defaultTools = {Axe = true, Pickaxe = true}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
@@ -254,7 +260,7 @@ local function createToolPart(parent, name, size, offset, color, material, shape
 end
 
 local function createHarvestTool(toolId, level)
-    level = math.clamp(math.floor(tonumber(level) or 1), 1, 2)
+    level = math.clamp(math.floor(tonumber(level) or 1), 1, 3)
     local isAxe = toolId == "Axe"
     local tool = Instance.new("Tool")
     tool.Name = isAxe and "Топор путешественника" or "Кирка путешественника"
@@ -269,6 +275,11 @@ local function createHarvestTool(toolId, level)
     local iron = level >= 2 and Color3.fromRGB(218, 169, 83) or Color3.fromRGB(166, 181, 184)
     local edgeColor = level >= 2 and Color3.fromRGB(255, 218, 132) or Color3.fromRGB(220, 225, 216)
     local accent = level >= 2 and Color3.fromRGB(119, 220, 190) or Color3.fromRGB(112, 130, 128)
+    if level >= 3 then
+        iron = Color3.fromRGB(91, 173, 183)
+        edgeColor = Color3.fromRGB(174, 246, 235)
+        accent = Color3.fromRGB(113, 245, 221)
+    end
     local handle = createToolPart(tool, "Handle", Vector3.new(0.28, 0.28, 2.5), CFrame.new(), wood, Enum.Material.Wood, Enum.PartType.Cylinder)
     handle.CFrame = CFrame.new() * CFrame.Angles(0, 0, math.rad(90))
 
@@ -293,6 +304,10 @@ local function createHarvestTool(toolId, level)
         if level >= 2 then
             attach("AxeRune", Vector3.new(0.08, 0.3, 0.22), CFrame.new(0, 0.86, -0.18), accent, Enum.Material.Neon)
         end
+        if level >= 3 then
+            attach("AxeCrystal", Vector3.new(0.24, 0.32, 0.22), CFrame.new(0, 1.25, 0.18), accent, Enum.Material.Neon)
+            attach("AxeGuard", Vector3.new(0.16, 0.72, 0.18), CFrame.new(0, 0.82, 0.58), Color3.fromRGB(229, 193, 112), Enum.Material.Metal)
+        end
     else
         attach("PickaxeHead", Vector3.new(0.28, 0.32, 1.75), CFrame.new(0, 1.05, 0), iron, Enum.Material.Metal)
         attach("PickaxeTipLeft", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, -1.0), edgeColor, Enum.Material.Metal)
@@ -300,6 +315,10 @@ local function createHarvestTool(toolId, level)
         attach("PickaxeSocket", Vector3.new(0.42, 0.42, 0.38), CFrame.new(0, 1.05, 0), level >= 2 and Color3.fromRGB(255, 218, 132) or darkWood, Enum.Material.Metal)
         if level >= 2 then
             attach("PickaxeRune", Vector3.new(0.12, 0.18, 0.24), CFrame.new(0, 1.05, 0), accent, Enum.Material.Neon)
+        end
+        if level >= 3 then
+            attach("PickaxeCrystal", Vector3.new(0.24, 0.32, 0.24), CFrame.new(0, 1.05, 0), accent, Enum.Material.Neon)
+            attach("PickaxeGuard", Vector3.new(0.16, 0.64, 0.18), CFrame.new(0, 1.05, 0.34), Color3.fromRGB(229, 193, 112), Enum.Material.Metal)
         end
     end
 
@@ -437,8 +456,8 @@ local function save(player)
             Pickaxe = session.tools.Pickaxe == true,
             equipped = toolIds[session.equippedTool] and session.equippedTool or "",
             levels = {
-                Axe = math.clamp(math.floor(tonumber(session.toolLevels.Axe) or 1), 1, 2),
-                Pickaxe = math.clamp(math.floor(tonumber(session.toolLevels.Pickaxe) or 1), 1, 2),
+                Axe = math.clamp(math.floor(tonumber(session.toolLevels.Axe) or 1), 1, 3),
+                Pickaxe = math.clamp(math.floor(tonumber(session.toolLevels.Pickaxe) or 1), 1, 3),
             },
         }
         local citySnapshot = normalizeCity(session.city)
@@ -454,7 +473,7 @@ local function save(player)
                 for _, key in progress do
                     old[key] = old[key] == true or snapshot[key]
                 end
-                old.schemaVersion = 8
+                old.schemaVersion = 9
 
                 local savedTools = type(old.tools) == "table" and old.tools or {}
                 savedTools.Axe = toolsSnapshot.Axe
@@ -614,8 +633,8 @@ local function init(player)
             }
             local savedLevels = type(savedTools.levels) == "table" and savedTools.levels or {}
             session.toolLevels = {
-                Axe = math.clamp(math.floor(tonumber(savedLevels.Axe) or 1), 1, 2),
-                Pickaxe = math.clamp(math.floor(tonumber(savedLevels.Pickaxe) or 1), 1, 2),
+                Axe = math.clamp(math.floor(tonumber(savedLevels.Axe) or 1), 1, 3),
+                Pickaxe = math.clamp(math.floor(tonumber(savedLevels.Pickaxe) or 1), 1, 3),
             }
             local savedEquippedTool = savedTools.equipped
             if toolIds[savedEquippedTool] and session.tools[savedEquippedTool] then
@@ -969,8 +988,9 @@ event.OnServerEvent:Connect(function(player, action, payload)
         if session.tools[payload] ~= true then
             return tip(player, "Сначала открой этот инструмент.")
         end
-        if session.toolLevels[payload] >= 2 then
-            return tip(player, "Этот инструмент уже улучшен до максимального уровня.")
+        local currentLevel = math.clamp(math.floor(tonumber(session.toolLevels[payload]) or 1), 1, 3)
+        if currentLevel >= 3 then
+            return tip(player, "Этот инструмент уже достиг максимального, третьего уровня.")
         end
         local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         local workshop = session.homeIsland and session.homeIsland:FindFirstChild("PersonalCity")
@@ -979,18 +999,27 @@ event.OnServerEvent:Connect(function(player, action, payload)
         if not root or not anchor or (root.Position - anchor.Position).Magnitude > 14 then
             return tip(player, "Улучшать инструменты можно только у верстака на своём острове.")
         end
-        local cost = toolUpgradeCosts[payload]
-        local woodCost, stoneCost = cost.Wood, cost.Stone
-        if (session.inventory.Wood or 0) < woodCost or (session.inventory.Stone or 0) < stoneCost then
-            return tip(player, "Не хватает материалов: дерево ×" .. tostring(woodCost) .. " и камень ×" .. tostring(stoneCost) .. ".")
+        local nextLevel = currentLevel + 1
+        local cost = toolUpgradeCosts[payload][nextLevel]
+        local missing = {}
+        for itemId, amount in cost do
+            if (session.inventory[itemId] or 0) < amount then
+                table.insert(missing, itemId .. " ×" .. tostring(amount))
+            end
         end
-        session.inventory.Wood -= woodCost
-        session.inventory.Stone -= stoneCost
-        session.toolLevels[payload] = 2
+        if #missing > 0 then
+            return tip(player, "Для уровня " .. tostring(nextLevel) .. " нужно: " .. table.concat(missing, ", ") .. ".")
+        end
+        for itemId, amount in cost do
+            session.inventory[itemId] -= amount
+        end
+        session.toolLevels[payload] = nextLevel
         syncInventory(player)
         syncTools(player)
         event:FireClient(player, "ToolUpgraded", payload)
-        tip(player, payload == "Axe" and "Готово! Топор усилен: деревья теперь рубятся быстрее." or "Готово! Кирка усилена: камень теперь добывается быстрее.")
+        local toolName = payload == "Axe" and "Топор" or "Кирка"
+        tip(player, toolName .. " улучшен до уровня " .. tostring(nextLevel) .. "! Теперь добыча ещё быстрее.")
+
         if session.online and not save(player) then
             warn("Tool upgrade save will be retried:", player.UserId, payload)
         end
@@ -1756,8 +1785,9 @@ local function spawnResource(def)
             end
 
             local hitsRequired = math.clamp(math.floor(tonumber(def.hitsRequired) or 1), 1, 10)
-            if def.requiredTool and (session.toolLevels[def.requiredTool] or 1) >= 2 then
-                hitsRequired = math.max(1, hitsRequired - 1)
+            if def.requiredTool then
+                local toolLevel = math.clamp(math.floor(tonumber(session.toolLevels[def.requiredTool]) or 1), 1, 3)
+                hitsRequired = math.max(1, hitsRequired - (toolLevel - 1))
             end
             if hitsRequired > 1 then
                 local hitNow = os.clock()
