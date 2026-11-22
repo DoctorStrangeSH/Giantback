@@ -38,3 +38,12 @@ python build.py
 
 ## Монетизация
 Фиксированная косметика, архитектурные наборы, образы питомцев и добровольная поддержка. Нет платных случайных яиц и pay-to-win.
+
+
+## Asset library
+- `assets/README.md` — каталог ресурсов, правила импорта и размещения в Roblox services.
+- `assets/source_models/` — редактируемые OBJ/MTL-исходники и арт-брифы.
+- `assets/models/`, `textures/`, `icons/`, `audio/`, `animation_sources/`, `references/` — подготовленные каталоги для проверенных ресурсов.
+- `tools/blender/` — генерация и техническая проверка исходных моделей.
+
+Импортированные Roblox asset IDs, масштабы, pivots и результаты Studio-приёмки фиксируются в `assets/source_models/ASSET_MANIFEST.md`; пустые каталоги не означают, что в игре уже есть готовые runtime-ассеты.
