@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 CLIENT = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 BUILD = (ROOT / "build.py").read_text(encoding="utf-8")
 
 
@@ -68,7 +69,7 @@ class PersonalCityFarmContractTests(unittest.TestCase):
 
     def test_client_resolves_its_own_island_without_hiding_other_cities(self):
         self.assertIn('folder:FindFirstChild("HomeIsland_" .. tostring(player.UserId))', CLIENT)
-        self.assertIn('area = "HomeIsland"', CLIENT)
+        self.assertIn('local function getHomeIsland()', CLIENT)
         self.assertIn('waitForHomePart("Planter")', CLIENT)
         self.assertIn('waitForHomePart("LanternBase")', CLIENT)
         self.assertNotIn("PersonalCities", CLIENT)
@@ -97,9 +98,9 @@ class PersonalCityFarmContractTests(unittest.TestCase):
 
     def test_farm_progress_and_inventory_are_exposed_to_the_hud(self):
         self.assertIn('player:SetAttribute("Farm_Level"', WORLD)
-        self.assertIn("Resource_CarrotSeed", CLIENT)
-        self.assertIn("Resource_Carrot", CLIENT)
-        self.assertIn("МАТЕРИАЛЫ И ФЕРМА", CLIENT)
+        self.assertIn("Resource_CarrotSeed", HUD)
+        self.assertIn("Resource_Carrot", HUD)
+        self.assertIn("Находки и ферма", HUD)
 
 
 if __name__ == "__main__":
