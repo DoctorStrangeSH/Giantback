@@ -228,3 +228,10 @@ The procedural pose binder now maps the R15 `Root` joint as the canonical root f
 The C1 sword now has a server-timed three-strike chain. The first two strikes deal 18 and 22 damage with 0.48s recovery; the third is a 32-damage finisher with 0.72s recovery, a slightly larger hit volume and reach. The next strike must arrive within 1.15 seconds or the chain restarts at strike one. The server selects combo step and damage; clients cannot submit a step, damage value or target. Character respawn clears the combo state. Hit-confirm feedback displays the server-confirmed combo number or finisher callout.
 
 This is a first-pass PvE tuning baseline, not final balance. Contract tests and generated-place source markers cover the combo rules. Studio acceptance must validate hit feel, animation timing, mobile touch controls, gamepad input, latency and whether the finisher's larger volume feels fair.
+
+
+## 28. Finisher impact response
+
+The third sword strike now applies a server-authoritative impulse to each enemy hit. Standard enemies receive the full push; bosses receive 28% of the impulse to preserve encounter positioning and phase mechanics. The impulse is derived from the attacker's server-observed facing direction and the enemy assembly mass. Clients cannot request knockback or choose its strength.
+
+A source-contract test and generated-place validation markers cover the behavior. Studio acceptance must tune the impulse against each enemy rig, check collisions/ledge safety, verify boss positioning and confirm that repeated hits do not create physics instability.
