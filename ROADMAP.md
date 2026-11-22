@@ -1,3 +1,13 @@
+## Lunar Moth — third visual correction pass
+
+- [x] Artifact #51 generated four real Blender views and passed technical geometry/UV/material package validation.
+- [x] Manually review front, side and three-quarter renders: final art rejected; body still reads as a narrow tube, wings as pointed/leaf-like panels, crescents are too small, and legs look mechanical.
+- [x] Reshape the continuous body into a fuller rounded thorax and softly tapered abdomen.
+- [x] Change the wing width envelope to a rounded central lobe with narrower root/tip; enlarge the closed UV crescent marks; soften and thicken legs/feet.
+- [ ] Run fresh Blender review; pass zero-area/non-manifold/UV/material gates.
+- [ ] Manually accept all four views at intended Roblox gameplay scale.
+- [ ] Roblox Studio import, scale/pivot check and runtime wing animation — not done.
+
 ## Lunar Moth — second visual correction pass
 
 - [x] Проверить artifact #31: Blender geometry/UV/material gates прошли, но ручная приёмка отклонила oval-like moon marks, отсутствие видимых ног и скрытые abdomen bands.
