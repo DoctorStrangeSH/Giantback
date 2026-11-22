@@ -266,3 +266,17 @@ Combat ability outcomes remain server-authoritative; the client receives only pr
 - Moth success includes `healedUserIds`, populated only from allies the server actually healed. Each matching character receives a violet/lunar sparkle burst and ground pulse. The client never chooses who was healed.
 - Effects are local-only, short-lived, non-colliding, and have no hitbox, damage, healing, or reward authority. They are omitted if the corresponding character/root is not streamed in.
 - The current implementation is a readable first VFX pass; Studio review should tune particle density, pulse size, readability on mobile, streaming edge cases, and visual overlap in co-op.
+
+
+## 32. Companion progression and combat scaling
+
+The first companion progression slice is server-owned and persisted in profile schema v11.
+
+- Fox and Moth each have independent levels 1–5 and XP. Profiles without the new `companions` object safely start at level 1 with 0 XP. Existing profile fields are preserved during the migration.
+- XP thresholds per level are 100, 175, 250 and 325. Level 5 is the cap; no overflow XP is banked.
+- Verified exploration rewards: Fox +30 for a collected cache and +20 for finding the Moon Gate trace; Moth +35 for awakening MoonBloom and +25 for revealing the Moon Gate.
+- Verified combat rewards: Fox +12 XP for a successful skill hit; Moth +6 XP per ally actually healed, capped at +24 per cast. The server-only `GiantbackGrantCompanionXP` BindableFunction validates player readiness, companion ownership, known IDs and bounded XP amounts.
+- Fox skill damage is 24 + 3 per level (maximum 36). Moth healing is 18 + 2 per level (maximum 26 HP per ally). The server reads level attributes and calculates the actual effect; clients cannot supply XP, level, damage or healing.
+- Collection cards show the companion's level, XP/threshold and progress bar. Level-up notifications are server-generated.
+- Combat cooldown is committed before the asynchronous XP persistence call, preventing a yielding DataStore write from opening a repeat-skill window.
+- Contract tests cover schema migration, normalization, server validation, milestone rewards, scaling and UI binding. Studio acceptance must still verify persistence/reconnect, combat balance, mobile readability and co-op behavior.
