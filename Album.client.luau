@@ -974,6 +974,63 @@ local function playResourceRewardPickup(payload)
     end
 end
 
+local function playResourceFinalBreakBurst(anchor, nodeId)
+    if not anchor or not anchor:IsA("BasePart") then return end
+    local isWood = string.find(nodeId, "Wood", 1, true) ~= nil
+    local accent = isWood and Color3.fromRGB(239, 190, 112) or Color3.fromRGB(190, 220, 232)
+
+    -- A short expanding ground ring makes the final hit read differently from ordinary hits.
+    local ring = Instance.new("Part")
+    ring.Name = "LocalHarvestFinalBurst"
+    ring.Shape = Enum.PartType.Cylinder
+    ring.Material = Enum.Material.Neon
+    ring.Color = accent
+    ring.Transparency = 0.22
+    ring.Anchored = true
+    ring.CanCollide = false
+    ring.CanTouch = false
+    ring.CanQuery = false
+    ring.CastShadow = false
+    ring.Size = Vector3.new(0.08, 0.9, 0.9)
+    ring.CFrame = CFrame.new(anchor.Position + Vector3.new(0, 0.12, 0)) * CFrame.Angles(0, 0, math.rad(90))
+    ring.Parent = workspace
+    local expand = TweenService:Create(ring, TweenInfo.new(0.34, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = Vector3.new(0.035, 4.2, 4.2),
+        Transparency = 1,
+    })
+    expand:Play()
+    Debris:AddItem(ring, 0.42)
+
+    -- Extra local-only debris gives the completed harvest a stronger material-specific payoff.
+    for index = 1, 9 do
+        local angle = (index - 1) * math.pi * 2 / 9
+        local fragment = Instance.new("Part")
+        fragment.Name = "LocalHarvestFinalFragment"
+        fragment.Material = isWood and Enum.Material.Wood or Enum.Material.Slate
+        fragment.Color = isWood
+            and (index % 2 == 0 and Color3.fromRGB(190, 145, 91) or Color3.fromRGB(112, 78, 52))
+            or (index % 2 == 0 and Color3.fromRGB(163, 174, 177) or Color3.fromRGB(91, 104, 110))
+        fragment.Size = isWood and Vector3.new(0.13, 0.09, 0.32) or Vector3.new(0.17, 0.16, 0.18)
+        fragment.Anchored = true
+        fragment.CanCollide = false
+        fragment.CanTouch = false
+        fragment.CanQuery = false
+        fragment.CastShadow = false
+        fragment.CFrame = CFrame.new(anchor.Position + Vector3.new(0, 0.65, 0))
+        fragment.Parent = workspace
+
+        local direction = Vector3.new(math.cos(angle), 0.65 + (index % 3) * 0.16, math.sin(angle))
+        local target = fragment.CFrame + direction * (1.1 + (index % 2) * 0.35)
+        local spin = CFrame.Angles(math.rad(index * 31), math.rad(index * 47), math.rad(index * 23))
+        TweenService:Create(fragment, TweenInfo.new(0.38, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            CFrame = target * spin,
+            Transparency = 1,
+            Size = fragment.Size * 0.3,
+        }):Play()
+        Debris:AddItem(fragment, 0.46)
+    end
+end
+
 local function playResourceBreakFeedback(nodeId)
     local node = findResourceNode(nodeId)
     if not node then return end
@@ -983,6 +1040,7 @@ local function playResourceBreakFeedback(nodeId)
     if emitter and emitter:IsA("ParticleEmitter") then
         emitter:Emit(20)
     end
+    playResourceFinalBreakBurst(anchor, nodeId)
 end
 
 local function spawnHarvestChips(anchor, nodeId)
