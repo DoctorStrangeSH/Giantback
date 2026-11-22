@@ -142,6 +142,7 @@ jobs:
               "playCompanionPettingBurst(model, id, bondStage)",
               'button(item, "Pet"',
               'growthStage .. " · УР. 5" .. " · МАКСИМУМ",'
+              "УР. 5 · МАКСИМУМ",
               "FoxEncounter",
               "CrystalWispEncounter",
               "CrystalWispNest",
