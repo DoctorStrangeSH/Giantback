@@ -444,13 +444,16 @@ local function bindEnemyProceduralAnimation(enemy)
     local root = enemy:FindFirstChild("HumanoidRootPart")
     if not humanoid or not root then return end
 
+    -- R6 joint names contain spaces ("Right Shoulder"); R15 names do not
+    -- ("RightShoulder"). Normalize both so the same visual layer supports both rigs.
     local joints = {}
     for _, descendant in enemy:GetDescendants() do
         if descendant:IsA("Motor6D") then
-            joints[descendant.Name] = descendant
+            local normalizedName = string.lower(string.gsub(descendant.Name, "%s+", ""))
+            joints[normalizedName] = descendant
         end
     end
-    if not joints["Right Shoulder"] and not joints["Left Shoulder"] then return end
+    if not joints.rightshoulder and not joints.leftshoulder then return end
 
     animatedEnemies[enemy] = {
         humanoid = humanoid,
@@ -497,9 +500,9 @@ RunService.RenderStepped:Connect(function()
         local swing = moving and math.sin(cycle) or 0
         local breathe = math.sin(now * (isBoss and 1.8 or 2.8)) * (isBoss and 0.035 or 0.025)
 
-        local rightArm, leftArm = joints["Right Shoulder"], joints["Left Shoulder"]
-        local rightLeg, leftLeg = joints["Right Hip"], joints["Left Hip"]
-        local neck, rootJoint = joints["Neck"], joints["RootJoint"]
+        local rightArm, leftArm = joints.rightshoulder, joints.leftshoulder
+        local rightLeg, leftLeg = joints.righthip, joints.lefthip
+        local neck, rootJoint = joints.neck, joints.rootjoint
 
         if state == "BossSlamTelegraph" then
             setJointPose(rightArm, -2.45, 0, 0.28)
