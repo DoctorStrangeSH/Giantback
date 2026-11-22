@@ -1775,6 +1775,54 @@ local crystalCacheGlow = orb(
 addLight(crystalCacheGlow, palette.gold, 12, 0.6)
 placeTrialPrompt(crystalCache, "Запечатанный тайник", "Открыть")
 
+-- Hidden Echo Chamber beyond the rune cache; access is gated by the server-side sigil check.
+local echoChamber = Instance.new("Model")
+echoChamber.Name = "CrystalEchoChamber"
+echoChamber.Parent = crystalGrotto
+local echoCenter = grottoCenter + Vector3.new(0, 0, 70)
+local echoFloor = makePart(echoChamber, "CrystalEchoFloor", Vector3.new(28, 2, 26), CFrame.new(echoCenter), palette.stoneLight, Enum.Material.Slate)
+setSolid(echoFloor)
+for _, wallSpec in {
+    {name = "NorthWall", size = Vector3.new(28, 12, 2), offset = Vector3.new(0, 6, -13)},
+    {name = "SouthWall", size = Vector3.new(28, 12, 2), offset = Vector3.new(0, 6, 13)},
+    {name = "WestWall", size = Vector3.new(2, 12, 26), offset = Vector3.new(-14, 6, 0)},
+    {name = "EastWall", size = Vector3.new(2, 12, 26), offset = Vector3.new(14, 6, 0)},
+} do
+    local wall = makePart(echoChamber, "CrystalEcho" .. wallSpec.name, wallSpec.size, CFrame.new(echoCenter + wallSpec.offset), palette.stone, Enum.Material.Rock)
+    setSolid(wall)
+end
+local echoGate = makePart(
+    crystalGrotto, "CrystalEchoGate", Vector3.new(5, 6, 1.2),
+    CFrame.new(grottoCenter + Vector3.new(0, 3, 20)), palette.gold, Enum.Material.ForceField
+)
+echoGate.Transparency = 0.2
+echoGate.CanCollide = false
+placeTrialPrompt(echoGate, "Дверь Эхо-камеры", "Коснуться печати")
+addLight(echoGate, palette.gold, 14, 0.7)
+local echoArrival = makePart(
+    echoChamber, "CrystalEchoArrival", Vector3.new(2, 0.5, 2),
+    CFrame.new(echoCenter + Vector3.new(0, 0.6, -8)), palette.moon, Enum.Material.Neon
+)
+echoArrival.Transparency = 1
+echoArrival.CanCollide = false
+local echoReturn = makePart(
+    echoChamber, "CrystalEchoReturn", Vector3.new(4, 5, 1.2),
+    CFrame.new(echoCenter + Vector3.new(0, 2.8, -10)), palette.moon, Enum.Material.ForceField
+)
+echoReturn.CanCollide = false
+placeTrialPrompt(echoReturn, "Главный зал пещеры", "Вернуться")
+local prismSeed = makePart(
+    echoChamber, "PrismSeed", Vector3.new(1.5, 2.2, 1.5),
+    CFrame.new(echoCenter + Vector3.new(0, 2.3, 6)), palette.lilacLight, Enum.Material.Neon, Enum.PartType.Ball
+)
+prismSeed.CanCollide = false
+local seedGlow = addLight(prismSeed, palette.lilacLight, 18, 1.1)
+local seedHalo = orb(
+    echoChamber, "PrismSeedHalo", prismSeed.Position + Vector3.new(0, 1.4, 0),
+    Vector3.new(3.2, 0.18, 3.2), palette.gold, Enum.Material.Neon
+)
+seedHalo.Transparency = 0.35
+
 local crystalHeart = makePart(crystalGrotto, "CrystalGrottoHeart", Vector3.new(2.2, 2.2, 2.2), CFrame.new(grottoCenter + Vector3.new(0, 2.3, 8)), palette.lilacLight, Enum.Material.Neon, Enum.PartType.Ball)
 crystalHeart.CanCollide = false
 local heartGlow = Instance.new("PointLight")
