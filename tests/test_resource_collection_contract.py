@@ -53,6 +53,19 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('session.inventory.Stone -= stoneCost', upgrade)
         self.assertIn('session.toolLevels[payload] = 2', upgrade)
 
+    def test_harvest_tools_have_crafted_grips_and_level_two_visual_identity(self):
+        tools = WORLD.split("local function createHarvestTool(toolId, level)", 1)[1].split("local function findPlayerTool", 1)[0]
+        self.assertIn('attach("GripLowerWrap"', tools)
+        self.assertIn('attach("GripUpperWrap"', tools)
+        self.assertIn('attach("HandleFerrule"', tools)
+        self.assertIn('attach("AxeSocket"', tools)
+        self.assertIn('attach("PickaxeSocket"', tools)
+        self.assertIn('attach("AxeRune"', tools)
+        self.assertIn('attach("PickaxeRune"', tools)
+        self.assertIn("Enum.Material.Leather", tools)
+        self.assertIn("Enum.Material.Neon", tools)
+        self.assertIn("level >= 2", tools)
+
     def test_selected_tool_is_actually_equipped_and_restored_after_respawn(self):
         sync_tools = WORLD.split("local function syncTools(player)", 1)[1].split("local function syncBridge(player)", 1)[0]
         self.assertIn("ensurePlayerTools(player, session)", sync_tools)
