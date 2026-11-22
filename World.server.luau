@@ -261,7 +261,7 @@ local function createHarvestTool(toolId, level)
     else
         local head = createToolPart(tool, "PickaxeHead", Vector3.new(0.28, 0.32, 1.75), CFrame.new(0, 1.05, 0), level >= 2 and Color3.fromRGB(218, 169, 83) or Color3.fromRGB(166, 181, 184), Enum.Material.Metal)
         local tipLeft = createToolPart(tool, "PickaxeTipLeft", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, -1.0), level >= 2 and Color3.fromRGB(255, 218, 132) or Color3.fromRGB(205, 211, 205), Enum.Material.Metal)
-        local tipRight = createToolPart(tool, "PickaxeTipRight", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, 1.0), Color3.fromRGB(205, 211, 205), Enum.Material.Metal)
+        local tipRight = createToolPart(tool, "PickaxeTipRight", Vector3.new(0.24, 0.28, 0.42), CFrame.new(0, 1.05, 1.0), level >= 2 and Color3.fromRGB(255, 218, 132) or Color3.fromRGB(205, 211, 205), Enum.Material.Metal)
         for _, part in {head, tipLeft, tipRight} do
             local weld = Instance.new("WeldConstraint")
             weld.Part0 = handle
@@ -1207,9 +1207,9 @@ createPersonalCity = function(player, session)
         workshop:SetAttribute("OwnerUserId", ownerUserId)
         workshop.Parent = cityModel
         local benchFrame = meadow.CFrame * CFrame.new(
-            meadow.Size.X / 2 - 4.5,
+            4,
             meadow.Size.Y / 2 + 0.72,
-            -meadow.Size.Z / 2 + 4.5
+            -10
         )
         makeFarmVisualPart(workshop, "WorkbenchTop", Vector3.new(4.8, 0.38, 2.4), benchFrame, Color3.fromRGB(126, 83, 53), Enum.PartType.Block, Enum.Material.Wood)
         for _, offset in {
