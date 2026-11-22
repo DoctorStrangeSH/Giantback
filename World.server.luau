@@ -1872,6 +1872,9 @@ local trial = workspace:FindFirstChild("CombatTrainingGlade")
 local trialChamber = trial and trial:FindFirstChild("ForestTrialChamber")
 local trialArena = trial and trial:FindFirstChild("TrainingRing")
 local trialBusy = {}
+local trialPuzzleProgress = {}
+local trialPuzzleComplete = {}
+local TRIAL_RUNE_SEQUENCE = {"ForestTrialRuneMoon", "ForestTrialRuneDawn", "ForestTrialRuneTide"}
 
 local function validTrialInteraction(player, anchorPart)
     local session = sessions[player]
@@ -1903,6 +1906,58 @@ local gatePart = trialArena and trialArena:FindFirstChild("ForestTrialGate")
 local arrivalPart = trialChamber and trialChamber:FindFirstChild("ForestTrialArrival")
 local returnPart = trialChamber and trialChamber:FindFirstChild("ForestTrialReturn")
 local chestPart = trialChamber and trialChamber:FindFirstChild("ForestTrialChest")
+local runeParts = {}
+for _, runeName in TRIAL_RUNE_SEQUENCE do
+    runeParts[runeName] = trialChamber and trialChamber:FindFirstChild(runeName)
+end
+
+for expectedIndex, runeName in TRIAL_RUNE_SEQUENCE do
+    local runePart = runeParts[runeName]
+    if runePart then
+        connectTrialPrompt(runePart, function(player)
+            local session = validTrialInteraction(player, runePart)
+            if not session then return end
+            if not hasCompletedForestTrial(session) then
+                return tip(player, "Сначала пройди испытание двух стражей.")
+            end
+            if trialPuzzleComplete[player] then
+                return tip(player, "Руны уже пробуждены. Сундук ждёт тебя!")
+            end
+
+            local now = os.clock()
+            local progress = trialPuzzleProgress[player]
+            if not progress or now - progress.lastAt > 20 then
+                progress = {nextIndex = 1, lastAt = now}
+                trialPuzzleProgress[player] = progress
+            end
+            progress.lastAt = now
+
+            if runeName ~= TRIAL_RUNE_SEQUENCE[progress.nextIndex] then
+                progress.nextIndex = 1
+                if runeName == TRIAL_RUNE_SEQUENCE[1] then
+                    progress.nextIndex = 2
+                    tip(player, "Начало верное! Луна пробудилась. Теперь Рассвет.")
+                else
+                    tip(player, "Руны погасли. Подсказка на табличке поможет вспомнить порядок.")
+                end
+                return
+            end
+
+            progress.nextIndex += 1
+            if progress.nextIndex > #TRIAL_RUNE_SEQUENCE then
+                trialPuzzleComplete[player] = true
+                trialPuzzleProgress[player] = nil
+                tip(player, "Все три руны пробуждены! Сундук открыт.")
+            else
+                tip(player, "Руна пробуждена. Продолжай последовательность.")
+            end
+        end)
+    else
+        warn("Forest trial puzzle rune is missing:", runeName)
+    end
+end
+
+
 if gatePart and arrivalPart then
     connectTrialPrompt(gatePart, function(player)
         local session, character = validTrialInteraction(player, gatePart)
@@ -1930,6 +1985,9 @@ if chestPart then
         if not hasCompletedForestTrial(session) then
             return tip(player, "Испытание ещё не завершено.")
         end
+        if not trialPuzzleComplete[player] then
+            return tip(player, "Сначала разбуди руны в порядке: Луна, Рассвет, Прилив.")
+        end
         if session.completedCombatEncounters.GroveTrialChest01 then
             return tip(player, "Ты уже получил награду этого испытания.")
         end
@@ -1947,6 +2005,8 @@ end
 
 Players.PlayerRemoving:Connect(function(player)
     trialBusy[player] = nil
+    trialPuzzleProgress[player] = nil
+    trialPuzzleComplete[player] = nil
 end)
 
 -- All islands are fixed. Eight personal bridges lead into the shared Grove hub.
