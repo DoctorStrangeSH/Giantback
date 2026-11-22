@@ -238,3 +238,35 @@ The branch remains a linear descendant of the canonical baseline. CI and Roblox 
 The first combat abilities now have server-confirmed local presentation. Fox's success payload carries the server-selected enemy ID; the client resolves the registered enemy and shows an amber spark burst plus a short ground pulse. Moth's success payload carries only user IDs actually healed by the server; the client shows violet/lunar pulses on those allies. These local effects are presentation-only and cannot deal damage, heal, or grant rewards. Contract tests cover payload provenance, enemy resolution, ally lookup and the visual hooks.
 
 Latest validated head before this audit note: GitHub Actions #1641 — 236 Python contract tests PASS, Roblox place build PASS, generated-place validation PASS (71 named instances, 6 embedded scripts), artifact upload PASS. Studio playtesting remains required.
+
+
+## Live branch re-audit — 2026-11-22 17:50 UTC
+
+This section supersedes the older branch-count and ahead/behind snapshots above. Values were re-read from GitHub compare against the canonical development base `feat/cozy-world-visual-pass`.
+
+| Branch | Ahead | Behind | Current handling |
+|---|---:|---:|---|
+| `feat/combat-c0-contract` | 317 | 0 | Active PR #7 integration candidate; strict fast-forward descendant |
+| `feat/harvesting-feedback-on-latest` | 7 | 12 | Superseded recovery ref; do not merge wholesale |
+| `feat/world-resource-harvesting` | 68 | 209 | Historical harvesting source; do not merge wholesale |
+| `integration/giantback-consolidation` | 4 | 49 | Historical snapshot; do not merge wholesale |
+| `integration/harvesting-on-cozy-world` | 9 | 143 | Historical snapshot; do not merge wholesale |
+| `integration/harvesting-on-cozy-world-v2` | 74 | 136 | Archive/recovery source; only selectively port reviewed unique features |
+| `main` | 4 | 756 | Stable/release line; do not force-sync or merge the development branch yet |
+
+Repository currently exposes eight branches total: the seven refs above plus the canonical `feat/cozy-world-visual-pass`. No extra integration branch is needed. In particular, `integration/giantback-consolidation` is not the active integration line: it is 4 commits ahead and 49 behind canonical, so it must not receive current work or be treated as the merge target.
+
+### Current PR and validation
+
+- PR #7 remains the sole active gameplay integration PR: `feat/combat-c0-contract` → `feat/cozy-world-visual-pass`.
+- PR #7 remains Draft. Its latest recorded validation is Actions run #1795: 267 Python contract tests PASS, Roblox place build PASS, generated-place validation PASS (71 named instances, 6 embedded scripts), artifact upload PASS.
+- This validation proves source contracts and place generation only. Roblox Studio multiplayer, DataStore reconnect, PC/mobile/gamepad acceptance, animation quality and balance remain manual release gates.
+- `main` was not modified by this audit. No branch was deleted and no history was rewritten.
+
+### Safe next consolidation procedure
+
+1. Keep all new gameplay work on the PR #7 head branch; keep `feat/cozy-world-visual-pass` as its base.
+2. Keep the six divergent historical refs read-only until each unique feature has a named disposition and preservation evidence.
+3. Do not merge `integration/giantback-consolidation` or either harvesting integration branch wholesale.
+4. After Studio acceptance and release review, merge PR #7 into the canonical development base; only then prepare a separate, tested release integration into `main`.
+5. Branch deletion is not performed by the available connected GitHub operations in this session; do not report cleanup as complete until refs are actually deleted through an authorized GitHub operation.
