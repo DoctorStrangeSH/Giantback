@@ -518,6 +518,8 @@ save = function(player)
             end
         end
 
+        local companionProgressSnapshot = normalizeCompanionProgress(session.companionProgress)
+
         local ok, err = pcall(function()
             store:UpdateAsync(tostring(player.UserId), function(old)
                 if type(old) ~= "table" then old = {} end
@@ -525,7 +527,7 @@ save = function(player)
                     old[key] = old[key] == true or snapshot[key]
                 end
                 -- Never downgrade a profile written by a newer feature branch.
-                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 10)
+                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 11)
 
                 local savedTools = type(old.tools) == "table" and old.tools or {}
                 savedTools.Axe = toolsSnapshot.Axe
@@ -570,6 +572,12 @@ save = function(player)
                     if completed then savedCombatEncounters[encounterId] = true end
                 end
                 old.completedCombatEncounters = savedCombatEncounters
+
+                local savedCompanions = type(old.companions) == "table" and old.companions or {}
+                for _, companionId in COMPANION_IDS do
+                    savedCompanions[companionId] = companionProgressSnapshot[companionId]
+                end
+                old.companions = savedCompanions
 
                 -- Schema v5 moves the old city payload into the permanent island record.
                 -- Schema v6 adds persistent companion scouting and the MoonSeed inventory item.
@@ -626,6 +634,7 @@ local function init(player)
         foxSearchReadyAt = 0,
         foxSearchCount = 0,
         completedCombatEncounters = {},
+        companionProgress = normalizeCompanionProgress(nil),
         online = false,
         selectedCropId = defaultCropId,
         farmActionBusy = {},
@@ -747,6 +756,8 @@ local function init(player)
                     session.completedCombatEncounters[encounterId] = true
                 end
             end
+
+            session.companionProgress = normalizeCompanionProgress(data.companions)
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     else
@@ -757,6 +768,7 @@ local function init(player)
     syncFarm(player)
     syncBridge(player)
     syncFoxScout(player)
+    syncCompanionProgress(player)
     if not allocateHomeIsland(player, session) then
         sessions[player] = nil
         player:Kick("На этом сервере заняты все 8 домашних островов. Попробуй другой сервер.")
