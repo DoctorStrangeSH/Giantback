@@ -25,7 +25,9 @@
 - [x] Fix resource reward handling so each node grants its configured amount (wood/stone now correctly grant ×2; iron grants ×2).
 - [x] Add a personal owner-only furnace: 3 IronOre + 2 Wood starts a 60-second smelt; the iron ingot is granted only when collected after completion.
 - [x] Persist in-progress smelting timestamps and pending output across rejoin; add HUD material counts and smelter status.
-- [ ] Add polished tool swing/impact animations and resource-specific break effects.
+- [x] Add client-local tool swing, hit cracks/progress, impact particles, final break burst, reward pickup and regrowth feedback; optional camera shake can be disabled by player attribute. Server rewards and resource state remain authoritative.
+- [x] Validate the feedback integration in PR #6: gameplay contract tests, Roblox place build, embedded-script validation and artifact upload passed in run #45007937474.
+- [ ] Roblox Studio playtest: verify tool animation on R6/R15, impact alignment, resource break/regrowth, local-only effects and mobile readability.
 - [ ] Studio playtest: verify Backpack switching, correct-tool checks, hit progress, respawn restoration, upgrade cost consumption and save/rejoin.
 - [ ] Add mobile-friendly touch controls and tool selection UX after Studio testing.
 
@@ -37,7 +39,8 @@
 - [x] Update generated-place validation marker for the forward-compatible schema assignment.
 - [x] Confirm fresh Validate Giantback run #1223 after the validator update; tests, place build, generated-place validation and artifact upload all passed.
 - [x] Port starter tool ownership/equipment and server-authoritative multi-hit wood/stone gathering.
-- [ ] Port smelter state/actions and iron ore processing; tool upgrade flow is now present, but iron crafting remains incomplete.
+- [x] Confirm the current cozy-world base already contains server-authoritative iron ore harvesting, personal smelter actions, 60-second processing and persisted pending output; do not re-port the older V2 implementation.
+- [ ] Port combat only after dedicated combat acceptance tests and Studio playtest.
 - [ ] Port combat after iron/smelting integration and dedicated combat acceptance tests.
 
 ## Farming 2.0 — Four-crop server foundation
