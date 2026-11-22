@@ -69,6 +69,8 @@ class CombatFoundationContractTests(unittest.TestCase):
 
     def test_block_and_dodge_are_server_timed(self):
         self.assertIn("DODGE_DURATION = 0.45", COMBAT)
+        self.assertIn('if action == "BlockEnd" then', COMBAT)
+        self.assertIn('state.blocking = false', COMBAT)
         self.assertIn("DODGE_COOLDOWN = 1.5", COMBAT)
         self.assertIn("state.dodgingUntil = now + DODGE_DURATION", COMBAT)
         self.assertIn("playerState.blocking", COMBAT)
