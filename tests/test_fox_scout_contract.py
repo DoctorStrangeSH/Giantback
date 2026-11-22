@@ -66,7 +66,14 @@ class FoxScoutContractTests(unittest.TestCase):
         self.assertIn('FoxCache02 = {itemId = "Wood", amount = 2}', WORLD)
         self.assertIn('FoxCache03 = {itemId = "CarrotSeed", amount = 1}', WORLD)
         self.assertIn("session.foxSearchCount += 1", WORLD)
-        self.assertIn("session.foxSearchReadyAt = os.time() + FOX_SCOUT_COOLDOWN_SECONDS", WORLD)
+        self.assertIn("session.foxSearchReadyAt = os.time() + foxScoutCooldownForLevel(foxLevel)", WORLD)
+
+    def test_fox_scout_passive_reduces_cooldown_at_companion_levels_three_and_five(self):
+        self.assertIn("local function foxScoutCooldownForLevel(level)", WORLD)
+        self.assertIn("if level >= 5 then return 60 end", WORLD)
+        self.assertIn("if level >= 3 then return 90 end", WORLD)
+        self.assertIn("return FOX_SCOUT_COOLDOWN_SECONDS", WORLD)
+        self.assertIn("Companion_Fox_Level", WORLD)
 
     def test_client_reveals_only_the_active_cache_with_local_prompt_and_highlight(self):
         self.assertIn('localPrompt.Name = "FoxCacheLocalPrompt"', ALBUM)
