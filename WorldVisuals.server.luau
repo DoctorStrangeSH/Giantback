@@ -1725,6 +1725,56 @@ local grottoReturn = makePart(crystalGrotto, "CrystalGrottoReturn", Vector3.new(
 grottoReturn.CanCollide = false
 placeTrialPrompt(grottoReturn, "Сумеречная долина", "Вернуться")
 
+-- Three rune stones teach a short sequence puzzle; the sealed cache is its permanent reward.
+local crystalRuneDefinitions = {
+    {name = "CrystalRuneMoon", label = "ЛУНА", color = palette.moon, offset = Vector3.new(-11, 0.55, -2)},
+    {name = "CrystalRuneDawn", label = "РАССВЕТ", color = palette.gold, offset = Vector3.new(0, 0.55, -5)},
+    {name = "CrystalRuneTide", label = "ПРИЛИВ", color = palette.water, offset = Vector3.new(11, 0.55, -2)},
+}
+for _, definition in crystalRuneDefinitions do
+    local rune = makePart(
+        crystalGrotto, definition.name, Vector3.new(2.7, 0.48, 2.7),
+        CFrame.new(grottoCenter + definition.offset), definition.color, Enum.Material.Neon,
+        Enum.PartType.Cylinder
+    )
+    rune.CanCollide = false
+    rune:SetAttribute("CrystalRuneId", definition.name)
+    placeTrialPrompt(rune, "Руна памяти · " .. definition.label, "Пробудить")
+    addLight(rune, definition.color, 8, 0.35)
+end
+
+local crystalClue = makePart(
+    crystalGrotto, "CrystalGrottoRuneClue", Vector3.new(10, 2.4, 0.45),
+    CFrame.new(grottoCenter + Vector3.new(0, 2.5, -10)), palette.stone, Enum.Material.Slate
+)
+local crystalClueGui = Instance.new("SurfaceGui")
+crystalClueGui.Name = "CrystalRuneClueSurface"
+crystalClueGui.Face = Enum.NormalId.Front
+crystalClueGui.CanvasSize = Vector2.new(900, 220)
+crystalClueGui.Parent = crystalClue
+local crystalClueText = Instance.new("TextLabel")
+crystalClueText.Size = UDim2.fromScale(1, 1)
+crystalClueText.BackgroundTransparency = 1
+crystalClueText.Text = "ПЕСНЬ ПЕЩЕРЫ\nЛуна → Рассвет → Прилив"
+crystalClueText.TextColor3 = palette.cream
+crystalClueText.TextStrokeTransparency = 0.55
+crystalClueText.Font = Enum.Font.GothamBold
+crystalClueText.TextScaled = true
+crystalClueText.Parent = crystalClueGui
+
+local crystalCache = makePart(
+    crystalGrotto, "CrystalGrottoCache", Vector3.new(3.8, 2.2, 2.8),
+    CFrame.new(grottoCenter + Vector3.new(0, 1.2, 15)), palette.barkLight, Enum.Material.Wood
+)
+setSolid(crystalCache)
+local crystalCacheGlow = orb(
+    crystalGrotto, "CrystalGrottoCacheGlow",
+    crystalCache.Position + Vector3.new(0, 2.4, 0),
+    Vector3.new(1.2, 1.2, 1.2), palette.gold, Enum.Material.Neon
+)
+addLight(crystalCacheGlow, palette.gold, 12, 0.6)
+placeTrialPrompt(crystalCache, "Запечатанный тайник", "Открыть")
+
 local crystalHeart = makePart(crystalGrotto, "CrystalGrottoHeart", Vector3.new(2.2, 2.2, 2.2), CFrame.new(grottoCenter + Vector3.new(0, 2.3, 8)), palette.lilacLight, Enum.Material.Neon, Enum.PartType.Ball)
 crystalHeart.CanCollide = false
 local heartGlow = Instance.new("PointLight")
