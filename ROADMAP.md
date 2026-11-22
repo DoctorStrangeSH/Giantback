@@ -5,13 +5,13 @@
 - [x] Server checks furnace ownership and interaction distance; no client-side reward grants.
 - [x] Persist pending smelting state so progress survives reconnects and offline time.
 - [x] Show ore, ingot counts and smelting status in the Tools panel.
-- [x] Validate all 189 automated tests, Roblox place build, generated-place validation and artifact upload in GitHub Actions run #1235.
+- [x] Validate 189 automated tests, Roblox place build, generated-place validation and artifact upload in the latest canonical GitHub Actions run.
 - [ ] Studio playtest: verify ore placement, furnace access, timer, reconnect, collection and duplicate-claim prevention.
 - [ ] Add multiple recipes, fuel choices and furnace upgrades after the first smelting loop is playtested.
 
 ## Harvesting 2.0 — Starter tools and multi-hit resource nodes
 
-- [x] Add persistent Axe/Pickaxe ownership, selected tool and level-1/2 progression to player profiles (schema v8, monotonic version writes).
+- [x] Add persistent Axe/Pickaxe ownership, selected tool and level-1/2 progression to player profiles (schema v9, monotonic version writes).
 - [x] Restore tools on join and respawn; track actual tool equips so the server validates the tool currently held.
 - [x] Add a dedicated Russian Tools tab with equip and upgrade actions.
 - [x] Add an owner-only personal workbench with server-side distance checks for upgrades.
