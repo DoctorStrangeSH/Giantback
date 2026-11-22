@@ -87,10 +87,22 @@ class CombatFoundationContractTests(unittest.TestCase):
 
     def test_rewards_are_persistent_and_idempotent(self):
         self.assertIn('ServerStorage:WaitForChild("GiantbackGrantCombatReward"', COMBAT)
-        self.assertIn("rewardFunction:Invoke(entry.lastHitBy, entry.encounterId)", COMBAT)
+        self.assertIn("rewardFunction:Invoke(contributor, entry.encounterId)", COMBAT)
+        self.assertIn("entry.contributors[player] = true", COMBAT)
+        self.assertIn("for contributor in entry.contributors do", COMBAT)
+        self.assertIn("contributor.Parent == Players", COMBAT)
+        self.assertNotIn("entry.lastHitBy", COMBAT)
         self.assertIn("completedCombatEncounters", WORLD)
         self.assertIn("old.completedCombatEncounters = savedCombatEncounters", WORLD)
         self.assertIn("GroveGrunt01", WORLD)
+
+    def test_coop_rewards_each_server_verified_contributor_once(self):
+        self.assertIn("contributors = {}", COMBAT)
+        self.assertIn("entry.contributors[player] = true", COMBAT)
+        self.assertIn("for contributor in entry.contributors do", COMBAT)
+        self.assertIn("rewardFunction:Invoke(contributor, entry.encounterId)", COMBAT)
+        self.assertIn("if entry.rewardResolved then return end", COMBAT)
+        self.assertIn("contributor.Parent == Players", COMBAT)
 
     def test_transient_state_is_cleared_on_death_respawn_and_leave(self):
         self.assertIn("local function clearTransientState(player)", COMBAT)
