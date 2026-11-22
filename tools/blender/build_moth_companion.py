@@ -167,24 +167,60 @@ def render_views(camera, output):
 
 
 def mesh_report(objects, output):
-    parts={}
-    for obj in objects:
-        if obj.type!="MESH": continue
-        bm=bmesh.new(); bm.from_mesh(obj.data)
-        zero_area=sum(face.calc_area()<1e-10 for face in bm.faces)
-        nonmanifold=sum(not edge.is_manifold for edge in bm.edges)
-        parts[obj.name]={
-          "vertices":len(obj.data.vertices),"faces":len(obj.data.polygons),
-          "zero_area_faces":zero_area,"non_manifold_edges":nonmanifold,
-          "uv_layers":len(obj.data.uv_layers),
-          "materials":[m.name for m in obj.data.materials if m],
-          "material_profiles":{m.name:m.get("giantback_surface_profile","smooth") for m in obj.data.materials if m},
-        }
-        bm.free()
-    report={"part_count":len(parts),"parts":parts}
-    (output/"moth_companion_hero_mesh_report.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
-    return report
+    # Aggregate decorative mesh pieces into stable gameplay rig groups.
+    def group_for(name):
+        if name == "MothHead" or name.startswith("MothEye"):
+            return "MothHead"
+        if name == "MothThorax":
+            return "MothThorax"
+        if name == "MothAbdomen" or name.startswith("AbdomenBand"):
+            return "MothAbdomen"
+        if name.startswith("MothWingUpper"):
+            return name
+        if name.startswith("MothWingLower"):
+            return name
+        if name.startswith("MothAntennaLeft"):
+            return "MothAntennaLeft"
+        if name.startswith("MothAntennaRight"):
+            return "MothAntennaRight"
+        if name == "MothGlowCore":
+            return "MothGlowCore"
+        return None
 
+    grouped = {name: [] for name in GROUPS}
+    for obj in objects:
+        key = group_for(obj.name)
+        if key:
+            grouped[key].append(obj)
+    parts = {}
+    for name, members in grouped.items():
+        mesh_members = [obj for obj in members if obj.type == "MESH"]
+        if not mesh_members:
+            continue
+        zero_area = 0
+        nonmanifold = 0
+        for obj in mesh_members:
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+            zero_area += sum(face.calc_area() < 1e-10 for face in bm.faces)
+            nonmanifold += sum(not edge.is_manifold for edge in bm.edges)
+            bm.free()
+        materials = sorted({m.name for obj in mesh_members for m in obj.data.materials if m})
+        profiles = {m.name: m.get("giantback_surface_profile", "smooth")
+                    for obj in mesh_members for m in obj.data.materials if m}
+        parts[name] = {
+            "vertices": sum(len(obj.data.vertices) for obj in mesh_members),
+            "faces": sum(len(obj.data.polygons) for obj in mesh_members),
+            "zero_area_faces": zero_area,
+            "non_manifold_edges": nonmanifold,
+            "uv_layers": min(len(obj.data.uv_layers) for obj in mesh_members),
+            "materials": materials,
+            "material_profiles": profiles,
+        }
+    report = {"part_count": len(parts), "parts": parts}
+    (output / "moth_companion_hero_mesh_report.json").write_text(
+        json.dumps(report, indent=2), encoding="utf-8")
+    return report
 
 def main():
     options=args(); output=options.output_dir
