@@ -147,6 +147,222 @@ remote.OnClientEvent:Connect(function(message, data)
     end
 end)
 
+local function makeHealthBar(parent, width, height, fillColor)
+    local background = Instance.new("Frame")
+    background.Name = "HealthBackground"
+    background.Size = UDim2.fromScale(1, 1)
+    background.BackgroundColor3 = Color3.fromRGB(31, 34, 39)
+    background.BackgroundTransparency = 0.12
+    background.BorderSizePixel = 0
+    background.ClipsDescendants = true
+    background.Parent = parent
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = background
+
+    local fill = Instance.new("Frame")
+    fill.Name = "HealthFill"
+    fill.Size = UDim2.fromScale(1, 1)
+    fill.BackgroundColor3 = fillColor
+    fill.BorderSizePixel = 0
+    fill.Parent = background
+
+    local fillCorner = Instance.new("UICorner")
+    fillCorner.CornerRadius = UDim.new(0, 6)
+    fillCorner.Parent = fill
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(255, 255, 255)
+    stroke.Transparency = 0.78
+    stroke.Thickness = 1
+    stroke.Parent = background
+
+    return fill
+end
+
+local bossHud = Instance.new("ScreenGui")
+bossHud.Name = "GiantbackBossHud"
+bossHud.DisplayOrder = 34
+bossHud.IgnoreGuiInset = true
+bossHud.ResetOnSpawn = false
+bossHud.Enabled = false
+bossHud.Parent = playerGui
+
+local bossPanel = Instance.new("Frame")
+bossPanel.Name = "BossPanel"
+bossPanel.AnchorPoint = Vector2.new(0.5, 0)
+bossPanel.Position = UDim2.new(0.5, 0, 0, 28)
+bossPanel.Size = UDim2.new(0.72, 0, 0, 78)
+bossPanel.BackgroundColor3 = Color3.fromRGB(29, 27, 38)
+bossPanel.BackgroundTransparency = 0.12
+bossPanel.BorderSizePixel = 0
+bossPanel.Parent = bossHud
+
+local bossPanelConstraint = Instance.new("UISizeConstraint")
+bossPanelConstraint.MinSize = Vector2.new(260, 78)
+bossPanelConstraint.MaxSize = Vector2.new(560, 78)
+bossPanelConstraint.Parent = bossPanel
+
+local bossPanelCorner = Instance.new("UICorner")
+bossPanelCorner.CornerRadius = UDim.new(0, 12)
+bossPanelCorner.Parent = bossPanel
+
+local bossPanelStroke = Instance.new("UIStroke")
+bossPanelStroke.Color = Color3.fromRGB(190, 145, 220)
+bossPanelStroke.Transparency = 0.32
+bossPanelStroke.Thickness = 1.5
+bossPanelStroke.Parent = bossPanel
+
+local bossName = Instance.new("TextLabel")
+bossName.Name = "BossName"
+bossName.BackgroundTransparency = 1
+bossName.Position = UDim2.fromOffset(14, 7)
+bossName.Size = UDim2.new(0.68, -14, 0, 25)
+bossName.Font = Enum.Font.GothamBold
+bossName.Text = "СТРАЖ ПЕЧАТЕЙ"
+bossName.TextColor3 = Color3.fromRGB(255, 235, 204)
+bossName.TextSize = 17
+bossName.TextXAlignment = Enum.TextXAlignment.Left
+bossName.Parent = bossPanel
+
+local bossPhaseLabel = Instance.new("TextLabel")
+bossPhaseLabel.Name = "BossPhase"
+bossPhaseLabel.BackgroundTransparency = 1
+bossPhaseLabel.Position = UDim2.new(0.68, 0, 0, 8)
+bossPhaseLabel.Size = UDim2.new(0.32, -12, 0, 22)
+bossPhaseLabel.Font = Enum.Font.GothamBold
+bossPhaseLabel.Text = "ФАЗА I"
+bossPhaseLabel.TextColor3 = Color3.fromRGB(206, 174, 244)
+bossPhaseLabel.TextSize = 13
+bossPhaseLabel.TextXAlignment = Enum.TextXAlignment.Right
+bossPhaseLabel.Parent = bossPanel
+
+local bossHealthTrack = Instance.new("Frame")
+bossHealthTrack.Name = "BossHealthTrack"
+bossHealthTrack.Position = UDim2.new(0, 14, 0, 39)
+bossHealthTrack.Size = UDim2.new(1, -28, 0, 17)
+bossHealthTrack.BackgroundColor3 = Color3.fromRGB(67, 57, 72)
+bossHealthTrack.BorderSizePixel = 0
+bossHealthTrack.ClipsDescendants = true
+bossHealthTrack.Parent = bossPanel
+local bossHealthCorner = Instance.new("UICorner")
+bossHealthCorner.CornerRadius = UDim.new(0, 7)
+bossHealthCorner.Parent = bossHealthTrack
+local bossHealthFill = makeHealthBar(bossHealthTrack, 1, 17, Color3.fromRGB(170, 92, 194))
+bossHealthFill.Name = "BossHealthFill"
+local bossHealthText = Instance.new("TextLabel")
+bossHealthText.Name = "BossHealthText"
+bossHealthText.BackgroundTransparency = 1
+bossHealthText.Position = UDim2.new(0, 0, 0, 57)
+bossHealthText.Size = UDim2.new(1, 0, 0, 16)
+bossHealthText.Font = Enum.Font.GothamMedium
+bossHealthText.Text = "360 / 360"
+bossHealthText.TextColor3 = Color3.fromRGB(224, 216, 231)
+bossHealthText.TextSize = 11
+bossHealthText.Parent = bossPanel
+
+local function updateBossHud(enemy)
+    if not enemy or not enemy.Parent then
+        bossHud.Enabled = false
+        return
+    end
+    local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+    local health = math.max(0, tonumber(enemy:GetAttribute("CombatHealth")) or (humanoid and humanoid.Health) or 0)
+    local maxHealth = math.max(1, tonumber(enemy:GetAttribute("CombatMaxHealth")) or (humanoid and humanoid.MaxHealth) or 1)
+    local phase = math.clamp(tonumber(enemy:GetAttribute("BossPhase")) or 1, 1, 3)
+    local ratio = math.clamp(health / maxHealth, 0, 1)
+    bossHealthFill.Size = UDim2.fromScale(ratio, 1)
+    bossHealthFill.BackgroundColor3 = phase == 1 and Color3.fromRGB(170, 92, 194)
+        or (phase == 2 and Color3.fromRGB(190, 104, 255) or Color3.fromRGB(226, 91, 77))
+    bossHealthText.Text = string.format("%d / %d", math.ceil(health), math.ceil(maxHealth))
+    bossPhaseLabel.Text = phase == 1 and "ФАЗА I" or (phase == 2 and "ФАЗА II" or "ФАЗА III")
+    bossHud.Enabled = health > 0
+end
+
+local function bindEnemyHealth(enemy)
+    if not enemy:IsA("Model") or enemy:GetAttribute("HealthUiBound") == true then return end
+    local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+    local root = enemy:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not root then return end
+    enemy:SetAttribute("HealthUiBound", true)
+
+    local isBoss = enemy:GetAttribute("IsBoss") == true
+    local billboard
+    local fill
+    if not isBoss then
+        billboard = Instance.new("BillboardGui")
+        billboard.Name = "LocalEnemyHealthBar"
+        billboard.Adornee = root
+        billboard.AlwaysOnTop = true
+        billboard.LightInfluence = 0
+        billboard.MaxDistance = 90
+        billboard.Size = UDim2.fromOffset(112, 30)
+        billboard.StudsOffsetWorldSpace = Vector3.new(0, 3.5, 0)
+        billboard.Parent = playerGui
+
+        local name = Instance.new("TextLabel")
+        name.Name = "EnemyName"
+        name.BackgroundTransparency = 1
+        name.Size = UDim2.new(1, 0, 0, 14)
+        name.Font = Enum.Font.GothamBold
+        name.Text = humanoid.DisplayName
+        name.TextColor3 = Color3.fromRGB(244, 238, 222)
+        name.TextStrokeTransparency = 0.45
+        name.TextSize = 10
+        name.Parent = billboard
+
+        local track = Instance.new("Frame")
+        track.Name = "EnemyHealthTrack"
+        track.Position = UDim2.fromOffset(0, 17)
+        track.Size = UDim2.new(1, 0, 0, 9)
+        track.BackgroundColor3 = Color3.fromRGB(38, 39, 43)
+        track.BorderSizePixel = 0
+        track.ClipsDescendants = true
+        track.Parent = billboard
+        fill = makeHealthBar(track, 1, 9, Color3.fromRGB(108, 190, 126))
+    else
+        bossName.Text = humanoid.DisplayName
+        bossHud.Enabled = true
+    end
+
+    local function refresh()
+        local health = math.max(0, tonumber(enemy:GetAttribute("CombatHealth")) or humanoid.Health)
+        local maxHealth = math.max(1, tonumber(enemy:GetAttribute("CombatMaxHealth")) or humanoid.MaxHealth)
+        local ratio = math.clamp(health / maxHealth, 0, 1)
+        if fill then
+            fill.Size = UDim2.fromScale(ratio, 1)
+            fill.BackgroundColor3 = ratio <= 0.25 and Color3.fromRGB(214, 91, 78)
+                or (ratio <= 0.55 and Color3.fromRGB(219, 166, 82) or Color3.fromRGB(108, 190, 126))
+            if billboard then billboard.Enabled = health > 0 end
+        end
+        if isBoss then updateBossHud(enemy) end
+    end
+
+    humanoid.HealthChanged:Connect(refresh)
+    enemy:GetAttributeChangedSignal("CombatHealth"):Connect(refresh)
+    enemy:GetAttributeChangedSignal("CombatMaxHealth"):Connect(refresh)
+    if isBoss then
+        enemy:GetAttributeChangedSignal("BossPhase"):Connect(refresh)
+    end
+    humanoid.Died:Connect(function()
+        if billboard then billboard:Destroy() end
+        if isBoss then bossHud.Enabled = false end
+    end)
+    enemy.AncestryChanged:Connect(function(_, parent)
+        if parent == nil then
+            if billboard then billboard:Destroy() end
+            if isBoss then bossHud.Enabled = false end
+        end
+    end)
+    refresh()
+end
+
+CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(bindEnemyHealth)
+for _, enemy in CollectionService:GetTagged("GiantbackEnemy") do
+    bindEnemyHealth(enemy)
+end
+
 local function showBossSlamTelegraph(enemy)
     if not enemy or not enemy:IsA("Model") or not enemy:IsDescendantOf(Workspace) then return end
     local root = enemy:FindFirstChild("HumanoidRootPart")
