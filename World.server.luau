@@ -825,35 +825,76 @@ local function refreshFarmPlotVisual(cityModel, plotId, farm, selectedCropId)
         return
     end
 
+    local cropDefinition = cropDefinitions[state.cropId]
+    if not cropDefinition then return end
+    if cropVisual and cropVisual:GetAttribute("CropId") ~= state.cropId then
+        cropVisual:Destroy()
+        cropVisual = nil
+    end
+
+    local cropPieces = {
+        Carrot = {
+            {name = "LeafA", size = Vector3.new(0.9, 0.16, 0.34), offset = Vector3.new(-0.28, 0.7, 0), color = Color3.fromRGB(111, 178, 91), shape = Enum.PartType.Ball, rotation = -28},
+            {name = "LeafB", size = Vector3.new(0.92, 0.16, 0.34), offset = Vector3.new(0.28, 0.78, 0), color = Color3.fromRGB(91, 157, 80), shape = Enum.PartType.Ball, rotation = 28},
+            {name = "LeafC", size = Vector3.new(0.62, 0.15, 0.3), offset = Vector3.new(0, 1.02, 0), color = Color3.fromRGB(132, 190, 96), shape = Enum.PartType.Ball, rotation = 90},
+            {name = "Root", size = Vector3.new(0.34, 0.92, 0.34), offset = Vector3.new(0, 0.24, 0), color = Color3.fromRGB(239, 145, 65), shape = Enum.PartType.Cylinder, rotation = 90, revealAt = 0.72},
+        },
+        Strawberry = {
+            {name = "LeafA", size = Vector3.new(0.9, 0.18, 0.42), offset = Vector3.new(-0.34, 0.62, 0), color = Color3.fromRGB(77, 157, 79), shape = Enum.PartType.Ball, rotation = -22},
+            {name = "LeafB", size = Vector3.new(0.9, 0.18, 0.42), offset = Vector3.new(0.34, 0.66, 0), color = Color3.fromRGB(94, 176, 85), shape = Enum.PartType.Ball, rotation = 22},
+            {name = "LeafC", size = Vector3.new(0.72, 0.18, 0.38), offset = Vector3.new(0, 0.82, 0.22), color = Color3.fromRGB(111, 187, 94), shape = Enum.PartType.Ball, rotation = 0},
+            {name = "BerryA", size = Vector3.new(0.42, 0.46, 0.42), offset = Vector3.new(-0.38, 0.32, -0.2), color = Color3.fromRGB(218, 67, 74), shape = Enum.PartType.Ball, revealAt = 0.72},
+            {name = "BerryB", size = Vector3.new(0.4, 0.44, 0.4), offset = Vector3.new(0.34, 0.34, 0.22), color = Color3.fromRGB(232, 81, 79), shape = Enum.PartType.Ball, revealAt = 0.82},
+        },
+        Pumpkin = {
+            {name = "VineA", size = Vector3.new(1.25, 0.16, 0.36), offset = Vector3.new(-0.34, 0.38, 0), color = Color3.fromRGB(75, 143, 69), shape = Enum.PartType.Ball, rotation = -18},
+            {name = "VineB", size = Vector3.new(1.2, 0.16, 0.36), offset = Vector3.new(0.34, 0.4, 0), color = Color3.fromRGB(91, 160, 74), shape = Enum.PartType.Ball, rotation = 18},
+            {name = "LeafA", size = Vector3.new(0.8, 0.18, 0.72), offset = Vector3.new(-0.5, 0.58, 0.24), color = Color3.fromRGB(85, 165, 76), shape = Enum.PartType.Ball},
+            {name = "LeafB", size = Vector3.new(0.82, 0.18, 0.7), offset = Vector3.new(0.5, 0.58, -0.22), color = Color3.fromRGB(105, 179, 82), shape = Enum.PartType.Ball},
+            {name = "Fruit", size = Vector3.new(0.9, 0.78, 0.9), offset = Vector3.new(0, 0.35, 0), color = Color3.fromRGB(239, 139, 48), shape = Enum.PartType.Ball, revealAt = 0.72},
+            {name = "FruitStem", size = Vector3.new(0.16, 0.3, 0.16), offset = Vector3.new(0, 0.86, 0), color = Color3.fromRGB(80, 119, 58), shape = Enum.PartType.Cylinder, revealAt = 0.78},
+        },
+        Cabbage = {
+            {name = "OuterA", size = Vector3.new(0.92, 0.22, 0.72), offset = Vector3.new(-0.34, 0.34, 0), color = Color3.fromRGB(111, 178, 91), shape = Enum.PartType.Ball},
+            {name = "OuterB", size = Vector3.new(0.92, 0.22, 0.72), offset = Vector3.new(0.34, 0.34, 0), color = Color3.fromRGB(91, 160, 82), shape = Enum.PartType.Ball},
+            {name = "OuterC", size = Vector3.new(0.82, 0.22, 0.72), offset = Vector3.new(0, 0.52, -0.32), color = Color3.fromRGB(130, 190, 105), shape = Enum.PartType.Ball},
+            {name = "OuterD", size = Vector3.new(0.82, 0.22, 0.72), offset = Vector3.new(0, 0.52, 0.32), color = Color3.fromRGB(105, 174, 91), shape = Enum.PartType.Ball},
+            {name = "Heart", size = Vector3.new(0.72, 0.72, 0.72), offset = Vector3.new(0, 0.48, 0), color = Color3.fromRGB(191, 218, 139), shape = Enum.PartType.Ball, revealAt = 0.68},
+        },
+    }
+
     if not cropVisual then
         cropVisual = Instance.new("Model")
         cropVisual.Name = "CropVisual"
+        cropVisual:SetAttribute("CropId", state.cropId)
         cropVisual.Parent = plotModel
-        makeFarmVisualPart(cropVisual, "Stem", Vector3.new(0.2, 0.4, 0.2), CFrame.new(), Color3.fromRGB(101, 158, 89), Enum.PartType.Cylinder)
-        makeFarmVisualPart(cropVisual, "LeafLeft", Vector3.new(0.65, 0.16, 0.32), CFrame.new(), Color3.fromRGB(120, 181, 101), Enum.PartType.Ball)
-        makeFarmVisualPart(cropVisual, "LeafRight", Vector3.new(0.65, 0.16, 0.32), CFrame.new(), Color3.fromRGB(94, 151, 86), Enum.PartType.Ball)
-        makeFarmVisualPart(cropVisual, "Root", Vector3.new(0.8, 0.34, 0.34), CFrame.new(), Color3.fromRGB(231, 139, 75), Enum.PartType.Cylinder)
+        for _, definition in cropPieces[state.cropId] do
+            makeFarmVisualPart(cropVisual, definition.name, definition.size, CFrame.new(), definition.color, definition.shape)
+        end
     end
 
     local now = os.time()
     local duration = math.max(1, state.readyAt - state.plantedAt)
     local growth = math.clamp((now - state.plantedAt) / duration, 0, 1)
-    local ready = now >= state.readyAt
-    local stem = cropVisual:FindFirstChild("Stem")
-    local leftLeaf = cropVisual:FindFirstChild("LeafLeft")
-    local rightLeaf = cropVisual:FindFirstChild("LeafRight")
-    local root = cropVisual:FindFirstChild("Root")
+    local stage = math.clamp(math.floor(growth * 5) + 1, 1, 5)
+    local scale = 0.28 + growth * 0.72
+    local baseY = soil and (soil.Size.Y / 2) or 0
+    cropVisual:SetAttribute("GrowthStage", stage)
+    cropVisual:SetAttribute("GrowthProgress", growth)
 
-    if soil and stem and leftLeaf and rightLeaf and root then
-        local height = 0.25 + growth * 0.62
-        stem.Size = Vector3.new(height, 0.2, 0.2)
-        stem.CFrame = soil.CFrame * CFrame.new(0, soil.Size.Y / 2 + height / 2, 0) * CFrame.Angles(0, 0, math.rad(90))
-        leftLeaf.Size = Vector3.new(0.55 + growth * 0.2, 0.16, 0.3 + growth * 0.12)
-        rightLeaf.Size = leftLeaf.Size
-        leftLeaf.CFrame = soil.CFrame * CFrame.new(-0.34, soil.Size.Y / 2 + height * 0.8, 0) * CFrame.Angles(0, 0, math.rad(-24))
-        rightLeaf.CFrame = soil.CFrame * CFrame.new(0.34, soil.Size.Y / 2 + height * 0.8, 0) * CFrame.Angles(0, 0, math.rad(24))
-        root.Transparency = ready and 0 or 1
-        root.CFrame = soil.CFrame * CFrame.new(0, soil.Size.Y / 2 + 0.25, 0) * CFrame.Angles(0, 0, math.rad(90))
+    if soil then
+        for _, definition in cropPieces[state.cropId] do
+            local piece = cropVisual:FindFirstChild(definition.name)
+            if piece then
+                local visible = growth >= (definition.revealAt or 0.08)
+                piece.Transparency = visible and 0 or 1
+                piece.Size = definition.size * scale
+                local offset = definition.offset * scale
+                piece.CFrame = soil.CFrame
+                    * CFrame.new(offset.X, baseY + offset.Y, offset.Z)
+                    * CFrame.Angles(0, 0, math.rad(definition.rotation or 0))
+            end
+        end
     end
 end
 
