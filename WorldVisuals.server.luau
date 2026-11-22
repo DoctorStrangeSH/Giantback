@@ -1346,6 +1346,122 @@ CollectionService:AddTag(scout, "GiantbackEnemy")
 local entranceGlow = orb(arena, "Training glade welcome light", arenaCenter + Vector3.new(0, 6.4, -21), Vector3.new(0.65, 0.65, 0.65), palette.gold, Enum.Material.Neon)
 addLight(entranceGlow, palette.gold, 12, 0.55)
 
+-- A first-clear reward chamber, generated alongside the training ring.
+-- This is a short discovery loop, not yet the full dungeon promised for 1.0.
+local trialPortal = makePart(
+    arena,
+    "ForestTrialGate",
+    Vector3.new(6.5, 6, 1.4),
+    CFrame.new(arenaCenter + Vector3.new(0, 3.5, 19)),
+    palette.moon,
+    Enum.Material.ForceField,
+    nil,
+    0.38
+)
+trialPortal.CanCollide = false
+local gateFrame = makePart(
+    arena,
+    "ForestTrialGateFrame",
+    Vector3.new(8.1, 7.1, 1.1),
+    trialPortal.CFrame,
+    palette.stone,
+    Enum.Material.Slate
+)
+gateFrame.CanCollide = false
+gateFrame.Transparency = 0.68
+
+local function placeTrialPrompt(parent, objectText, actionText)
+    local p = Instance.new("ProximityPrompt")
+    p.ObjectText = objectText
+    p.ActionText = actionText
+    p.MaxActivationDistance = 10
+    p.HoldDuration = 0.5
+    p.RequiresLineOfSight = false
+    p.Parent = parent
+    return p
+end
+placeTrialPrompt(trialPortal, "Зал лесных испытаний", "Войти")
+
+local chamber = Instance.new("Model")
+chamber.Name = "ForestTrialChamber"
+chamber.Parent = combatGlade
+local chamberCenter = Vector3.new(0, 12, 205)
+local chamberFloor = makePart(
+    chamber,
+    "ForestTrialFloor",
+    Vector3.new(2.4, 34, 34),
+    CFrame.new(chamberCenter + Vector3.new(0, -1.2, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+    palette.stoneLight,
+    Enum.Material.Slate,
+    Enum.PartType.Cylinder
+)
+setSolid(chamberFloor)
+
+local arrival = makePart(
+    chamber,
+    "ForestTrialArrival",
+    Vector3.new(2, 0.5, 2),
+    CFrame.new(chamberCenter + Vector3.new(0, 0.6, -8)),
+    palette.gold,
+    Enum.Material.Neon,
+    nil,
+    1
+)
+arrival.CanCollide = false
+
+local returnPortal = makePart(
+    chamber,
+    "ForestTrialReturn",
+    Vector3.new(4.5, 5.4, 1.4),
+    CFrame.new(chamberCenter + Vector3.new(0, 3, -13)),
+    palette.moon,
+    Enum.Material.ForceField,
+    nil,
+    0.4
+)
+returnPortal.CanCollide = false
+placeTrialPrompt(returnPortal, "Лесная роща", "Вернуться")
+
+local trialChest = makePart(
+    chamber,
+    "ForestTrialChest",
+    Vector3.new(4, 2.2, 2.5),
+    CFrame.new(chamberCenter + Vector3.new(0, 1.25, 7)),
+    palette.barkLight,
+    Enum.Material.Wood
+)
+setSolid(trialChest)
+local chestLid = makePart(
+    chamber,
+    "ForestTrialChestLid",
+    Vector3.new(4.4, 0.75, 2.9),
+    trialChest.CFrame * CFrame.new(0, 1.4, 0),
+    palette.gold,
+    Enum.Material.Metal
+)
+setSolid(chestLid)
+local chestGlow = orb(
+    chamber,
+    "ForestTrialChestGlow",
+    trialChest.Position + Vector3.new(0, 2.5, 0),
+    Vector3.new(1.1, 1.1, 1.1),
+    palette.moon,
+    Enum.Material.Neon
+)
+addLight(chestGlow, palette.moon, 12, 0.7)
+placeTrialPrompt(trialChest, "Сундук двух стражей", "Забрать награду")
+
+for i = 1, 8 do
+    local angle = math.pi * 2 * i / 8
+    local pos = chamberCenter + Vector3.new(math.cos(angle) * 13, 0.5, math.sin(angle) * 13)
+    local rune = makePart(
+        chamber, "ForestTrialRune", Vector3.new(1.4, 0.2, 1.4),
+        CFrame.new(pos), i % 2 == 0 and palette.moon or palette.gold,
+        Enum.Material.Neon
+    )
+    rune.CanCollide = false
+end
+
 -- Let the gameplay bootstrap wait until the collectible models are fully decorated.
 local ready = ReplicatedStorage:FindFirstChild("GiantbackVisualsReady") or Instance.new("BoolValue")
 ready.Name = "GiantbackVisualsReady"
