@@ -61,13 +61,13 @@ def material(name, color, roughness=0.72, metallic=0.0, soft_fur=False):
         # not noisy scales. Keep bump subtle so the low-poly silhouette stays clean.
         noise = nodes.new("ShaderNodeTexNoise")
         noise.name = name + "_SoftFurNoise"
-        noise.inputs["Scale"].default_value = 28.0
+        noise.inputs["Scale"].default_value = 16.0
         noise.inputs["Detail"].default_value = 2.0
         noise.inputs["Roughness"].default_value = 0.62
         bump = nodes.new("ShaderNodeBump")
         bump.name = name + "_SoftFurBump"
-        bump.inputs["Strength"].default_value = 0.075
-        bump.inputs["Distance"].default_value = 0.014
+        bump.inputs["Strength"].default_value = 0.022
+        bump.inputs["Distance"].default_value = 0.006
         links.new(noise.outputs["Fac"], bump.inputs["Height"])
         links.new(bump.outputs["Normal"], shader.inputs["Normal"])
     else:
@@ -79,8 +79,8 @@ def make_palette():
     return {
         # Richer storybook orange and warm ivory: the old values rendered too muted
         # under neutral preview lighting. Keep the Fox brief's warm, restrained palette.
-        "fox_orange": material("fox_orange", (0.78, 0.12, 0.022), 0.82, soft_fur=True),
-        "cream": material("cream", (0.92, 0.73, 0.47), 0.86, soft_fur=True),
+        "fox_orange": material("fox_orange", (0.90, 0.055, 0.004), 0.90, soft_fur=True),
+        "cream": material("cream", (0.82, 0.56, 0.28), 0.92, soft_fur=True),
         "ear_pink": material("ear_pink", (0.66, 0.19, 0.16), 0.88),
         "dark": material("dark", (0.08, 0.06, 0.05), 0.28),
         "white": material("white", (1.0, 0.98, 0.87), 0.22),
@@ -378,15 +378,15 @@ def create_fox(p):
     # Head silhouette: broad forehead, soft cheeks and a shorter, friendlier muzzle.
     sculpted_head("FoxHead", (0, 1.73, -0.62), (0.62, 0.61, 0.56), p["fox_orange"], 64, 40)
     lofted_muzzle("FoxMuzzle", [(-1.385, 1.42, 0.075, 0.065), (-1.33, 1.42, 0.20, 0.13), (-1.23, 1.43, 0.31, 0.19), (-1.11, 1.44, 0.36, 0.215), (-1.015, 1.45, 0.29, 0.17), (-0.985, 1.45, 0.18, 0.11)], p["cream"])
-    # Tapered cheek tufts follow the muzzle silhouette instead of reading as round add-on balls.
+    # Compact cheek tufts blend into the muzzle; avoid long whisker-like spikes.
     curved_plume("CheekFluff_L",
-        [(-0.22, 1.36, -1.015), (-0.39, 1.42, -1.035),
-         (-0.56, 1.49, -0.965), (-0.66, 1.57, -0.865)],
-        [0.012, 0.095, 0.082, 0.008], p["cream"], sides=20, steps_per_segment=7)
+        [(-0.20, 1.37, -1.005), (-0.31, 1.42, -1.025),
+         (-0.43, 1.48, -0.975), (-0.50, 1.53, -0.905)],
+        [0.010, 0.065, 0.050, 0.006], p["cream"], sides=20, steps_per_segment=7)
     curved_plume("CheekFluff_R",
-        [(0.22, 1.36, -1.015), (0.39, 1.42, -1.035),
-         (0.56, 1.49, -0.965), (0.66, 1.57, -0.865)],
-        [0.012, 0.095, 0.082, 0.008], p["cream"], sides=20, steps_per_segment=7)
+        [(0.20, 1.37, -1.005), (0.31, 1.42, -1.025),
+         (0.43, 1.48, -0.975), (0.50, 1.53, -0.905)],
+        [0.010, 0.065, 0.050, 0.006], p["cream"], sides=20, steps_per_segment=7)
     # Layered swept forelock tufts break the smooth cap silhouette.
     curved_plume("ForeheadTuft",
         [(-0.13, 2.16, -0.93), (-0.09, 2.27, -0.91),
@@ -567,12 +567,12 @@ def add_review_camera(objects):
     bpy.context.scene.world = world
     world.use_nodes = True
     world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.16, 0.19, 0.23, 1)
-    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.55
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.32
 
     for name, offset, power, size in (
-        ("Key", (1.8, 2.8, -2.0), 520, 3.2),
-        ("Fill", (-2.0, 1.0, -1.0), 260, 2.8),
-        ("Rim", (0.0, 2.0, 2.8), 380, 2.4),
+        ("Key", (1.8, 2.8, -2.0), 250, 3.2),
+        ("Fill", (-2.0, 1.0, -1.0), 120, 2.8),
+        ("Rim", (0.0, 2.0, 2.8), 180, 2.4),
     ):
         data = bpy.data.lights.new(name, "AREA")
         data.energy = power
