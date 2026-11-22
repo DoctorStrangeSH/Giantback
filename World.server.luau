@@ -87,6 +87,8 @@ local resourceNodeIds = {
     DuskIron02 = true,
     CrystalGrottoLumen01 = true,
     CrystalGrottoLumen02 = true,
+    CrystalGrottoPrismVein01 = true,
+    CrystalGrottoPrismVein02 = true,
 }
 local sessions = {}
 local createPersonalCity
@@ -2305,6 +2307,18 @@ local resourceDefinitions = {
         kind = "renewable", respawnSeconds = 900,
     },
     {
+        key = "CrystalGrottoPrismVein01", amount = 2, requiredTool = "Pickaxe", hitsRequired = 5,
+        verb = "Добыть скрытый кристалл", itemId = "CrystalShard", displayName = "Скрытая призменная жила",
+        area = "CrystalGrotto", offset = Vector3.new(-8, 0, -10), visual = "crystal",
+        kind = "renewable", respawnSeconds = 900, hiddenByPrismSense = true,
+    },
+    {
+        key = "CrystalGrottoPrismVein02", amount = 2, requiredTool = "Pickaxe", hitsRequired = 5,
+        verb = "Добыть скрытый кристалл", itemId = "CrystalShard", displayName = "Скрытая призменная жила",
+        area = "CrystalGrotto", offset = Vector3.new(8, 0, -10), visual = "crystal",
+        kind = "renewable", respawnSeconds = 900, hiddenByPrismSense = true,
+    },
+    {
         key = "DuskIron02", amount = 2, requiredTool = "Pickaxe", hitsRequired = 5,
         verb = "Добыть железо", itemId = "IronOre", displayName = "Железная жила",
         area = "Dusk", offset = Vector3.new(42, 0, -29), visual = "ore",
@@ -2343,10 +2357,14 @@ local function spawnResource(def)
     )
     local model, anchor = createResourceFlower(def, position)
     model.Parent = folder
+    model:SetAttribute("PrismSenseHidden", def.hiddenByPrismSense == true)
 
-    prompt(anchor, def.displayName, def.verb or "Собрать", function(player)
+    local resourcePrompt = prompt(anchor, def.displayName, def.verb or "Собрать", function(player)
         local session = sessions[player]
         if not session or not player:GetAttribute("Ready") then return end
+        if def.hiddenByPrismSense and (tonumber(player:GetAttribute("PrismSenseUntil")) or 0) < os.clock() then
+            return tip(player, "Кристальная жила скрыта. Попроси светляка применить Призменное чутьё.")
+        end
         if def.area == "CrystalGrotto" then
             local character = player.Character
             local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -2422,6 +2440,16 @@ local function spawnResource(def)
             tip(player, "Предмет получен. Сохранение временно задерживается и будет повторено автоматически.")
         end
     end)
+
+    if def.hiddenByPrismSense then
+        for _, descendant in model:GetDescendants() do
+            if descendant:IsA("BasePart") then
+                descendant:SetAttribute("PrismSenseOriginalTransparency", descendant.Transparency)
+                descendant.Transparency = 1
+            end
+        end
+        resourcePrompt.Enabled = false
+    end
 end
 
 for _, definition in resourceDefinitions do
