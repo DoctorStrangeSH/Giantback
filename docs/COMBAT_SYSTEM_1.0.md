@@ -174,3 +174,9 @@ Studio acceptance remains required for rig animation, navigation around the arri
 The reward chamber now contains `RootvaultSealKeeper01`, a 360-HP boss with a server-driven three-phase progression. Phase 1 uses 14 damage / 3.1s cooldown / 1.15s telegraph. At 60% health it advances once to phase 2 (9 speed, 18 damage, 2.5s cooldown, 0.9s telegraph); at 25% it advances once to phase 3 (12 speed, 22 damage, 1.9s cooldown, 0.65s telegraph). The server changes movement and attack values from Humanoid.HealthChanged; clients cannot select or trigger phases.
 
 Each contributor receives a persistent `RootvaultSigil` on first defeat. The Rootvault chest now refuses claims until that player's own saved `RootvaultSealKeeper01` encounter is complete. This is a first boss slice using the existing telegraphed melee pattern; unique area attacks, animations, and visual phase effects remain NOT DONE pending later iterations and Studio review.
+
+## 18. Rootvault Seal Keeper ground slam
+
+In phases 2 and 3, every second boss attack becomes a server-authoritative area ground slam. The boss publishes `BossAttack=GroundSlam` and `CombatState=BossSlamTelegraph` during the warning window, then checks every ready player inside the Rootvault combat region. Players outside the configured radius are safe; a correctly timed dodge avoids the hit; facing the boss while blocking applies the existing block reduction. Phase 2 uses radius 15 and 16 damage; phase 3 uses radius 19 and 22 damage. The client cannot provide target, radius, damage, or timing values.
+
+The current visual signal is exposed through replicated attributes for later animation/VFX binding. A dedicated expanding floor decal/ring, impact animation, and Studio balance pass remain NOT DONE.
