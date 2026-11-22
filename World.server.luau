@@ -2662,7 +2662,7 @@ local crystalHeart = crystalGrotto and crystalGrotto:FindFirstChild("CrystalGrot
 local crystalGrottoInside = {}
 
 if crystalEntrance and crystalArrival then
-    prompt(crystalEntrance, "Кристальная пещера", "Исследовать", function(player)
+    connectTrialPrompt(crystalEntrance, function(player)
         local session = sessions[player]
         local character = player.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -2682,7 +2682,7 @@ if crystalEntrance and crystalArrival then
 end
 
 if crystalReturn and crystalEntrance then
-    prompt(crystalReturn, "Выход из пещеры", "Вернуться в долину", function(player)
+    connectTrialPrompt(crystalReturn, function(player)
         local session = sessions[player]
         local character = player.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -2696,7 +2696,7 @@ if crystalReturn and crystalEntrance then
 end
 
 if crystalHeart then
-    prompt(crystalHeart, "Сердце кристальной пещеры", "Собрать осколок", function(player)
+    connectTrialPrompt(crystalHeart, function(player)
         local session = sessions[player]
         local character = player.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
