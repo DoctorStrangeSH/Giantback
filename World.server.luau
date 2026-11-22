@@ -1504,6 +1504,8 @@ local function spawnResource(def)
             nodeId = def.key,
             unique = def.kind == "unique",
             readyAt = nextReadyAt,
+            itemId = def.itemId,
+            amount = amount,
         })
         tip(player, "Получено: " .. def.displayName .. " ×" .. tostring(amount))
 
