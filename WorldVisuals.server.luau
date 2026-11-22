@@ -1916,6 +1916,61 @@ sealKeeper.PrimaryPart = keeperRoot
 keeperRoot:SetNetworkOwner(nil)
 CollectionService:AddTag(sealKeeper, "GiantbackEnemy")
 
+-- Two dormant seal fragments awaken only when the keeper reaches phase three.
+for index, side in {-1, 1} do
+    local minion = Instance.new("Model")
+    minion.Name = "RootvaultSealMinion0" .. tostring(index)
+    minion:SetAttribute("EnemyId", minion.Name)
+    minion:SetAttribute("EncounterId", "RootvaultSealMinion")
+    minion:SetAttribute("RegionId", "Rootvault")
+    minion:SetAttribute("ArchetypeId", "SealMinion")
+    minion:SetAttribute("AggroRange", 28)
+    minion:SetAttribute("AttackRange", 4)
+    minion:SetAttribute("AttackDamage", 6)
+    minion:SetAttribute("AttackCooldown", 1.7)
+    minion:SetAttribute("TelegraphSeconds", 0.55)
+    minion:SetAttribute("PathRefreshSeconds", 0.7)
+    minion:SetAttribute("Activated", false)
+    minion.Parent = rootvault
+
+    local spawn = keeperSpawn + Vector3.new(side * 8, 0, 7)
+    local minionRoot = makeEnemyPart(minion, "HumanoidRootPart", Vector3.new(1.5, 1.8, 1.2), CFrame.lookAt(spawn, keeperSpawn), palette.ink)
+    minionRoot.Transparency = 1
+    minionRoot.Massless = false
+    local minionTorso = makeEnemyPart(minion, "Torso", Vector3.new(1.5, 1.7, 1.0), minionRoot.CFrame, palette.stone, Enum.Material.Slate)
+    local minionHead = makeEnemyPart(minion, "Head", Vector3.new(1.05, 1.0, 0.95), minionRoot.CFrame * CFrame.new(0, 1.25, 0), palette.mossLight, Enum.Material.Slate, Enum.PartType.Ball)
+    local minionRightArm = makeEnemyPart(minion, "Right Arm", Vector3.new(0.45, 1.2, 0.5), minionRoot.CFrame * CFrame.new(0.9, 0, 0), palette.stone, Enum.Material.Slate)
+    local minionLeftArm = makeEnemyPart(minion, "Left Arm", Vector3.new(0.45, 1.2, 0.5), minionRoot.CFrame * CFrame.new(-0.9, 0, 0), palette.stone, Enum.Material.Slate)
+    local minionRightLeg = makeEnemyPart(minion, "Right Leg", Vector3.new(0.5, 1.15, 0.55), minionRoot.CFrame * CFrame.new(0.35, -1.35, 0), palette.bark, Enum.Material.Wood)
+    local minionLeftLeg = makeEnemyPart(minion, "Left Leg", Vector3.new(0.5, 1.15, 0.55), minionRoot.CFrame * CFrame.new(-0.35, -1.35, 0), palette.bark, Enum.Material.Wood)
+    joinRig(minion, "RootJoint", minionRoot, minionTorso, CFrame.new(), CFrame.new())
+    joinRig(minion, "Neck", minionTorso, minionHead, CFrame.new(0, 0.85, 0), CFrame.new(0, -0.48, 0))
+    joinRig(minion, "Right Shoulder", minionTorso, minionRightArm, CFrame.new(0.75, 0.45, 0), CFrame.new(0, 0.45, 0))
+    joinRig(minion, "Left Shoulder", minionTorso, minionLeftArm, CFrame.new(-0.75, 0.45, 0), CFrame.new(0, 0.45, 0))
+    joinRig(minion, "Right Hip", minionTorso, minionRightLeg, CFrame.new(0.35, -0.75, 0), CFrame.new(0, 0.58, 0))
+    joinRig(minion, "Left Hip", minionTorso, minionLeftLeg, CFrame.new(-0.35, -0.75, 0), CFrame.new(0, 0.58, 0))
+
+    local shard = makeEnemyPart(minion, "DormantSealShard", Vector3.new(0.55, 0.55, 0.25), minionTorso.CFrame * CFrame.new(0, 0.1, -0.58), palette.lilac, Enum.Material.Neon, Enum.PartType.Ball)
+    local shardWeld = Instance.new("WeldConstraint")
+    shardWeld.Part0 = minionTorso
+    shardWeld.Part1 = shard
+    shardWeld.Parent = shard
+
+    local minionHumanoid = Instance.new("Humanoid")
+    minionHumanoid.DisplayName = "Осколок печати"
+    minionHumanoid.MaxHealth = 52
+    minionHumanoid.Health = 52
+    minionHumanoid.WalkSpeed = 13
+    minionHumanoid.JumpPower = 0
+    minionHumanoid.BreakJointsOnDeath = false
+    minionHumanoid.RequiresNeck = true
+    minionHumanoid.Parent = minion
+    minion.PrimaryPart = minionRoot
+    minionRoot:SetNetworkOwner(nil)
+    CollectionService:AddTag(minion, "GiantbackDormantBossMinion")
+end
+
+
 -- Let the gameplay bootstrap wait until the collectible models are fully decorated.
 local ready = ReplicatedStorage:FindFirstChild("GiantbackVisualsReady") or Instance.new("BoolValue")
 ready.Name = "GiantbackVisualsReady"
