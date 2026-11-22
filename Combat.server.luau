@@ -31,7 +31,21 @@ local BLOCK_DAMAGE_MULTIPLIER = 0.25
 
 local ALLOWED_REGIONS = { GroveTraining = true, DuskTraining = true, Rootvault = true }
 local ALLOWED_WEAPONS = { SwordShield = true }
-local REWARD_ENCOUNTERS = { GroveGrunt01 = true, GroveScout02 = true, RootvaultSentinel01 = true, RootvaultStalker01 = true, RootvaultSealKeeper01 = true }
+local KNOWN_ENCOUNTERS = {
+    GroveGrunt01 = true,
+    GroveScout02 = true,
+    RootvaultSentinel01 = true,
+    RootvaultStalker01 = true,
+    RootvaultSealKeeper01 = true,
+    RootvaultSealMinion = true,
+}
+local REWARD_ENCOUNTERS = {
+    GroveGrunt01 = true,
+    GroveScout02 = true,
+    RootvaultSentinel01 = true,
+    RootvaultStalker01 = true,
+    RootvaultSealKeeper01 = true,
+}
 
 local remote = ReplicatedStorage:FindFirstChild("CombatAction")
 if remote and not remote:IsA("RemoteEvent") then
@@ -182,6 +196,27 @@ local function resolveEnemyReward(enemy, entry)
     end
 end
 
+local function activateRootvaultBossMinions()
+    local activated = 0
+    for _, minion in CollectionService:GetTagged("GiantbackDormantBossMinion") do
+        if minion:IsA("Model") and minion:IsDescendantOf(Workspace)
+            and minion:GetAttribute("RegionId") == "Rootvault"
+            and minion:GetAttribute("Activated") ~= true then
+            minion:SetAttribute("Activated", true)
+            minion:SetAttribute("CombatState", "Idle")
+            for _, descendant in minion:GetDescendants() do
+                if descendant:IsA("BasePart") then
+                    descendant.Transparency = descendant.Name == "HumanoidRootPart" and 1 or 0
+                end
+            end
+            CollectionService:RemoveTag(minion, "GiantbackDormantBossMinion")
+            CollectionService:AddTag(minion, "GiantbackEnemy")
+            activated += 1
+        end
+    end
+    return activated
+end
+
 local function registerEnemy(enemy)
     if not enemy:IsA("Model") or enemies[enemy] then return end
     local humanoid = enemy:FindFirstChildOfClass("Humanoid")
@@ -192,7 +227,7 @@ local function registerEnemy(enemy)
         warn("GiantbackEnemy needs a Humanoid and HumanoidRootPart:", enemy:GetFullName())
         return
     end
-    if type(encounterId) ~= "string" or not REWARD_ENCOUNTERS[encounterId]
+    if type(encounterId) ~= "string" or not KNOWN_ENCOUNTERS[encounterId]
         or not ALLOWED_REGIONS[regionId] then
         warn("GiantbackEnemy has an unknown EncounterId or RegionId:", enemy:GetFullName())
         return
@@ -235,6 +270,11 @@ local function registerEnemy(enemy)
             entry.pathRefreshSeconds = math.clamp(tonumber(enemy:GetAttribute(prefix .. "PathRefreshSeconds")) or entry.pathRefreshSeconds, 0.5, 3)
             enemy:SetAttribute("BossPhase", nextPhase)
             enemy:SetAttribute("CombatState", "PhaseTransition")
+            if nextPhase == 3 and not entry.minionsSummoned then
+                entry.minionsSummoned = true
+                local activated = activateRootvaultBossMinions()
+                enemy:SetAttribute("SummonedMinions", activated)
+            end
         end)
     else
         humanoid.HealthChanged:Connect(function(health)
