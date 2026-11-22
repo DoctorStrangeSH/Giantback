@@ -64,6 +64,18 @@ The next generator revision preserves the accepted orange palette and tail/face 
 
 These are source-level corrections, not visual acceptance. A new Blender render must confirm the paws read as integrated orange feet and the fur surface is smoother. Do not alter the approved orange RGB direction unless the new render proves it necessary.
 
+## 4.5 Visual review — artifact #229
+
+Artifact #229 successfully generated and passed the technical Blender gate (17 groups, UV/material/mesh checks, four review views). Manual review of the actual PNGs confirms the orange coat and large tail read clearly. The paws are now orange rather than cream, but a visible cuff-like seam remains where each paw overlaps its leg. Three forehead tufts read as small horns/bumps, and the brows are too heavy for the friendly face. The torso-to-leg transitions still look like separate pieces.
+
+Corrective source pass after #229:
+- shrink the three forelock tufts substantially so they become a subtle swept fringe rather than raised knobs;
+- halve the brow plume radii to soften the expression;
+- move the orange paw forms slightly upward and increase their vertical depth to hide the overlap seam;
+- preserve coat hue, eye proportions, ears, muzzle and tail.
+
+This is a targeted silhouette cleanup, not final-art approval. A fresh render must confirm the changes before further anatomy work or Studio import.
+
 ## 4.4 Visual review — artifact #187
 
 Artifact #187 was generated with the Standard color transform and lower studio lighting. The orange coat now reads clearly as fox orange in the front, side and 3/4 views; the previous salmon/pink cast is substantially corrected. The cream muzzle and tail tip remain readable, the large tail is a strong signature silhouette, and the cheek pads no longer dominate as detached dots. **Color direction is accepted provisionally.**
