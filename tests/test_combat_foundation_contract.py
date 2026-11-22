@@ -276,6 +276,16 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('Phase3SlamRadius", 19', VISUALS)
         self.assertIn('Phase3SlamDamage", 22', VISUALS)
 
+    def test_boss_ground_slam_has_client_only_expanding_floor_warning(self):
+        self.assertIn('local function showBossSlamTelegraph(enemy)', CLIENT)
+        self.assertIn('Workspace:Raycast(root.Position, Vector3.new(0, -24, 0), rayParams)', CLIENT)
+        self.assertIn('marker.Name = "LocalBossSlamTelegraph"', CLIENT)
+        self.assertIn('marker.Material = Enum.Material.Neon', CLIENT)
+        self.assertIn('TweenInfo.new(warning, Enum.EasingStyle.Quad', CLIENT)
+        self.assertIn('enemy:GetAttributeChangedSignal("BossAttack")', CLIENT)
+        self.assertIn('enemy:GetAttribute("BossAttack") == "GroundSlam"', CLIENT)
+        self.assertIn('CollectionService:GetInstanceAddedSignal("GiantbackEnemy")', CLIENT)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
