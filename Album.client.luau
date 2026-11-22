@@ -654,7 +654,8 @@ end)
 -- to other players, but is hidden locally once this player has adopted that companion.
 local models = {}
 local animationStates = {}
-local companionActivity = {}
+local CompanionActivity = require(storage:WaitForChild("CompanionActivity"))
+local companionActivity = CompanionActivity.new()
 local encounterLocations = {
     Fox = "Grove",
     Moth = "Dusk",
@@ -1213,48 +1214,9 @@ local function follow(dt)
                 playCompanionPettingBurst(model, id, bondStage)
             end
 
-            local activity = companionActivity[owner]
-            if not activity or activity.companionId ~= id then
-                local personality = owner:GetAttribute("Companion_" .. id .. "_Personality")
-                local curiosityWindows = {
-                    ["Любопытный"] = {5, 10},
-                    ["Озорной"] = {6, 11},
-                    ["Смелый"] = {9, 15},
-                    ["Застенчивый"] = {15, 23},
-                }
-                local window = curiosityWindows[personality] or {7, 14}
-                local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_" .. id .. "_BondStage")) or 0, 0, 4)
-                local minDelay = math.max(4, window[1] - bondStage * 1.5)
-                local maxDelay = math.max(minDelay + 1, window[2] - bondStage * 2)
-                activity = {
-                    companionId = id,
-                    idleSince = now,
-                    nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay)),
-                }
-                companionActivity[owner] = activity
-            end
             local moving = humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.08
-            if moving then
-                activity.idleSince = now
-                activity.nextCuriosityAt = now + math.random(9, 16)
-            elseif owner == player and id == "Fox" and now >= (activity.nextCuriosityAt or now + 10) then
-                foxSniffUntil = os.clock() + 2.2
-                local personality = owner:GetAttribute("Companion_Fox_Personality")
-                local curiosityWindows = {
-                    ["Любопытный"] = {7, 12},
-                    ["Озорной"] = {8, 14},
-                    ["Смелый"] = {12, 18},
-                    ["Застенчивый"] = {20, 29},
-                }
-                local window = curiosityWindows[personality] or {13, 23}
-                local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_Fox_BondStage")) or 0, 0, 4)
-                local minDelay = math.max(5, window[1] - bondStage * 1.5)
-                local maxDelay = math.max(minDelay + 1, window[2] - bondStage * 2)
-                activity.nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))
-            end
-            local idleSeconds = now - activity.idleSince
-            local resting = not moving and idleSeconds >= 12
-            local sleeping = not moving and idleSeconds >= 45
+            local resting, sleeping, sniff = companionActivity.update(owner, id, now, moving, owner == player)
+            if sniff then foxSniffUntil = os.clock() + 2.2 end
             setSleepIndicator(model, sleeping)
 
             local state = animationStates[model]
@@ -1296,7 +1258,7 @@ player:GetAttributeChangedSignal("Companion"):Connect(function()
 end)
 
 Players.PlayerRemoving:Connect(function(owner)
-    companionActivity[owner] = nil
+    companionActivity.forget(owner)
     if models[owner] then
         animationStates[models[owner]] = nil
         setSleepIndicator(models[owner], false)
