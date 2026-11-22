@@ -43,10 +43,12 @@ Recursive tree/blob comparison across all five branches found:
 - [x] Compared commit divergence against main.
 - [x] Compared recursive trees and blob SHAs.
 - [x] Identified canonical base and integration source.
+- [x] Re-ran latest cozy-world CI after adding this audit: Validate Giantback #1195 PASS; Fox Hero visual acceptance #314 PASS; Lunar Moth visual review #95 PASS.
+- [x] Confirmed integration v2 validation run #1182 PASS (183 contract tests, place build and embedded-script checks as recorded in PR #4).
 - [ ] Reapply integration v2 gameplay onto latest cozy-world.
 - [ ] Resolve conflicts and merge consolidated result into main.
 - [ ] Remove obsolete branches after verifying all unique work is preserved.
 
 ## Why merge/deletion was not forced
 
-Both open PRs currently report dirty merge states. Integration v2 is materially behind the current cozy-world branch, and shared gameplay files diverged. Blind merging or branch deletion could discard newer farm/world work or the only copy of gameplay changes. The safe next action is a conflict-resolved integration commit followed by CI, not force-merging or deleting refs.
+Both open PRs currently report dirty merge states. The audit commit and latest cozy-world branch checks are green (#1195, #314, #95). Integration v2's own CI run #1182 is also green, but a passing branch build does not resolve its 85-commit divergence or shared-file conflicts. Integration v2 is materially behind the current cozy-world branch, and shared gameplay files diverged. Blind merging or branch deletion could discard newer farm/world work or the only copy of gameplay changes. The safe next action is a conflict-resolved integration commit followed by CI, not force-merging or deleting refs.
