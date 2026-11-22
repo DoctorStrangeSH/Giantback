@@ -176,6 +176,7 @@ local rejectionMessages = {
     CompanionSkillCooldown = "Способность питомца восстанавливается",
     CompanionSkillUnavailable = "Сейчас питомец не может помочь",
     CompanionNoTarget = "Лисёнок не видит противника рядом",
+    PrismSenseRequiresGrotto = "Призменное чутьё работает только внутри Кристальной пещеры",
     CompanionNoOneToHeal = "Рядом никому не требуется лечение",
 }
 
@@ -263,6 +264,10 @@ remote.OnClientEvent:Connect(function(message, data)
             showFeedback("ЛИСЁНОК · " .. tostring(data.damage or 0) .. " УРОНА", Color3.fromRGB(244, 190, 111))
             local targetRoot = findEnemyRoot(data.targetId) or (player.Character and player.Character:FindFirstChild("HumanoidRootPart"))
             showCompanionImpact(targetRoot, Color3.fromRGB(244, 178, 94), 7)
+        elseif data.companionId == "CrystalWisp" then
+            showFeedback("КРИСТАЛЬНЫЙ СВЕТЛЯК · ПРИЗМЕННОЕ ЧУТЬЁ", Color3.fromRGB(187, 160, 255))
+            local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            showCompanionImpact(root, Color3.fromRGB(187, 160, 255), 11)
         elseif data.companionId == "Moth" then
             showFeedback("ЛУННАЯ МОЛЬ · ЛЕЧЕНИЕ ×" .. tostring(data.healedCount or 0), Color3.fromRGB(190, 164, 232))
             if type(data.healedUserIds) == "table" then
