@@ -264,6 +264,8 @@ jobs:
               "Enum.KeyCode.ButtonB",
               "ContextActionService:BindAction(",
               "ENEMY_TELEGRAPH_SECONDS = 0.85",
+              "PathfindingService:CreatePath(ENEMY_PATH_AGENT)",
+              "ENEMY_PATH_REFRESH_SECONDS = 1.15",
               "GiantbackGrantCombatReward",
               "old.completedCombatEncounters = savedCombatEncounters",
               "CombatRegionRequired",
