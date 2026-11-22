@@ -6,8 +6,11 @@
 - [x] Add server-side SelectCrop action; selection is accepted only for known crops with available seed.
 - [x] Add per-plot in-flight guard to prevent overlapping harvest/plant requests.
 - [x] Add regression tests for registry, inventory, selection, timestamps and strawberry regrowth.
-- [ ] Run Python test suite and Roblox place validation; fix any failures before considering this milestone validated.
-- [ ] Add distinct crop-specific growth meshes/stages and a player-facing seed selector UI.
+- [x] Add player-facing four-crop seed selector to the Farm tab, showing seed counts, growth times and selected culture.
+- [x] Show the actual crop name and live remaining growth time on each plot card.
+- [x] Persist the selected crop in the player's island profile and restore it after rejoin.
+- [ ] Add distinct crop-specific growth meshes/stages (current visual crop remains a shared placeholder).
+- [ ] Complete Python contract suite and Roblox place validation after the latest UI/persistence changes.
 - [ ] Studio playtest save/rejoin, offline growth, two rapid harvest requests and all four crop types.
 
 ## Farm Plots — Readability visual pass
