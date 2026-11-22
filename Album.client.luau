@@ -855,6 +855,57 @@ local function ensureHarvestDamageOverlay(node, nodeId, hits, maximum)
     end
 end
 
+local function playResourceRewardPickup(payload)
+    if type(payload) ~= "table" then return end
+    local itemId = payload.itemId
+    if itemId ~= "Wood" and itemId ~= "Stone" then return end
+    local node = findResourceNode(payload.nodeId)
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not node or not root then return end
+
+    local origin = node:GetPivot().Position + Vector3.new(0, 1.1, 0)
+    local count = math.clamp(math.floor(tonumber(payload.amount) or 1), 1, 5)
+    for index = 1, count do
+        local pickup = Instance.new("Part")
+        pickup.Name = "LocalResourceReward"
+        pickup.Anchored = true
+        pickup.CanCollide = false
+        pickup.CanTouch = false
+        pickup.CanQuery = false
+        pickup.CastShadow = false
+        pickup.Material = itemId == "Wood" and Enum.Material.Wood or Enum.Material.Slate
+        pickup.Color = itemId == "Wood" and Color3.fromRGB(151, 101, 63) or Color3.fromRGB(151, 164, 169)
+        pickup.Shape = itemId == "Wood" and Enum.PartType.Cylinder or Enum.PartType.Block
+        pickup.Size = itemId == "Wood" and Vector3.new(0.34, 0.72, 0.34) or Vector3.new(0.48, 0.42, 0.46)
+        local angle = (index - 1) * math.pi * 2 / count
+        local spread = Vector3.new(math.cos(angle) * 0.5, 0.15 + index * 0.04, math.sin(angle) * 0.5)
+        pickup.CFrame = CFrame.new(origin + spread) * CFrame.Angles(math.rad(20 + index * 13), angle, math.rad(18))
+        pickup.Parent = workspace
+
+        local start = pickup.CFrame
+        local bounce = TweenService:Create(pickup, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            CFrame = start + Vector3.new(0, 0.65 + index * 0.06, 0),
+        })
+        bounce:Play()
+        task.delay(0.2, function()
+            if not pickup.Parent then return end
+            local currentRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            if not currentRoot then pickup:Destroy() return end
+            local destination = currentRoot.Position + Vector3.new(0, 1.1, 0)
+            local collect = TweenService:Create(pickup, TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                CFrame = CFrame.new(destination),
+                Transparency = 1,
+                Size = pickup.Size * 0.35,
+            })
+            collect:Play()
+            collect.Completed:Once(function()
+                if pickup.Parent then pickup:Destroy() end
+            end)
+        end)
+    end
+end
+
 local function playResourceBreakFeedback(nodeId)
     local node = findResourceNode(nodeId)
     if not node then return end
@@ -1187,6 +1238,7 @@ event.OnClientEvent:Connect(function(message, payload)
         end
         return
     elseif message == "ResourcePicked" and type(payload) == "table" then
+        playResourceRewardPickup(payload)
         playResourceBreakFeedback(payload.nodeId)
         clearResourceHitFeedback(payload.nodeId)
         applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
