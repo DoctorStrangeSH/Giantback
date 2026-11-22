@@ -36,7 +36,7 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn('curve.splines.new("BEZIER")', source)
         self.assertIn('curve.bevel_depth = 0.022', source)
         self.assertIn('def crescent(name, center, side, material):', source)
-        self.assertIn('Moon inlay thickness', source)
+        self.assertIn('vertices = points + [(x, y, z + thickness) for x, y, z in points]', source)
         self.assertIn('WingMoon" + wing_name + suffix', source)
         self.assertNotIn('WingMoonGold', source)
         self.assertIn('def moth_leg(name, side, start_y, end_y, material):', source)
