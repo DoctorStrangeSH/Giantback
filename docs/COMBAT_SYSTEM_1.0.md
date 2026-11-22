@@ -136,3 +136,11 @@ Implemented in `Combat.server.luau`:
 - A visible `БЕРЕГИСЬ!` warning, temporary highlight and raised club pose appear during the server's 0.85-second enemy telegraph; the swing pose plays during recovery. The NPC is oriented toward the arena entrance and keeps server network ownership.
 - The client displays concise Russian feedback for successful hits and rejected actions (cooldowns, arena boundary, load state and request rate) without exposing server-owned values.
 - Studio acceptance is still required: verify that the NPC walks and attacks reliably, the hitbox aligns, rewards persist after reconnect, and two or more players cannot duplicate the reward.
+
+## 12. Первый лесной тайник после боя — staged
+
+После серверно подтверждённых побед над Корневым стражем и Мшистым разведчиком игрок получает доступ к небольшой скрытой комнате `ForestTrialChamber`. Портал на тренировочной арене выполняет проверку готовности, состояния персонажа, дистанции до взаимодействия и двух отметок победы непосредственно на сервере.
+
+Внутри находится сундук, который один раз за профиль выдаёт `StarShard ×1` через существующий механизм `GiantbackGrantCombatReward`. Повторная выдача блокируется сохранённой отметкой `GroveTrialChest01`, а конкурентные обращения к сундуку в рамках сессии дополнительно защищены `trialBusy`. Выход ведёт назад к арене. Оба портала и комната создаются `WorldVisuals.server.luau`.
+
+**Статус:** серверный функционал и сборка добавлены в PR #7. Это короткая наградная комната, а **не** полноценное процедурное подземелье, головоломка или босс. Проверка геометрии, коллизий, выхода и сохранения в Roblox Studio остаётся NOT DONE.
