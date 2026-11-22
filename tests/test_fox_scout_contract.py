@@ -93,7 +93,7 @@ class FoxScoutContractTests(unittest.TestCase):
         self.assertIn("foxSniffUntil", ALBUM)
         self.assertIn('part.Name == "Muzzle" and sniffing', ALBUM)
         self.assertIn("sniffing and 9 or 4.2", ALBUM)
-        self.assertIn("sniffing and 0.16 or 0.055", ALBUM)
+        self.assertIn("sniffing and 0.16 or petting and 0.11 or 0.055", ALBUM)
 
 
     def test_fox_scent_trail_is_local_and_only_shown_for_the_equipped_fox(self):
