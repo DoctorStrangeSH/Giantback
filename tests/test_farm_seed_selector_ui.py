@@ -26,7 +26,7 @@ class FarmSeedSelectorUiTests(unittest.TestCase):
     def test_selected_crop_is_reflected_in_farm_plot_cards(self):
         self.assertIn('player:GetAttribute("Farm_SelectedCrop")', HUD)
         self.assertIn('stateText = "Свободна — выбрано: "', HUD)
-        self.assertIn('choose.Text = 10', HUD)
+        self.assertIn('choose.TextSize = 10', HUD)
 
     def test_farm_summary_lists_all_harvested_crops(self):
         self.assertIn("local harvestSummary = {}", HUD)
