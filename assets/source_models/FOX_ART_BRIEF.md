@@ -157,3 +157,8 @@ A dedicated GitHub Actions workflow now runs the hero generator with Blender 4.2
 ## Blender topology correction
 
 The first real Blender visual-review run exposed two zero-area faces in the FoxHead pole caps. The head generator now creates one vertex per pole and triangle fans to the first/last latitude rings, eliminating coincident pole vertices. Source tests protect this topology strategy. The fix is not considered visually accepted until the next Blender run completes and the four renders are inspected.
+
+
+## Headless render reliability
+
+The visual-review workflow now serializes renders per branch, cancels superseded runs, forces software OpenGL with surfaceless EGL, and uses a 20-minute timeout. The currently observed render has not produced a downloadable artifact yet; visual approval remains blocked until the PNG views are available and inspected.
