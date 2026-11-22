@@ -1,0 +1,34 @@
+from pathlib import Path
+import unittest
+
+
+ROOT = Path(__file__).resolve().parents[1]
+ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+
+
+class CompanionGrowthContractTests(unittest.TestCase):
+    def test_growth_stages_are_bounded_and_level_gated(self):
+        self.assertIn("local function companionGrowthForLevel(level)", ALBUM)
+        self.assertIn('return "Взрослый", 1.1, 3', ALBUM)
+        self.assertIn('return "Подросток", 1, 2', ALBUM)
+        self.assertIn('return "Малыш", 0.9, 1', ALBUM)
+        self.assertIn("level = math.clamp(math.floor(tonumber(level) or 1), 1, 5)", ALBUM)
+
+    def test_world_companion_models_apply_and_refresh_growth_scale(self):
+        self.assertIn("local function applyCompanionGrowth(model, owner, companionId)", ALBUM)
+        self.assertIn('model:GetAttribute("AppliedGrowthStage") == stageId', ALBUM)
+        self.assertIn("model:ScaleTo(scale)", ALBUM)
+        self.assertIn('model:SetAttribute("GrowthStageName", stageName)', ALBUM)
+        self.assertIn("captureAnimation(model, companionId, false, owner == player)", ALBUM)
+        self.assertIn("applyCompanionGrowth(model, owner, id)", ALBUM)
+
+    def test_collection_cards_show_the_matching_growth_stage(self):
+        self.assertIn('levelValue >= 5 and "ВЗРОСЛЫЙ"', ALBUM)
+        self.assertIn('levelValue >= 3 and "ПОДРОСТОК"', ALBUM)
+        self.assertIn('"МАЛЫШ"', ALBUM)
+        self.assertIn('growthStage .. " · УР. 5"', ALBUM)
+        self.assertIn('growthStage .. " · УР. " .. tostring(levelValue)', ALBUM)
+
+
+if __name__ == "__main__":
+    unittest.main()
