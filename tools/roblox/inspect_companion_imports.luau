@@ -40,7 +40,7 @@ local function examine(model)
             if desc.Anchored then anchoredCount += 1 end
             if desc.CanCollide then collidableCount += 1 end
         elseif desc:IsA("JointInstance") or desc:IsA("WeldConstraint")
-            or desc:IsA("Bone") or desc:IsA("SkinnedMeshPart") then
+            or desc:IsA("Bone") then
             -- Part-CFrame animator cannot safely drive rigidly linked or skinned assemblies.
             jointCount += 1
         end
@@ -61,9 +61,9 @@ local function examine(model)
             table.insert(problems, "Missing expected MeshPart role: " .. partName)
         end
     end
-    local minSize, maxSize = model:GetExtentsSize().Magnitude, model:GetExtentsSize().Magnitude
-    if minSize < 0.2 or maxSize > 50 then
-        table.insert(problems, ("Unusual model size: %.2f studs (review scale and import units)"):format(maxSize))
+    local extentMagnitude = model:GetExtentsSize().Magnitude
+    if extentMagnitude < 0.2 or extentMagnitude > 50 then
+        table.insert(problems, ("Unusual model size: %.2f studs (review scale and import units)"):format(extentMagnitude))
     end
     if model:GetAttribute("GiantbackImportStatus") ~= "Approved" then
         table.insert(notices, "Model not Approved; current game will retain blockout fallback")
