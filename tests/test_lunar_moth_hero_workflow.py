@@ -35,6 +35,9 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
             self.assertIn(state, source)
         self.assertIn('curve.splines.new("BEZIER")', source)
         self.assertIn('curve.bevel_depth = 0.022', source)
+        self.assertIn('WingMoonGold', source)
+        self.assertIn('WingMoonInset', source)
+        self.assertIn('mark_z = root_z + 0.20 * t * t + 0.025', source)
         self.assertIn('parts.append(sphere("MothThorax",(0,1.20,0),(0.30,0.72,0.27)', source)
         self.assertNotIn('parts.append(sphere("MothAbdomen"', source)
 
