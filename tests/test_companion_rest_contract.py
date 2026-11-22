@@ -16,8 +16,8 @@ class CompanionRestContractTests(unittest.TestCase):
 
     def test_fox_uses_soft_breathing_and_relaxed_tail_and_paws(self):
         self.assertIn("math.sin(time * 1.8) * 0.035", ALBUM)
-        self.assertIn("resting and 1.6", ALBUM)
-        self.assertIn("resting and 0.12", ALBUM)
+        self.assertIn("swaySpeed = 1.6", ALBUM)
+        self.assertIn("swayStrength = 0.12", ALBUM)
         self.assertIn("local stride = resting and 0", ALBUM)
 
     def test_moth_folds_into_a_quiet_hover_and_dims_its_core(self):
