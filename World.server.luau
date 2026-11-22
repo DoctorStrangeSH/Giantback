@@ -1199,6 +1199,44 @@ local function gatherHomeMaterial(player, ownerUserId, materialId)
     if session.online then save(player) end
 end
 
+local function useHomeSmelter(player, ownerUserId, smelterAnchor)
+    if player.UserId ~= ownerUserId then return end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not root or not smelterAnchor or not smelterAnchor.Parent or (root.Position - smelterAnchor.Position).Magnitude > 14 then
+        return tip(player, "Подойди к своей плавильне.")
+    end
+
+    local now = os.time()
+    if (session.smeltingAmount or 0) > 0 then
+        if (session.smeltingReadyAt or 0) > now then
+            local remaining = session.smeltingReadyAt - now
+            return tip(player, "Железо плавится. Осталось примерно " .. tostring(math.ceil(remaining / 10) * 10) .. " сек.")
+        end
+        local amount = math.max(1, math.floor(session.smeltingAmount))
+        session.inventory.IronIngot = (session.inventory.IronIngot or 0) + amount
+        session.smeltingAmount = 0
+        session.smeltingReadyAt = 0
+        syncInventory(player)
+        tip(player, "Готово! Получено железных слитков ×" .. tostring(amount) .. ".")
+        if session.online then save(player) end
+        return
+    end
+
+    local oreCost, woodCost, duration = 3, 2, 60
+    if (session.inventory.IronOre or 0) < oreCost or (session.inventory.Wood or 0) < woodCost then
+        return tip(player, "Для плавки нужно железо ×3 и дерево ×2 для растопки.")
+    end
+    session.inventory.IronOre -= oreCost
+    session.inventory.Wood -= woodCost
+    session.smeltingAmount = 1
+    session.smeltingReadyAt = now + duration
+    syncInventory(player)
+    tip(player, "Плавка началась! Через минуту забери железный слиток у плавильни.")
+    if session.online then save(player) end
+end
+
 local function repairHomeBridge(player, ownerUserId)
     if player.UserId ~= ownerUserId then return end
     local session = sessions[player]
@@ -1323,6 +1361,29 @@ createPersonalCity = function(player, session)
         prompt(workshopAnchor, "Мастерская", "Улучшить инструменты", function(visitor)
             if visitor.UserId ~= ownerUserId then return end
             tip(visitor, "Открой вкладку «Инструменты», чтобы улучшить топор или кирку.")
+        end)
+
+        local smelter = Instance.new("Model")
+        smelter.Name = "Smelter"
+        smelter:SetAttribute("OwnerUserId", ownerUserId)
+        smelter.Parent = workshop
+        local smelterFrame = benchFrame * CFrame.new(4.2, 0.2, 0)
+        makeFarmVisualPart(smelter, "FurnaceBody", Vector3.new(2.3, 2.6, 2.3), smelterFrame, Color3.fromRGB(83, 91, 91), Enum.PartType.Block, Enum.Material.Slate)
+        makeFarmVisualPart(smelter, "FurnaceMouth", Vector3.new(1.1, 0.85, 0.16), smelterFrame * CFrame.new(0, -0.15, -1.18), Color3.fromRGB(244, 133, 72), Enum.PartType.Block, Enum.Material.Neon)
+        makeFarmVisualPart(smelter, "FurnaceChimney", Vector3.new(0.7, 1.4, 0.7), smelterFrame * CFrame.new(0.55, 1.8, 0.25), Color3.fromRGB(100, 106, 102), Enum.PartType.Block, Enum.Material.Slate)
+        makeFarmVisualPart(smelter, "FurnaceCap", Vector3.new(1.0, 0.18, 1.0), smelterFrame * CFrame.new(0.55, 2.55, 0.25), Color3.fromRGB(66, 73, 72), Enum.PartType.Block, Enum.Material.Metal)
+        local smelterAnchor = Instance.new("Part")
+        smelterAnchor.Name = "PromptAnchor"
+        smelterAnchor.Size = Vector3.new(0.5, 0.5, 0.5)
+        smelterAnchor.Transparency = 1
+        smelterAnchor.Anchored = true
+        smelterAnchor.CanCollide = false
+        smelterAnchor.CanTouch = false
+        smelterAnchor.CanQuery = true
+        smelterAnchor.CFrame = smelterFrame * CFrame.new(0, 1.0, -1.5)
+        smelterAnchor.Parent = smelter
+        prompt(smelterAnchor, "Плавильня", "Запустить плавку / забрать слиток", function(visitor)
+            useHomeSmelter(visitor, ownerUserId, smelterAnchor)
         end)
 
         local plotPositions = {
