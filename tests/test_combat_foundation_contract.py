@@ -37,13 +37,13 @@ class CombatFoundationContractTests(unittest.TestCase):
     def test_global_request_rate_is_bounded(self):
         self.assertIn("MAX_ACTIONS_PER_WINDOW = 10", COMBAT)
         self.assertIn("ACTION_RATE_WINDOW = 1", COMBAT)
-        self.assertIn("state.windowActionCount > MAX_ACTIONS_PER_WINDOW", COMBAT)
+        self.assertIn("return state.windowActionCount <= MAX_ACTIONS_PER_WINDOW", COMBAT)
         self.assertIn('reject(player, "RateLimited")', COMBAT)
 
     def test_combat_requires_server_ready_alive_region_and_weapon_state(self):
         self.assertIn('player:GetAttribute("Ready") == true', COMBAT)
         self.assertIn("humanoid.Health > 0", COMBAT)
-        self.assertIn("COMBAT_REGIONS[regionId] == true", COMBAT)
+        self.assertIn("ALLOWED_REGIONS[regionId]", COMBAT)
         self.assertIn("COMBAT_WEAPONS[weaponId] == true", COMBAT)
         self.assertIn('reject(player, "CombatRegionRequired")', COMBAT)
         self.assertIn('reject(player, "NoServerEquippedWeapon")', COMBAT)
@@ -94,9 +94,9 @@ class CombatFoundationContractTests(unittest.TestCase):
 
     def test_sanitized_state_snapshot_does_not_expose_mutable_server_tables(self):
         self.assertIn('remote:FireClient(player, "CombatState"', COMBAT)
-        self.assertIn("enabled = false", COMBAT)
-        self.assertIn('phase = "C0"', COMBAT)
-        self.assertIn('regionId = player:GetAttribute("CombatRegionId") or ""', COMBAT)
+        self.assertIn("enabled = true", COMBAT)
+        self.assertIn('phase = "C1"', COMBAT)
+        self.assertIn('regionId = regionId', COMBAT)
 
     def test_place_builder_embeds_combat_server_script(self):
         self.assertIn('"Combat.server.luau"', BUILD)
