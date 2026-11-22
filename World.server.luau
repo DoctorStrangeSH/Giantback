@@ -48,6 +48,13 @@ for _, cacheId in foxCacheIds do
     foxCacheIdSet[cacheId] = true
 end
 local FOX_SCOUT_COOLDOWN_SECONDS = 120
+
+local function foxScoutCooldownForLevel(level)
+    level = math.clamp(math.floor(tonumber(level) or 1), 1, 5)
+    if level >= 5 then return 60 end
+    if level >= 3 then return 90 end
+    return FOX_SCOUT_COOLDOWN_SECONDS
+end
 local foxCacheRewards = {
     FoxCache01 = {itemId = "SunPetal", amount = 2},
     FoxCache02 = {itemId = "Wood", amount = 2},
@@ -864,7 +871,8 @@ local function collectFoxCache(player, cacheId)
     session.inventory[itemId] = (session.inventory[itemId] or 0) + amount
     session.foxCacheActiveId = nil
     session.foxSearchCount += 1
-    session.foxSearchReadyAt = os.time() + FOX_SCOUT_COOLDOWN_SECONDS
+    local foxLevel = tonumber(player:GetAttribute("Companion_Fox_Level")) or 1
+    session.foxSearchReadyAt = os.time() + foxScoutCooldownForLevel(foxLevel)
     syncInventory(player)
     syncFoxScout(player)
 
