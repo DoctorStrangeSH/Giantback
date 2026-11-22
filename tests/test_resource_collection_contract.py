@@ -33,6 +33,25 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("data.resourceCooldowns", WORLD)
         self.assertIn("data.collectedNodes", WORLD)
 
+    def test_tool_level_migration_defaults_old_profiles_and_clamps_saved_values(self):
+        self.assertIn('local savedLevels = type(savedTools.levels) == "table" and savedTools.levels or {}', WORLD)
+        self.assertIn('Axe = math.clamp(math.floor(tonumber(savedLevels.Axe) or 1), 1, 2)', WORLD)
+        self.assertIn('Pickaxe = math.clamp(math.floor(tonumber(savedLevels.Pickaxe) or 1), 1, 2)', WORLD)
+        self.assertIn('savedTools.levels = toolsSnapshot.levels', WORLD)
+        self.assertIn('old.schemaVersion = 8', WORLD)
+
+    def test_workshop_upgrade_is_server_validated_and_charged_once(self):
+        upgrade = WORLD.split('if action == "UpgradeTool" then', 1)[1].split('if action == "EquipTool" then', 1)[0]
+        self.assertIn('session.tools[payload] ~= true', upgrade)
+        self.assertIn('session.toolLevels[payload] >= 2', upgrade)
+        self.assertIn('station:FindFirstChild("PromptAnchor")', upgrade)
+        self.assertIn('(root.Position - anchor.Position).Magnitude > 14', upgrade)
+        self.assertIn('(session.inventory.Wood or 0) < woodCost', upgrade)
+        self.assertIn('(session.inventory.Stone or 0) < stoneCost', upgrade)
+        self.assertIn('session.inventory.Wood -= woodCost', upgrade)
+        self.assertIn('session.inventory.Stone -= stoneCost', upgrade)
+        self.assertIn('session.toolLevels[payload] = 2', upgrade)
+
     def test_server_checks_prompt_distance(self):
         self.assertIn("p.MaxActivationDistance + 1", WORLD)
         self.assertIn("(root.Position-part.Position).Magnitude", WORLD)
