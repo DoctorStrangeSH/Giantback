@@ -64,16 +64,16 @@ def sphere(name, location, scale, material, segments=32, rings=20):
 
 def wing(name, side, upper, materials):
     # Four individually pivoted, thick, scalloped wing shells. X is span, Y is lift.
-    span = 1.12 if upper else 0.78
-    length = 1.02 if upper else 0.72
+    span = 1.42 if upper else 1.04
+    length = 0.82 if upper else 0.66
     rows, cols = 18, 14
-    root_x, root_y, root_z = side * 0.18, 1.58 if upper else 1.32, 0.10 if upper else 0.34
+    root_x, root_y, root_z = side * 0.20, 1.52 if upper else 1.28, 0.10 if upper else 0.30
     verts, uvs, faces, material_ids = [], [], [], []
     for layer in (0, 1):
         for r in range(rows + 1):
             t = r / rows
             # Wide outer lobe, pinched root, softly scalloped trailing edge.
-            width = (0.10 + 0.90 * (math.sin(math.pi * (t ** 0.78)) ** 0.72)) * (0.30 + 0.70 * t) * span
+            width = (0.10 + 0.90 * (math.sin(math.pi * (t ** 0.78)) ** 0.72)) * (0.30 + 0.70 * t) * span * 1.42
             if t > 0.72:
                 width *= 1.0 + 0.055 * math.sin((t - 0.72) * math.pi * 7.0)
             for col in range(cols + 1):
@@ -119,12 +119,29 @@ def wing(name, side, upper, materials):
 
 
 def antenna(name, side, material):
-    # A curved, tapered antenna built as a sequence of overlapping soft segments.
-    pieces=[]
-    coords=[(side*0.12,2.12,-0.43),(side*0.19,2.30,-0.40),(side*0.31,2.42,-0.35)]
-    for i,(x,y,z) in enumerate(coords):
-        pieces.append(sphere(name+f"_{i}",(x,y,z),(0.035-i*0.008,0.075-i*0.018,0.035-i*0.008),material,20,12))
-    return pieces
+    # A single curved, tapered stem with a soft club tip; no floating bead segments.
+    curve = bpy.data.curves.new(name + "Curve", "CURVE")
+    curve.dimensions = "3D"
+    curve.resolution_u = 16
+    curve.bevel_depth = 0.022
+    curve.bevel_resolution = 4
+    spline = curve.splines.new("BEZIER")
+    spline.bezier_points.add(3)
+    coords = [
+        (side * 0.12, 2.12, -0.43),
+        (side * 0.16, 2.31, -0.40),
+        (side * 0.31, 2.43, -0.35),
+        (side * 0.43, 2.34, -0.30),
+    ]
+    for point, co in zip(spline.bezier_points, coords):
+        point.co = co
+        point.handle_left_type = "AUTO"
+        point.handle_right_type = "AUTO"
+    obj = bpy.data.objects.new(name, curve)
+    bpy.context.collection.objects.link(obj)
+    obj.data.materials.append(material)
+    tip = sphere(name + "Club", coords[-1], (0.045, 0.065, 0.045), material, 20, 12)
+    return [obj, tip]
 
 
 def configure_scene(output):
@@ -236,9 +253,9 @@ def main():
     plum=mat("deep_plum",(0.12,0.075,0.17),0.35)
     glow=mat("moon_core",(0.48,0.88,0.88),0.28,emission=1.2)
     parts=[]
-    parts.append(sphere("MothThorax",(0,1.43,0),(0.34,0.46,0.32),ivory,40,28))
+    parts.append(sphere("MothThorax",(0,1.20,0),(0.30,0.72,0.27),ivory,48,32))
     parts.append(sphere("MothHead",(0,1.91,-0.20),(0.40,0.37,0.34),ivory,40,28))
-    parts.append(sphere("MothAbdomen",(0,0.92,0.20),(0.23,0.52,0.24),ivory,32,24))
+    
     for i in range(3):
         parts.append(sphere(f"AbdomenBand{i}",(0,0.72+i*0.19,0.23),(0.235,0.025,0.245),gold,24,12))
     for side,suffix in [(-1,"Left"),(1,"Right")]:
