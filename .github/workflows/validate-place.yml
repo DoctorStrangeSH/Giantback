@@ -118,7 +118,7 @@ jobs:
               'player:SetAttribute("Tool_AxeLevel"',
               'event:FireClient(visitor, "OpenWorkshop")',
               'event:FireClient(player, "ToolUpgraded", payload)',
-              'tool:GetAttribute("PetKingdomsToolLevel") ~= level',
+              'current:GetAttribute("PetKingdomsToolLevel") ~= level',
               'hitsRequired = math.max(1, hitsRequired - 1)',
               "old.resourceCooldowns = savedCooldowns",
               "old.collectedNodes = savedCollected",
