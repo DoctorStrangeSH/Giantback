@@ -854,6 +854,9 @@ event.OnServerEvent:Connect(function(player, action, payload)
     if action == "UpgradeTool" then
         local session = sessions[player]
         if not session or typeof(payload) ~= "string" or not toolUpgradeCosts[payload] then return end
+        if session.tools[payload] ~= true then
+            return tip(player, "Сначала открой этот инструмент.")
+        end
         if session.toolLevels[payload] >= 2 then
             return tip(player, "Этот инструмент уже улучшен до максимального уровня.")
         end
@@ -874,6 +877,7 @@ event.OnServerEvent:Connect(function(player, action, payload)
         session.toolLevels[payload] = 2
         syncInventory(player)
         syncTools(player)
+        event:FireClient(player, "ToolUpgraded", payload)
         tip(player, payload == "Axe" and "Готово! Топор усилен: деревья теперь рубятся быстрее." or "Готово! Кирка усилена: камень теперь добывается быстрее.")
         if session.online and not save(player) then
             warn("Tool upgrade save will be retried:", player.UserId, payload)
