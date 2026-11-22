@@ -386,6 +386,34 @@ local function renderTools()
         end)
     end
     local ironOre = tonumber(player:GetAttribute("Resource_IronOre")) or 0
+    local ironOre = tonumber(player:GetAttribute("Resource_IronOre")) or 0
+    local ironIngot = tonumber(player:GetAttribute("Resource_IronIngot")) or 0
+    local smelterReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
+    local smelterRemaining = math.max(0, smelterReadyAt - os.time())
+    addInfo("Плавильня", "Железная руда ×3 + дерево ×2 → железный слиток ×1. Выплавка занимает 2 минуты и продолжается, даже если ты выйдешь из игры.", 86)
+    local smelterCard = card(body, "SmelterCard", 104)
+    label(smelterCard, "Stock", "⛏️ Руда: " .. tostring(ironOre) .. "    •    🔩 Слитки: " .. tostring(ironIngot), UDim2.new(1, -20, 0, 24), UDim2.fromOffset(12, 8), 12, palette.ink, Enum.Font.GothamBold)
+    local smeltState = smelterReadyAt <= 0 and "Печь свободна" or (smelterRemaining > 0 and ("Плавится • осталось " .. tostring(math.ceil(smelterRemaining / 60)) .. " мин.") or "Слиток готов — забери его")
+    label(smelterCard, "State", smeltState, UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 34), 12, palette.muted)
+    local smeltAction = button(smelterCard, "SmeltAction", smelterReadyAt <= 0 and "НАЧАТЬ ВЫПЛАВКУ" or (smelterRemaining > 0 and "ПЛАВИТСЯ" or "ЗАБРАТЬ СЛИТОК"), UDim2.new(1, -24, 0, 34), UDim2.fromOffset(12, 62), smelterReadyAt <= 0 and palette.forest or (smelterRemaining > 0 and palette.paperDark or palette.gold))
+    smeltAction.TextSize = 11
+    smeltAction.TextColor3 = smelterReadyAt > 0 and smelterRemaining <= 0 and palette.ink or palette.white
+    smeltAction.Activated:Connect(function()
+        if smelterReadyAt <= 0 then
+            event:FireServer("StartSmelting")
+        elseif smelterRemaining <= 0 then
+            event:FireServer("CollectSmelting")
+        else
+            showToast("Плавильня ещё работает. Возвращайся за слитком позже.")
+        end
+        task.delay(0.2, function()
+            if activeTab == "Tools" and panel.Visible then
+                clearBody()
+                renderTools()
+            end
+        end)
+    end)
+    addInfo("Запас железа", "Сейчас у тебя " .. tostring(ironOre) .. " ед. руды и " .. tostring(ironIngot) .. " железных слитков.", 62)
     addInfo("Мастерская", "Подойди к верстаку на своём острове. Усиление топора стоит дерево ×8 и камень ×6; усиление кирки — дерево ×6 и камень ×8. Улучшенный инструмент сокращает добычу на один удар.", 94)
     addInfo("Новая находка: железная руда", "В Лунной роще ищи тёмные жилы с рыжими металлическими прожилками. Для добычи нужна кирка. В запасе: " .. tostring(ironOre) .. " шт. Руда пригодится для будущей плавильни.", 82)
     addInfo("Как работает добыча", "Подойди к дереву с топором, к каменной или железной жиле — с киркой. Каждый узел выдаёт ресурсы отдельно для твоего профиля и восстанавливается со временем.", 78)
@@ -589,6 +617,9 @@ event.OnClientEvent:Connect(function(message, payload)
     if message == "OpenWorkshop" then
         openTab("Tools")
         showToast("Мастерская открыта. Выбери инструмент для усиления.")
+    elseif message == "OpenSmelter" then
+        openTab("Tools")
+        showToast("Плавильня открыта. Загрузи руду и забери готовый слиток.")
     elseif message == "ToolUpgraded" then
         if activeTab == "Tools" and panel.Visible then
             clearBody()
