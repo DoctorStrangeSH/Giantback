@@ -385,15 +385,15 @@ def create_fox(p):
     curved_plume("ForeheadTuft",
         [(-0.13, 2.16, -0.93), (-0.09, 2.27, -0.91),
          (0.00, 2.34, -0.84), (0.035, 2.42, -0.76)],
-        [0.025, 0.105, 0.085, 0.006], p["fox_orange"], sides=20, steps_per_segment=7)
+        [0.012, 0.040, 0.032, 0.003], p["fox_orange"], sides=20, steps_per_segment=7)
     curved_plume("ForeheadTuft_L",
         [(-0.28, 2.12, -0.88), (-0.31, 2.22, -0.86),
          (-0.27, 2.29, -0.79)],
-        [0.012, 0.072, 0.004], p["fox_orange"], sides=16, steps_per_segment=6)
+        [0.006, 0.026, 0.002], p["fox_orange"], sides=16, steps_per_segment=6)
     curved_plume("ForeheadTuft_R",
         [(0.17, 2.14, -0.89), (0.22, 2.23, -0.85),
          (0.31, 2.27, -0.77)],
-        [0.012, 0.068, 0.004], p["fox_orange"], sides=16, steps_per_segment=6)
+        [0.006, 0.024, 0.002], p["fox_orange"], sides=16, steps_per_segment=6)
 
     # Tall, gently outward-splayed ears with separate inset inner-ear pieces.
     leaf_mesh("FoxEarLeft", (-0.39, 2.20, -0.52), 0.46, 0.88, 0.30, p["fox_orange"])
@@ -413,10 +413,10 @@ def create_fox(p):
             (-0.10, 0.22, 0.25, 0.00), (0.12, 0.21, 0.24, 0.00),
             (0.31, 0.17, 0.19, 0.00), (0.41, 0.11, 0.13, 0.00),
         ], p["fox_orange"], sides=40)
-        ellipsoid("PawFront" + suffix, (side*0.34, 0.13, -0.61),
-                 (0.205, 0.115, 0.225), p["fox_orange"], 32, 20)
-        ellipsoid("PawBack" + suffix, (side*0.34, 0.13, 0.61),
-                 (0.22, 0.115, 0.24), p["fox_orange"], 32, 20)
+        ellipsoid("PawFront" + suffix, (side*0.34, 0.17, -0.61),
+                 (0.205, 0.145, 0.235), p["fox_orange"], 32, 20)
+        ellipsoid("PawBack" + suffix, (side*0.34, 0.17, 0.61),
+                 (0.22, 0.145, 0.25), p["fox_orange"], 32, 20)
         # Three shallow toe separators add a readable paw silhouette without claws.
         for toe, offset in enumerate((-0.085, 0.0, 0.085)):
             curved_plume("PawToeFront" + suffix + str(toe),
@@ -470,10 +470,10 @@ def create_fox(p):
     # Soft brows and a tiny curved smile add readable emotion without extra rig groups.
     curved_plume("BrowLeft",
         [(-0.39, 1.99, -1.075), (-0.29, 2.035, -1.105), (-0.17, 2.015, -1.105)],
-        [0.018, 0.027, 0.014], p["expression"], sides=12, steps_per_segment=5)
+        [0.009, 0.014, 0.007], p["expression"], sides=12, steps_per_segment=5)
     curved_plume("BrowRight",
         [(0.17, 2.015, -1.105), (0.29, 2.035, -1.105), (0.39, 1.99, -1.075)],
-        [0.014, 0.027, 0.018], p["expression"], sides=12, steps_per_segment=5)
+        [0.007, 0.014, 0.009], p["expression"], sides=12, steps_per_segment=5)
     curved_plume("Smile",
         [(-0.12, 1.345, -1.31), (0.0, 1.315, -1.345), (0.12, 1.345, -1.31)],
         [0.012, 0.016, 0.012], p["expression"], sides=10, steps_per_segment=5)
