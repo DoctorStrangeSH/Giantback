@@ -28,6 +28,9 @@ jobs:
       - name: Run gameplay and world contract tests
         run: python -m unittest discover -s tests -v
 
+      - name: Validate source asset library
+        run: python tools/validate_asset_library.py
+
       - name: Build Roblox place
         run: python build.py
 
@@ -260,6 +263,6 @@ jobs:
           name: Giantback-visual-build
           path: |
             Giantback.rbxlx
-            assets/source_models/
+            assets/
           if-no-files-found: error
           retention-days: 14
