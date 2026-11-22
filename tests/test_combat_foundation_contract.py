@@ -182,6 +182,22 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn("if trialBusy[player] then return end", WORLD)
         self.assertIn("if session.completedCombatEncounters.GroveTrialChest01 then", WORLD)
 
+    def test_forest_trial_rune_puzzle_is_server_authoritative_and_per_player(self):
+        self.assertIn('TRIAL_RUNE_SEQUENCE = {"ForestTrialRuneMoon", "ForestTrialRuneDawn", "ForestTrialRuneTide"}', WORLD)
+        self.assertIn('local trialPuzzleProgress = {}', WORLD)
+        self.assertIn('local trialPuzzleComplete = {}', WORLD)
+        self.assertIn('now - progress.lastAt > 20', WORLD)
+        self.assertIn('runeName ~= TRIAL_RUNE_SEQUENCE[progress.nextIndex]', WORLD)
+        self.assertIn('trialPuzzleComplete[player] = true', WORLD)
+        self.assertIn('trialPuzzleProgress[player] = nil', WORLD)
+        self.assertIn('if not trialPuzzleComplete[player] then', WORLD)
+        self.assertIn('trialPuzzleComplete[player] = nil', WORLD)
+        self.assertIn('"ForestTrialRuneMoon"', VISUALS)
+        self.assertIn('"ForestTrialRuneDawn"', VISUALS)
+        self.assertIn('"ForestTrialRuneTide"', VISUALS)
+        self.assertIn('Луна → Рассвет → Прилив', VISUALS)
+        self.assertIn('runePrompt.HoldDuration = 0.25', VISUALS)
+
     def test_client_supports_keyboard_gamepad_and_touch_intents(self):
         self.assertIn("Enum.UserInputType.MouseButton1", CLIENT)
         self.assertIn("Enum.KeyCode.ButtonR2", CLIENT)
