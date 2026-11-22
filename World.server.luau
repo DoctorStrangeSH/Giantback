@@ -232,6 +232,82 @@ local function syncInventory(player)
     player:SetAttribute("Smelter_Pending", session and session.smeltingAmount or 0)
 end
 
+local COMPANION_IDS = {"Fox", "Moth"}
+local COMPANION_MAX_LEVEL = 5
+
+local function companionXpToNext(level)
+    return 100 + math.max(0, level - 1) * 75
+end
+
+local function normalizeCompanionProgress(raw)
+    raw = type(raw) == "table" and raw or {}
+    local result = {}
+    for _, id in COMPANION_IDS do
+        local saved = type(raw[id]) == "table" and raw[id] or {}
+        local level = math.clamp(math.floor(tonumber(saved.level) or 1), 1, COMPANION_MAX_LEVEL)
+        local xp = math.max(0, math.floor(tonumber(saved.xp) or 0))
+        if level >= COMPANION_MAX_LEVEL then
+            xp = 0
+        else
+            local needed = companionXpToNext(level)
+            while xp >= needed and level < COMPANION_MAX_LEVEL do
+                xp -= needed
+                level += 1
+                needed = companionXpToNext(level)
+            end
+        end
+        result[id] = {level = level, xp = level >= COMPANION_MAX_LEVEL and 0 or xp}
+    end
+    return result
+end
+
+local function syncCompanionProgress(player)
+    local session = sessions[player]
+    if not session then return end
+    for _, id in COMPANION_IDS do
+        local progressData = session.companionProgress[id]
+        player:SetAttribute("Companion_" .. id .. "_Level", progressData.level)
+        player:SetAttribute("Companion_" .. id .. "_XP", progressData.xp)
+        player:SetAttribute("Companion_" .. id .. "_XPToNext",
+            progressData.level >= COMPANION_MAX_LEVEL and 0 or companionXpToNext(progressData.level))
+    end
+end
+
+local function awardCompanionXp(player, companionId, amount)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") or player:GetAttribute(companionId) ~= true then
+        return false, "CompanionNotOwned"
+    end
+    if companionId ~= "Fox" and companionId ~= "Moth" then return false, "InvalidCompanion" end
+    amount = math.clamp(math.floor(tonumber(amount) or 0), 0, 100)
+    if amount <= 0 then return false, "InvalidAmount" end
+
+    local progressData = session.companionProgress[companionId]
+    if progressData.level >= COMPANION_MAX_LEVEL then
+        return false, "MaxLevel"
+    end
+
+    progressData.xp += amount
+    local levelsGained = 0
+    while progressData.level < COMPANION_MAX_LEVEL do
+        local needed = companionXpToNext(progressData.level)
+        if progressData.xp < needed then break end
+        progressData.xp -= needed
+        progressData.level += 1
+        levelsGained += 1
+    end
+    if progressData.level >= COMPANION_MAX_LEVEL then progressData.xp = 0 end
+
+    syncCompanionProgress(player)
+    if session.online and not save(player) then
+        warn("Companion progression save will be retried:", player.UserId, companionId)
+    end
+    if levelsGained > 0 then
+        tip(player, pets[companionId] .. " вырос до уровня " .. tostring(progressData.level) .. "!")
+    end
+    return true, {level = progressData.level, xp = progressData.xp, levelsGained = levelsGained}
+end
+
 local function createToolPart(parent, name, size, offset, color, material, shape)
     local part = Instance.new("Part")
     part.Name = name
