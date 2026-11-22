@@ -301,6 +301,52 @@ local function createTrainingDummy(session)
     humanoid.MaxHealth = 100
     humanoid.Health = 100
     humanoid.Parent = model
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "HealthDisplay"
+    billboard.Adornee = root
+    billboard.Size = UDim2.fromOffset(150, 34)
+    billboard.StudsOffset = Vector3.new(0, 3.4, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = 55
+    billboard.Parent = root
+
+    local back = Instance.new("Frame")
+    back.Name = "BarBack"
+    back.Size = UDim2.new(1, 0, 0, 10)
+    back.Position = UDim2.new(0, 0, 0, 19)
+    back.BackgroundColor3 = Color3.fromRGB(54, 48, 43)
+    back.BorderSizePixel = 0
+    back.Parent = billboard
+
+    local fill = Instance.new("Frame")
+    fill.Name = "BarFill"
+    fill.Size = UDim2.fromScale(1, 1)
+    fill.BackgroundColor3 = Color3.fromRGB(117, 194, 112)
+    fill.BorderSizePixel = 0
+    fill.Parent = back
+
+    local label = Instance.new("TextLabel")
+    label.Name = "HealthText"
+    label.Size = UDim2.new(1, 0, 0, 17)
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.GothamBold
+    label.TextColor3 = Color3.fromRGB(255, 245, 221)
+    label.TextStrokeTransparency = 0.45
+    label.TextSize = 12
+    label.Text = "Манекен • 100 / 100"
+    label.Parent = billboard
+
+    local function updateHealthDisplay(health)
+        local ratio = math.clamp(health / humanoid.MaxHealth, 0, 1)
+        fill.Size = UDim2.fromScale(ratio, 1)
+        fill.BackgroundColor3 = ratio <= 0.3 and Color3.fromRGB(211, 91, 76)
+            or (ratio <= 0.6 and Color3.fromRGB(222, 174, 83) or Color3.fromRGB(117, 194, 112))
+        label.Text = health > 0
+            and ("Манекен • " .. tostring(math.ceil(health)) .. " / " .. tostring(humanoid.MaxHealth))
+            or "Манекен • восстановление"
+    end
+    humanoid.HealthChanged:Connect(updateHealthDisplay)
     model.Parent = session.cityModel
     session.trainingDummy = model
     return model
@@ -366,12 +412,25 @@ local function createHarvestTool(toolId, level)
             local humanoid = dummy and dummy:FindFirstChildOfClass("Humanoid")
             local dummyRoot = dummy and dummy:FindFirstChild("HumanoidRootPart")
             if not root or not dummy or not dummy.Parent or not humanoid or not dummyRoot then return end
-            if dummy:GetAttribute("OwnerUserId") ~= player.UserId or (root.Position - dummyRoot.Position).Magnitude > 10 then
+            local distance = (root.Position - dummyRoot.Position).Magnitude
+            if dummy:GetAttribute("OwnerUserId") ~= player.UserId or distance > 10 then
                 return tip(player, "Подойди к своему тренировочному манекену.")
             end
             if humanoid.Health <= 0 then
                 return tip(player, "Манекен восстанавливается. Подожди немного.")
             end
+
+            local rayOrigin = root.Position + Vector3.new(0, 1.2, 0)
+            local targetPosition = dummyRoot.Position + Vector3.new(0, 0.35, 0)
+            local rayDirection = targetPosition - rayOrigin
+            local rayParams = RaycastParams.new()
+            rayParams.FilterType = Enum.RaycastFilterType.Exclude
+            rayParams.FilterDescendantsInstances = {character}
+            local hit = workspace:Raycast(rayOrigin, rayDirection, rayParams)
+            if not hit or not hit.Instance:IsDescendantOf(dummy) then
+                return tip(player, "Мечу мешает препятствие. Подойди к манекену с открытой стороны.")
+            end
+
             session.combatReadyAt = now + 0.8
             humanoid:TakeDamage(20)
             event:FireClient(player, "SwordHit", {
