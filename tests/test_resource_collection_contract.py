@@ -54,6 +54,12 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('local toolIds = {Axe = true, Pickaxe = true}', WORLD)
         self.assertIn('tools = {Axe = true, Pickaxe = true}', WORLD)
         self.assertIn('old.tools = savedTools', WORLD)
+        self.assertIn('toolLevels = {Axe = 1, Pickaxe = 1}', WORLD)
+        self.assertIn('savedTools.levels = toolsSnapshot.levels', WORLD)
+        self.assertIn('old.schemaVersion = 8', WORLD)
+        self.assertIn('action == "UpgradeTool"', WORLD)
+        self.assertIn('session.toolLevels[payload] = 2', WORLD)
+        self.assertIn('player:SetAttribute("Tool_AxeLevel"', WORLD)
         self.assertIn('action == "EquipTool"', WORLD)
         self.assertIn('session.equippedTool = payload', WORLD)
         self.assertIn('player:SetAttribute("Tool_Equipped"', WORLD)
@@ -74,6 +80,10 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('session.resourceHitCooldowns[def.key] = hitNow', WORLD)
         self.assertIn('hitNow - lastHitAt < 0.4', WORLD)
         self.assertIn('event:FireServer("EquipTool", tool.id)', CLIENT)
+        self.assertIn('event:FireServer("UpgradeTool", tool.id)', CLIENT)
+        self.assertIn('FindFirstChild("Workshop")', WORLD)
+        self.assertIn('event:FireClient(visitor, "OpenWorkshop")', WORLD)
+        self.assertIn('hitsRequired = math.max(1, hitsRequired - 1)', WORLD)
 
     def test_wood_and_stone_require_multiple_server_validated_hits(self):
         self.assertEqual(WORLD.count('hitsRequired = 3'), 2)
