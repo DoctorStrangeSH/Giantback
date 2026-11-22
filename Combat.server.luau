@@ -295,28 +295,68 @@ local function registerEnemy(enemy)
                 elseif os.clock() >= entry.nextAttackAt and not entry.attacking then
                     entry.attacking = true
                     entry.nextAttackAt = os.clock() + entry.attackCooldown
-                    enemy:SetAttribute("CombatState", "Telegraph")
-                    task.wait(entry.telegraphSeconds)
-                    if isEnemyAlive(enemy) and targetPlayer.Parent and targetPlayer.Character then
-                        local currentHumanoid, currentRoot = getCharacterParts(targetPlayer)
-                        if currentHumanoid and currentRoot
-                            and getPlayerRegion(targetPlayer) == entry.regionId
-                            and (currentRoot.Position - root.Position).Magnitude <= entry.attackRange + 0.75 then
-                            local playerState = playerStates[targetPlayer]
-                            local dodging = playerState and playerState.dodgingUntil > os.clock()
-                            if not dodging then
-                                local damage = entry.attackDamage
-                                if playerState and playerState.blocking then
-                                    local towardEnemy = (root.Position - currentRoot.Position).Unit
-                                    if currentRoot.CFrame.LookVector:Dot(towardEnemy) >= 0.35 then
-                                        damage = math.max(1, math.floor(damage * BLOCK_DAMAGE_MULTIPLIER))
+                    entry.attackSequence = (entry.attackSequence or 0) + 1
+                    local useGroundSlam = entry.isBoss and entry.bossPhase >= 2 and entry.attackSequence % 2 == 0
+
+                    if useGroundSlam then
+                        local phasePrefix = "Phase" .. tostring(entry.bossPhase)
+                        local slamRadius = math.clamp(tonumber(enemy:GetAttribute(phasePrefix .. "SlamRadius")) or 16, 8, 28)
+                        local slamDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute(phasePrefix .. "SlamDamage")) or entry.attackDamage), 1, 30)
+                        enemy:SetAttribute("BossAttack", "GroundSlam")
+                        enemy:SetAttribute("CombatState", "BossSlamTelegraph")
+                        task.wait(math.max(entry.telegraphSeconds, 0.9))
+
+                        if isEnemyAlive(enemy) then
+                            for _, player in Players:GetPlayers() do
+                                if player:GetAttribute("Ready") == true and getPlayerRegion(player) == entry.regionId then
+                                    local currentHumanoid, currentRoot = getCharacterParts(player)
+                                    if currentHumanoid and currentRoot
+                                        and (currentRoot.Position - root.Position).Magnitude <= slamRadius then
+                                        local playerState = playerStates[player]
+                                        local dodging = playerState and playerState.dodgingUntil > os.clock()
+                                        if not dodging then
+                                            local damage = slamDamage
+                                            if playerState and playerState.blocking then
+                                                local towardBoss = root.Position - currentRoot.Position
+                                                if towardBoss.Magnitude > 0
+                                                    and currentRoot.CFrame.LookVector:Dot(towardBoss.Unit) >= 0.35 then
+                                                    damage = math.max(1, math.floor(damage * BLOCK_DAMAGE_MULTIPLIER))
+                                                end
+                                            end
+                                            currentHumanoid:TakeDamage(damage)
+                                        end
                                     end
                                 end
-                                currentHumanoid:TakeDamage(damage)
+                            end
+                        end
+                        enemy:SetAttribute("BossAttack", "")
+                    else
+                        enemy:SetAttribute("CombatState", "Telegraph")
+                        task.wait(entry.telegraphSeconds)
+                        if isEnemyAlive(enemy) and targetPlayer.Parent and targetPlayer.Character then
+                            local currentHumanoid, currentRoot = getCharacterParts(targetPlayer)
+                            if currentHumanoid and currentRoot
+                                and getPlayerRegion(targetPlayer) == entry.regionId
+                                and (currentRoot.Position - root.Position).Magnitude <= entry.attackRange + 0.75 then
+                                local playerState = playerStates[targetPlayer]
+                                local dodging = playerState and playerState.dodgingUntil > os.clock()
+                                if not dodging then
+                                    local damage = entry.attackDamage
+                                    if playerState and playerState.blocking then
+                                        local towardEnemy = (root.Position - currentRoot.Position).Unit
+                                        if currentRoot.CFrame.LookVector:Dot(towardEnemy) >= 0.35 then
+                                            damage = math.max(1, math.floor(damage * BLOCK_DAMAGE_MULTIPLIER))
+                                        end
+                                    end
+                                    currentHumanoid:TakeDamage(damage)
+                                end
                             end
                         end
                     end
-                    if enemy.Parent then enemy:SetAttribute("CombatState", "Recover") end
+                    if enemy.Parent then
+                        enemy:SetAttribute("BossAttack", "")
+                        enemy:SetAttribute("CombatState", "Recover")
+                    end
                     task.wait(0.35)
                     entry.attacking = false
                 else
