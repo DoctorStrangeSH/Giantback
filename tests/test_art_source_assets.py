@@ -91,10 +91,11 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
 
     def test_review_lighting_preserves_fox_color_and_form_contrast(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
-        self.assertIn('("Key", (1.8, 2.8, -2.0), 175, 3.2)', source)
-        self.assertIn('("Fill", (-2.0, 1.0, -1.0), 75, 2.8)', source)
-        self.assertIn('("Rim", (0.0, 2.0, 2.8), 125, 2.4)', source)
-        self.assertIn('scene.view_settings.look = "AgX - High Contrast"', source)
+        self.assertIn('("Key", (1.8, 2.8, -2.0), 95, 3.2)', source)
+        self.assertIn('("Fill", (-2.0, 1.0, -1.0), 42, 2.8)', source)
+        self.assertIn('("Rim", (0.0, 2.0, 2.8), 72, 2.4)', source)
+        self.assertIn('scene.view_settings.look = "None"', source)
+        self.assertIn('scene.view_settings.view_transform = "Standard"', source)
 
     def test_review_cameras_use_explicit_y_up_basis_for_all_views(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
@@ -232,8 +233,8 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('"ForeheadTuft_L", "ForeheadTuft_R"', source)
         self.assertIn('ellipsoid("CheekFluff_L"', source)
         self.assertIn('ellipsoid("CheekFluff_R"', source)
-        self.assertIn('(-0.285, 1.435, -1.025), (0.072, 0.048, 0.022)', source)
-        self.assertIn('(0.285, 1.435, -1.025), (0.072, 0.048, 0.022)', source)
+        self.assertIn('(-0.255, 1.435, -1.035), (0.042, 0.026, 0.010)', source)
+        self.assertIn('(0.255, 1.435, -1.035), (0.042, 0.026, 0.010)', source)
         self.assertIn("Rounded cream cheek pads blend into the muzzle", source)
         self.assertIn("def plush_tail(", source)
         self.assertIn('plush_tail("FoxTail"', source)
