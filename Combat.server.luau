@@ -28,6 +28,11 @@ local CHARGE_DAMAGE_MAX = 52
 local CHARGE_COOLDOWN = 1.35
 local CHARGE_ATTACK_BOX = Vector3.new(8, 6, 7)
 local CHARGE_ATTACK_RANGE = 9
+local COMPANION_SKILL_COOLDOWN = 14
+local FOX_SKILL_DAMAGE = 24
+local FOX_SKILL_RANGE = 18
+local MOTH_HEAL_AMOUNT = 18
+local MOTH_HEAL_RADIUS = 14
 local ENEMY_AGGRO_RANGE = 34
 local ENEMY_PATH_REFRESH_SECONDS = 1.15
 local ENEMY_PATH_AGENT = {AgentRadius = 2, AgentHeight = 5, AgentCanJump = false, WaypointSpacing = 4}
@@ -88,6 +93,7 @@ local function newPlayerState()
         comboStep = 0,
         comboExpiresAt = 0,
         chargingStartedAt = 0,
+        companionSkillReadyAt = 0,
     }
 end
 
@@ -143,6 +149,8 @@ local function clearTransientState(player)
     state.comboStep = 0
     state.comboExpiresAt = 0
     state.chargingStartedAt = 0
+    state.companionSkillReadyAt = 0
+    player:SetAttribute("CompanionSkillReadyAt", 0)
     player:SetAttribute("CombatCharging", false)
     player:SetAttribute("CombatComboStep", 0)
     player:SetAttribute("CombatBlocking", false)
@@ -582,6 +590,84 @@ local function performChargedAttack(player, state, now)
     end
 end
 
+local function performCompanionSkill(player, state, now)
+    local companionId = player:GetAttribute("Companion")
+    if companionId ~= "Fox" and companionId ~= "Moth" then
+        reject(player, "CompanionRequired")
+        return
+    end
+    if player:GetAttribute(companionId) ~= true then
+        reject(player, "CompanionNotOwned")
+        return
+    end
+    if now < state.companionSkillReadyAt then
+        reject(player, "CompanionSkillCooldown")
+        return
+    end
+    if state.chargingStartedAt > 0 or state.blocking then
+        reject(player, "CompanionSkillUnavailable")
+        return
+    end
+
+    local playerHumanoid, playerRoot = getCharacterParts(player)
+    local regionId = getPlayerRegion(player)
+    if not playerHumanoid or not playerRoot or not regionId then return end
+
+    if companionId == "Fox" then
+        local target, targetEntry
+        local bestDistance = FOX_SKILL_RANGE
+        for enemy, entry in enemies do
+            if entry.regionId == regionId and isEnemyAlive(enemy) then
+                local distance = (entry.root.Position - playerRoot.Position).Magnitude
+                if distance < bestDistance then
+                    bestDistance = distance
+                    target, targetEntry = enemy, entry
+                end
+            end
+        end
+        if not target then
+            reject(player, "CompanionNoTarget")
+            return
+        end
+        targetEntry.contributors[player] = true
+        targetEntry.humanoid:TakeDamage(FOX_SKILL_DAMAGE)
+        target:SetAttribute("CombatHealth", math.max(0, targetEntry.humanoid.Health))
+        state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN
+        player:SetAttribute("CompanionSkillReadyAt", state.companionSkillReadyAt)
+        remote:FireClient(player, "CompanionSkillUsed", {
+            companionId = "Fox",
+            targetId = target:GetAttribute("EnemyId") or target.Name,
+            damage = FOX_SKILL_DAMAGE,
+        })
+        return
+    end
+
+    local healedPlayers = {}
+    for _, ally in Players:GetPlayers() do
+        if ally:GetAttribute("Ready") == true and getPlayerRegion(ally) == regionId then
+            local allyHumanoid, allyRoot = getCharacterParts(ally)
+            if allyHumanoid and allyRoot
+                and (allyRoot.Position - playerRoot.Position).Magnitude <= MOTH_HEAL_RADIUS
+                and allyHumanoid.Health < allyHumanoid.MaxHealth then
+                local before = allyHumanoid.Health
+                allyHumanoid.Health = math.min(allyHumanoid.MaxHealth, before + MOTH_HEAL_AMOUNT)
+                table.insert(healedPlayers, ally.UserId)
+            end
+        end
+    end
+    if #healedPlayers == 0 then
+        reject(player, "CompanionNoOneToHeal")
+        return
+    end
+    state.companionSkillReadyAt = now + COMPANION_SKILL_COOLDOWN
+    player:SetAttribute("CompanionSkillReadyAt", state.companionSkillReadyAt)
+    remote:FireClient(player, "CompanionSkillUsed", {
+        companionId = "Moth",
+        healedCount = #healedPlayers,
+        healAmount = MOTH_HEAL_AMOUNT,
+    })
+end
+
 local function handleAction(player, action, ...)
     local state = playerStates[player]
     if not state then return end
@@ -603,7 +689,7 @@ local function handleAction(player, action, ...)
         return
     end
     if action ~= "Attack" and action ~= "BlockStart" and action ~= "BlockEnd" and action ~= "Dodge"
-        and action ~= "ChargeStart" and action ~= "ChargeRelease" then
+        and action ~= "ChargeStart" and action ~= "ChargeRelease" and action ~= "CompanionSkill" then
         reject(player, "UnknownAction")
         return
     end
@@ -614,6 +700,10 @@ local function handleAction(player, action, ...)
     if action == "BlockEnd" then
         state.blocking = false
         player:SetAttribute("CombatBlocking", false)
+        return
+    end
+    if action == "CompanionSkill" then
+        performCompanionSkill(player, state, now)
         return
     end
     if action == "ChargeStart" then
@@ -697,6 +787,7 @@ local function registerPlayer(player)
     player:SetAttribute("CombatWeaponId", "SwordShield")
     player:SetAttribute("CombatComboStep", 0)
     player:SetAttribute("CombatCharging", false)
+    player:SetAttribute("CompanionSkillReadyAt", 0)
 
     player.CharacterAdded:Connect(function()
         clearTransientState(player)
