@@ -144,7 +144,13 @@ remote.OnClientEvent:Connect(function(message, data)
         local copy = rejectionMessages[data.code]
         if copy then showFeedback(copy, Color3.fromRGB(255, 207, 153)) end
     elseif message == "CombatHit" then
-        showFeedback("ПОПАЛ!", Color3.fromRGB(187, 236, 164))
+        if type(data) == "table" and data.finisher == true then
+            showFeedback("ФИНИШЕР!", Color3.fromRGB(255, 190, 104))
+        elseif type(data) == "table" and type(data.comboStep) == "number" then
+            showFeedback("КОМБО " .. tostring(data.comboStep) .. "/3", Color3.fromRGB(187, 236, 164))
+        else
+            showFeedback("ПОПАЛ!", Color3.fromRGB(187, 236, 164))
+        end
     end
 end)
 
