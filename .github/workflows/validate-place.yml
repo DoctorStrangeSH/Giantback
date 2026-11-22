@@ -8,7 +8,7 @@ on:
   pull_request:
     branches:
       - main
-      - integration/giantback-consolidation
+      - feat/cozy-world-visual-pass
 
 permissions:
   contents: read
