@@ -162,7 +162,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('"fox_orange": material("fox_orange", (0.91, 0.36, 0.13), 0.82, soft_fur=True)', source)
         self.assertIn('"cream": material("cream", (0.98, 0.86, 0.66), 0.88, soft_fur=True)', source)
         self.assertIn("true single-vertex poles and clean topology", source)
-        self.assertIn("verts = [(cx, cy + sy, cz)]", source)
+        self.assertIn("verts, faces = [(cx, cy + sy, cz)], []", source)
         self.assertIn("bottom = len(verts)", source)
         self.assertIn("faces.append((0, first_ring + side, first_ring + nxt))", source)
         self.assertNotIn("faces.append(tuple(range(segments - 1, -1, -1)))", source)
