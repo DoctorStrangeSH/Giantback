@@ -93,7 +93,6 @@ jobs:
               "QuestCard",
               "AlbumAction",
               "CombatAction",
-              "Combat.server.luau",
               "FoxEncounter",
               "LocalTransparencyModifier",
               "animateModelParts",
