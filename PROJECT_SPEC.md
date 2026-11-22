@@ -309,7 +309,7 @@ PROJECT_SPEC.md — источник требований версии 1.0. ROAD
 
 ## Harvesting 2.0 — current implementation status
 
-The current working branch now includes persistent starter Axe/Pickaxe tools, a dedicated Tools panel, a personal owner-only workbench for upgrades, and server-authoritative multi-hit gathering for forest wood and dusk stone. Tool ownership, level and selected tool are persisted under profile schema v8. The client displays per-node hit progress locally. Iron ore, smelting, combat and final tool animations remain planned and are not considered complete.
+The canonical development branch includes persistent starter Axe/Pickaxe tools, a dedicated Tools panel, a personal owner-only workbench for upgrades, server-authoritative multi-hit gathering for forest wood and dusk stone, and two Dusk iron veins. Tool ownership, level and selected tool are persisted under profile schema v9 with monotonic migration writes. The personal owner-only furnace converts 3 IronOre + 2 Wood into one IronIngot after 60 seconds; pending output persists across reconnects. Harvesting swing/impact/crack/break/regrowth feedback and the server-owned Combat C0 protocol are staged together in PR #7, not yet merged into the canonical branch. Combat C0 is deliberately non-playable: it does not apply damage or grant rewards. Studio acceptance remains outstanding.
 
 
 ## Ironworking 1.0 — implementation status
