@@ -27,10 +27,8 @@ local function examine(model)
     end
 
     local meshCount, jointCount, anchoredCount, collidableCount, missingMeshIds = 0, 0, 0, 0, 0
-    local names = {}
     for _, desc in model:GetDescendants() do
         if desc:IsA("BasePart") then
-            names[desc.Name] = (names[desc.Name] or 0) + 1
             if desc:IsA("MeshPart") then
                 meshCount += 1
                 if desc.MeshId == "" then missingMeshIds += 1 end
@@ -57,8 +55,17 @@ local function examine(model)
         table.insert(notices, tostring(anchoredCount) .. " anchored pieces; verify Studio motion and CFrame-driven animation")
     end
     for _, partName in def.details do
-        if not names[partName] then
-            table.insert(problems, "Missing expected MeshPart role: " .. partName)
+        local matchingMeshes = 0
+        for _, descendant in model:GetDescendants() do
+            if descendant.Name == partName and descendant:IsA("MeshPart") then
+                matchingMeshes += 1
+            end
+        end
+        local requiredCount = (model.Name == "MothCompanion" and partName == "Wing") and 2 or 1
+        if matchingMeshes < requiredCount then
+            table.insert(problems, ("Need %d MeshPart(s) named %s, found %d"):format(
+                requiredCount, partName, matchingMeshes
+            ))
         end
     end
     local extentMagnitude = model:GetExtentsSize().Magnitude
