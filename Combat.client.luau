@@ -99,7 +99,10 @@ feedbackStroke.Thickness = 1
 feedbackStroke.Parent = feedbackLabel
 
 local feedbackSequence = 0
+local feedbackTweens = {}
 local function showFeedback(message, color)
+    for _, tween in feedbackTweens do tween:Cancel() end
+    table.clear(feedbackTweens)
     feedbackSequence += 1
     local sequence = feedbackSequence
     feedbackLabel.Text = message
@@ -111,8 +114,11 @@ local function showFeedback(message, color)
     task.delay(1.15, function()
         if sequence ~= feedbackSequence or not feedbackLabel.Parent then return end
         local fade = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-        TweenService:Create(feedbackLabel, fade, {TextTransparency = 1, BackgroundTransparency = 1}):Play()
-        TweenService:Create(feedbackStroke, fade, {Transparency = 1}):Play()
+        local labelTween = TweenService:Create(feedbackLabel, fade, {TextTransparency = 1, BackgroundTransparency = 1})
+        local strokeTween = TweenService:Create(feedbackStroke, fade, {Transparency = 1})
+        feedbackTweens = {labelTween, strokeTween}
+        labelTween:Play()
+        strokeTween:Play()
         task.delay(0.28, function()
             if sequence == feedbackSequence and feedbackLabel.Parent then
                 feedbackLabel.Visible = false
