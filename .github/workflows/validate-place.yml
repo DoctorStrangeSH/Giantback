@@ -129,7 +129,7 @@ jobs:
               'model:SetAttribute("GiantbackEnemy", true)',
               'model:SetAttribute("EnemyId", "Mossling")',
               "targetHumanoid:TakeDamage(8)",
-              "closestDistance = 48",
+              "local targetRoot, closestDistance = nil, 48",
               "task.delay(12",
               'player:SetAttribute("Tool_SwordOwned"',
               "[3] = {Wood = 12, Stone = 10, IronIngot = 2}",
