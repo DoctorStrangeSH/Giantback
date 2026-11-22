@@ -771,6 +771,46 @@ local resourceHitBars = {}
 local resourceHitEffects = {}
 local lastToolSwingAt = 0
 local toolSwingGeneration = 0
+local cameraShakeGeneration = 0
+local cameraShakeBinding = "PetKingdomsHarvestCamera_" .. tostring(player.UserId)
+
+local function playHarvestCameraShake(intensity)
+    if player:GetAttribute("HarvestCameraShakeEnabled") == false then return end
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+
+    cameraShakeGeneration += 1
+    local generation = cameraShakeGeneration
+    local startedAt = os.clock()
+    local duration = 0.13
+    local strength = math.clamp(tonumber(intensity) or 0.35, 0.12, 0.7)
+
+    RunService:UnbindFromRenderStep(cameraShakeBinding)
+    RunService:BindToRenderStep(cameraShakeBinding, Enum.RenderPriority.Camera.Value + 1, function()
+        if generation ~= cameraShakeGeneration then
+            RunService:UnbindFromRenderStep(cameraShakeBinding)
+            return
+        end
+        local currentCamera = workspace.CurrentCamera
+        if not currentCamera then
+            RunService:UnbindFromRenderStep(cameraShakeBinding)
+            return
+        end
+        local elapsed = os.clock() - startedAt
+        if elapsed >= duration then
+            RunService:UnbindFromRenderStep(cameraShakeBinding)
+            return
+        end
+
+        local fade = 1 - elapsed / duration
+        local offset = Vector3.new(
+            (math.random() - 0.5) * 2,
+            (math.random() - 0.5) * 2,
+            0
+        ) * strength * fade * 0.045
+        currentCamera.CFrame = currentCamera.CFrame * CFrame.new(offset)
+    end)
+end
 
 local function playHarvestCharacterSwing(character, nodeId, generation)
     local torso = character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")
@@ -1146,6 +1186,7 @@ local function showResourceHitFeedback(payload)
     local label = background and background:FindFirstChild("Count")
     local hits = math.max(0, math.floor(tonumber(payload.hits) or 0))
     local maximum = math.max(1, math.floor(tonumber(payload.maxHits) or 1))
+    playHarvestCameraShake(0.22 + 0.2 * math.clamp(hits / maximum, 0, 1))
     ensureHarvestDamageOverlay(node, nodeId, hits, maximum)
     if fill then
         TweenService:Create(fill, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -1491,6 +1532,7 @@ event.OnClientEvent:Connect(function(message, payload)
         clearResourceHitFeedback(payload.nodeId)
         if payload.itemId ~= nil and payload.amount ~= nil then
             playResourceRewardPickup(payload)
+            playHarvestCameraShake(0.58)
             playResourceBreakFeedback(payload.nodeId)
             playResourceBreakAnimation(payload.nodeId)
             task.delay(0.3, function()
