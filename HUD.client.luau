@@ -335,15 +335,16 @@ local function renderPets()
 end
 
 local function renderTools()
-    addInfo("Твои инструменты", "Базовые инструменты уже есть в рюкзаке. Выбери, чем будешь работать: для дерева нужен топор, для камня — кирка.", 76)
+    addInfo("Твои инструменты", "Базовые инструменты уже есть в рюкзаке. Топор рубит дерево, кирка добывает камень, а меч нужен для тренировок у манекена.", 76)
     local tools = {
         {id = "Axe", title = "Топор путешественника", icon = "🪓", detail = "Рубит деревья в Солнечной роще.", owned = "Tool_AxeOwned"},
         {id = "Pickaxe", title = "Кирка путешественника", icon = "⛏️", detail = "Добывает камень в Лунной роще.", owned = "Tool_PickaxeOwned"},
+        {id = "Sword", title = "Меч странника", icon = "⚔️", detail = "Железный клинок для тренировок и будущих сражений.", owned = "Tool_SwordOwned"},
     }
     for _, tool in tools do
         local equipped = player:GetAttribute("Tool_Equipped") == tool.id
         local owned = player:GetAttribute(tool.owned) == true
-        local levelAttribute = tool.id == "Axe" and "Tool_AxeLevel" or "Tool_PickaxeLevel"
+        local levelAttribute = tool.id == "Axe" and "Tool_AxeLevel" or (tool.id == "Pickaxe" and "Tool_PickaxeLevel" or "Tool_SwordLevel")
         local level = math.clamp(tonumber(player:GetAttribute(levelAttribute)) or 1, 1, 3)
         local item = card(body, tool.id .. "Card", 124)
         local icon = label(item, "Icon", tool.icon, UDim2.fromOffset(52, 52), UDim2.fromOffset(10, 16), 30, palette.ink)
@@ -352,11 +353,20 @@ local function renderTools()
         label(item, "Title", tool.title .. tierName, UDim2.new(1, -160, 0, 24), UDim2.fromOffset(72, 8), 13, palette.ink, Enum.Font.GothamBold)
         local speedDetail = level >= 3 and " На два удара меньше." or (level == 2 and " На один удар меньше." or "")
         label(item, "Detail", tool.detail .. speedDetail, UDim2.new(1, -160, 0, 42), UDim2.fromOffset(72, 32), 10, palette.muted)
-        local action = button(item, "Equip", owned and (equipped and "В РУКАХ" or "ВЗЯТЬ") or "ЗАКРЫТО", UDim2.fromOffset(106, 30), UDim2.new(1, -118, 0, 8), equipped and palette.gold or palette.forest)
+        local actionLabel = tool.id == "Sword" and not owned and "ВЫКОВАТЬ МЕЧ" or (owned and (equipped and "В РУКАХ" or "ВЗЯТЬ") or "ЗАКРЫТО")
+        local action = button(item, "Equip", actionLabel, UDim2.fromOffset(106, 30), UDim2.new(1, -118, 0, 8), (equipped or (tool.id == "Sword" and not owned)) and palette.gold or palette.forest)
         action.TextSize = 11
         action.TextColor3 = equipped and palette.ink or palette.white
         action.Activated:Connect(function()
-            if not owned then
+            if tool.id == "Sword" and not owned then
+                event:FireServer("CraftSword")
+                task.delay(0.25, function()
+                    if activeTab == "Tools" and panel.Visible then
+                        clearBody()
+                        renderTools()
+                    end
+                end)
+            elseif not owned then
                 showToast("Этот инструмент пока недоступен.")
             elseif equipped then
                 showToast("Этот инструмент уже экипирован.")
@@ -370,23 +380,30 @@ local function renderTools()
                 end)
             end
         end)
-        local upgradeLabel = level >= 3 and "МАКС. УРОВЕНЬ" or (level == 2 and "КУЗНИЦА • УР. 3" or "УЛУЧШИТЬ • УР. 2")
-        local upgrade = button(item, "Upgrade", upgradeLabel, UDim2.fromOffset(106, 34), UDim2.new(1, -118, 0, 76), level >= 3 and palette.gold or palette.coral)
-        upgrade.TextSize = 9
-        upgrade.TextColor3 = level >= 3 and palette.ink or palette.white
-        upgrade.Activated:Connect(function()
-            if level >= 3 then
-                showToast("Инструмент уже достиг максимального уровня.")
-            else
-                event:FireServer("UpgradeTool", tool.id)
-                task.delay(0.2, function()
-                    if activeTab == "Tools" and panel.Visible then
-                        clearBody()
-                        renderTools()
-                    end
-                end)
-            end
-        end)
+        if tool.id ~= "Sword" then
+            local upgradeLabel = level >= 3 and "МАКС. УРОВЕНЬ" or (level == 2 and "КУЗНИЦА • УР. 3" or "УЛУЧШИТЬ • УР. 2")
+            local upgrade = button(item, "Upgrade", upgradeLabel, UDim2.fromOffset(106, 34), UDim2.new(1, -118, 0, 76), level >= 3 and palette.gold or palette.coral)
+            upgrade.TextSize = 9
+            upgrade.TextColor3 = level >= 3 and palette.ink or palette.white
+            upgrade.Activated:Connect(function()
+                if level >= 3 then
+                    showToast("Инструмент уже достиг максимального уровня.")
+                else
+                    event:FireServer("UpgradeTool", tool.id)
+                    task.delay(0.2, function()
+                        if activeTab == "Tools" and panel.Visible then
+                            clearBody()
+                            renderTools()
+                        end
+                    end)
+                end
+            end)
+        end
+    end
+    local swordOwned = player:GetAttribute("Tool_SwordOwned") == true
+    addInfo("Кузница • меч странника", "Рецепт: дерево ×8 + камень ×4 + железные слитки ×3. Подойди к верстаку на своём острове и выкуй меч. Он автоматически экипируется.", 84)
+    if swordOwned then
+        addInfo("Тренировочный манекен", "Манекен находится рядом с верстаком. Возьми меч в руки и нажимай атаку: каждый точный удар наносит 20 урона. После победы манекен восстановится через 3 секунды.", 76)
     end
     local ironOre = tonumber(player:GetAttribute("Resource_IronOre")) or 0
     local ironIngot = tonumber(player:GetAttribute("Resource_IronIngot")) or 0
@@ -627,6 +644,8 @@ event.OnClientEvent:Connect(function(message, payload)
             clearBody()
             renderTools()
         end
+    elseif message == "SwordHit" and type(payload) == "table" then
+        showToast("Попадание! Манекен: " .. tostring(payload.health) .. "/" .. tostring(payload.maxHealth) .. " HP")
     elseif type(message) == "string" and message ~= "ResourceState" and message ~= "ResourcePicked" then
         showToast(message)
     end
