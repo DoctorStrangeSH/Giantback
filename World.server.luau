@@ -31,7 +31,7 @@ end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard"}
-local toolIds = {Axe = true, Pickaxe = true}
+local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local toolUpgradeCosts = {
     Axe = {
         [2] = {Wood = 8, Stone = 6},
@@ -42,7 +42,7 @@ local toolUpgradeCosts = {
         [3] = {Wood = 10, Stone = 12, IronIngot = 2},
     },
 }
-local defaultTools = {Axe = true, Pickaxe = true}
+local defaultTools = {Axe = true, Pickaxe = true, Sword = false}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCacheIdSet = {}
 for _, cacheId in foxCacheIds do
@@ -259,12 +259,60 @@ local function createToolPart(parent, name, size, offset, color, material, shape
     return part
 end
 
+local function createTrainingDummy(session)
+    local existing = session.trainingDummy
+    if existing and existing.Parent then return existing end
+    local workshop = session.cityModel and session.cityModel:FindFirstChild("Workshop")
+    local anchor = workshop and workshop:FindFirstChild("PromptAnchor")
+    if not session.cityModel or not anchor then return nil end
+
+    local model = Instance.new("Model")
+    model.Name = "TrainingDummy"
+    model:SetAttribute("GiantbackTrainingDummy", true)
+    model:SetAttribute("OwnerUserId", session.ownerUserId or 0)
+    local center = anchor.Position + Vector3.new(5, 1.2, 0)
+    local function part(name, size, offset, color, shape)
+        local item = Instance.new("Part")
+        item.Name = name
+        item.Size = size
+        item.Shape = shape or Enum.PartType.Block
+        item.Color = color
+        item.Material = Enum.Material.Wood
+        item.Anchored = true
+        item.CanCollide = false
+        item.CanTouch = false
+        item.CanQuery = true
+        item.Position = center + offset
+        item.Parent = model
+        return item
+    end
+    local root = part("HumanoidRootPart", Vector3.new(1, 2, 1), Vector3.new(0, 0, 0), Color3.fromRGB(90, 70, 54))
+    root.Transparency = 1
+    model.PrimaryPart = root
+    part("Torso", Vector3.new(1.7, 2.1, 0.8), Vector3.new(0, 0.2, 0), Color3.fromRGB(155, 105, 66))
+    part("Head", Vector3.new(1.2, 1.2, 1.2), Vector3.new(0, 1.85, 0), Color3.fromRGB(202, 158, 105), Enum.PartType.Ball)
+    part("LeftArm", Vector3.new(0.55, 1.6, 0.55), Vector3.new(-1.1, 0.15, 0), Color3.fromRGB(128, 88, 58))
+    part("RightArm", Vector3.new(0.55, 1.6, 0.55), Vector3.new(1.1, 0.15, 0), Color3.fromRGB(128, 88, 58))
+    part("LeftLeg", Vector3.new(0.65, 1.4, 0.65), Vector3.new(-0.45, -1.45, 0), Color3.fromRGB(93, 70, 54))
+    part("RightLeg", Vector3.new(0.65, 1.4, 0.65), Vector3.new(0.45, -1.45, 0), Color3.fromRGB(93, 70, 54))
+    local humanoid = Instance.new("Humanoid")
+    humanoid.Name = "Humanoid"
+    humanoid.DisplayName = "Тренировочный манекен"
+    humanoid.MaxHealth = 100
+    humanoid.Health = 100
+    humanoid.Parent = model
+    model.Parent = session.cityModel
+    session.trainingDummy = model
+    return model
+end
+
 local function createHarvestTool(toolId, level)
     level = math.clamp(math.floor(tonumber(level) or 1), 1, 3)
     local isAxe = toolId == "Axe"
+    local isSword = toolId == "Sword"
     local tool = Instance.new("Tool")
-    tool.Name = isAxe and "Топор путешественника" or "Кирка путешественника"
-    tool.ToolTip = level >= 2 and "Усиленный инструмент: добыча быстрее" or (isAxe and "Нужен для добычи дерева" or "Нужна для добычи камня")
+    tool.Name = isSword and "Меч странника" or (isAxe and "Топор путешественника" or "Кирка путешественника")
+    tool.ToolTip = isSword and "Клинок для тренировок у манекена" or (level >= 2 and "Усиленный инструмент: добыча быстрее" or (isAxe and "Нужен для добычи дерева" or "Нужна для добычи камня"))
     tool.RequiresHandle = true
     tool.CanBeDropped = false
     tool:SetAttribute("PetKingdomsToolId", toolId)
@@ -280,8 +328,13 @@ local function createHarvestTool(toolId, level)
         edgeColor = Color3.fromRGB(174, 246, 235)
         accent = Color3.fromRGB(113, 245, 221)
     end
-    local handle = createToolPart(tool, "Handle", Vector3.new(0.28, 0.28, 2.5), CFrame.new(), wood, Enum.Material.Wood, Enum.PartType.Cylinder)
-    handle.CFrame = CFrame.new() * CFrame.Angles(0, 0, math.rad(90))
+    local handle
+    if isSword then
+        handle = createToolPart(tool, "Handle", Vector3.new(0.24, 1.25, 0.24), CFrame.new(), darkWood, Enum.Material.Wood, Enum.PartType.Cylinder)
+    else
+        handle = createToolPart(tool, "Handle", Vector3.new(0.28, 0.28, 2.5), CFrame.new(), wood, Enum.Material.Wood, Enum.PartType.Cylinder)
+        handle.CFrame = CFrame.new() * CFrame.Angles(0, 0, math.rad(90))
+    end
 
     local function attach(name, size, offset, color, material, shape)
         local part = createToolPart(tool, name, size, offset, color, material, shape)
@@ -293,6 +346,50 @@ local function createHarvestTool(toolId, level)
     end
 
     -- Shared leather grip and ferrules make both starter tools readable as crafted equipment.
+    if isSword then
+        attach("SwordGripWrap", Vector3.new(0.29, 0.2, 0.29), CFrame.new(0, -0.35, 0), Color3.fromRGB(107, 66, 49), Enum.Material.Leather, Enum.PartType.Cylinder)
+        attach("SwordPommel", Vector3.new(0.38, 0.22, 0.38), CFrame.new(0, -0.7, 0), Color3.fromRGB(221, 184, 104), Enum.Material.Metal, Enum.PartType.Ball)
+        attach("SwordGuard", Vector3.new(1.0, 0.14, 0.22), CFrame.new(0, 0.72, 0), Color3.fromRGB(221, 184, 104), Enum.Material.Metal)
+        attach("SwordBlade", Vector3.new(0.28, 1.55, 0.12), CFrame.new(0, 1.56, 0), Color3.fromRGB(170, 194, 199), Enum.Material.Metal)
+        attach("SwordEdge", Vector3.new(0.07, 1.42, 0.14), CFrame.new(0.16, 1.56, 0), Color3.fromRGB(231, 246, 240), Enum.Material.Metal)
+        attach("SwordRune", Vector3.new(0.06, 0.52, 0.15), CFrame.new(-0.02, 1.48, -0.075), Color3.fromRGB(119, 220, 190), Enum.Material.Neon)
+        tool.Grip = CFrame.new(0, -0.65, -0.5) * CFrame.Angles(math.rad(-90), 0, math.rad(90))
+        tool.Activated:Connect(function()
+            local character = tool.Parent
+            local player = Players:GetPlayerFromCharacter(character)
+            local session = player and sessions[player]
+            if not player or not session or session.equippedTool ~= "Sword" or not player:GetAttribute("Ready") then return end
+            local now = os.clock()
+            if now < (session.combatReadyAt or 0) then return end
+            local root = character:FindFirstChild("HumanoidRootPart")
+            local dummy = session.trainingDummy
+            local humanoid = dummy and dummy:FindFirstChildOfClass("Humanoid")
+            local dummyRoot = dummy and dummy:FindFirstChild("HumanoidRootPart")
+            if not root or not dummy or not dummy.Parent or not humanoid or not dummyRoot then return end
+            if dummy:GetAttribute("OwnerUserId") ~= player.UserId or (root.Position - dummyRoot.Position).Magnitude > 10 then
+                return tip(player, "Подойди к своему тренировочному манекену.")
+            end
+            if humanoid.Health <= 0 then
+                return tip(player, "Манекен восстанавливается. Подожди немного.")
+            end
+            session.combatReadyAt = now + 0.8
+            humanoid:TakeDamage(20)
+            event:FireClient(player, "SwordHit", {
+                health = math.max(0, math.floor(humanoid.Health)),
+                maxHealth = humanoid.MaxHealth,
+            })
+            if humanoid.Health <= 0 then
+                tip(player, "Отлично! Манекен повержен. Он восстановится через 3 секунды.")
+                task.delay(3, function()
+                    if dummy.Parent and humanoid.Parent == dummy and humanoid.Health <= 0 then
+                        humanoid.Health = humanoid.MaxHealth
+                    end
+                end)
+            end
+        end)
+        return tool
+    end
+
     attach("GripLowerWrap", Vector3.new(0.34, 0.34, 0.18), CFrame.new(0, -0.78, 0) * CFrame.Angles(0, 0, math.rad(90)), darkWood, Enum.Material.Leather, Enum.PartType.Cylinder)
     attach("GripUpperWrap", Vector3.new(0.34, 0.34, 0.16), CFrame.new(0, -0.48, 0) * CFrame.Angles(0, 0, math.rad(90)), darkWood, Enum.Material.Leather, Enum.PartType.Cylinder)
     attach("HandleFerrule", Vector3.new(0.36, 0.36, 0.12), CFrame.new(0, 0.42, 0) * CFrame.Angles(0, 0, math.rad(90)), iron, Enum.Material.Metal, Enum.PartType.Cylinder)
@@ -328,7 +425,7 @@ end
 
 
 local function findPlayerTool(player, toolId)
-    local toolName = toolId == "Axe" and "Топор путешественника" or "Кирка путешественника"
+    local toolName = toolId == "Sword" and "Меч странника" or (toolId == "Axe" and "Топор путешественника" or "Кирка путешественника")
     local character = player.Character
     local backpack = player:FindFirstChildOfClass("Backpack")
     return (character and character:FindFirstChild(toolName)) or (backpack and backpack:FindFirstChild(toolName))
@@ -362,9 +459,11 @@ local function syncTools(player)
     local tools = session and session.tools or {}
     player:SetAttribute("Tool_AxeOwned", tools.Axe == true)
     player:SetAttribute("Tool_PickaxeOwned", tools.Pickaxe == true)
+    player:SetAttribute("Tool_SwordOwned", tools.Sword == true)
     player:SetAttribute("Tool_Equipped", session and session.equippedTool or "")
     player:SetAttribute("Tool_AxeLevel", session and session.toolLevels.Axe or 1)
     player:SetAttribute("Tool_PickaxeLevel", session and session.toolLevels.Pickaxe or 1)
+    player:SetAttribute("Tool_SwordLevel", 1)
     if session and player:GetAttribute("Ready") then
         ensurePlayerTools(player, session)
         local selectedTool = toolIds[session.equippedTool] and findPlayerTool(player, session.equippedTool) or nil
@@ -454,6 +553,7 @@ local function save(player)
         local toolsSnapshot = {
             Axe = session.tools.Axe == true,
             Pickaxe = session.tools.Pickaxe == true,
+            Sword = session.tools.Sword == true,
             equipped = toolIds[session.equippedTool] and session.equippedTool or "",
             levels = {
                 Axe = math.clamp(math.floor(tonumber(session.toolLevels.Axe) or 1), 1, 3),
@@ -473,11 +573,12 @@ local function save(player)
                 for _, key in progress do
                     old[key] = old[key] == true or snapshot[key]
                 end
-                old.schemaVersion = 9
+                old.schemaVersion = 10
 
                 local savedTools = type(old.tools) == "table" and old.tools or {}
                 savedTools.Axe = toolsSnapshot.Axe
                 savedTools.Pickaxe = toolsSnapshot.Pickaxe
+                savedTools.Sword = toolsSnapshot.Sword
                 savedTools.equipped = toolsSnapshot.equipped
                 savedTools.levels = toolsSnapshot.levels
                 old.tools = savedTools
@@ -549,9 +650,10 @@ end
 local function init(player)
     if sessions[player] then return end
     local session = {
+        ownerUserId = player.UserId,
         inventory = {},
-        tools = {Axe = true, Pickaxe = true},
-        toolLevels = {Axe = 1, Pickaxe = 1},
+        tools = {Axe = true, Pickaxe = true, Sword = false},
+        toolLevels = {Axe = 1, Pickaxe = 1, Sword = 1},
         equippedTool = "Axe",
         resourceCooldowns = {},
         resourceHits = {},
@@ -630,6 +732,7 @@ local function init(player)
             session.tools = {
                 Axe = savedTools.Axe == true or savedTools.Axe == nil,
                 Pickaxe = savedTools.Pickaxe == true or savedTools.Pickaxe == nil,
+                Sword = savedTools.Sword == true,
             }
             local savedLevels = type(savedTools.levels) == "table" and savedTools.levels or {}
             session.toolLevels = {
@@ -690,6 +793,9 @@ local function init(player)
     end
     if createPersonalCity then
         createPersonalCity(player, session)
+    end
+    if session.tools.Sword then
+        session.trainingDummy = createTrainingDummy(session)
     end
     if player.Character then
         task.defer(function()
@@ -982,6 +1088,43 @@ event.OnServerEvent:Connect(function(player, action, payload)
         return
     end
 
+    if action == "CraftSword" then
+        local session = sessions[player]
+        if not session then return end
+        if session.tools.Sword then
+            return tip(player, "Меч странника уже есть в твоём снаряжении.")
+        end
+        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        local workshop = session.cityModel and session.cityModel:FindFirstChild("Workshop")
+        local anchor = workshop and workshop:FindFirstChild("PromptAnchor")
+        if not root or not anchor or (root.Position - anchor.Position).Magnitude > 14 then
+            return tip(player, "Чтобы выковать меч, подойди к верстаку на своём острове.")
+        end
+        local cost = {Wood = 8, Stone = 4, IronIngot = 3}
+        local missing = {}
+        for itemId, amount in cost do
+            if (session.inventory[itemId] or 0) < amount then
+                table.insert(missing, itemId .. " ×" .. tostring(amount))
+            end
+        end
+        if #missing > 0 then
+            return tip(player, "Для меча не хватает: " .. table.concat(missing, ", ") .. ".")
+        end
+        for itemId, amount in cost do
+            session.inventory[itemId] -= amount
+        end
+        session.tools.Sword = true
+        session.equippedTool = "Sword"
+        session.trainingDummy = createTrainingDummy(session)
+        syncInventory(player)
+        syncTools(player)
+        if session.online and not save(player) then
+            warn("Sword craft save will be retried:", player.UserId)
+        end
+        tip(player, "Готово! Меч странника выкован. Испытай его на тренировочном манекене у верстака.")
+        return
+    end
+
     if action == "UpgradeTool" then
         local session = sessions[player]
         if not session or typeof(payload) ~= "string" or not toolUpgradeCosts[payload] then return end
@@ -1034,7 +1177,12 @@ event.OnServerEvent:Connect(function(player, action, payload)
         end
         session.equippedTool = payload
         syncTools(player)
-        tip(player, payload == "Axe" and "Топор экипирован. Можно рубить деревья!" or "Кирка экипирована. Можно добывать камень!")
+        local equippedMessages = {
+            Axe = "Топор экипирован. Можно рубить деревья!",
+            Pickaxe = "Кирка экипирована. Можно добывать камень!",
+            Sword = "Меч странника экипирован. Подойди к манекену и нажми атаку!",
+        }
+        tip(player, equippedMessages[payload] or "Экипировка обновлена.")
         if session.online and not save(player) then
             warn("Tool equip save will be retried:", player.UserId, payload)
         end
