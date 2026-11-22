@@ -16,6 +16,12 @@ The original `moth_companion.obj` was parsed directly before planning the hero r
 
 This confirms the original source is a useful shape/layout BLOCKOUT with separable wing objects, but not a finished hero asset. Preserve it unchanged as rollback baseline. The new hero model must add authored UVs, closed/thickened wing surfaces where appropriate, hand-painted wing motifs and an independently validated four-wing rig.
 
+## 0.2 First Blender CI finding and correction
+
+The first real Blender execution successfully generated the BLEND/OBJ and all four renders, but the geometry gate rejected zero-area faces on `MothWingUpperLeft`. Root cause: the wing-width profile collapsed to zero at the root/tip rows while still emitting quad strips. The width profile now has a small nonzero floor (10% of the broad profile), preserving a narrow root/tip silhouette without collapsing the surface. A regression test locks this minimum-width rule.
+
+The corrected generator is awaiting a fresh Blender run. The previous failure is not waived; the mesh must pass zero-area and manifold checks before manual art review.
+
 ## 0.1 Hero generator milestone — 2026-11-22
 
 A separate Blender 4.2 generator now exists at `tools/blender/build_moth_companion.py`; it does not overwrite the legacy OBJ. It builds four distinct thick wing meshes with UV layers and separate upper/lower left/right names, the ivory body, face, antenna segments, gold abdomen bands and luminous core. It exports a BLEND, OBJ/MTL, rig-contract JSON, grouped mesh report and four review renders.
