@@ -82,7 +82,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
 
     def test_fox_hero_palette_and_layered_chest_ruff_are_present(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
-        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.20, 0.025), 0.90, soft_fur=True)', source)
+        self.assertIn('"fox_orange": material("fox_orange", (0.90, 0.105, 0.003), 0.90, soft_fur=True)', source)
         self.assertIn('"cream": material("cream", (0.92, 0.72, 0.48), 0.92, soft_fur=True)', source)
         self.assertIn('curved_plume("ChestRuffCenter"', source)
         self.assertIn('curved_plume("ChestRuffLeft"', source)
@@ -232,6 +232,8 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('"ForeheadTuft_L", "ForeheadTuft_R"', source)
         self.assertIn('ellipsoid("CheekFluff_L"', source)
         self.assertIn('ellipsoid("CheekFluff_R"', source)
+        self.assertIn('(-0.315, 1.445, -0.955), (0.105, 0.070, 0.045)', source)
+        self.assertIn('(0.315, 1.445, -0.955), (0.105, 0.070, 0.045)', source)
         self.assertIn("Rounded cream cheek pads blend into the muzzle", source)
         self.assertIn("def plush_tail(", source)
         self.assertIn('plush_tail("FoxTail"', source)
