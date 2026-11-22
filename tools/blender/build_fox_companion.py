@@ -79,7 +79,7 @@ def make_palette():
     return {
         # Richer storybook orange and warm ivory: the old values rendered too muted
         # under neutral preview lighting. Keep the Fox brief's warm, restrained palette.
-        "fox_orange": material("fox_orange", (0.90, 0.20, 0.025), 0.90, soft_fur=True),
+        "fox_orange": material("fox_orange", (0.90, 0.105, 0.003), 0.90, soft_fur=True),
         "cream": material("cream", (0.92, 0.72, 0.48), 0.92, soft_fur=True),
         "ear_pink": material("ear_pink", (0.66, 0.19, 0.16), 0.88),
         "dark": material("dark", (0.08, 0.06, 0.05), 0.28),
@@ -379,8 +379,8 @@ def create_fox(p):
     sculpted_head("FoxHead", (0, 1.73, -0.62), (0.62, 0.61, 0.56), p["fox_orange"], 64, 40)
     lofted_muzzle("FoxMuzzle", [(-1.385, 1.42, 0.075, 0.065), (-1.33, 1.42, 0.20, 0.13), (-1.23, 1.43, 0.31, 0.19), (-1.11, 1.44, 0.36, 0.215), (-1.015, 1.45, 0.29, 0.17), (-0.985, 1.45, 0.18, 0.11)], p["cream"])
     # Rounded cream cheek pads blend into the muzzle instead of forming pointed whisker tufts.
-    ellipsoid("CheekFluff_L", (-0.37, 1.445, -0.99), (0.145, 0.095, 0.075), p["cream"], 24, 16)
-    ellipsoid("CheekFluff_R", (0.37, 1.445, -0.99), (0.145, 0.095, 0.075), p["cream"], 24, 16)
+    ellipsoid("CheekFluff_L", (-0.315, 1.445, -0.955), (0.105, 0.070, 0.045), p["cream"], 24, 16)
+    ellipsoid("CheekFluff_R", (0.315, 1.445, -0.955), (0.105, 0.070, 0.045), p["cream"], 24, 16)
     # Layered swept forelock tufts break the smooth cap silhouette.
     curved_plume("ForeheadTuft",
         [(-0.13, 2.16, -0.93), (-0.09, 2.27, -0.91),
