@@ -220,7 +220,7 @@ for name in ("Fox", "Moth"):
 
 # Keep the gameplay scripts in one ServerScriptService and the client journal in StarterPlayerScripts.
 server_service = obj(doc, "ServerScriptService", "ServerScriptService")
-for filename in ("World.server.luau", "WorldVisuals.server.luau"):
+for filename in ("World.server.luau", "WorldVisuals.server.luau", "Combat.server.luau"):
     script = obj(server_service, "Script", filename.split(".")[0])
     prop(script, "ProtectedString", "Source", (root / filename).read_text(encoding="utf-8"))
 
