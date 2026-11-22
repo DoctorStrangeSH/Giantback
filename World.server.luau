@@ -596,7 +596,7 @@ local function submitCompanionPlayInput(player, payload)
 end
 
 local function petCompanion(player, companionId)
-    if companionId ~= "Fox" and companionId ~= "Moth" then return end
+    if table.find(COMPANION_IDS, companionId) == nil then return end
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") or player:GetAttribute(companionId) ~= true then return end
     if player:GetAttribute("Companion") ~= companionId then
@@ -628,7 +628,7 @@ local function petCompanion(player, companionId)
 end
 
 local function feedCompanion(player, companionId)
-    if companionId ~= "Fox" and companionId ~= "Moth" then return end
+    if table.find(COMPANION_IDS, companionId) == nil then return end
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") or player:GetAttribute(companionId) ~= true then return end
     if player:GetAttribute("Companion") ~= companionId then
