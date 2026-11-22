@@ -30,7 +30,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль"}
 local progress = {"Fox", "Moth", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "Flower", "Timber", "Lantern", "Lit"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil"}
 local toolIds = {Axe = true, Pickaxe = true}
 local combatRewardDefinitions = {
     GroveGrunt01 = {itemId = "Wood", amount = 3},
@@ -39,6 +39,7 @@ local combatRewardDefinitions = {
     RootvaultChest01 = {itemId = "IronOre", amount = 3},
     RootvaultSentinel01 = {itemId = "RootvaultKey", amount = 1},
     RootvaultStalker01 = {itemId = "RootvaultEssence", amount = 1},
+    RootvaultSealKeeper01 = {itemId = "RootvaultSigil", amount = 1},
 }
 local toolUpgradeCosts = {Axe = {Wood = 8, Stone = 6}, Pickaxe = {Wood = 6, Stone = 8}}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
@@ -2115,6 +2116,9 @@ if rootvaultChest then
         if not session then return end
         if not rootvaultLeverActivated[player] then
             return tip(player, "Сначала активируй механизм хранилища.")
+        end
+        if session.completedCombatEncounters.RootvaultSealKeeper01 ~= true then
+            return tip(player, "Реликвию охраняет Страж печатей. Победи его, чтобы открыть сундук.")
         end
         if session.completedCombatEncounters.RootvaultChest01 then
             return tip(player, "Реликвия этого хранилища уже у тебя.")
