@@ -5,13 +5,13 @@
 - [x] Server checks furnace ownership and interaction distance; no client-side reward grants.
 - [x] Persist pending smelting state so progress survives reconnects and offline time.
 - [x] Show ore, ingot counts and smelting status in the Tools panel.
-- [x] Validate all 189 automated tests, Roblox place build, generated-place validation and artifact upload in GitHub Actions run #1235.
+- [x] Validate 189 automated tests, Roblox place build, generated-place validation and artifact upload in the latest canonical GitHub Actions run.
 - [ ] Studio playtest: verify ore placement, furnace access, timer, reconnect, collection and duplicate-claim prevention.
 - [ ] Add multiple recipes, fuel choices and furnace upgrades after the first smelting loop is playtested.
 
 ## Harvesting 2.0 — Starter tools and multi-hit resource nodes
 
-- [x] Add persistent Axe/Pickaxe ownership, selected tool and level-1/2 progression to player profiles (schema v8, monotonic version writes).
+- [x] Add persistent Axe/Pickaxe ownership, selected tool and level-1/2 progression to player profiles (schema v9, monotonic version writes).
 - [x] Restore tools on join and respawn; track actual tool equips so the server validates the tool currently held.
 - [x] Add a dedicated Russian Tools tab with equip and upgrade actions.
 - [x] Add an owner-only personal workbench with server-side distance checks for upgrades.
@@ -25,7 +25,7 @@
 - [x] Fix resource reward handling so each node grants its configured amount (wood/stone now correctly grant ×2; iron grants ×2).
 - [x] Add a personal owner-only furnace: 3 IronOre + 2 Wood starts a 60-second smelt; the iron ingot is granted only when collected after completion.
 - [x] Persist in-progress smelting timestamps and pending output across rejoin; add HUD material counts and smelter status.
-- [ ] Add polished tool swing/impact animations and resource-specific break effects.
+- [~] Implement harvesting tool swing/impact, hit-progress/crack, break/regrowth and reward feedback in consolidated PR #7; awaiting Studio acceptance and merge into the canonical branch.
 - [ ] Studio playtest: verify Backpack switching, correct-tool checks, hit progress, respawn restoration, upgrade cost consumption and save/rejoin.
 - [ ] Add mobile-friendly touch controls and tool selection UX after Studio testing.
 
@@ -37,8 +37,8 @@
 - [x] Update generated-place validation marker for the forward-compatible schema assignment.
 - [x] Confirm fresh Validate Giantback run #1223 after the validator update; tests, place build, generated-place validation and artifact upload all passed.
 - [x] Port starter tool ownership/equipment and server-authoritative multi-hit wood/stone gathering.
-- [ ] Port smelter state/actions and iron ore processing; tool upgrade flow is now present, but iron crafting remains incomplete.
-- [ ] Port combat after iron/smelting integration and dedicated combat acceptance tests.
+- [x] Port smelter state/actions and iron ore processing; owner-only furnace, persistent timer and collect-after-completion flow are implemented.
+- [~] Combat C0 server protocol is implemented in consolidated PR #7; it intentionally does not deal damage. C1 playable combat remains pending Studio acceptance and a server-owned enemy/encounter implementation.
 
 ## Farming 2.0 — Four-crop server foundation
 
