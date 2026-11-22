@@ -2282,6 +2282,36 @@ local function applyCompanionMutation(model, owner, companionId)
     model:SetAttribute("AppliedMutation", normalizedId)
 end
 
+-- Imported companion meshes opt in only after Studio visual/rig acceptance.
+-- Unapproved or incomplete imports never replace the playable blockout.
+local importedCompanionNames = {Fox = "FoxCompanion", Moth = "MothCompanion"}
+
+local function companionTemplate(id)
+    local fallback = storage:FindFirstChild(id)
+    local importedName = importedCompanionNames[id]
+    if not importedName then return fallback end
+    local library = storage:FindFirstChild("AssetLibrary")
+    local modelFolder = library and library:FindFirstChild("Models")
+    local companions = modelFolder and modelFolder:FindFirstChild("Companions")
+    local imported = companions and companions:FindFirstChild(importedName)
+    if not imported or not imported:IsA("Model") then return fallback end
+
+    -- Importing OBJ/MTL is not the same as completing a runtime-compatible rig.
+    if imported:GetAttribute("GiantbackImportStatus") ~= "Approved" then return fallback end
+    if imported:GetAttribute("GiantbackRuntimeReady") ~= true then return fallback end
+    if imported:GetAttribute("GiantbackProceduralAnimationCompatible") ~= true then return fallback end
+    if imported:GetAttribute("GiantbackAssetKey") ~= (id == "Fox" and "fox_companion" or "moth_companion") then
+        return fallback
+    end
+    local body = imported:FindFirstChild("Body", true)
+    if not body or not body:IsA("MeshPart") then return fallback end
+    local movingPartName = id == "Fox" and "Tail" or "Wing"
+    local movingPart = imported:FindFirstChild(movingPartName, true)
+    if not movingPart or not movingPart:IsA("MeshPart") then return fallback end
+
+    return imported
+end
+
 local function follow(dt)
     local now = workspace:GetServerTimeNow()
 
@@ -2337,7 +2367,9 @@ local function follow(dt)
             end
 
             if not model then
-                model = storage[id]:Clone()
+                local template = companionTemplate(id)
+                if not template then continue end
+                model = template:Clone()
                 model.Name = id
                 model.Parent = workspace
                 applyCompanionGrowth(model, owner, id)
