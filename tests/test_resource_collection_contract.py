@@ -29,7 +29,14 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("for nodeId, collected in savedCollected do", WORLD)
 
     def test_profile_schema_and_migration_compatible_fields(self):
-        self.assertIn("old.schemaVersion = 6", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 6)", WORLD)
+        self.assertIn('"IronOre", "IronIngot"', WORLD)
+
+    def test_saving_legacy_schema_never_downgrades_newer_profile(self):
+        self.assertIn("math.max(tonumber(old.schemaVersion) or 0, 6)", WORLD)
+        self.assertIn("local savedIsland = type(old.island) == \"table\" and old.island", WORLD)
+        self.assertIn("if type(savedIsland.buildings) ~= \"table\" then", WORLD)
+        self.assertIn("savedIsland.buildings = {}", WORLD)
         self.assertIn("data.resourceCooldowns", WORLD)
         self.assertIn("data.collectedNodes", WORLD)
 
