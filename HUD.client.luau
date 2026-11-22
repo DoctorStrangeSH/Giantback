@@ -334,6 +334,39 @@ local function renderPets()
     end
 end
 
+local function renderTools()
+    addInfo("Твои инструменты", "Базовые инструменты уже есть в рюкзаке. Выбери, чем будешь работать: для дерева нужен топор, для камня — кирка.", 76)
+    local tools = {
+        {id = "Axe", title = "Топор путешественника", icon = "🪓", detail = "Рубит деревья в Солнечной роще.", owned = "Tool_AxeOwned"},
+        {id = "Pickaxe", title = "Кирка путешественника", icon = "⛏️", detail = "Добывает камень в Лунной роще.", owned = "Tool_PickaxeOwned"},
+    }
+    for _, tool in tools do
+        local equipped = player:GetAttribute("Tool_Equipped") == tool.id
+        local owned = player:GetAttribute(tool.owned) == true
+        local item = card(body, tool.id .. "Card", 86)
+        local icon = label(item, "Icon", tool.icon, UDim2.fromOffset(52, 52), UDim2.fromOffset(10, 16), 30, palette.ink)
+        icon.TextXAlignment = Enum.TextXAlignment.Center
+        label(item, "Title", tool.title, UDim2.new(1, -160, 0, 24), UDim2.fromOffset(72, 10), 14, palette.ink, Enum.Font.GothamBold)
+        label(item, "Detail", tool.detail, UDim2.new(1, -160, 0, 38), UDim2.fromOffset(72, 36), 11, palette.muted)
+        local action = button(item, "Equip", owned and (equipped and "В РУКАХ" or "ВЗЯТЬ") or "ЗАКРЫТО", UDim2.fromOffset(106, 32), UDim2.new(1, -118, 0.5, -16), equipped and palette.gold or palette.forest)
+        action.TextSize = 11
+        action.TextColor3 = equipped and palette.ink or palette.white
+        action.Activated:Connect(function()
+            if not owned then
+                showToast("Этот инструмент пока недоступен.")
+            elseif equipped then
+                showToast("Этот инструмент уже экипирован.")
+            else
+                event:FireServer("EquipTool", tool.id)
+                task.delay(0.15, function()
+                    if activeTab == "Tools" and panel.Visible then openTab("Tools") end
+                end)
+            end
+        end)
+    end
+    addInfo("Как работает добыча", "Подойди к дереву с топором или к каменной жиле с киркой. Каждый узел выдаёт ресурсы отдельно для твоего профиля и восстанавливается со временем.", 88)
+end
+
 local function renderWorld()
     addInfo("Твой архипелаг", "Все острова остаются на своих местах. Восемь домашних островов соединены мостами с общей Солнечной рощей.", 84)
     local bridgeHome = workspace:FindFirstChild("BridgeToGrove")
@@ -350,6 +383,7 @@ local renderers = {
     Farm = renderFarm,
     Pets = renderPets,
     World = renderWorld,
+    Tools = renderTools,
 }
 
 local panelTitles = {
@@ -357,6 +391,7 @@ local panelTitles = {
     Farm = {"МОЯ ФЕРМА", "Сажай, выращивай и собирай урожай"},
     Pets = {"МОИ ПИТОМЦЫ", "Друзья, которые помогают в приключениях"},
     World = {"КАРТА МИРА", "Открывай острова и исследуй новые места"},
+    Tools = {"ИНСТРУМЕНТЫ", "Выбирай снаряжение для добычи ресурсов"},
 }
 
 local activeTab = nil
@@ -385,10 +420,11 @@ local navDefinitions = {
     {id = "Farm", title = "ФЕРМА", glyph = "♧"},
     {id = "Pets", title = "ПИТОМЦЫ", glyph = "♡"},
     {id = "World", title = "КАРТА", glyph = "✧"},
+    {id = "Tools", title = "ИНСТРУМ.", glyph = "⚒"},
 }
 
 for _, definition in navDefinitions do
-    local navButton = button(nav, definition.id, definition.glyph .. "\n" .. definition.title, UDim2.new(0.25, -6, 1, -12), UDim2.new(), palette.forestLight)
+    local navButton = button(nav, definition.id, definition.glyph .. "\n" .. definition.title, UDim2.new(0.2, -6, 1, -12), UDim2.new(), palette.forestLight)
     navButton.TextSize = 13
     navButton.TextYAlignment = Enum.TextYAlignment.Center
     navButton.Activated:Connect(function()
