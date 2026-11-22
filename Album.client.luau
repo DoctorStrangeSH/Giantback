@@ -917,6 +917,47 @@ local function playResourceBreakFeedback(nodeId)
     end
 end
 
+local function spawnHarvestChips(anchor, nodeId)
+    if not anchor or not anchor:IsA("BasePart") then return end
+    local isWood = string.find(nodeId, "Wood", 1, true) ~= nil
+    local material = isWood and Enum.Material.Wood or Enum.Material.Slate
+    local colors = isWood
+        and {Color3.fromRGB(151, 105, 66), Color3.fromRGB(190, 145, 91), Color3.fromRGB(112, 78, 52)}
+        or {Color3.fromRGB(122, 137, 143), Color3.fromRGB(163, 174, 177), Color3.fromRGB(91, 104, 110)}
+
+    for index = 1, 5 do
+        local chip = Instance.new("Part")
+        chip.Name = "LocalHarvestChip"
+        chip.Size = isWood
+            and Vector3.new(0.12 + math.random() * 0.12, 0.08, 0.22 + math.random() * 0.16)
+            or Vector3.new(0.12 + math.random() * 0.1, 0.12 + math.random() * 0.1, 0.12 + math.random() * 0.1)
+        chip.Material = material
+        chip.Color = colors[math.random(1, #colors)]
+        chip.Anchored = true
+        chip.CanCollide = false
+        chip.CanTouch = false
+        chip.CanQuery = false
+        chip.CastShadow = false
+        chip.CFrame = anchor.CFrame * CFrame.new(
+            (math.random() - 0.5) * 0.7,
+            (math.random() - 0.5) * 0.55,
+            (math.random() - 0.5) * 0.5
+        )
+        chip.Parent = workspace
+
+        local drift = Vector3.new((math.random() - 0.5) * 1.8, 0.45 + math.random() * 0.9, (math.random() - 0.5) * 1.8)
+        local destination = chip.CFrame + drift
+        local rotation = CFrame.Angles(math.rad(math.random(-150, 150)), math.rad(math.random(-150, 150)), math.rad(math.random(-150, 150)))
+        local tween = TweenService:Create(chip, TweenInfo.new(0.28 + math.random() * 0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            CFrame = destination * rotation,
+            Transparency = 1,
+            Size = chip.Size * 0.35,
+        })
+        tween:Play()
+        Debris:AddItem(chip, 0.5)
+    end
+end
+
 local function showResourceHitFeedback(payload)
     local nodeId = payload.nodeId
     if type(nodeId) ~= "string" then return end
@@ -926,6 +967,7 @@ local function showResourceHitFeedback(payload)
 
     local anchor = node.PrimaryPart or node:FindFirstChild("PromptAnchor")
     if not anchor or not anchor:IsA("BasePart") then return end
+    spawnHarvestChips(anchor, nodeId)
 
     local bar = resourceHitBars[nodeId]
     if not bar or not bar.Parent then
