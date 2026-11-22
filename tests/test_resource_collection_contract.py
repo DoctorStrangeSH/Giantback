@@ -41,7 +41,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('Axe = math.clamp(math.floor(tonumber(savedLevels.Axe) or 1), 1, 3)', WORLD)
         self.assertIn('Pickaxe = math.clamp(math.floor(tonumber(savedLevels.Pickaxe) or 1), 1, 3)', WORLD)
         self.assertIn('savedTools.levels = toolsSnapshot.levels', WORLD)
-        self.assertIn('old.schemaVersion = 8', WORLD)
+        self.assertIn('old.schemaVersion = 9', WORLD)
 
     def test_workshop_upgrade_is_server_validated_and_charged_once(self):
         upgrade = WORLD.split('if action == "UpgradeTool" then', 1)[1].split('if action == "EquipTool" then', 1)[0]
