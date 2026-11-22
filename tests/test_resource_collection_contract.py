@@ -6,6 +6,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 CLIENT = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+VISIBILITY = (ROOT / "modules/ResourceNodeVisibility.luau").read_text(encoding="utf-8")
 
 
 class ResourceCollectionContractTests(unittest.TestCase):
@@ -45,8 +46,8 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("(root.Position-part.Position).Magnitude", WORLD)
 
     def test_client_hides_only_its_local_resource_copy(self):
-        self.assertIn("LocalTransparencyModifier = visible and 0 or 1", CLIENT)
-        self.assertIn("descendant.Enabled = visible", CLIENT)
+        self.assertIn("LocalTransparencyModifier = visible and 0 or 1", VISIBILITY)
+        self.assertIn("descendant.Enabled = visible", VISIBILITY)
         self.assertIn('"ResourceState"', CLIENT)
         self.assertIn('"ResourcePicked"', CLIENT)
         self.assertIn('event:FireServer("RequestResourceState")', CLIENT)
