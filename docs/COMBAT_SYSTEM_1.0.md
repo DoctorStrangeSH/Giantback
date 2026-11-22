@@ -114,3 +114,8 @@ Implemented in `Combat.server.luau`:
 - C0 deliberately rejects gameplay actions with `CombatNotEnabled`; it does not apply damage or issue rewards.
 
 Automated contract coverage lives in `tests/test_combat_foundation_contract.py`. The place builder embeds the new server script and CI validates its presence. C0 is not a playable combat milestone; no enemy, hitbox, damage or reward implementation is claimed.
+
+
+### C0 security hardening
+
+The server callback now captures all RemoteEvent trailing arguments with varargs and rejects any nonzero argument count. This also rejects an explicitly supplied `nil` and arguments beyond the former third parameter; checking only a single optional payload parameter would silently ignore later arguments.
