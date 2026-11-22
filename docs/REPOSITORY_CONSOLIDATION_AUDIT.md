@@ -70,3 +70,26 @@ Recursive tree/blob comparison across all five branches found:
 ## Why merge/deletion was not forced
 
 Both open PRs currently report dirty merge states. The audit commit and latest cozy-world branch checks are green (#1195, #314, #95). Integration v2's own CI run #1182 is also green, but a passing branch build does not resolve its 85-commit divergence or shared-file conflicts. Integration v2 is materially behind the current cozy-world branch, and shared gameplay files diverged. Blind merging or branch deletion could discard newer farm/world work or the only copy of gameplay changes. The safe next action is a conflict-resolved integration commit followed by CI, not force-merging or deleting refs.
+
+
+## Main-only history reconciliation — 2026-11-22
+
+The four commits present only on `main` were reviewed:
+
+- `c7bd076` and `ee9bfb3`: added `PROJECT_SPEC.md` and a resource collection contract test.
+- `56436f2`: removed a misplaced bridge contract test from `main`.
+- `c862381`: added tests for personal wood/stone gathering and first bridge repair.
+
+The two files from those commits already exist in the canonical development line and are more advanced there:
+- Canonical `PROJECT_SPEC.md` includes the harvesting 2.0 and Ironworking 1.0 implementation status sections absent from the main version.
+- Canonical `tests/test_resource_collection_contract.py` contains the newer schema-9 monotonic-migration checks, tool respawn/equipment checks, server-limited multi-hit gathering, client feedback, iron ore and persistent smelter checks. The main-only test file is an older schema-8 contract and lacks these later guarantees.
+
+Decision: these four main-only commits are **functionally superseded**, not missing work. Do not merge the older files over canonical. Their useful requirements (personal gathering and bridge repair) are represented in the current specification/tests and current world implementation. Preserve the commit history on `main` until release reconciliation; no force-push or blind merge is justified.
+
+## Latest CI status
+
+- PR #1 (reboot base): automated validation and both visual-review jobs passed; still Draft and not mergeable against the historical `main` base.
+- PR #4 (V2): automated place validation passed; remains a divergent migration source, not a whole-branch merge.
+- PR #6 (harvesting feedback): automated validation passed; stacked directly on canonical cozy-world base.
+- PR #7 (Combat C0): automated validation passed; stacked on PR #6.
+- Roblox Studio acceptance remains outstanding for gameplay behavior.
