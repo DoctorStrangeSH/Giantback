@@ -59,6 +59,14 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('if output.exists() and any(output.iterdir()) and not args.overwrite', source)
         self.assertNotIn('fox_companion.obj"', source)
 
+    def test_review_cameras_use_explicit_y_up_basis_for_all_views(self):
+        source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
+        self.assertIn("from mathutils import Matrix, Vector", source)
+        self.assertIn("world_up = Vector((0.0, 1.0, 0.0))", source)
+        self.assertIn("right = forward.cross(world_up).normalized()", source)
+        self.assertIn("camera_up = right.cross(forward).normalized()", source)
+        self.assertIn("Matrix((right, camera_up, back)).transposed()", source)
+
     def test_hero_generator_preserves_all_seventeen_runtime_rig_groups(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
         expected = (
