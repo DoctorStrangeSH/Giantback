@@ -53,3 +53,24 @@ The current world and follower scripts still use their existing blockout impleme
 - Unknown names, duplicates and occupied target names are skipped with warnings.
 - The source OBJ/MTL files and current `Workspace` / `HomeIslandTemplate` instances are not modified by the organizer.
 - Before saving/publishing the place, check all staged assets manually; rollback by undoing the move or reopening the last saved place.
+
+
+## Approved Fox/Moth runtime template — guarded opt-in
+
+The companion client now resolves optional imported templates at:
+- `ReplicatedStorage/AssetLibrary/Models/Companions/FoxCompanion`
+- `ReplicatedStorage/AssetLibrary/Models/Companions/MothCompanion`
+
+Both still use the existing `ReplicatedStorage/Fox` and `ReplicatedStorage/Moth` blockouts by default. The imported model is selected **only** if all of the following are true:
+
+1. The Model contains a MeshPart named `Body` and at least one MeshPart named `Tail` (Fox) or `Wing` (Moth).
+2. The imported Model has `GiantbackAssetKey = fox_companion` or `moth_companion` respectively.
+3. The imported Model is explicitly marked `GiantbackImportStatus = Approved`.
+4. The imported Model is explicitly marked `GiantbackRuntimeReady = true`.
+5. A Studio-tested part-based animation mapping has been confirmed with `GiantbackProceduralAnimationCompatible = true`.
+
+**Do not set these flags just to enable an unfinished mesh.** Roblox Studio must verify that moving mesh parts have valid pivots, correct local names, no conflicting welds/constraints, and no collision or camera issues. The current procedural animator changes each BasePart CFrame directly and cannot animate an arbitrary skinned rig/armature without additional implementation.
+
+The feature affects the client follower clones. Wild encounter art and other world geometry remain existing blockouts until their own integration is accepted. Approval flags are stored on the imported Studio Model, not in source OBJ files. They are not automatically restored by running `python build.py`: the generated .rbxlx does not contain uploaded MeshPart assets.
+
+If an import is missing, incomplete or unapproved, `companionTemplate` falls back to the playable companion template without changing server-owned gameplay state. After a template is approved, respawn/re-equip to instantiate a new follower clone.
