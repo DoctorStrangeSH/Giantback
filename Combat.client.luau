@@ -3,6 +3,7 @@ local ContextActionService = game:GetService("ContextActionService")
 local CollectionService = game:GetService("CollectionService")
 local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -435,12 +436,116 @@ local function showMinionAwakening(minion)
     end)
 end
 
+local animatedEnemies = {}
+
+local function bindEnemyProceduralAnimation(enemy)
+    if not enemy:IsA("Model") or animatedEnemies[enemy] then return end
+    local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+    local root = enemy:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not root then return end
+
+    local joints = {}
+    for _, descendant in enemy:GetDescendants() do
+        if descendant:IsA("Motor6D") then
+            joints[descendant.Name] = descendant
+        end
+    end
+    if not joints["Right Shoulder"] and not joints["Left Shoulder"] then return end
+
+    animatedEnemies[enemy] = {
+        humanoid = humanoid,
+        root = root,
+        joints = joints,
+        startedAt = os.clock(),
+        phase = 0,
+    }
+    enemy.AncestryChanged:Connect(function(_, parent)
+        if parent == nil then
+            local entry = animatedEnemies[enemy]
+            if entry then
+                for _, joint in entry.joints do
+                    if joint.Parent then joint.Transform = CFrame.identity end
+                end
+            end
+            animatedEnemies[enemy] = nil
+        end
+    end)
+end
+
+local function setJointPose(joint, x, y, z)
+    if joint and joint.Parent then
+        joint.Transform = CFrame.Angles(x, y, z)
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    local now = os.clock()
+    for enemy, entry in animatedEnemies do
+        if not enemy.Parent or not entry.humanoid.Parent or not entry.root.Parent then
+            animatedEnemies[enemy] = nil
+            continue
+        end
+
+        local joints = entry.joints
+        local state = enemy:GetAttribute("CombatState") or "Idle"
+        local isBoss = enemy:GetAttribute("IsBoss") == true
+        local isMinion = enemy:GetAttribute("ArchetypeId") == "SealMinion"
+        local moving = entry.humanoid.MoveDirection.Magnitude > 0.08
+        local speed = isBoss and 5.2 or (isMinion and 9 or 7)
+        local cycle = (now - entry.startedAt) * speed
+        local swing = moving and math.sin(cycle) or 0
+        local breathe = math.sin(now * (isBoss and 1.8 or 2.8)) * (isBoss and 0.035 or 0.025)
+
+        local rightArm, leftArm = joints["Right Shoulder"], joints["Left Shoulder"]
+        local rightLeg, leftLeg = joints["Right Hip"], joints["Left Hip"]
+        local neck, rootJoint = joints["Neck"], joints["RootJoint"]
+
+        if state == "BossSlamTelegraph" then
+            setJointPose(rightArm, -2.45, 0, 0.28)
+            setJointPose(leftArm, -2.45, 0, -0.28)
+            setJointPose(rootJoint, -0.12, 0, 0)
+            setJointPose(neck, 0.18, 0, 0)
+        elseif state == "Telegraph" then
+            setJointPose(rightArm, isBoss and -1.9 or -1.45, 0, -0.55)
+            setJointPose(leftArm, -0.35, 0, 0.2)
+            setJointPose(rootJoint, -0.08, 0, 0)
+            setJointPose(neck, -0.12, 0, 0)
+        elseif state == "Recover" then
+            setJointPose(rightArm, 0.85, 0, -0.18)
+            setJointPose(leftArm, 0.35, 0, 0.18)
+            setJointPose(rootJoint, 0.12, 0, 0)
+            setJointPose(neck, -0.08, 0, 0)
+        elseif state == "PhaseTransition" then
+            setJointPose(rightArm, -1.25, 0, -0.8)
+            setJointPose(leftArm, -1.25, 0, 0.8)
+            setJointPose(rootJoint, -0.18, 0, 0)
+            setJointPose(neck, 0.22, 0, 0)
+        elseif moving then
+            setJointPose(rightArm, swing * 0.48, 0, 0)
+            setJointPose(leftArm, -swing * 0.48, 0, 0)
+            setJointPose(rightLeg, -swing * 0.58, 0, 0)
+            setJointPose(leftLeg, swing * 0.58, 0, 0)
+            setJointPose(rootJoint, breathe + math.abs(swing) * 0.025, 0, 0)
+            setJointPose(neck, math.sin(cycle * 2) * 0.025, 0, 0)
+        else
+            setJointPose(rightArm, breathe, 0, isBoss and -0.035 or -0.02)
+            setJointPose(leftArm, breathe, 0, isBoss and 0.035 or 0.02)
+            setJointPose(rightLeg, 0, 0, 0)
+            setJointPose(leftLeg, 0, 0, 0)
+            setJointPose(rootJoint, breathe, 0, 0)
+            setJointPose(neck, math.sin(now * 1.4) * 0.018, 0, 0)
+        end
+    end
+end)
+
 CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(function(enemy)
     bindEnemyHealth(enemy)
+    bindEnemyProceduralAnimation(enemy)
     showMinionAwakening(enemy)
 end)
 for _, enemy in CollectionService:GetTagged("GiantbackEnemy") do
     bindEnemyHealth(enemy)
+    bindEnemyProceduralAnimation(enemy)
 end
 
 local function showBossSlamTelegraph(enemy)
