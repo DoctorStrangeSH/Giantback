@@ -412,6 +412,34 @@ showToast = function(message)
     end)
 end
 
+local tutorialMilestones = {
+    {key = "Fox", title = "Знакомство с лисёнком"},
+    {key = "Seed", title = "Лунное семя"},
+    {key = "Moth", title = "Знакомство с молью"},
+    {key = "MoonBloom", title = "Первый лунный цветок"},
+    {key = "MoonGateTrace", title = "След древних корней"},
+    {key = "MoonGateOpen", title = "Открытие тайного прохода"},
+    {key = "MoonRelic", title = "Звёздный осколок"},
+    {key = "Flower", title = "Цветок у дома"},
+    {key = "Timber", title = "Ветви для фонаря"},
+    {key = "Lantern", title = "Постройка фонаря"},
+    {key = "Lit", title = "Пробуждение фонаря"},
+}
+
+local function getTutorialProgress()
+    local completed = 0
+    for _, milestone in tutorialMilestones do
+        if player:GetAttribute(milestone.key) == true then
+            completed += 1
+        else
+            break
+        end
+    end
+    local total = #tutorialMilestones
+    local nextMilestone = tutorialMilestones[math.min(completed + 1, total)]
+    return completed, total, nextMilestone and nextMilestone.title or "Первые шаги завершены"
+end
+
 getObjective = function()
     if not player:GetAttribute("Ready") then return "Загружаем твой остров…" end
     if not player:GetAttribute("Bridge_HomeToGrove") then
@@ -447,6 +475,11 @@ local function refresh()
     woodLabel.Text = "🪵  Дерево  " .. tostring(player:GetAttribute("Resource_Wood") or 0)
     stoneLabel.Text = "🪨  Камень  " .. tostring(player:GetAttribute("Resource_Stone") or 0)
     objectiveText.Text = getObjective()
+    local completed, total, milestoneTitle = getTutorialProgress()
+    objectiveEyebrow.Text = completed >= total
+        and "ПРИКЛЮЧЕНИЕ ПРОДОЛЖАЕТСЯ"
+        or ("ПУТЕШЕСТВИЕ • ШАГ " .. tostring(completed + 1) .. " ИЗ " .. tostring(total))
+    objectiveGlyph.Text = completed >= total and "★" or tostring(completed + 1)
     brandSubtitle.Text = "УРОВЕНЬ ГОРОДА " .. tostring(player:GetAttribute("City_Level") or 1)
     if panel.Visible and activeTab and renderers[activeTab] then
         clearBody()
