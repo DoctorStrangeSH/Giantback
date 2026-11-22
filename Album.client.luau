@@ -2132,6 +2132,61 @@ local function applyCompanionGrowth(model, owner, companionId)
     captureAnimation(model, companionId, false, owner == player)
 end
 
+local companionMutationVisuals = {
+    Mossback = {color = Color3.fromRGB(117, 176, 112), outline = Color3.fromRGB(168, 218, 143)},
+    Sunblessed = {color = Color3.fromRGB(255, 190, 93), outline = Color3.fromRGB(255, 220, 145)},
+    Prismtail = {color = Color3.fromRGB(205, 151, 255), outline = Color3.fromRGB(241, 204, 255)},
+    Moonveil = {color = Color3.fromRGB(151, 169, 255), outline = Color3.fromRGB(205, 215, 255)},
+    Stardust = {color = Color3.fromRGB(177, 145, 255), outline = Color3.fromRGB(224, 204, 255)},
+    Aurora = {color = Color3.fromRGB(117, 235, 215), outline = Color3.fromRGB(205, 255, 240)},
+}
+local mutationOriginalColors = setmetatable({}, {__mode = "k"})
+
+local function applyCompanionMutation(model, owner, companionId)
+    if not model or not model.Parent then return end
+    local mutationId = owner:GetAttribute("Companion_" .. companionId .. "_Mutation")
+    local visual = type(mutationId) == "string" and companionMutationVisuals[mutationId] or nil
+    local normalizedId = visual and mutationId or ""
+    if model:GetAttribute("AppliedMutation") == normalizedId then return end
+
+    local originals = mutationOriginalColors[model]
+    if not originals then
+        originals = {}
+        mutationOriginalColors[model] = originals
+    end
+    for part, originalColor in originals do
+        if part.Parent then part.Color = originalColor end
+    end
+    table.clear(originals)
+
+    local highlight = model:FindFirstChild("CompanionMutationHighlight")
+    if highlight then highlight:Destroy() end
+
+    if visual then
+        for _, descendant in model:GetDescendants() do
+            if descendant:IsA("BasePart") then
+                originals[descendant] = descendant.Color
+                local accent = string.find(string.lower(descendant.Name), "tip")
+                    or string.find(string.lower(descendant.Name), "jewel")
+                    or string.find(string.lower(descendant.Name), "glow")
+                    or string.find(string.lower(descendant.Name), "spot")
+                descendant.Color = descendant.Color:Lerp(visual.color, accent and 0.58 or 0.24)
+            end
+        end
+
+        highlight = Instance.new("Highlight")
+        highlight.Name = "CompanionMutationHighlight"
+        highlight.Adornee = model
+        highlight.FillColor = visual.color
+        highlight.OutlineColor = visual.outline
+        highlight.FillTransparency = 0.94
+        highlight.OutlineTransparency = 0.18
+        highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+        highlight.Parent = model
+    end
+    model:SetAttribute("AppliedMutation", normalizedId)
+end
+
 local function follow(dt)
     local now = workspace:GetServerTimeNow()
 
@@ -2178,6 +2233,10 @@ local function follow(dt)
                 * followOffset
                 * CFrame.Angles(0, math.sin(phase * 1.6) * 0.06, 0)
 
+            if model then
+                applyCompanionMutation(model, owner, id)
+            end
+
             if owner == player and id == "Moth" and model then
                 updateMothStardust(model, owner)
             end
@@ -2187,6 +2246,7 @@ local function follow(dt)
                 model.Name = id
                 model.Parent = workspace
                 applyCompanionGrowth(model, owner, id)
+                applyCompanionMutation(model, owner, id)
                 model:PivotTo(target)
                 models[owner] = model
                 captureAnimation(model, id, false, owner == player)
@@ -2201,6 +2261,7 @@ local function follow(dt)
                 end
             else
                 applyCompanionGrowth(model, owner, id)
+                applyCompanionMutation(model, owner, id)
                 model:PivotTo(model:GetPivot():Lerp(target, 1 - math.exp(-9 * dt)))
             end
 
