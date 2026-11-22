@@ -1,3 +1,14 @@
+## Asset Pipeline 1.0 — Studio import and asset staging
+
+- [x] Organize the repository asset catalogue by editable sources, imported model exports, textures, icons, audio, animation sources and references.
+- [x] Validate six original OBJ/MTL source pairs and source manifest in GitHub Actions.
+- [x] Add a Roblox Studio Command Bar organizer for already imported models with dry-run mode, duplicate prevention and explicit destinations.
+- [x] Cover organizer naming, safe defaults, destination checks and non-destructive behavior with source contract tests.
+- [ ] Import source models into Roblox Studio, confirm materials, scale, collisions and joints.
+- [ ] Publish approved MeshParts and record asset IDs and ownership in asset manifest.
+- [ ] Replace current Parts-based gameplay placeholders using approved imported templates; preserve fallback until Studio acceptance.
+- [ ] Verify Fox tail and Moth wings, mobile rendering and multi-player visibility in Studio.
+
 ## Ironworking 1.0 — Ore and smelting
 
 - [x] Two personal iron-ore resource nodes in the Dusk biome with pickaxe validation, five-hit harvesting, per-player cooldowns and configured rewards.
