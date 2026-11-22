@@ -216,3 +216,8 @@ Contract tests cover retry count/backoff, disconnect cancellation, duplicate del
 The client procedural pose layer now normalizes Motor6D names by lowercasing and removing whitespace. This maps both classic R6 names such as `Right Shoulder` and R15 names such as `RightShoulder` to the same canonical joint keys. The same normalization is used for shoulders, hips, neck and root joint.
 
 A contract test checks the normalized mapping and the generated-place workflow now verifies that the compatibility markers are embedded in the published client script. This is source/build validation only: Roblox Studio acceptance must still confirm the actual joint orientations and pose quality on representative R6 and R15 enemy rigs.
+
+
+## 26. R15 torso-chain pose support
+
+The procedural pose binder now maps the R15 `Root` joint as the canonical root fallback and applies subtle torso lean through the R15 `Waist` joint. Classic R6 `RootJoint` remains supported. Wind-up, recovery, phase-transition, locomotion and idle poses now update the waist when present, without requiring it on R6 rigs. Contract tests and generated-place validation markers cover the aliases. Final orientation and animation blending still require Studio playtests on real R6 and R15 rigs.
