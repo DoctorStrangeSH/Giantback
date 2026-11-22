@@ -79,7 +79,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('name = "CrystalRuneMoon"', VISUALS)
         self.assertIn('name = "CrystalRuneDawn"', VISUALS)
         self.assertIn('name = "CrystalRuneTide"', VISUALS)
-        self.assertIn('"Луна → Рассвет → Прилив"', VISUALS)
+        self.assertIn('Луна → Рассвет → Прилив', VISUALS)
         self.assertIn('"CrystalGrottoCache"', VISUALS)
         self.assertIn('placeTrialPrompt(crystalCache', VISUALS)
 
