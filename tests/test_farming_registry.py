@@ -39,6 +39,12 @@ class FarmingRegistryTests(unittest.TestCase):
         self.assertIn("session.inventory[definition.harvestItemId]", WORLD)
         self.assertIn("if now < state.readyAt then", WORLD)
 
+    def test_selected_crop_is_normalized_and_saved_in_island_profile(self):
+        self.assertIn("selectedCropId = defaultCropId", WORLD)
+        self.assertIn("city.farm.selectedCropId = isValidCropId(rawFarm.selectedCropId)", WORLD)
+        self.assertIn("session.selectedCropId = session.city.farm.selectedCropId or defaultCropId", WORLD)
+        self.assertIn("session.city.farm.selectedCropId = cropId", WORLD)
+
     def test_growth_is_persisted_as_server_timestamps(self):
         self.assertIn("plantedAt = safeTimestamp(saved.plantedAt)", WORLD)
         self.assertIn("readyAt = safeTimestamp(saved.readyAt)", WORLD)
