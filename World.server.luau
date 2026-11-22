@@ -469,6 +469,7 @@ local function init(player)
         tools = {Axe = true, Pickaxe = true},
         equippedTool = "Axe",
         resourceCooldowns = {},
+        resourceHits = {},
         collectedNodes = {},
         city = defaultCity(),
         cityModel = nil,
@@ -1360,7 +1361,8 @@ local resourceDefinitions = {
         key = "GroveWood01",
         amount = 2,
         requiredTool = "Axe",
-        verb = "Срубить дерево ×2",
+        hitsRequired = 3,
+        verb = "Ударить топором",
         itemId = "Wood",
         displayName = "Лесная древесина",
         area = "Grove",
@@ -1386,7 +1388,8 @@ local resourceDefinitions = {
         key = "DuskStone01",
         amount = 2,
         requiredTool = "Pickaxe",
-        verb = "Добыть камень ×2",
+        hitsRequired = 4,
+        verb = "Ударить киркой",
         itemId = "Stone",
         displayName = "Каменная жила",
         area = "Dusk",
@@ -1446,6 +1449,29 @@ local function spawnResource(def)
 
         local now = os.time()
         local nextReadyAt
+        if def.kind ~= "unique" then
+            local readyAt = session.resourceCooldowns[def.key] or 0
+            if readyAt > now then
+                event:FireClient(player, "ResourcePicked", {nodeId = def.key, readyAt = readyAt})
+                local remaining = readyAt - now
+                return tip(player, def.displayName .. " снова можно будет собрать через " .. tostring(math.ceil(remaining / 60)) .. " мин.")
+            end
+
+            local hitsRequired = math.clamp(math.floor(tonumber(def.hitsRequired) or 1), 1, 10)
+            if hitsRequired > 1 then
+                local hits = math.min(hitsRequired, (session.resourceHits[def.key] or 0) + 1)
+                session.resourceHits[def.key] = hits
+                event:FireClient(player, "ResourceHit", {
+                    nodeId = def.key,
+                    hits = hits,
+                    maxHits = hitsRequired,
+                })
+                if hits < hitsRequired then
+                    return tip(player, def.displayName .. ": удар " .. tostring(hits) .. "/" .. tostring(hitsRequired))
+                end
+                session.resourceHits[def.key] = nil
+            end
+        end
         if def.kind == "unique" then
             if session.collectedNodes[def.key] then
                 event:FireClient(player, "ResourcePicked", {
