@@ -175,7 +175,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('smelter.readyAt = 0', collect)
         self.assertIn('if os.time() < smelter.readyAt then', collect)
         self.assertIn('if not root or not anchor or (root.Position - anchor.Position).Magnitude > 14 then', collect)
-        self.assertIn('if (root.Position - anchor.Position).Magnitude > 14 then', start)
+        self.assertIn('if not root or not anchor or (root.Position - anchor.Position).Magnitude > 14 then', start)
 
     def test_personal_furnace_is_created_and_owner_only_prompt_opens_smelter(self):
         self.assertIn('furnace.Name = "Smelter"', WORLD)
