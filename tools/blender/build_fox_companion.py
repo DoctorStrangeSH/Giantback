@@ -379,8 +379,8 @@ def create_fox(p):
     sculpted_head("FoxHead", (0, 1.73, -0.62), (0.62, 0.61, 0.56), p["fox_orange"], 64, 40)
     lofted_muzzle("FoxMuzzle", [(-1.385, 1.42, 0.075, 0.065), (-1.33, 1.42, 0.20, 0.13), (-1.23, 1.43, 0.31, 0.19), (-1.11, 1.44, 0.36, 0.215), (-1.015, 1.45, 0.29, 0.17), (-0.985, 1.45, 0.18, 0.11)], p["cream"])
     # Rounded cream cheek pads blend into the muzzle instead of forming pointed whisker tufts.
-    ellipsoid("CheekFluff_L", (-0.285, 1.435, -1.025), (0.072, 0.048, 0.022), p["cream"], 24, 16)
-    ellipsoid("CheekFluff_R", (0.285, 1.435, -1.025), (0.072, 0.048, 0.022), p["cream"], 24, 16)
+    ellipsoid("CheekFluff_L", (-0.255, 1.435, -1.035), (0.042, 0.026, 0.010), p["cream"], 24, 16)
+    ellipsoid("CheekFluff_R", (0.255, 1.435, -1.035), (0.042, 0.026, 0.010), p["cream"], 24, 16)
     # Layered swept forelock tufts break the smooth cap silhouette.
     curved_plume("ForeheadTuft",
         [(-0.13, 2.16, -0.93), (-0.09, 2.27, -0.91),
@@ -564,9 +564,9 @@ def add_review_camera(objects):
     world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.22
 
     for name, offset, power, size in (
-        ("Key", (1.8, 2.8, -2.0), 175, 3.2),
-        ("Fill", (-2.0, 1.0, -1.0), 75, 2.8),
-        ("Rim", (0.0, 2.0, 2.8), 125, 2.4),
+        ("Key", (1.8, 2.8, -2.0), 95, 3.2),
+        ("Fill", (-2.0, 1.0, -1.0), 42, 2.8),
+        ("Rim", (0.0, 2.0, 2.8), 72, 2.4),
     ):
         data = bpy.data.lights.new(name, "AREA")
         data.energy = power
@@ -733,8 +733,8 @@ def main():
     scene.eevee.taa_render_samples = 16
     scene.render.image_settings.file_format = "PNG"
     scene.render.filepath = str(output / "fox_companion_hero_three_quarter.png")
-    scene.view_settings.view_transform = "AgX"
-    scene.view_settings.look = "AgX - High Contrast"
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "None"
     blend_path = output / "fox_companion_hero.blend"
     obj_path = output / "fox_companion_hero.obj"
     rig_path = write_rig_metadata(output, objects)
