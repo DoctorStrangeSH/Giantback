@@ -1769,6 +1769,69 @@ sentinel.PrimaryPart = sentinelRoot
 sentinelRoot:SetNetworkOwner(nil)
 CollectionService:AddTag(sentinel, "GiantbackEnemy")
 
+-- A quick Rootvault prowler pressures players in the entry chamber.
+local stalker = Instance.new("Model")
+stalker.Name = "RootvaultStalker01"
+stalker:SetAttribute("EnemyId", "RootvaultStalker01")
+stalker:SetAttribute("EncounterId", "RootvaultStalker01")
+stalker:SetAttribute("RegionId", "Rootvault")
+stalker:SetAttribute("ArchetypeId", "VaultStalker")
+stalker:SetAttribute("AggroRange", 26)
+stalker:SetAttribute("AttackRange", 4.5)
+stalker:SetAttribute("AttackDamage", 8)
+stalker:SetAttribute("AttackCooldown", 1.8)
+stalker:SetAttribute("TelegraphSeconds", 0.55)
+stalker:SetAttribute("PathRefreshSeconds", 0.7)
+stalker.Parent = rootvault
+
+local stalkerSpawn = entryRoomCenter + Vector3.new(-8, 3, 5)
+local stalkerRoot = makeEnemyPart(stalker, "HumanoidRootPart", Vector3.new(1.6, 1.8, 0.9), CFrame.lookAt(stalkerSpawn, stalkerSpawn + Vector3.new(1, 0, 0)), palette.ink)
+stalkerRoot.Transparency = 1
+stalkerRoot.Massless = false
+local stalkerTorso = makeEnemyPart(stalker, "Torso", Vector3.new(1.55, 1.9, 0.9), stalkerRoot.CFrame, palette.moss, Enum.Material.Grass)
+local stalkerHead = makeEnemyPart(stalker, "Head", Vector3.new(1.15, 1.05, 1.05), stalkerRoot.CFrame * CFrame.new(0, 1.35, 0), palette.mossLight, Enum.Material.Grass, Enum.PartType.Ball)
+local stalkerRightArm = makeEnemyPart(stalker, "Right Arm", Vector3.new(0.55, 1.5, 0.65), stalkerRoot.CFrame * CFrame.new(1.0, 0, 0), palette.moss, Enum.Material.Grass)
+local stalkerLeftArm = makeEnemyPart(stalker, "Left Arm", Vector3.new(0.55, 1.5, 0.65), stalkerRoot.CFrame * CFrame.new(-1.0, 0, 0), palette.moss, Enum.Material.Grass)
+local stalkerRightLeg = makeEnemyPart(stalker, "Right Leg", Vector3.new(0.62, 1.45, 0.7), stalkerRoot.CFrame * CFrame.new(0.38, -1.55, 0), palette.stone, Enum.Material.Slate)
+local stalkerLeftLeg = makeEnemyPart(stalker, "Left Leg", Vector3.new(0.62, 1.45, 0.7), stalkerRoot.CFrame * CFrame.new(-0.38, -1.55, 0), palette.stone, Enum.Material.Slate)
+joinRig(stalker, "RootJoint", stalkerRoot, stalkerTorso, CFrame.new(), CFrame.new())
+joinRig(stalker, "Neck", stalkerTorso, stalkerHead, CFrame.new(0, 0.95, 0), CFrame.new(0, -0.52, 0))
+joinRig(stalker, "Right Shoulder", stalkerTorso, stalkerRightArm, CFrame.new(0.8, 0.55, 0), CFrame.new(0, 0.55, 0))
+joinRig(stalker, "Left Shoulder", stalkerTorso, stalkerLeftArm, CFrame.new(-0.8, 0.55, 0), CFrame.new(0, 0.55, 0))
+joinRig(stalker, "Right Hip", stalkerTorso, stalkerRightLeg, CFrame.new(0.38, -0.85, 0), CFrame.new(0, 0.72, 0))
+joinRig(stalker, "Left Hip", stalkerTorso, stalkerLeftLeg, CFrame.new(-0.38, -0.85, 0), CFrame.new(0, 0.72, 0))
+
+for side = -1, 1, 2 do
+    local eye = makeEnemyPart(stalker, "MintEye", Vector3.new(0.16, 0.16, 0.1), stalkerHead.CFrame * CFrame.new(side * 0.25, 0.05, -0.49), palette.moon, Enum.Material.Neon, Enum.PartType.Ball)
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = stalkerHead
+    weld.Part1 = eye
+    weld.Parent = eye
+    addLight(eye, palette.moon, 3, 0.25)
+end
+
+for index = 1, 3 do
+    local thorn = makeEnemyPart(stalker, "BackRootThorn", Vector3.new(0.22, 0.9, 0.25), stalkerTorso.CFrame * CFrame.new((index - 2) * 0.42, 0.35, 0.55) * CFrame.Angles(math.rad(-18), 0, math.rad(12)), palette.barkLight, Enum.Material.Wood)
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = stalkerTorso
+    weld.Part1 = thorn
+    weld.Parent = thorn
+end
+
+local stalkerHumanoid = Instance.new("Humanoid")
+stalkerHumanoid.DisplayName = "Корневой охотник"
+stalkerHumanoid.MaxHealth = 75
+stalkerHumanoid.Health = 75
+stalkerHumanoid.WalkSpeed = 15
+stalkerHumanoid.JumpPower = 0
+stalkerHumanoid.BreakJointsOnDeath = false
+stalkerHumanoid.RequiresNeck = true
+stalkerHumanoid.Parent = stalker
+stalker.PrimaryPart = stalkerRoot
+stalkerRoot:SetNetworkOwner(nil)
+CollectionService:AddTag(stalker, "GiantbackEnemy")
+
+
 -- Let the gameplay bootstrap wait until the collectible models are fully decorated.
 local ready = ReplicatedStorage:FindFirstChild("GiantbackVisualsReady") or Instance.new("BoolValue")
 ready.Name = "GiantbackVisualsReady"
