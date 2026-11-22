@@ -168,7 +168,8 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('makePart("IronVeinC"', WORLD)
         self.assertIn('glow.Parent = glint', WORLD)
         self.assertIn('player:GetAttribute("Resource_IronOre")', HUD)
-        self.assertIn("Железная жила", HUD)
+        self.assertIn("Новая находка: железная руда", HUD)
+        self.assertIn("железной жиле", HUD)
 
     def test_renewable_nodes_have_explicit_personal_cooldowns(self):
         self.assertEqual(WORLD.count('kind = "renewable"'), 10)
