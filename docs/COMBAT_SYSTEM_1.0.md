@@ -202,3 +202,10 @@ When a Seal Fragment is activated and enters the tagged enemy collection, each c
 ## 23. Client procedural enemy animation layer
 
 Tagged custom enemy rigs now receive a lightweight local animation layer driven by replicated `CombatState` and Humanoid movement. It supplies idle breathing/head motion, alternating arm/leg locomotion, single-attack wind-up, two-arm ground-slam wind-up, recovery and phase-transition poses. Motor6D.Transform is applied client-side only; the server still owns movement, hit timing and damage. Joint transforms are reset when the rig leaves Workspace. This is a procedural placeholder animation layer, not authored animation assets or a substitute for final animation polish. Studio validation is required for joint orientation, replication timing, and visual quality on every enemy rig.
+
+
+## 24. Reward persistence retry hardening
+
+The C1 reward resolver now retries a failed profile reward callback up to five times with exponential backoff (0.75s, 1.5s, 3s, 6s). The profile callback treats an encounter already present in the persisted completion ledger as successful idempotent delivery. A failed save still rolls back the in-session inventory and completion flag before returning failure, so a later retry can safely attempt the grant again.
+
+Contract tests cover retry count/backoff, disconnect cancellation, duplicate delivery success, and rollback markers. These source-contract checks do not prove DataStore reliability under live Roblox throttling; Studio acceptance must still exercise first-clear rewards, reconnects, and transient save failures.
