@@ -1023,6 +1023,63 @@ createPersonalCity = function(player, session)
                 Enum.Material.Ground
             )
 
+            -- Raised timber edging and shallow furrows make each plot readable
+            -- before planting; all detail parts stay non-interactive and non-colliding.
+            local bedFrame = soil.CFrame
+            local bedTop = soil.Size.Y / 2
+            local bedLength = soil.Size.X
+            local bedWidth = soil.Size.Z
+            local edgeColor = Color3.fromRGB(137, 94, 62)
+            local edgeMaterial = Enum.Material.WoodPlanks
+            makeFarmVisualPart(
+                plotModel,
+                "BedEdgeFront",
+                Vector3.new(bedLength + 0.22, 0.28, 0.22),
+                bedFrame * CFrame.new(0, bedTop + 0.04, -bedWidth / 2),
+                edgeColor,
+                Enum.PartType.Block,
+                edgeMaterial
+            )
+            makeFarmVisualPart(
+                plotModel,
+                "BedEdgeBack",
+                Vector3.new(bedLength + 0.22, 0.28, 0.22),
+                bedFrame * CFrame.new(0, bedTop + 0.04, bedWidth / 2),
+                edgeColor,
+                Enum.PartType.Block,
+                edgeMaterial
+            )
+            makeFarmVisualPart(
+                plotModel,
+                "BedEdgeLeft",
+                Vector3.new(0.22, 0.28, bedWidth - 0.18),
+                bedFrame * CFrame.new(-bedLength / 2, bedTop + 0.04, 0),
+                edgeColor,
+                Enum.PartType.Block,
+                edgeMaterial
+            )
+            makeFarmVisualPart(
+                plotModel,
+                "BedEdgeRight",
+                Vector3.new(0.22, 0.28, bedWidth - 0.18),
+                bedFrame * CFrame.new(bedLength / 2, bedTop + 0.04, 0),
+                edgeColor,
+                Enum.PartType.Block,
+                edgeMaterial
+            )
+            for furrowIndex = 1, 3 do
+                local furrowX = (furrowIndex - 2) * 0.72
+                makeFarmVisualPart(
+                    plotModel,
+                    "SoilFurrow",
+                    Vector3.new(0.12, 0.025, bedWidth - 0.62),
+                    bedFrame * CFrame.new(furrowX, bedTop + 0.225, 0),
+                    Color3.fromRGB(83, 57, 43),
+                    Enum.PartType.Block,
+                    Enum.Material.Ground
+                )
+            end
+
             local anchor = Instance.new("Part")
             anchor.Name = "PromptAnchor"
             anchor.Size = Vector3.new(0.5, 0.5, 0.5)
