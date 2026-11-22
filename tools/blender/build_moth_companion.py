@@ -144,43 +144,56 @@ def abdomen_band(name, y, rx, rz, material, segments=40):
 
 
 def crescent(name, center, side, material):
-    # A filled crescent silhouette (not overlapping oval discs), mirrored per wing.
+    # Build a crescent as a curved strip between two arcs, not a concave ngon.
     cx, cy, cz = center
     outer_radius, inner_radius, inner_offset = 0.22, 0.185, 0.105
-    points = []
-    for step in range(25):
-        angle = math.radians(60 + step * 240 / 24)
-        points.append((
+    steps = 28
+    outer_front, inner_front = [], []
+    for step in range(steps + 1):
+        angle = math.radians(60 + step * 240 / steps)
+        outer_front.append((
             cx + side * outer_radius * math.cos(angle),
             cy + outer_radius * math.sin(angle),
             cz,
         ))
-    for step in range(25):
-        angle = math.radians(-90 + step * 180 / 24)
-        points.append((
+        inner_front.append((
             cx + side * (inner_offset + inner_radius * math.cos(angle)),
             cy + inner_radius * math.sin(angle),
             cz,
         ))
-    count = len(points)
     thickness = 0.018
-    vertices = points + [(x, y, z + thickness) for x, y, z in points]
-    faces = [tuple(range(count)), tuple(range(count * 2 - 1, count - 1, -1))]
-    for index in range(count):
-        next_index = (index + 1) % count
-        faces.append((index, next_index, next_index + count, index + count))
+    outer_back = [(x, y, z + thickness) for x, y, z in outer_front]
+    inner_back = [(x, y, z + thickness) for x, y, z in inner_front]
+    vertices = outer_front + inner_front + outer_back + inner_back
+    count = steps + 1
+    outer_back_start = count * 2
+    inner_back_start = count * 3
+    faces = []
+    for index in range(steps):
+        nxt = index + 1
+        faces.append((index, nxt, count + nxt, count + index))
+        faces.append((outer_back_start + index, inner_back_start + index,
+                      inner_back_start + nxt, outer_back_start + nxt))
+        faces.append((index, outer_back_start + index, outer_back_start + nxt, nxt))
+        faces.append((count + index, count + nxt,
+                      inner_back_start + nxt, inner_back_start + index))
+    faces.extend((
+        (0, count, inner_back_start, outer_back_start),
+        (steps, outer_back_start + steps, inner_back_start + steps, count + steps),
+    ))
     mesh = bpy.data.meshes.new(name + "Mesh")
     mesh.from_pydata(vertices, [], faces)
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     mesh.materials.append(material)
-    uv = mesh.uv_layers.new(name="MoonUV")
     for polygon in mesh.polygons:
         polygon.use_smooth = False
+    uv = mesh.uv_layers.new(name="MoonUV")
+    for polygon in mesh.polygons:
         for loop_index in polygon.loop_indices:
-            vertex = mesh.vertices[mesh.loops[loop_index].vertex_index].co
-            uv.data[loop_index].uv = (vertex.x - cx + 0.5, vertex.y - cy + 0.5)
+            vertex_index = mesh.loops[loop_index].vertex_index
+            uv.data[loop_index].uv = (vertex_index % count / steps, vertex_index // count / 3)
     bevel = obj.modifiers.new("Soft moon edge", "BEVEL")
     bevel.width = 0.008
     bevel.segments = 2
