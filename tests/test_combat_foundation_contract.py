@@ -455,6 +455,10 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn("Enum.KeyCode.ButtonY", CLIENT)
         self.assertIn('showFeedback("ЛИСЁНОК · "', CLIENT)
         self.assertIn('showFeedback("ЛУННАЯ МОЛЬ · ЛЕЧЕНИЕ ×"', CLIENT)
+        self.assertIn('CompanionRequired = "Сначала выбери питомца-компаньона"', CLIENT)
+        self.assertIn('CompanionSkillCooldown = "Способность питомца восстанавливается"', CLIENT)
+        self.assertIn('CompanionNoTarget = "Лисёнок не видит противника рядом"', CLIENT)
+        self.assertIn('CompanionNoOneToHeal = "Рядом никому не требуется лечение"', CLIENT)
 
     def test_finisher_applies_server_authoritative_enemy_knockback(self):
         self.assertIn("if isFinisher and entry.root.Parent then", COMBAT)
