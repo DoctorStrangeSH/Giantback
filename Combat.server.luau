@@ -134,6 +134,7 @@ local function clearTransientState(player)
     state.attackReadyAt = 0
     state.comboStep = 0
     state.comboExpiresAt = 0
+    player:SetAttribute("CombatComboStep", 0)
     player:SetAttribute("CombatBlocking", false)
     player:SetAttribute("CombatDodging", false)
 end
