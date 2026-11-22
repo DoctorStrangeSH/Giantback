@@ -1140,7 +1140,7 @@ leftLeg.CanCollide = true
 
 joinRig(enemy, "RootJoint", enemyRoot, torso, CFrame.new(), CFrame.new())
 joinRig(enemy, "Neck", torso, head, CFrame.new(0, 1.1, 0), CFrame.new(0, -0.72, 0))
-joinRig(enemy, "Right Shoulder", torso, rightArm, CFrame.new(1.05, 0.65, 0), CFrame.new(0, 0.65, 0))
+local rightShoulder = joinRig(enemy, "Right Shoulder", torso, rightArm, CFrame.new(1.05, 0.65, 0), CFrame.new(0, 0.65, 0))
 joinRig(enemy, "Left Shoulder", torso, leftArm, CFrame.new(-1.05, 0.65, 0), CFrame.new(0, 0.65, 0))
 joinRig(enemy, "Right Hip", torso, rightLeg, CFrame.new(0.53, -1.0, 0), CFrame.new(0, 1.0, 0))
 joinRig(enemy, "Left Hip", torso, leftLeg, CFrame.new(-0.53, -1.0, 0), CFrame.new(0, 1.0, 0))
@@ -1220,17 +1220,29 @@ enemy:GetAttributeChangedSignal("CombatState"):Connect(function()
     if telegraphing then
         warningText.Text = "БЕРЕГИСЬ!"
         warningText.BackgroundColor3 = Color3.fromRGB(132, 67, 59)
+        TweenService:Create(rightShoulder, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            Transform = CFrame.Angles(math.rad(-118), 0, math.rad(-10)),
+        }):Play()
     elseif state == "Recover" then
         warningText.Text = "АТАКА!"
         warningText.BackgroundColor3 = Color3.fromRGB(91, 105, 82)
         warningBillboard.Enabled = true
-        task.delay(0.35, function()
+        TweenService:Create(rightShoulder, TweenInfo.new(0.09, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Transform = CFrame.Angles(math.rad(62), 0, math.rad(8)),
+        }):Play()
+        task.delay(0.25, function()
             if enemy.Parent and enemy:GetAttribute("CombatState") == "Recover" then
+                TweenService:Create(rightShoulder, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                    Transform = CFrame.new(),
+                }):Play()
                 warningBillboard.Enabled = false
             end
         end)
     else
         warningBillboard.Enabled = false
+        TweenService:Create(rightShoulder, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            Transform = CFrame.new(),
+        }):Play()
     end
 end)
 
