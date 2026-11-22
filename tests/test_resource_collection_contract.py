@@ -86,7 +86,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("EquipTool", tool.id)', HUD)
         self.assertIn('event:FireServer("UpgradeTool", tool.id)', HUD)
         self.assertIn('message == "ToolUpgraded"', HUD)
-        self.assertIn('tool:GetAttribute("PetKingdomsToolLevel") ~= level', WORLD)
+        self.assertIn('current:GetAttribute("PetKingdomsToolLevel") ~= level', WORLD)
         self.assertIn('FindFirstChild("Workshop")', WORLD)
         self.assertIn('event:FireClient(visitor, "OpenWorkshop")', WORLD)
         self.assertIn('hitsRequired = math.max(1, hitsRequired - 1)', WORLD)
