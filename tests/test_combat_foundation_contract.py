@@ -380,6 +380,27 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn("R6 joint names contain spaces", CLIENT)
         self.assertIn("R15 names do not", CLIENT)
 
+
+    def test_sword_combo_is_server_timed_and_has_three_balanced_strikes(self):
+        self.assertIn("local COMBO_DAMAGE = {18, 22, 32}", COMBAT)
+        self.assertIn("local COMBO_COOLDOWN = {0.48, 0.48, 0.72}", COMBAT)
+        self.assertIn("local COMBO_WINDOW_SECONDS = 1.15", COMBAT)
+        self.assertIn("if now > state.comboExpiresAt then", COMBAT)
+        self.assertIn("state.comboStep = state.comboStep % #COMBO_DAMAGE + 1", COMBAT)
+        self.assertIn("local isFinisher = comboStep == #COMBO_DAMAGE", COMBAT)
+        self.assertIn("entry.humanoid:TakeDamage(COMBO_DAMAGE[comboStep])", COMBAT)
+        self.assertIn("PLAYER_FINISHER_BOX", COMBAT)
+        self.assertIn("PLAYER_FINISHER_RANGE", COMBAT)
+        self.assertIn('player:SetAttribute("CombatComboStep", 0)', COMBAT)
+        self.assertIn('player:SetAttribute("CombatComboStep", comboStep)', COMBAT)
+
+    def test_combo_feedback_uses_server_confirmed_hit_data(self):
+        self.assertIn('remote:FireClient(player, "CombatHit", {', COMBAT)
+        self.assertIn("comboStep = comboStep", COMBAT)
+        self.assertIn("finisher = isFinisher", COMBAT)
+        self.assertIn('showFeedback("КОМБО " .. tostring(data.comboStep) .. "/3"', CLIENT)
+        self.assertIn('showFeedback("ФИНИШЕР!"', CLIENT)
+
     def test_combat_reward_retries_transient_persistence_failures(self):
         self.assertIn("for attempt = 1, 5 do", COMBAT)
         self.assertIn("rewardFunction:Invoke(contributor, entry.encounterId)", COMBAT)
