@@ -502,27 +502,33 @@ RunService.RenderStepped:Connect(function()
 
         local rightArm, leftArm = joints.rightshoulder, joints.leftshoulder
         local rightLeg, leftLeg = joints.righthip, joints.lefthip
-        local neck, rootJoint = joints.neck, joints.rootjoint
+        local neck = joints.neck
+        -- R6 uses RootJoint; standard R15 rigs use Root and Waist.
+        local rootJoint, waistJoint = joints.rootjoint or joints.root, joints.waist
 
         if state == "BossSlamTelegraph" then
             setJointPose(rightArm, -2.45, 0, 0.28)
             setJointPose(leftArm, -2.45, 0, -0.28)
             setJointPose(rootJoint, -0.12, 0, 0)
+            setJointPose(waistJoint, -0.08, 0, 0)
             setJointPose(neck, 0.18, 0, 0)
         elseif state == "Telegraph" then
             setJointPose(rightArm, isBoss and -1.9 or -1.45, 0, -0.55)
             setJointPose(leftArm, -0.35, 0, 0.2)
             setJointPose(rootJoint, -0.08, 0, 0)
+            setJointPose(waistJoint, -0.05, 0, 0)
             setJointPose(neck, -0.12, 0, 0)
         elseif state == "Recover" then
             setJointPose(rightArm, 0.85, 0, -0.18)
             setJointPose(leftArm, 0.35, 0, 0.18)
             setJointPose(rootJoint, 0.12, 0, 0)
+            setJointPose(waistJoint, 0.06, 0, 0)
             setJointPose(neck, -0.08, 0, 0)
         elseif state == "PhaseTransition" then
             setJointPose(rightArm, -1.25, 0, -0.8)
             setJointPose(leftArm, -1.25, 0, 0.8)
             setJointPose(rootJoint, -0.18, 0, 0)
+            setJointPose(waistJoint, -0.1, 0, 0)
             setJointPose(neck, 0.22, 0, 0)
         elseif moving then
             setJointPose(rightArm, swing * 0.48, 0, 0)
@@ -530,6 +536,7 @@ RunService.RenderStepped:Connect(function()
             setJointPose(rightLeg, -swing * 0.58, 0, 0)
             setJointPose(leftLeg, swing * 0.58, 0, 0)
             setJointPose(rootJoint, breathe + math.abs(swing) * 0.025, 0, 0)
+            setJointPose(waistJoint, math.abs(swing) * 0.035, 0, 0)
             setJointPose(neck, math.sin(cycle * 2) * 0.025, 0, 0)
         else
             setJointPose(rightArm, breathe, 0, isBoss and -0.035 or -0.02)
@@ -537,6 +544,7 @@ RunService.RenderStepped:Connect(function()
             setJointPose(rightLeg, 0, 0, 0)
             setJointPose(leftLeg, 0, 0, 0)
             setJointPose(rootJoint, breathe, 0, 0)
+            setJointPose(waistJoint, breathe * 0.65, 0, 0)
             setJointPose(neck, math.sin(now * 1.4) * 0.018, 0, 0)
         end
     end
