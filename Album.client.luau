@@ -772,6 +772,73 @@ local resourceHitEffects = {}
 local lastToolSwingAt = 0
 local toolSwingGeneration = 0
 
+local function playHarvestCharacterSwing(character, nodeId, generation)
+    local torso = character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")
+    if not torso then return end
+
+    local shoulder
+    for _, descendant in character:GetDescendants() do
+        if descendant:IsA("Motor6D") and (descendant.Name == "RightShoulder" or descendant.Name == "Right Shoulder") then
+            shoulder = descendant
+            break
+        end
+    end
+    if not shoulder then return end
+
+    local elbow
+    for _, descendant in character:GetDescendants() do
+        if descendant:IsA("Motor6D") and descendant.Name == "RightElbow" then
+            elbow = descendant
+            break
+        end
+    end
+
+    local isWood = string.find(nodeId, "Wood", 1, true) ~= nil
+    local windup = CFrame.Angles(math.rad(isWood and -58 or -42), 0, math.rad(-18))
+    local impact = CFrame.Angles(math.rad(isWood and 48 or 64), 0, math.rad(12))
+    local elbowBend = math.rad(isWood and 24 or 34)
+    local startedAt = os.clock()
+    local bindingName = "PetKingdomsHarvestSwing_" .. tostring(player.UserId)
+
+    RunService:UnbindFromRenderStep(bindingName)
+    RunService:BindToRenderStep(bindingName, Enum.RenderPriority.Last.Value, function()
+        if generation ~= toolSwingGeneration or player.Character ~= character or not character.Parent or not shoulder.Parent then
+            RunService:UnbindFromRenderStep(bindingName)
+            return
+        end
+
+        local elapsed = os.clock() - startedAt
+        local phase
+        local pose
+        local bend
+        if elapsed < 0.11 then
+            phase = math.clamp(elapsed / 0.11, 0, 1)
+            phase = phase * phase * (3 - 2 * phase)
+            pose = CFrame.identity:Lerp(windup, phase)
+            bend = elbowBend * phase
+        elseif elapsed < 0.21 then
+            phase = math.clamp((elapsed - 0.11) / 0.10, 0, 1)
+            phase = phase * phase * (3 - 2 * phase)
+            pose = windup:Lerp(impact, phase)
+            bend = elbowBend * (1 - phase * 0.35)
+        elseif elapsed < 0.39 then
+            phase = math.clamp((elapsed - 0.21) / 0.18, 0, 1)
+            phase = 1 - (1 - phase) * (1 - phase)
+            pose = impact:Lerp(CFrame.identity, phase)
+            bend = elbowBend * 0.65 * (1 - phase)
+        else
+            RunService:UnbindFromRenderStep(bindingName)
+            return
+        end
+
+        -- Add the swing after the default Animator pose; this is a local-only presentation layer.
+        shoulder.Transform = shoulder.Transform * pose
+        if elbow and elbow.Parent then
+            elbow.Transform = elbow.Transform * CFrame.Angles(-bend, 0, 0)
+        end
+    end)
+end
+
 local function playHarvestToolSwing(nodeId)
     local character = player.Character
     if not character then return end
@@ -790,6 +857,7 @@ local function playHarvestToolSwing(nodeId)
     toolSwingGeneration += 1
     local generation = toolSwingGeneration
     local originalGrip = tool.Grip
+    playHarvestCharacterSwing(character, nodeId, generation)
     local isWood = string.find(nodeId, "Wood", 1, true) ~= nil
     local raise = originalGrip * CFrame.Angles(math.rad(18), 0, math.rad(isWood and 8 or -8))
     local impact = originalGrip * CFrame.Angles(isWood and math.rad(-52) or math.rad(-68), 0, math.rad(isWood and -12 or 10))
