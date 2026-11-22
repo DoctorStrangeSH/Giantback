@@ -358,7 +358,87 @@ local function bindEnemyHealth(enemy)
     refresh()
 end
 
-CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(bindEnemyHealth)
+local function showMinionAwakening(minion)
+    if not minion or not minion:IsA("Model") or not minion:IsDescendantOf(Workspace) then return end
+    if minion:GetAttribute("ArchetypeId") ~= "SealMinion" then return end
+    if minion:GetAttribute("LocalAwakeningShown") == true then return end
+    minion:SetAttribute("LocalAwakeningShown", true)
+
+    local root = minion:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "LocalMinionAwakening"
+    highlight.Adornee = minion
+    highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+    highlight.FillColor = Color3.fromRGB(178, 116, 255)
+    highlight.OutlineColor = Color3.fromRGB(236, 215, 255)
+    highlight.FillTransparency = 0.18
+    highlight.OutlineTransparency = 0.05
+    highlight.Parent = minion
+
+    local attachment = Instance.new("Attachment")
+    attachment.Name = "LocalAwakeningBurst"
+    attachment.Parent = root
+    local particles = Instance.new("ParticleEmitter")
+    particles.Name = "LocalSealSparkBurst"
+    particles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+    particles.Color = ColorSequence.new(Color3.fromRGB(188, 128, 255), Color3.fromRGB(255, 225, 169))
+    particles.LightEmission = 0.85
+    particles.Lifetime = NumberRange.new(0.35, 0.75)
+    particles.Speed = NumberRange.new(5, 9)
+    particles.SpreadAngle = Vector2.new(160, 160)
+    particles.Rotation = NumberRange.new(0, 360)
+    particles.RotSpeed = NumberRange.new(-100, 100)
+    particles.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.32),
+        NumberSequenceKeypoint.new(1, 0),
+    })
+    particles.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.08),
+        NumberSequenceKeypoint.new(1, 1),
+    })
+    particles.Rate = 0
+    particles.Parent = attachment
+    particles:Emit(22)
+
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    rayParams.FilterDescendantsInstances = {minion}
+    local floorHit = Workspace:Raycast(root.Position, Vector3.new(0, -16, 0), rayParams)
+    local floorPosition = floorHit and floorHit.Position or (root.Position - Vector3.new(0, 2, 0))
+
+    local ring = Instance.new("Part")
+    ring.Name = "LocalMinionAwakeningRing"
+    ring.Shape = Enum.PartType.Cylinder
+    ring.Anchored = true
+    ring.CanCollide = false
+    ring.CanTouch = false
+    ring.CanQuery = false
+    ring.CastShadow = false
+    ring.Material = Enum.Material.Neon
+    ring.Color = Color3.fromRGB(178, 116, 255)
+    ring.Transparency = 0.2
+    ring.Size = Vector3.new(0.12, 2, 2)
+    ring.CFrame = CFrame.new(floorPosition + Vector3.new(0, 0.1, 0)) * CFrame.Angles(0, 0, math.rad(90))
+    ring.Parent = Workspace
+
+    TweenService:Create(ring, TweenInfo.new(0.72, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = Vector3.new(0.12, 12, 12),
+        Transparency = 1,
+    }):Play()
+
+    task.delay(1.05, function()
+        if highlight.Parent then highlight:Destroy() end
+        if attachment.Parent then attachment:Destroy() end
+        if ring.Parent then ring:Destroy() end
+    end)
+end
+
+CollectionService:GetInstanceAddedSignal("GiantbackEnemy"):Connect(function(enemy)
+    bindEnemyHealth(enemy)
+    showMinionAwakening(enemy)
+end)
 for _, enemy in CollectionService:GetTagged("GiantbackEnemy") do
     bindEnemyHealth(enemy)
 end
