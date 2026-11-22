@@ -808,6 +808,64 @@ local function playHarvestToolSwing(nodeId)
     end)
 end
 
+local function ensureHarvestDamageOverlay(node, nodeId, hits, maximum)
+    local targetName = nodeId:find("Wood", 1, true) and "Trunk" or "StoneMain"
+    local target = node:FindFirstChild(targetName)
+    if not target or not target:IsA("BasePart") then return end
+
+    local gui = target:FindFirstChild("LocalHarvestCracks")
+    if not gui then
+        gui = Instance.new("SurfaceGui")
+        gui.Name = "LocalHarvestCracks"
+        gui.Face = Enum.NormalId.Front
+        gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+        gui.PixelsPerStud = 48
+        gui.LightInfluence = 0.25
+        gui.AlwaysOnTop = false
+        gui.Parent = target
+    end
+
+    for _, child in gui:GetChildren() do child:Destroy() end
+    local count = math.clamp(math.floor(hits), 0, math.max(1, maximum))
+    local crackColor = nodeId:find("Wood", 1, true)
+        and Color3.fromRGB(62, 39, 27)
+        or Color3.fromRGB(55, 62, 64)
+    local paths = {
+        {x = 0.42, y = 0.18, w = 0.035, h = 0.35, r = -28},
+        {x = 0.53, y = 0.39, w = 0.03, h = 0.3, r = 36},
+        {x = 0.32, y = 0.55, w = 0.028, h = 0.28, r = -48},
+        {x = 0.62, y = 0.65, w = 0.025, h = 0.24, r = 22},
+    }
+    local visibleCracks = math.clamp(math.ceil(count / math.max(1, maximum) * #paths), 1, #paths)
+    for index = 1, visibleCracks do
+        local path = paths[index]
+        local line = Instance.new("Frame")
+        line.Name = "Crack" .. tostring(index)
+        line.AnchorPoint = Vector2.new(0.5, 0.5)
+        line.Position = UDim2.fromScale(path.x, path.y)
+        line.Size = UDim2.fromScale(path.w, path.h)
+        line.Rotation = path.r
+        line.BackgroundColor3 = crackColor
+        line.BackgroundTransparency = 0.08
+        line.BorderSizePixel = 0
+        line.Parent = gui
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = line
+    end
+end
+
+local function playResourceBreakFeedback(nodeId)
+    local node = findResourceNode(nodeId)
+    if not node then return end
+    local anchor = node.PrimaryPart or node:FindFirstChild("PromptAnchor")
+    if not anchor or not anchor:IsA("BasePart") then return end
+    local emitter = anchor:FindFirstChild("HarvestImpact")
+    if emitter and emitter:IsA("ParticleEmitter") then
+        emitter:Emit(20)
+    end
+end
+
 local function showResourceHitFeedback(payload)
     local nodeId = payload.nodeId
     if type(nodeId) ~= "string" then return end
@@ -869,6 +927,7 @@ local function showResourceHitFeedback(payload)
     local label = background and background:FindFirstChild("Count")
     local hits = math.max(0, math.floor(tonumber(payload.hits) or 0))
     local maximum = math.max(1, math.floor(tonumber(payload.maxHits) or 1))
+    ensureHarvestDamageOverlay(node, nodeId, hits, maximum)
     if fill then
         TweenService:Create(fill, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             Size = UDim2.fromScale(math.clamp(hits / maximum, 0, 1), 1),
@@ -913,6 +972,14 @@ local function showResourceHitFeedback(payload)
 end
 
 local function clearResourceHitFeedback(nodeId)
+    local node = findResourceNode(nodeId)
+    if node then
+        for _, name in {"Trunk", "StoneMain"} do
+            local target = node:FindFirstChild(name)
+            local overlay = target and target:FindFirstChild("LocalHarvestCracks")
+            if overlay then overlay:Destroy() end
+        end
+    end
     local bar = resourceHitBars[nodeId]
     resourceHitBars[nodeId] = nil
     resourceHitEffects[nodeId] = (resourceHitEffects[nodeId] or 0) + 1
@@ -1120,6 +1187,7 @@ event.OnClientEvent:Connect(function(message, payload)
         end
         return
     elseif message == "ResourcePicked" and type(payload) == "table" then
+        playResourceBreakFeedback(payload.nodeId)
         clearResourceHitFeedback(payload.nodeId)
         applyResourceNodeState(payload.nodeId, payload.readyAt, payload.unique == true)
         return
