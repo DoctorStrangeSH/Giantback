@@ -307,11 +307,8 @@ Giantback должен быть понятен ребёнку, но давать
 PROJECT_SPEC.md — источник требований версии 1.0. ROADMAP.md — фактический статус. Новые идеи записываются в backlog и не увеличивают scope автоматически. В каждом PR обновляются статусы и проверки.
 
 
-## Harvesting 2.0 — current implementation status
+## Harvesting and Ironworking — current implementation status
 
-The current working branch now includes persistent starter Axe/Pickaxe tools, a dedicated Tools panel, a personal owner-only workbench for upgrades, and server-authoritative multi-hit gathering for forest wood and dusk stone. Tool ownership, level and selected tool are persisted under profile schema v8. The client displays per-node hit progress locally. Iron ore, smelting, combat and final tool animations remain planned and are not considered complete.
+The current canonical development branch contains persistent Axe/Pickaxe ownership and levels, server-validated equipped tools, multi-hit wood/stone/iron gathering, personal resource cooldowns, owner-only workbench upgrades, and an owner-only furnace. The furnace converts 3 IronOre + 2 Wood into one IronIngot after 60 seconds; pending output and completion timestamps persist across reconnects. The Tools panel exposes material counts and smelting state.
 
-
-## Ironworking 1.0 — implementation status
-
-The current working branch adds two Dusk-island iron veins requiring a Pickaxe and five hits, each yielding two IronOre with a 10-minute personal respawn. The personal island now has an owner-only furnace: 3 IronOre + 2 Wood produces one IronIngot after 60 seconds. The server persists the pending smelt and grants the ingot only when the owner returns to collect it after completion. The Tools panel displays ore, ingot and smelter status. Studio gameplay acceptance remains outstanding.
+Client-side harvesting feedback is implemented on `feat/harvesting-feedback-on-latest`: tool swing, hit progress/cracks, impact particles, reward pickup, break/regrowth feedback and optional camera shake. CI passes, but Roblox Studio acceptance (R6/R15, PC/mobile, save/rejoin and multiplayer visibility) remains outstanding.
