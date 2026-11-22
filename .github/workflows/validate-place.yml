@@ -58,7 +58,7 @@ jobs:
               "Album",
               "GiantbackHUD",
               "local function renderPets()",
-              "Companion_" .. pet.id .. "_XPToNext",
+              'player:GetAttribute("Companion_" .. pet.id .. "_XPToNext")',
               "PublicSpawn",
               "HomeBridge01",
               "HomeBridge02",
