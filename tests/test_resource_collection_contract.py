@@ -48,6 +48,13 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertEqual(WORLD.count('kind = "renewable"'), 8)
         self.assertEqual(WORLD.count("respawnSeconds = 300"), 8)
 
+    def test_world_resource_yields_are_server_defined_and_positive(self):
+        self.assertIn('amount = 2,', WORLD)
+        self.assertIn('def.amount) or 1', WORLD)
+        self.assertIn('math.clamp(math.floor(tonumber(def.amount) or 1), 1, 100)', WORLD)
+        self.assertIn('def.verb or "Собрать"', WORLD)
+        self.assertIn('tostring(amount)', WORLD)
+
     def test_world_has_personal_wood_and_stone_nodes_in_adventure_biomes(self):
         self.assertIn('GroveWood01 = true', WORLD)
         self.assertIn('GroveWood02 = true', WORLD)
