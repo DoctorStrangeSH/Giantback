@@ -1727,9 +1727,9 @@ placeTrialPrompt(grottoReturn, "Сумеречная долина", "Верну�
 
 -- Three rune stones teach a short sequence puzzle; the sealed cache is its permanent reward.
 local crystalRuneDefinitions = {
-    {name = "CrystalRuneMoon", label = "ЛУНА", color = palette.moon, offset = Vector3.new(-11, 0.55, -2)},
-    {name = "CrystalRuneDawn", label = "РАССВЕТ", color = palette.gold, offset = Vector3.new(0, 0.55, -5)},
-    {name = "CrystalRuneTide", label = "ПРИЛИВ", color = palette.water, offset = Vector3.new(11, 0.55, -2)},
+    {name = "CrystalRuneMoon", label = "ЛУНА", color = palette.moon, offset = Vector3.new(-11, 1.28, -2)},
+    {name = "CrystalRuneDawn", label = "РАССВЕТ", color = palette.gold, offset = Vector3.new(0, 1.28, -5)},
+    {name = "CrystalRuneTide", label = "ПРИЛИВ", color = palette.water, offset = Vector3.new(11, 1.28, -2)},
 }
 for _, definition in crystalRuneDefinitions do
     local rune = makePart(
@@ -1764,7 +1764,7 @@ crystalClueText.Parent = crystalClueGui
 
 local crystalCache = makePart(
     crystalGrotto, "CrystalGrottoCache", Vector3.new(3.8, 2.2, 2.8),
-    CFrame.new(grottoCenter + Vector3.new(0, 1.2, 15)), palette.barkLight, Enum.Material.Wood
+    CFrame.new(grottoCenter + Vector3.new(0, 2.15, 15)), palette.barkLight, Enum.Material.Wood
 )
 setSolid(crystalCache)
 local crystalCacheGlow = orb(
