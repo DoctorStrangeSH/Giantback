@@ -2304,6 +2304,130 @@ for index = 1, 12 do
     glow.Parent = crystal
 end
 
+-- A dedicated combat volume keeps the Crystal Grotto encounter isolated from Grove and Rootvault.
+local grottoCombatRegion = makePart(
+    crystalGrotto,
+    "CrystalGrottoCombatRegion",
+    Vector3.new(46, 24, 42),
+    CFrame.new(grottoCenter + Vector3.new(0, 12, 0)),
+    palette.lilac,
+    Enum.Material.ForceField,
+    nil,
+    1
+)
+grottoCombatRegion.CanCollide = false
+grottoCombatRegion.CanTouch = false
+grottoCombatRegion.CanQuery = true
+grottoCombatRegion:SetAttribute("RegionId", "CrystalGrotto")
+CollectionService:AddTag(grottoCombatRegion, "GiantbackCombatRegion")
+
+-- Crystal Warden: a compact but unmistakable crystal-armoured guardian of the grotto.
+local function spawnCrystalWarden()
+    if not crystalGrotto.Parent then return end
+    local warden = Instance.new("Model")
+    warden.Name = "CrystalGrottoWarden01"
+    warden:SetAttribute("EnemyId", "CrystalGrottoWarden01")
+    warden:SetAttribute("EncounterId", "CrystalGrottoWarden01")
+    warden:SetAttribute("RegionId", "CrystalGrotto")
+    warden:SetAttribute("ArchetypeId", "CrystalWarden")
+    warden:SetAttribute("CombatState", "Idle")
+    warden:SetAttribute("AggroRange", 30)
+    warden:SetAttribute("AttackRange", 16)
+    warden:SetAttribute("AttackDamage", 10)
+    warden:SetAttribute("AttackCooldown", 3.2)
+    warden:SetAttribute("TelegraphSeconds", 1.2)
+    warden:SetAttribute("PathRefreshSeconds", 1.0)
+    warden:SetAttribute("CrystalFanRange", 16)
+    warden:SetAttribute("CrystalFanDamage", 16)
+    warden:SetAttribute("CrystalFanDot", 0.72)
+    warden.Parent = crystalGrotto
+
+    local spawnPosition = grottoCenter + Vector3.new(0, 3, 3)
+    local root = makeEnemyPart(warden, "HumanoidRootPart", Vector3.new(2, 2, 1), CFrame.lookAt(spawnPosition, spawnPosition + Vector3.new(0, 0, -1)), palette.ink)
+    root.Transparency = 1
+    root.Massless = false
+    local torso = makeEnemyPart(warden, "Torso", Vector3.new(2.5, 2.6, 1.65), root.CFrame, palette.stone, Enum.Material.Slate, Enum.PartType.Ball)
+    torso.CanCollide = true
+    local head = makeEnemyPart(warden, "Head", Vector3.new(1.55, 1.5, 1.45), root.CFrame * CFrame.new(0, 1.9, -0.04), palette.lilac, Enum.Material.Slate, Enum.PartType.Ball)
+    local rightArm = makeEnemyPart(warden, "Right Arm", Vector3.new(0.9, 2.1, 1), root.CFrame * CFrame.new(1.55, 0, 0), palette.stone, Enum.Material.Slate)
+    local leftArm = makeEnemyPart(warden, "Left Arm", Vector3.new(0.9, 2.1, 1), root.CFrame * CFrame.new(-1.55, 0, 0), palette.stone, Enum.Material.Slate)
+    local rightLeg = makeEnemyPart(warden, "Right Leg", Vector3.new(0.95, 1.9, 1), root.CFrame * CFrame.new(0.58, -2, 0), palette.ink, Enum.Material.Slate)
+    local leftLeg = makeEnemyPart(warden, "Left Leg", Vector3.new(0.95, 1.9, 1), root.CFrame * CFrame.new(-0.58, -2, 0), palette.ink, Enum.Material.Slate)
+    rightLeg.CanCollide = true
+    leftLeg.CanCollide = true
+
+    joinRig(warden, "RootJoint", root, torso, CFrame.new(), CFrame.new())
+    joinRig(warden, "Neck", torso, head, CFrame.new(0, 1.25, 0), CFrame.new(0, -0.72, 0))
+    joinRig(warden, "Right Shoulder", torso, rightArm, CFrame.new(1.2, 0.7, 0), CFrame.new(0, 0.7, 0))
+    joinRig(warden, "Left Shoulder", torso, leftArm, CFrame.new(-1.2, 0.7, 0), CFrame.new(0, 0.7, 0))
+    joinRig(warden, "Right Hip", torso, rightLeg, CFrame.new(0.58, -1.05, 0), CFrame.new(0, 0.95, 0))
+    joinRig(warden, "Left Hip", torso, leftLeg, CFrame.new(-0.58, -1.05, 0), CFrame.new(0, 0.95, 0))
+
+    local function addWardenCrystal(name, size, frame, color, parentPart, shape)
+        local shard = makeEnemyPart(warden, name, size, frame, color, Enum.Material.Neon, shape or Enum.PartType.Wedge)
+        shard.CanQuery = false
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = parentPart
+        weld.Part1 = shard
+        weld.Parent = shard
+        return shard
+    end
+
+    local core = addWardenCrystal("Warden prism core", Vector3.new(0.72, 0.95, 0.35), torso.CFrame * CFrame.new(0, 0.05, -0.82), palette.moon, torso, Enum.PartType.Ball)
+    addLight(core, palette.moon, 12, 0.9)
+    for index = 1, 5 do
+        local angle = math.rad(-48 + (index - 1) * 24)
+        local shard = addWardenCrystal(
+            "Crown crystal " .. tostring(index),
+            Vector3.new(0.62, 1.9 + (index % 2) * 0.45, 0.58),
+            head.CFrame * CFrame.new(math.sin(angle) * 0.72, 0.95 + (index == 3 and 0.22 or 0), 0) * CFrame.Angles(0, 0, -angle),
+            index % 2 == 0 and palette.water or palette.lilacLight,
+            head
+        )
+        addLight(shard, shard.Color, 5, 0.25)
+    end
+    for side = -1, 1, 2 do
+        addWardenCrystal(
+            side < 0 and "Left shoulder prism" or "Right shoulder prism",
+            Vector3.new(0.8, 1.65, 1.1),
+            torso.CFrame * CFrame.new(side * 1.05, 0.85, 0) * CFrame.Angles(0, 0, math.rad(-side * 18)),
+            palette.lilacLight,
+            torso
+        )
+        local eye = addWardenCrystal(
+            side < 0 and "Left cyan eye" or "Right cyan eye",
+            Vector3.new(0.16, 0.2, 0.1),
+            head.CFrame * CFrame.new(side * 0.34, 0.05, -0.68),
+            palette.water,
+            head,
+            Enum.PartType.Ball
+        )
+        addLight(eye, palette.water, 4, 0.35)
+    end
+
+    local humanoid = Instance.new("Humanoid")
+    humanoid.DisplayName = "Кристальный страж"
+    humanoid.MaxHealth = 130
+    humanoid.Health = 130
+    humanoid.WalkSpeed = 7.5
+    humanoid.BreakJointsOnDeath = false
+    humanoid.Parent = warden
+    warden.PrimaryPart = root
+    humanoid.Died:Connect(function()
+        task.delay(3, function()
+            if warden.Parent then warden:Destroy() end
+        end)
+        task.delay(30, function()
+            if crystalGrotto.Parent then spawnCrystalWarden() end
+        end)
+    end)
+
+    CollectionService:AddTag(warden, "GiantbackEnemy")
+    root:SetNetworkOwner(nil)
+end
+spawnCrystalWarden()
+
+
 local grottoEntrance = makePart(
     workspace.Dusk, "CrystalGrottoEntrance", Vector3.new(5.5, 6.5, 1.5),
     CFrame.new(83, 15, -190), palette.lilacLight, Enum.Material.ForceField
