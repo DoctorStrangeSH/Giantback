@@ -405,7 +405,7 @@ local function addSeedChoice(crop, selectedCrop)
     label(item, "Details", crop.grow .. "  •  семян: " .. tostring(seeds), UDim2.new(1, -174, 0, 38), UDim2.fromOffset(60, 32), 10, palette.muted)
     local choose = button(item, "Choose", selected and "ВЫБРАНО" or "ВЫБРАТЬ",
         UDim2.fromOffset(102, 29), UDim2.new(1, -112, 0, 7), selected and palette.gold or palette.forest)
-    choose.TextSize = 9
+    choose.TextSize = 10
     choose.Activated:Connect(function()
         if seeds < 1 then
             showToast("Семян нет. Купи набор ниже, а затем выбери культуру.")
