@@ -393,7 +393,7 @@ local seedShopOffers = {
 }
 
 local festivalShopOffers = {
-    {id = "HarvestEgg", name = "Призовое яйцо", description = "Ещё одна попытка открыть нового питомца", amount = 1, cost = 10, limit = 1, glyph = "🥚"},
+    {id = "HarvestEgg", name = "Призовое яйцо", description = "Ещё одна попытка открыть нового питомца", amount = 1, cost = 10, limit = 1, glyph = "◉"},
     {id = "StarShard", name = "Звёздный осколок", description = "Редкий материал для магических открытий", amount = 1, cost = 4, limit = 2, glyph = "✦"},
     {id = "MoonPetal", name = "Лунные лепестки", description = "Три лепестка для особых находок", amount = 3, cost = 2, limit = 3, glyph = "✿"},
     {id = "PumpkinSeed", name = "Семена тыквы", description = "Пять семян для осеннего урожая", amount = 5, cost = 1, limit = 3, glyph = "●"},
