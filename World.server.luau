@@ -32,7 +32,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик", BrambleBun = "Колючка", MossTurtle = "Мохопанцирь", Glowcap = "Светошляп", Dewdrop = "Росинка", Starling = "Звёздокрыл"}
-local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Discovered_StarPrism", "Discovered_MoonGlass", "Discovered_VoidGeode", "CrystalRelicSetRewardClaimed", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
+local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Discovered_StarPrism", "Discovered_MoonGlass", "Discovered_VoidGeode", "CrystalRelicSetRewardClaimed", "CompanionCodexRewardClaimed", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed", "HarvestEgg", "StarPrism", "MoonGlass", "VoidGeode"}
 local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local swordRecipe = {IronIngot = 2, Wood = 6}
@@ -2814,6 +2814,50 @@ end
 
     if action == "ClaimCrystalRelicSet" then
         claimCrystalRelicSetReward(player)
+        return
+    end
+
+    if action == "ClaimCompanionCodexReward" then
+        local session = sessions[player]
+        if not session or not session.online then
+            return tip(player, "Награда недоступна: профиль ещё не загружен или сохранение не работает.")
+        end
+        if session.economyBusy then
+            return tip(player, "Подожди завершения текущей операции.")
+        end
+        if player:GetAttribute("CompanionCodexRewardClaimed") == true then
+            return tip(player, "Награда за альбом питомцев уже получена.")
+        end
+
+        -- Trust the server-owned collection and rolled mutations, not client payloads.
+        for _, companionId in COMPANION_IDS do
+            local mutationId = session.companionMutations[companionId]
+            local validMutation = type(mutationId) == "string"
+                and companionMutationLookup[companionId]
+                and companionMutationLookup[companionId][mutationId] ~= nil
+            if player:GetAttribute(companionId) ~= true or not validMutation then
+                return tip(player, "Сначала найди все девять питомцев и их особые формы.")
+            end
+        end
+
+        local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+        if MAX_COINS - previousCoins < 250 then
+            return tip(player, "Для награды нужно место ещё для 250 монет.")
+        end
+
+        session.economyBusy = true
+        session.coins = previousCoins + 250
+        player:SetAttribute("CompanionCodexRewardClaimed", true)
+        syncFarm(player)
+        if not save(player) then
+            session.coins = previousCoins
+            player:SetAttribute("CompanionCodexRewardClaimed", false)
+            syncFarm(player)
+            session.economyBusy = false
+            return tip(player, "Не удалось сохранить награду. Монеты возвращены.")
+        end
+        session.economyBusy = false
+        tip(player, "Альбом редких форм собран! Получено 250 монет.")
         return
     end
 
