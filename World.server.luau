@@ -610,6 +610,36 @@ local companionMutationDefinitions = {
         {id = "GoldenHarvest", name = "Золотой урожай", rarity = "Эпический", weight = 11, biome = "Grove"},
         {id = "AutumnHeart", name = "Сердце осени", rarity = "Легендарный", weight = 1, biome = "Grove"},
     },
+    BrambleBun = {
+        {id = "ThornBloom", name = "Цветущий шип", rarity = "Необычный", weight = 140, biome = "Grove"},
+        {id = "HazelnutGlow", name = "Ореховое сияние", rarity = "Редкий", weight = 48, biome = "Grove"},
+        {id = "RoseBramble", name = "Розовый терновник", rarity = "Эпический", weight = 11, biome = "Grove"},
+        {id = "AncientHedge", name = "Древний хранитель изгороди", rarity = "Легендарный", weight = 1, biome = "Grove"},
+    },
+    MossTurtle = {
+        {id = "FernShell", name = "Папоротниковый панцирь", rarity = "Необычный", weight = 140, biome = "Grove"},
+        {id = "RiverShell", name = "Речная броня", rarity = "Редкий", weight = 48, biome = "Grove"},
+        {id = "RuneShell", name = "Рунический панцирь", rarity = "Эпический", weight = 11, biome = "Grove"},
+        {id = "WorldrootShell", name = "Корни мира", rarity = "Легендарный", weight = 1, biome = "Grove"},
+    },
+    Glowcap = {
+        {id = "Dewcap", name = "Росистая шляпка", rarity = "Необычный", weight = 140, biome = "Grove"},
+        {id = "Embercap", name = "Тлеющая шляпка", rarity = "Редкий", weight = 48, biome = "Grove"},
+        {id = "Dreamcap", name = "Сонная шляпка", rarity = "Эпический", weight = 11, biome = "Grove"},
+        {id = "CelestialCap", name = "Небесный гриб", rarity = "Легендарный", weight = 1, biome = "Grove"},
+    },
+    Dewdrop = {
+        {id = "Rainbubble", name = "Дождевая капля", rarity = "Необычный", weight = 140, biome = "Grove"},
+        {id = "CoralDew", name = "Коралловая роса", rarity = "Редкий", weight = 48, biome = "Grove"},
+        {id = "PearlDew", name = "Жемчужная роса", rarity = "Эпический", weight = 11, biome = "Grove"},
+        {id = "OceanHeart", name = "Сердце океана", rarity = "Легендарный", weight = 1, biome = "Grove"},
+    },
+    Starling = {
+        {id = "TwilightWing", name = "Сумеречное крыло", rarity = "Необычный", weight = 140, biome = "Grove"},
+        {id = "CometFeather", name = "Перо кометы", rarity = "Редкий", weight = 48, biome = "Grove"},
+        {id = "NebulaWing", name = "Крыло туманности", rarity = "Эпический", weight = 11, biome = "Grove"},
+        {id = "CosmicCrown", name = "Корона созвездий", rarity = "Легендарный", weight = 1, biome = "Grove"},
+    },
 }
 
 local companionMutationLookup = {}
