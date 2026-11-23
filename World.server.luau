@@ -1796,6 +1796,7 @@ local function claimHarvestSprite(player)
 
     local previousMutation = session.companionMutations.HarvestSprite
     local previousBiome = session.companionDiscoveryBiomes.HarvestSprite
+    local previousCompanion = player:GetAttribute("Companion")
     session.economyBusy = true
     session.seasonalEvent.harvestSpriteClaimed = true
     session.companionDiscoveryBiomes.HarvestSprite = "Grove"
@@ -1810,7 +1811,7 @@ local function claimHarvestSprite(player)
         session.companionDiscoveryBiomes.HarvestSprite = previousBiome
         session.companionMutations.HarvestSprite = previousMutation
         player:SetAttribute("HarvestSprite", false)
-        player:SetAttribute("Companion", "")
+        player:SetAttribute("Companion", previousCompanion or "")
         syncCompanionProgress(player)
         syncSeasonalEvent(player)
         session.economyBusy = false
