@@ -1093,6 +1093,8 @@ applyHomeBridgeState = function(slotIndex, built)
 end
 
 local DAILY_QUEST_REWARD = 40
+local DAILY_STREAK_THREE_BONUS = 20
+local DAILY_STREAK_WEEK_BONUS = 60
 local DAILY_QUEST_COUNT = 3
 local DAILY_QUEST_DEFINITIONS = {
     Gather = {goal = 4, title = "Собиратель", description = "Собери любые 4 ресурса в мире."},
@@ -1169,15 +1171,27 @@ local function rollDailyQuestIds(player, session, day)
     return selected
 end
 
+local function getDailyStreakReward(dailyQuests, today)
+    local currentStreak = math.clamp(math.floor(tonumber(dailyQuests.streak) or 0), 0, 3650)
+    local lastCompletedDay = dailyQuests.lastCompletedDay
+    if lastCompletedDay == today then return currentStreak, 0 end
+
+    local yesterday = os.date("!%Y-%m-%d", os.time() - 86400)
+    local nextStreak = lastCompletedDay == yesterday and currentStreak + 1 or 1
+    local bonus = nextStreak == 3 and DAILY_STREAK_THREE_BONUS or (nextStreak > 0 and nextStreak % 7 == 0 and DAILY_STREAK_WEEK_BONUS or 0)
+    return nextStreak, bonus
+end
+
 local function normalizeDailyQuests(raw, player, session)
     local today = currentDailyQuestDay()
-    local sameDay = type(raw) == "table" and raw.day == today
-    local savedProgress = sameDay and type(raw.progress) == "table" and raw.progress or {}
+    local saved = type(raw) == "table" and raw or {}
+    local sameDay = saved.day == today
+    local savedProgress = sameDay and type(saved.progress) == "table" and saved.progress or {}
     local selected = {}
 
-    if sameDay and raw.version == 2 and type(raw.quests) == "table" then
+    if sameDay and (saved.version == 2 or saved.version == 3) and type(saved.quests) == "table" then
         local seen = {}
-        for _, questId in raw.quests do
+        for _, questId in saved.quests do
             if #selected >= DAILY_QUEST_COUNT then break end
             if DAILY_QUEST_DEFINITIONS[questId] and not seen[questId] then
                 table.insert(selected, questId)
@@ -1194,12 +1208,21 @@ local function normalizeDailyQuests(raw, player, session)
         local definition = DAILY_QUEST_DEFINITIONS[questId]
         progress[questId] = math.clamp(math.floor(tonumber(savedProgress[questId]) or 0), 0, definition.goal)
     end
+
+    local streak = math.clamp(math.floor(tonumber(saved.streak) or 0), 0, 3650)
+    local bestStreak = math.max(streak, math.clamp(math.floor(tonumber(saved.bestStreak) or 0), 0, 3650))
+    local lastCompletedDay = type(saved.lastCompletedDay) == "string"
+        and string.match(saved.lastCompletedDay, "^%d%d%d%d%-%d%d%-%d%d$") and saved.lastCompletedDay or nil
+
     return {
-        version = 2,
+        version = 3,
         day = today,
         quests = selected,
         progress = progress,
-        claimed = sameDay and raw.claimed == true or false,
+        claimed = sameDay and saved.claimed == true or false,
+        streak = streak,
+        bestStreak = bestStreak,
+        lastCompletedDay = lastCompletedDay,
     }
 end
 
@@ -1213,6 +1236,14 @@ local function syncDailyQuests(player)
     player:SetAttribute("DailyQuest_Reward", DAILY_QUEST_REWARD)
     player:SetAttribute("DailyQuest_Claimed", session.dailyQuests.claimed)
     player:SetAttribute("DailyQuest_Count", #session.dailyQuests.quests)
+    local streakAfterToday, streakBonusToday = getDailyStreakReward(session.dailyQuests, session.dailyQuests.day)
+    local nextMilestone = session.dailyQuests.streak < 3 and 3 or (math.floor(session.dailyQuests.streak / 7) + 1) * 7
+    player:SetAttribute("DailyQuest_Streak", session.dailyQuests.streak)
+    player:SetAttribute("DailyQuest_BestStreak", session.dailyQuests.bestStreak)
+    player:SetAttribute("DailyQuest_StreakAfterToday", streakAfterToday)
+    player:SetAttribute("DailyQuest_StreakBonusToday", streakBonusToday)
+    player:SetAttribute("DailyQuest_StreakNextMilestone", nextMilestone)
+    player:SetAttribute("DailyQuest_StreakNextBonus", nextMilestone == 3 and DAILY_STREAK_THREE_BONUS or DAILY_STREAK_WEEK_BONUS)
     for index, questId in session.dailyQuests.quests do
         local definition = DAILY_QUEST_DEFINITIONS[questId]
         local prefix = "DailyQuest_" .. tostring(index) .. "_"
@@ -1273,25 +1304,42 @@ local function claimDailyQuestReward(player)
         end
     end
     local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
-    if MAX_COINS - previousCoins < DAILY_QUEST_REWARD then
-        return tip(player, "Освободи место минимум для 40 монет, а затем забери награду.")
+    local today = session.dailyQuests.day
+    local previousStreak = session.dailyQuests.streak
+    local previousBestStreak = session.dailyQuests.bestStreak
+    local previousCompletedDay = session.dailyQuests.lastCompletedDay
+    local nextStreak, streakBonus = getDailyStreakReward(session.dailyQuests, today)
+    local credited = DAILY_QUEST_REWARD + streakBonus
+    if MAX_COINS - previousCoins < credited then
+        return tip(player, "Освободи место минимум для " .. tostring(credited) .. " монет, а затем забери награду.")
     end
-    local credited = DAILY_QUEST_REWARD
     session.economyBusy = true
     session.coins = previousCoins + credited
     session.dailyQuests.claimed = true
+    session.dailyQuests.streak = nextStreak
+    session.dailyQuests.bestStreak = math.max(previousBestStreak, nextStreak)
+    session.dailyQuests.lastCompletedDay = today
     syncFarm(player)
     syncDailyQuests(player)
     if not save(player) then
         session.coins = previousCoins
         session.dailyQuests.claimed = false
+        session.dailyQuests.streak = previousStreak
+        session.dailyQuests.bestStreak = previousBestStreak
+        session.dailyQuests.lastCompletedDay = previousCompletedDay
         syncFarm(player)
         syncDailyQuests(player)
         session.economyBusy = false
         return tip(player, "Не удалось сохранить награду. Попробуй забрать её ещё раз.")
     end
     session.economyBusy = false
-    tip(player, "Все ежедневные задания выполнены! Получено " .. tostring(credited) .. " монет.")
+    local message = "Все ежедневные задания выполнены! Получено " .. tostring(DAILY_QUEST_REWARD) .. " монет."
+    if streakBonus > 0 then
+        message ..= " Бонус серии: +" .. tostring(streakBonus) .. " Coins (" .. tostring(nextStreak) .. " дней подряд)!"
+    else
+        message ..= " Серия: " .. tostring(nextStreak) .. " дней подряд."
+    end
+    tip(player, message)
 end
 
 save = function(player)

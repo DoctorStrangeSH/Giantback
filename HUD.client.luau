@@ -1195,6 +1195,12 @@ local function renderDailyQuests()
     local day = player:GetAttribute("DailyQuest_Day") or "—"
     local claimed = player:GetAttribute("DailyQuest_Claimed") == true
     local reward = tonumber(player:GetAttribute("DailyQuest_Reward")) or 40
+    local streak = tonumber(player:GetAttribute("DailyQuest_Streak")) or 0
+    local bestStreak = tonumber(player:GetAttribute("DailyQuest_BestStreak")) or 0
+    local streakAfterToday = tonumber(player:GetAttribute("DailyQuest_StreakAfterToday")) or 0
+    local streakBonusToday = tonumber(player:GetAttribute("DailyQuest_StreakBonusToday")) or 0
+    local nextMilestone = tonumber(player:GetAttribute("DailyQuest_StreakNextMilestone")) or 3
+    local nextBonus = tonumber(player:GetAttribute("DailyQuest_StreakNextBonus")) or 20
     local count = math.clamp(math.floor(tonumber(player:GetAttribute("DailyQuest_Count")) or 0), 0, 3)
     addInfo("ЕЖЕДНЕВНЫЕ ЗАДАНИЯ", "Каждый день выбираются 3 задания из доступного тебе набора. Выполни их все и забери " .. tostring(reward) .. " монет. День: " .. tostring(day), 82)
 
@@ -1217,7 +1223,8 @@ local function renderDailyQuests()
         countLabel.TextXAlignment = Enum.TextXAlignment.Center
     end
 
-    local claim = button(body, "ClaimDailyQuests", claimed and "НАГРАДА ПОЛУЧЕНА" or "ЗАБРАТЬ " .. tostring(reward) .. " МОНЕТ", UDim2.new(1, 0, 0, 46), UDim2.new(), claimed and palette.forestLight or palette.gold)
+    local totalReward = reward + streakBonusToday
+    local claim = button(body, "ClaimDailyQuests", claimed and "НАГРАДА ПОЛУЧЕНА" or "ЗАБРАТЬ " .. tostring(totalReward) .. " МОНЕТ", UDim2.new(1, 0, 0, 46), UDim2.new(), claimed and palette.forestLight or palette.gold)
     claim.TextColor3 = claimed and palette.white or palette.ink
     claim.TextSize = 13
     claim.AutoButtonColor = not claimed
@@ -1231,6 +1238,18 @@ local function renderDailyQuests()
         end
     end)
     addInfo("ПРОГРЕСС ДНЯ", tostring(completed) .. " из " .. tostring(count) .. " заданий выполнено" .. (claimed and " • награда получена" or ""), 52)
+    local streakText = "Серия: " .. tostring(streak) .. " дн. • рекорд: " .. tostring(bestStreak) .. " дн."
+    if not claimed then
+        streakText ..= " • сегодня: " .. tostring(streakAfterToday) .. " дн."
+        if streakBonusToday > 0 then
+            streakText ..= " • бонус +" .. tostring(streakBonusToday) .. " Coins"
+        else
+            streakText ..= " • следующий бонус +" .. tostring(nextBonus) .. " на " .. tostring(nextMilestone) .. " днях"
+        end
+    else
+        streakText ..= " • следующий бонус +" .. tostring(nextBonus) .. " на " .. tostring(nextMilestone) .. " днях"
+    end
+    addInfo("СЕРИЯ ЗАДАНИЙ", streakText, 54)
 end
 
 local function renderExpeditions()

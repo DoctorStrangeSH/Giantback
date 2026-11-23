@@ -26,7 +26,7 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn("getEligibleDailyQuestIds(player, session)", WORLD)
         self.assertIn("Random.new(seed)", WORLD)
         self.assertIn("random:NextInteger(1, index)", WORLD)
-        self.assertIn("version = 2", WORLD)
+        self.assertIn("version = 3", WORLD)
         self.assertIn("quests = selected", WORLD)
 
     def test_locked_content_is_excluded_from_the_daily_pool(self):
@@ -61,7 +61,7 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn("session.dailyQuests = data.dailyQuests", WORLD)
         self.assertIn("session.dailyQuests.claimed = true", WORLD)
         self.assertIn("session.dailyQuests.claimed = false", WORLD)
-        self.assertIn("MAX_COINS - previousCoins < DAILY_QUEST_REWARD", WORLD)
+        self.assertIn("MAX_COINS - previousCoins < credited", WORLD)
 
     def test_journal_renders_server_selected_quest_cards(self):
         self.assertIn("local function renderDailyQuests()", HUD)
@@ -70,9 +70,36 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("ClaimDailyQuests")', HUD)
         self.assertIn("Ежедневные задания и открытия мира", HUD)
 
+    def test_streak_is_saved_across_daily_rollover(self):
+        self.assertIn("streak = streak", WORLD)
+        self.assertIn("bestStreak = bestStreak", WORLD)
+        self.assertIn("lastCompletedDay = lastCompletedDay", WORLD)
+        self.assertIn("version = 3", WORLD)
+        self.assertIn('os.date("!%Y-%m-%d", os.time() - 86400)', WORLD)
+
+    def test_streak_bonuses_are_only_three_day_and_seven_day_milestones(self):
+        self.assertIn("local DAILY_STREAK_THREE_BONUS = 20", WORLD)
+        self.assertIn("local DAILY_STREAK_WEEK_BONUS = 60", WORLD)
+        self.assertIn("nextStreak == 3 and DAILY_STREAK_THREE_BONUS", WORLD)
+        self.assertIn("nextStreak % 7 == 0 and DAILY_STREAK_WEEK_BONUS", WORLD)
+        self.assertIn("local credited = DAILY_QUEST_REWARD + streakBonus", WORLD)
+
+    def test_streak_and_coins_roll_back_together_on_save_failure(self):
+        self.assertIn("session.dailyQuests.streak = previousStreak", WORLD)
+        self.assertIn("session.dailyQuests.bestStreak = previousBestStreak", WORLD)
+        self.assertIn("session.dailyQuests.lastCompletedDay = previousCompletedDay", WORLD)
+        self.assertIn("session.coins = previousCoins", WORLD)
+
+    def test_journal_displays_current_and_best_streak(self):
+        self.assertIn('player:GetAttribute("DailyQuest_Streak")', HUD)
+        self.assertIn('player:GetAttribute("DailyQuest_BestStreak")', HUD)
+        self.assertIn('player:GetAttribute("DailyQuest_StreakBonusToday")', HUD)
+        self.assertIn('addInfo("СЕРИЯ ЗАДАНИЙ"', HUD)
+
     def test_studio_acceptance_checklist_covers_rotation_and_unlocks(self):
         self.assertIn("## Ежедневные задания 2.0", STUDIO)
         self.assertIn("## Ежедневные задания 2.0", ROADMAP)
+        self.assertIn("## Серия ежедневных заданий", STUDIO)
 
 
 if __name__ == "__main__":
