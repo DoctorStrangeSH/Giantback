@@ -32,7 +32,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик", BrambleBun = "Колючка", MossTurtle = "Мохопанцирь", Glowcap = "Светошляп", Dewdrop = "Росинка", Starling = "Звёздокрыл"}
-local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
+local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Discovered_StarPrism", "Discovered_MoonGlass", "Discovered_VoidGeode", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed", "HarvestEgg", "StarPrism", "MoonGlass", "VoidGeode"}
 local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local swordRecipe = {IronIngot = 2, Wood = 6}
@@ -4121,21 +4121,21 @@ local resourceDefinitions = {
     },
     {
         key = "CrystalEchoStarPrism01", amount = 1, requiredTool = "Pickaxe", hitsRequired = 7,
-        verb = "Извлечь реликвию", itemId = "StarPrism", displayName = "Звёздная призма",
+        verb = "Извлечь реликвию", itemId = "StarPrism", displayName = "Звёздная призма",, discoveryAttribute = "Discovered_StarPrism"
         area = "CrystalEchoChamber", offset = Vector3.new(10, 0, -2), visual = "crystal",
         crystalColor = Color3.fromRGB(255, 218, 125), crystalAccent = Color3.fromRGB(255, 242, 190),
         crystalHighlight = Color3.fromRGB(255, 170, 90), kind = "unique",
     },
     {
         key = "CrystalEchoMoonGlass01", amount = 1, requiredTool = "Pickaxe", hitsRequired = 7,
-        verb = "Извлечь реликвию", itemId = "MoonGlass", displayName = "Лунное стекло",
+        verb = "Извлечь реликвию", itemId = "MoonGlass", displayName = "Лунное стекло",, discoveryAttribute = "Discovered_MoonGlass"
         area = "CrystalEchoChamber", offset = Vector3.new(10, 0, 8), visual = "crystal",
         crystalColor = Color3.fromRGB(133, 218, 255), crystalAccent = Color3.fromRGB(207, 245, 255),
         crystalHighlight = Color3.fromRGB(169, 166, 255), kind = "unique",
     },
     {
         key = "CrystalEchoVoidGeode01", amount = 1, requiredTool = "Pickaxe", hitsRequired = 7,
-        verb = "Извлечь реликвию", itemId = "VoidGeode", displayName = "Пустотная жеода",
+        verb = "Извлечь реликвию", itemId = "VoidGeode", displayName = "Пустотная жеода",, discoveryAttribute = "Discovered_VoidGeode"
         area = "CrystalEchoChamber", offset = Vector3.new(-10, 0, 9), visual = "crystal",
         crystalColor = Color3.fromRGB(179, 118, 226), crystalAccent = Color3.fromRGB(100, 72, 156),
         crystalHighlight = Color3.fromRGB(229, 174, 255), kind = "unique",
@@ -4257,6 +4257,9 @@ local function spawnResource(def)
 
         local rewardAmount = math.max(1, math.floor(tonumber(def.amount) or 1))
         session.inventory[def.itemId] = (session.inventory[def.itemId] or 0) + rewardAmount
+        if def.discoveryAttribute then
+            player:SetAttribute(def.discoveryAttribute, true)
+        end
         syncInventory(player)
         event:FireClient(player, "ResourcePicked", {
             nodeId = def.key,
