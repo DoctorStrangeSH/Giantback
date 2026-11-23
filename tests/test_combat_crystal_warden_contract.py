@@ -123,6 +123,8 @@ class CrystalWardenEncounterTests(unittest.TestCase):
         self.assertIn('boss:SetAttribute("Phase2SlamRadius", 15)', VISUALS)
         self.assertIn('boss:SetAttribute("Phase3SlamRadius", 19)', VISUALS)
         self.assertIn("if echoChamber.Parent then spawnCrystalEchoPrismGuardian() end", VISUALS)
+        self.assertIn("bossName.Text = string.upper((humanoid and humanoid.DisplayName)", CLIENT)
+        self.assertIn('enemy:FindFirstChild("PrismGuardianCore", true)', CLIENT)
 
     def test_echo_boss_reward_is_one_time_and_does_not_awaken_rootvault_minions(self):
         self.assertIn("CrystalEchoPrismGuardian01 = true", COMBAT.split("local KNOWN_ENCOUNTERS", 1)[1].split("local REWARD_ENCOUNTERS", 1)[0])
