@@ -48,7 +48,7 @@ local DODGE_DURATION = 0.45
 local DODGE_COOLDOWN = 1.5
 local BLOCK_DAMAGE_MULTIPLIER = 0.25
 
-local ALLOWED_REGIONS = { GroveTraining = true, DuskTraining = true, Rootvault = true }
+local ALLOWED_REGIONS = { GroveTraining = true, DuskTraining = true, Rootvault = true, CrystalGrotto = true, CrystalEchoChamber = true }
 local ALLOWED_WEAPONS = { SwordShield = true }
 local KNOWN_ENCOUNTERS = {
     GroveTrainingDummy01 = true,
@@ -59,6 +59,9 @@ local KNOWN_ENCOUNTERS = {
     RootvaultStalker01 = true,
     RootvaultSealKeeper01 = true,
     RootvaultSealMinion = true,
+    CrystalGrottoWarden01 = true,
+    CrystalGrottoShardling01 = true,
+    CrystalEchoPrismGuardian01 = true,
 }
 local REWARD_ENCOUNTERS = {
     GroveGrunt01 = true,
@@ -67,6 +70,9 @@ local REWARD_ENCOUNTERS = {
     RootvaultSentinel01 = true,
     RootvaultStalker01 = true,
     RootvaultSealKeeper01 = true,
+    CrystalGrottoWarden01 = true,
+    CrystalGrottoShardling01 = true,
+    CrystalEchoPrismGuardian01 = true,
 }
 
 local remote = ReplicatedStorage:FindFirstChild("CombatAction")
@@ -339,7 +345,8 @@ local function registerEnemy(enemy)
             entry.pathRefreshSeconds = math.clamp(tonumber(enemy:GetAttribute(prefix .. "PathRefreshSeconds")) or entry.pathRefreshSeconds, 0.5, 3)
             enemy:SetAttribute("BossPhase", nextPhase)
             enemy:SetAttribute("CombatState", "PhaseTransition")
-            if nextPhase == 3 and not entry.minionsSummoned then
+            if nextPhase == 3 and enemy:GetAttribute("ArchetypeId") == "SealKeeper"
+                and not entry.minionsSummoned then
                 entry.minionsSummoned = true
                 local activated = activateRootvaultBossMinions()
                 enemy:SetAttribute("SummonedMinions", activated)
@@ -408,6 +415,12 @@ local function registerEnemy(enemy)
                     local useGroundSlam = entry.isBoss and entry.bossPhase >= 2 and entry.attackSequence % 2 == 0
                     local usePollenBurst = enemy:GetAttribute("ArchetypeId") == "Mossling"
                         and entry.attackSequence % 2 == 0
+                    local useCrystalFan = enemy:GetAttribute("ArchetypeId") == "CrystalWarden"
+                        and entry.attackSequence % 2 == 0
+                    local useShardlingFeint = enemy:GetAttribute("ArchetypeId") == "Shardling"
+                        and entry.attackSequence % 3 == 1
+                    local useShardlingDash = enemy:GetAttribute("ArchetypeId") == "Shardling"
+                        and entry.attackSequence % 3 == 2
 
                     if useGroundSlam then
                         local phasePrefix = "Phase" .. tostring(entry.bossPhase)
@@ -466,6 +479,120 @@ local function registerEnemy(enemy)
                                                 end
                                             end
                                             currentHumanoid:TakeDamage(damage)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        enemy:SetAttribute("BossAttack", "")
+                    elseif useCrystalFan then
+                        local fanRange = math.clamp(tonumber(enemy:GetAttribute("CrystalFanRange")) or 16, 10, 22)
+                        local fanDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute("CrystalFanDamage")) or 16), 1, 24)
+                        local fanDot = math.clamp(tonumber(enemy:GetAttribute("CrystalFanDot")) or 0.72, 0.55, 0.9)
+                        local attackDirection = root.CFrame.LookVector
+                        enemy:SetAttribute("BossAttack", "CrystalFan")
+                        enemy:SetAttribute("CombatState", "CrystalFanTelegraph")
+                        task.wait(math.max(entry.telegraphSeconds, 1.15))
+
+                        if isEnemyAlive(enemy) then
+                            for _, player in Players:GetPlayers() do
+                                if player:GetAttribute("Ready") == true and getPlayerRegion(player) == entry.regionId then
+                                    local currentHumanoid, currentRoot = getCharacterParts(player)
+                                    if currentHumanoid and currentRoot then
+                                        local offset = currentRoot.Position - root.Position
+                                        local distance = offset.Magnitude
+                                        local inFan = distance > 0 and distance <= fanRange
+                                            and attackDirection:Dot(offset.Unit) >= fanDot
+                                        if inFan then
+                                            local playerState = playerStates[player]
+                                            local dodging = playerState and playerState.dodgingUntil > os.clock()
+                                            if not dodging then
+                                                local damage = fanDamage
+                                                if playerState and playerState.blocking then
+                                                    local towardWarden = root.Position - currentRoot.Position
+                                                    if towardWarden.Magnitude > 0
+                                                        and currentRoot.CFrame.LookVector:Dot(towardWarden.Unit) >= 0.35 then
+                                                        damage = math.max(1, math.floor(damage * BLOCK_DAMAGE_MULTIPLIER))
+                                                    end
+                                                end
+                                                currentHumanoid:TakeDamage(damage)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        enemy:SetAttribute("BossAttack", "")
+                    elseif useShardlingFeint then
+                        enemy:SetAttribute("BossAttack", "ShardlingFeint")
+                        enemy:SetAttribute("CombatState", "ShardlingFeintTelegraph")
+                        task.wait(math.clamp(entry.telegraphSeconds * 0.72, 0.45, 0.85))
+
+                        if isEnemyAlive(enemy) and targetPlayer.Parent then
+                            local _, feintTargetRoot = getCharacterParts(targetPlayer)
+                            if feintTargetRoot and getPlayerRegion(targetPlayer) == entry.regionId then
+                                local offset = feintTargetRoot.Position - root.Position
+                                local flatOffset = Vector3.new(offset.X, 0, offset.Z)
+                                if flatOffset.Magnitude > 0.1 then
+                                    local direction = flatOffset.Unit
+                                    root.CFrame = CFrame.lookAt(root.Position, root.Position + direction)
+                                    root.AssemblyLinearVelocity = direction * 34
+                                        + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+                                    task.wait(0.2)
+                                    if root.Parent then
+                                        root.AssemblyLinearVelocity = Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+                                    end
+                                end
+                            end
+                        end
+                        enemy:SetAttribute("BossAttack", "")
+                    elseif useShardlingDash then
+                        local dashRange = math.clamp(tonumber(enemy:GetAttribute("ShardlingDashRange")) or 14, 8, 18)
+                        local dashDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute("ShardlingDashDamage")) or 13), 1, 20)
+                        enemy:SetAttribute("BossAttack", "ShardlingDash")
+                        enemy:SetAttribute("CombatState", "ShardlingDashTelegraph")
+                        task.wait(math.max(entry.telegraphSeconds, 0.9))
+
+                        if isEnemyAlive(enemy) and targetPlayer.Parent then
+                            local _, dashTargetRoot = getCharacterParts(targetPlayer)
+                            if dashTargetRoot and getPlayerRegion(targetPlayer) == entry.regionId then
+                                local offset = dashTargetRoot.Position - root.Position
+                                local flatOffset = Vector3.new(offset.X, 0, offset.Z)
+                                if flatOffset.Magnitude > 0.1 then
+                                    local direction = flatOffset.Unit
+                                    local dashOrigin = root.Position
+                                    root.CFrame = CFrame.lookAt(root.Position, root.Position + direction)
+                                    root.AssemblyLinearVelocity = direction * math.clamp(dashRange * 3.4, 32, 60)
+                                        + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+                                    task.wait(math.clamp(dashRange / 46, 0.18, 0.38))
+                                    if root.Parent then
+                                        root.AssemblyLinearVelocity = Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+                                    end
+
+                                    for _, player in Players:GetPlayers() do
+                                        if player:GetAttribute("Ready") == true and getPlayerRegion(player) == entry.regionId then
+                                            local currentHumanoid, currentRoot = getCharacterParts(player)
+                                            if currentHumanoid and currentRoot then
+                                                local playerOffset = currentRoot.Position - dashOrigin
+                                                local horizontalOffset = Vector3.new(playerOffset.X, 0, playerOffset.Z)
+                                                local projection = horizontalOffset:Dot(direction)
+                                                local lateral = (horizontalOffset - direction * projection).Magnitude
+                                                if projection >= -1 and projection <= dashRange + 2 and lateral <= 3.25 then
+                                                    local playerState = playerStates[player]
+                                                    local dodging = playerState and playerState.dodgingUntil > os.clock()
+                                                    if not dodging then
+                                                        local damage = dashDamage
+                                                        if playerState and playerState.blocking then
+                                                            local towardShardling = root.Position - currentRoot.Position
+                                                            if towardShardling.Magnitude > 0
+                                                                and currentRoot.CFrame.LookVector:Dot(towardShardling.Unit) >= 0.35 then
+                                                                damage = math.max(1, math.floor(damage * BLOCK_DAMAGE_MULTIPLIER))
+                                                            end
+                                                        end
+                                                        currentHumanoid:TakeDamage(damage)
+                                                    end
+                                                end
+                                            end
                                         end
                                     end
                                 end

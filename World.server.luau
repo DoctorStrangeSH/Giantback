@@ -32,8 +32,8 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик", BrambleBun = "Колючка", MossTurtle = "Мохопанцирь", Glowcap = "Светошляп", Dewdrop = "Росинка", Starling = "Звёздокрыл"}
-local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed", "HarvestEgg"}
+local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Discovered_StarPrism", "Discovered_MoonGlass", "Discovered_VoidGeode", "CrystalRelicSetRewardClaimed", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed", "HarvestEgg", "StarPrism", "MoonGlass", "VoidGeode"}
 local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local swordRecipe = {IronIngot = 2, Wood = 6}
 local combatRewardDefinitions = {
@@ -46,6 +46,9 @@ local combatRewardDefinitions = {
     RootvaultSentinel01 = {itemId = "RootvaultKey", amount = 1, coins = 12},
     RootvaultStalker01 = {itemId = "RootvaultEssence", amount = 1, coins = 14},
     RootvaultSealKeeper01 = {itemId = "RootvaultSigil", amount = 1, coins = 25},
+    CrystalGrottoWarden01 = {itemId = "CrystalShard", amount = 2, coins = 15},
+    CrystalGrottoShardling01 = {itemId = "CrystalShard", amount = 1, coins = 8},
+    CrystalEchoPrismGuardian01 = {itemId = "CrystalShard", amount = 5, coins = 45},
 }
 local toolUpgradeCosts = {Axe = {Wood = 8, Stone = 6}, Pickaxe = {Wood = 6, Stone = 8}}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
@@ -104,6 +107,9 @@ local resourceNodeIds = {
     CrystalGrottoLumen02 = true,
     CrystalGrottoPrismVein01 = true,
     CrystalGrottoPrismVein02 = true,
+    CrystalEchoStarPrism01 = true,
+    CrystalEchoMoonGlass01 = true,
+    CrystalEchoVoidGeode01 = true,
 }
 local sessions = {}
 local createPersonalCity
@@ -2218,6 +2224,7 @@ save = function(player)
 end
 local function init(player)
     if sessions[player] then return end
+    player:SetAttribute("InCrystalEcho", false)
     local session = {
         inventory = {},
         coins = 0,
@@ -2730,8 +2737,53 @@ end
 event.OnServerEvent:Connect(function(player, action, payload)
     if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
 
+local function claimCrystalRelicSetReward(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Награда за коллекцию временно недоступна: сохранение профиля не работает.")
+    end
+    if session.economyBusy then
+        return tip(player, "Подожди завершения текущей операции с монетами.")
+    end
+    if player:GetAttribute("CrystalRelicSetRewardClaimed") == true then
+        return tip(player, "Награда за эту коллекцию уже получена.")
+    end
+    if player:GetAttribute("Discovered_StarPrism") ~= true
+        or player:GetAttribute("Discovered_MoonGlass") ~= true
+        or player:GetAttribute("Discovered_VoidGeode") ~= true then
+        return tip(player, "Сначала найди все три реликвии Эхо-камеры.")
+    end
+
+    local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    local reward = math.min(150, MAX_COINS - previousCoins)
+    if reward < 150 then
+        return tip(player, "Освободи место минимум для 150 монет, чтобы забрать награду.")
+    end
+
+    session.economyBusy = true
+    session.coins = previousCoins + reward
+    player:SetAttribute("CrystalRelicSetRewardClaimed", true)
+    syncFarm(player)
+    if not save(player) then
+        session.coins = previousCoins
+        player:SetAttribute("CrystalRelicSetRewardClaimed", false)
+        syncFarm(player)
+        session.economyBusy = false
+        return tip(player, "Награда не сохранилась. Монеты возвращены — попробуй ещё раз.")
+    end
+
+    session.economyBusy = false
+    tip(player, "Коллекция собрана! Ты получил 150 монет за три древние реликвии.")
+end
+
     if action == "ClaimDailyQuests" then
         claimDailyQuestReward(player)
+        return
+    end
+
+    if action == "ClaimCrystalRelicSet" then
+        claimCrystalRelicSetReward(player)
         return
     end
 
@@ -3941,11 +3993,13 @@ local function createResourceFlower(def, position)
         makePart("HarvestMark", Vector3.new(0.55, 0.18, 0.55), CFrame.new(0, 2.15, -0.68), Color3.fromRGB(221, 179, 105), Enum.Material.Wood)
     elseif def.visual == "crystal" then
         makePart("CrystalBase", Vector3.new(3.2, 1.1, 3.0), CFrame.new(0, 0.45, 0), Color3.fromRGB(75, 76, 103), Enum.Material.Slate)
-        makePart("CrystalMain", Vector3.new(1.35, 3.4, 1.35), CFrame.new(0, 2.1, 0) * CFrame.Angles(0, 0, math.rad(-7)), Color3.fromRGB(132, 102, 196), Enum.Material.Neon)
-        makePart("CrystalLeft", Vector3.new(0.9, 2.3, 0.9), CFrame.new(-0.95, 1.55, 0.35) * CFrame.Angles(0, 0, math.rad(12)), Color3.fromRGB(99, 166, 207), Enum.Material.Neon)
-        makePart("CrystalRight", Vector3.new(0.82, 1.9, 0.82), CFrame.new(0.92, 1.35, -0.32) * CFrame.Angles(0, 0, math.rad(-15)), Color3.fromRGB(191, 140, 225), Enum.Material.Neon)
+        local crystalColor = def.crystalColor or Color3.fromRGB(132, 102, 196)
+        local crystalAccent = def.crystalAccent or Color3.fromRGB(99, 166, 207)
+        makePart("CrystalMain", Vector3.new(1.35, 3.4, 1.35), CFrame.new(0, 2.1, 0) * CFrame.Angles(0, 0, math.rad(-7)), crystalColor, Enum.Material.Neon)
+        makePart("CrystalLeft", Vector3.new(0.9, 2.3, 0.9), CFrame.new(-0.95, 1.55, 0.35) * CFrame.Angles(0, 0, math.rad(12)), crystalAccent, Enum.Material.Neon)
+        makePart("CrystalRight", Vector3.new(0.82, 1.9, 0.82), CFrame.new(0.92, 1.35, -0.32) * CFrame.Angles(0, 0, math.rad(-15)), def.crystalHighlight or Color3.fromRGB(191, 140, 225), Enum.Material.Neon)
         local crystalGlow = Instance.new("PointLight")
-        crystalGlow.Color = Color3.fromRGB(160, 132, 238)
+        crystalGlow.Color = crystalColor
         crystalGlow.Range = 11
         crystalGlow.Brightness = 0.65
         crystalGlow.Parent = model:FindFirstChild("CrystalMain")
@@ -4111,6 +4165,27 @@ local resourceDefinitions = {
         kind = "renewable", respawnSeconds = 900, hiddenByPrismSense = true,
     },
     {
+        key = "CrystalEchoStarPrism01", amount = 1, requiredTool = "Pickaxe", hitsRequired = 7,
+        verb = "Извлечь реликвию", itemId = "StarPrism", displayName = "Звёздная призма", discoveryAttribute = "Discovered_StarPrism",
+        area = "CrystalEchoChamber", offset = Vector3.new(10, 0, -2), visual = "crystal",
+        crystalColor = Color3.fromRGB(255, 218, 125), crystalAccent = Color3.fromRGB(255, 242, 190),
+        crystalHighlight = Color3.fromRGB(255, 170, 90), kind = "unique",
+    },
+    {
+        key = "CrystalEchoMoonGlass01", amount = 1, requiredTool = "Pickaxe", hitsRequired = 7,
+        verb = "Извлечь реликвию", itemId = "MoonGlass", displayName = "Лунное стекло", discoveryAttribute = "Discovered_MoonGlass",
+        area = "CrystalEchoChamber", offset = Vector3.new(10, 0, 8), visual = "crystal",
+        crystalColor = Color3.fromRGB(133, 218, 255), crystalAccent = Color3.fromRGB(207, 245, 255),
+        crystalHighlight = Color3.fromRGB(169, 166, 255), kind = "unique",
+    },
+    {
+        key = "CrystalEchoVoidGeode01", amount = 1, requiredTool = "Pickaxe", hitsRequired = 7,
+        verb = "Извлечь реликвию", itemId = "VoidGeode", displayName = "Пустотная жеода", discoveryAttribute = "Discovered_VoidGeode",
+        area = "CrystalEchoChamber", offset = Vector3.new(-10, 0, 9), visual = "crystal",
+        crystalColor = Color3.fromRGB(179, 118, 226), crystalAccent = Color3.fromRGB(100, 72, 156),
+        crystalHighlight = Color3.fromRGB(229, 174, 255), kind = "unique",
+    },
+    {
         key = "DuskIron02", amount = 2, requiredTool = "Pickaxe", hitsRequired = 5,
         verb = "Добыть железо", itemId = "IronOre", displayName = "Железная жила",
         area = "Dusk", offset = Vector3.new(42, 0, -29), visual = "ore",
@@ -4126,10 +4201,15 @@ local function spawnResource(def)
 
     local island
     local origin
-    if def.area == "CrystalGrotto" then
+    if def.area == "CrystalGrotto" or def.area == "CrystalEchoChamber" then
         local glade = workspace:FindFirstChild("CombatTrainingGlade")
         island = glade and glade:FindFirstChild("CrystalGrotto")
-        origin = island and island:FindFirstChild("CrystalGrottoFloor")
+        if def.area == "CrystalEchoChamber" then
+            local echo = island and island:FindFirstChild("CrystalEchoChamber")
+            origin = echo and echo:FindFirstChild("CrystalEchoFloor")
+        else
+            origin = island and island:FindFirstChild("CrystalGrottoFloor")
+        end
     else
         island = workspace:FindFirstChild(def.area)
         origin = island and island:FindFirstChild("Bank")
@@ -4157,13 +4237,16 @@ local function spawnResource(def)
         if def.hiddenByPrismSense and (tonumber(player:GetAttribute("PrismSenseUntil")) or 0) < workspace:GetServerTimeNow() then
             return tip(player, "Кристальная жила скрыта. Попроси светляка применить Призменное чутьё.")
         end
-        if def.area == "CrystalGrotto" then
+        if def.area == "CrystalGrotto" or def.area == "CrystalEchoChamber" then
             local character = player.Character
             local root = character and character:FindFirstChild("HumanoidRootPart")
-            if player:GetAttribute("InCrystalGrotto") ~= true
-                or not root
-                or (root.Position - anchor.Position).Magnitude > 13 then
-                return tip(player, "Подойди к кристальной жиле внутри пещеры.")
+            local inCorrectArea = def.area == "CrystalEchoChamber"
+                and player:GetAttribute("InCrystalEcho") == true
+                or def.area == "CrystalGrotto" and player:GetAttribute("InCrystalGrotto") == true
+            if not inCorrectArea or not root or (root.Position - anchor.Position).Magnitude > 13 then
+                return tip(player, def.area == "CrystalEchoChamber"
+                    and "Эта находка спрятана в Эхо-камере."
+                    or "Подойди к кристальной жиле внутри пещеры.")
             end
         end
 
@@ -4184,6 +4267,23 @@ local function spawnResource(def)
                     unique = true,
                 })
                 return tip(player, "Эта находка уже есть в твоей коллекции.")
+            end
+            local hitsRequired = math.clamp(math.floor(tonumber(def.hitsRequired) or 1), 1, 10)
+            if def.requiredTool and (session.toolLevels[def.requiredTool] or 1) >= 2 then
+                hitsRequired = math.max(1, hitsRequired - 1)
+            end
+            if hitsRequired > 1 then
+                local hitNow = os.clock()
+                local lastHitAt = session.resourceHitCooldowns[def.key] or 0
+                if hitNow - lastHitAt < 0.4 then return end
+                session.resourceHitCooldowns[def.key] = hitNow
+                local hits = math.min(hitsRequired, (session.resourceHits[def.key] or 0) + 1)
+                session.resourceHits[def.key] = hits
+                event:FireClient(player, "ResourceHit", {nodeId = def.key, hits = hits, maxHits = hitsRequired})
+                if hits < hitsRequired then
+                    return tip(player, def.displayName .. ": удар " .. tostring(hits) .. "/" .. tostring(hitsRequired))
+                end
+                session.resourceHits[def.key] = nil
             end
             session.collectedNodes[def.key] = true
         else
@@ -4219,6 +4319,9 @@ local function spawnResource(def)
 
         local rewardAmount = math.max(1, math.floor(tonumber(def.amount) or 1))
         session.inventory[def.itemId] = (session.inventory[def.itemId] or 0) + rewardAmount
+        if def.discoveryAttribute then
+            player:SetAttribute(def.discoveryAttribute, true)
+        end
         syncInventory(player)
         event:FireClient(player, "ResourcePicked", {
             nodeId = def.key,
@@ -4674,6 +4777,7 @@ if crystalEchoGate and crystalEchoArrival then
             return tip(player, "Дверь шепчет: принеси древнюю печать из тайника с тремя рунами.")
         end
         crystalEchoInside[player] = true
+        player:SetAttribute("InCrystalEcho", true)
         local firstDiscovery = player:GetAttribute("CrystalEchoDiscovered") ~= true
         player:SetAttribute("CrystalEchoDiscovered", true)
         local coinBonus = firstDiscovery and grantExplorationCoins(player, "CrystalEchoDiscovered") or 0
@@ -4691,6 +4795,7 @@ if crystalEchoReturn then
         if not session or not crystalEchoInside[player] or not character or not root then return end
         if (root.Position - crystalEchoReturn.Position).Magnitude > 11 then return end
         crystalEchoInside[player] = nil
+        player:SetAttribute("InCrystalEcho", false)
         character:PivotTo(crystalEchoGate.CFrame * CFrame.new(0, 0, -7))
         tip(player, "Ты вернулся в главный зал Кристальной пещеры.")
     end)

@@ -2194,6 +2194,24 @@ for _, wallSpec in {
     local wall = makePart(echoChamber, "CrystalEcho" .. wallSpec.name, wallSpec.size, CFrame.new(echoCenter + wallSpec.offset), palette.stone, Enum.Material.Rock)
     setSolid(wall)
 end
+
+-- Echo Chamber has its own combat volume so the hidden boss never leaks into the main grotto.
+local echoCombatRegion = makePart(
+    echoChamber,
+    "CrystalEchoCombatRegion",
+    Vector3.new(28, 18, 26),
+    CFrame.new(echoCenter + Vector3.new(0, 9, 0)),
+    palette.lilac,
+    Enum.Material.ForceField,
+    nil,
+    1
+)
+echoCombatRegion.CanCollide = false
+echoCombatRegion.CanTouch = false
+echoCombatRegion.CanQuery = true
+echoCombatRegion:SetAttribute("RegionId", "CrystalEchoChamber")
+CollectionService:AddTag(echoCombatRegion, "GiantbackCombatRegion")
+
 local echoGate = makePart(
     crystalGrotto, "CrystalEchoGate", Vector3.new(5, 6, 1.2),
     CFrame.new(grottoCenter + Vector3.new(0, 3, 20)), palette.gold, Enum.Material.ForceField
@@ -2241,6 +2259,154 @@ for index = 1, 4 do
     )
     addLight(shard, palette.lilacLight, 5, 0.25)
 end
+
+-- The hidden Echo Chamber guardian is a true three-phase boss, separate from the grotto patrols.
+local function spawnCrystalEchoPrismGuardian()
+    if not echoChamber.Parent then return end
+    local boss = Instance.new("Model")
+    boss.Name = "CrystalEchoPrismGuardian01"
+    boss:SetAttribute("EnemyId", "CrystalEchoPrismGuardian01")
+    boss:SetAttribute("EncounterId", "CrystalEchoPrismGuardian01")
+    boss:SetAttribute("RegionId", "CrystalEchoChamber")
+    boss:SetAttribute("ArchetypeId", "PrismGuardian")
+    boss:SetAttribute("IsBoss", true)
+    boss:SetAttribute("CombatState", "Idle")
+    boss:SetAttribute("AggroRange", 36)
+    boss:SetAttribute("AttackRange", 7)
+    boss:SetAttribute("AttackDamage", 13)
+    boss:SetAttribute("AttackCooldown", 3.2)
+    boss:SetAttribute("TelegraphSeconds", 1.15)
+    boss:SetAttribute("PathRefreshSeconds", 1.0)
+    boss:SetAttribute("Phase2WalkSpeed", 9)
+    boss:SetAttribute("Phase2AttackDamage", 17)
+    boss:SetAttribute("Phase2AttackCooldown", 2.45)
+    boss:SetAttribute("Phase2TelegraphSeconds", 0.95)
+    boss:SetAttribute("Phase2PathRefreshSeconds", 0.85)
+    boss:SetAttribute("Phase2SlamRadius", 15)
+    boss:SetAttribute("Phase2SlamDamage", 18)
+    boss:SetAttribute("Phase3WalkSpeed", 12)
+    boss:SetAttribute("Phase3AttackDamage", 21)
+    boss:SetAttribute("Phase3AttackCooldown", 1.85)
+    boss:SetAttribute("Phase3TelegraphSeconds", 0.8)
+    boss:SetAttribute("Phase3PathRefreshSeconds", 0.65)
+    boss:SetAttribute("Phase3SlamRadius", 19)
+    boss:SetAttribute("Phase3SlamDamage", 23)
+    boss.Parent = echoChamber
+
+    local spawnPosition = echoCenter + Vector3.new(0, 4, 0)
+    local root = makeEnemyPart(
+        boss, "HumanoidRootPart", Vector3.new(3, 3, 2),
+        CFrame.lookAt(spawnPosition, spawnPosition + Vector3.new(0, 0, -1)), palette.ink
+    )
+    root.Transparency = 1
+    root.Massless = false
+    root.Transparency = 1
+    root.Massless = false
+    local torso = makeEnemyPart(
+        boss, "Torso", Vector3.new(4, 4.2, 2.5),
+        root.CFrame, palette.stone, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    torso.CanCollide = true
+    local head = makeEnemyPart(
+        boss, "Head", Vector3.new(2.35, 2.25, 2.15),
+        root.CFrame * CFrame.new(0, 3.05, -0.05), palette.lilac, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    local rightArm = makeEnemyPart(
+        boss, "Right Arm", Vector3.new(1.35, 3.35, 1.5),
+        root.CFrame * CFrame.new(2.45, 0, 0), palette.stone, Enum.Material.Slate
+    )
+    local leftArm = makeEnemyPart(
+        boss, "Left Arm", Vector3.new(1.35, 3.35, 1.5),
+        root.CFrame * CFrame.new(-2.45, 0, 0), palette.stone, Enum.Material.Slate
+    )
+    local rightLeg = makeEnemyPart(
+        boss, "Right Leg", Vector3.new(1.45, 2.8, 1.55),
+        root.CFrame * CFrame.new(0.95, -2.9, 0), palette.ink, Enum.Material.Slate
+    )
+    local leftLeg = makeEnemyPart(
+        boss, "Left Leg", Vector3.new(1.45, 2.8, 1.55),
+        root.CFrame * CFrame.new(-0.95, -2.9, 0), palette.ink, Enum.Material.Slate
+    )
+    rightLeg.CanCollide = true
+    leftLeg.CanCollide = true
+
+    joinRig(boss, "RootJoint", root, torso, CFrame.new(), CFrame.new())
+    joinRig(boss, "Neck", torso, head, CFrame.new(0, 2.0, 0), CFrame.new(0, -1.12, 0))
+    joinRig(boss, "Right Shoulder", torso, rightArm, CFrame.new(1.9, 1.1, 0), CFrame.new(0, 1.1, 0))
+    joinRig(boss, "Left Shoulder", torso, leftArm, CFrame.new(-1.9, 1.1, 0), CFrame.new(0, 1.1, 0))
+    joinRig(boss, "Right Hip", torso, rightLeg, CFrame.new(0.9, -1.85, 0), CFrame.new(0, 1.35, 0))
+    joinRig(boss, "Left Hip", torso, leftLeg, CFrame.new(-0.9, -1.85, 0), CFrame.new(0, 1.35, 0))
+
+    local function addGuardianCrystal(name, size, frame, color, parentPart, shape)
+        local crystal = makeEnemyPart(boss, name, size, frame, color, Enum.Material.Neon, shape or Enum.PartType.Wedge)
+        crystal.CanQuery = false
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = parentPart
+        weld.Part1 = crystal
+        weld.Parent = crystal
+        return crystal
+    end
+
+    local core = addGuardianCrystal(
+        "PrismGuardianCore", Vector3.new(1.25, 1.55, 0.55),
+        torso.CFrame * CFrame.new(0, 0.1, -1.28), palette.moon, torso, Enum.PartType.Ball
+    )
+    addLight(core, palette.moon, 18, 1.2)
+    for index = 1, 7 do
+        local angle = math.rad(-54 + (index - 1) * 18)
+        local crown = addGuardianCrystal(
+            "PrismCrown" .. tostring(index),
+            Vector3.new(0.78, 2.35 + (index % 2) * 0.55, 0.7),
+            head.CFrame * CFrame.new(math.sin(angle) * 1.1, 1.0 + (index == 4 and 0.35 or 0), 0)
+                * CFrame.Angles(0, 0, -angle),
+            index % 2 == 0 and palette.water or palette.lilacLight,
+            head
+        )
+        addLight(crown, crown.Color, 6, 0.3)
+    end
+    for side = -1, 1, 2 do
+        local shoulder = addGuardianCrystal(
+            side < 0 and "LeftShoulderPrism" or "RightShoulderPrism",
+            Vector3.new(1.15, 2.2, 1.4),
+            torso.CFrame * CFrame.new(side * 1.8, 1.35, 0.1) * CFrame.Angles(0, 0, math.rad(-side * 20)),
+            palette.lilacLight,
+            torso
+        )
+        addLight(shoulder, palette.lilacLight, 7, 0.35)
+        local eye = addGuardianCrystal(
+            side < 0 and "LeftPrismEye" or "RightPrismEye",
+            Vector3.new(0.22, 0.25, 0.12),
+            head.CFrame * CFrame.new(side * 0.52, 0.08, -0.98),
+            palette.gold,
+            head,
+            Enum.PartType.Ball
+        )
+        addLight(eye, palette.gold, 5, 0.4)
+    end
+
+    local humanoid = Instance.new("Humanoid")
+    humanoid.DisplayName = "Хранитель Призмы"
+    humanoid.MaxHealth = 480
+    humanoid.Health = 480
+    humanoid.WalkSpeed = 7
+    humanoid.JumpPower = 0
+    humanoid.BreakJointsOnDeath = false
+    humanoid.RequiresNeck = true
+    humanoid.Parent = boss
+    boss.PrimaryPart = root
+    humanoid.Died:Connect(function()
+        task.delay(3, function()
+            if boss.Parent then boss:Destroy() end
+        end)
+        task.delay(90, function()
+            if echoChamber.Parent then spawnCrystalEchoPrismGuardian() end
+        end)
+    end)
+
+    CollectionService:AddTag(boss, "GiantbackEnemy")
+    root:SetNetworkOwner(nil)
+end
+spawnCrystalEchoPrismGuardian()
 
 -- Procedural companion model shared by the wild encounter and owner followers.
 local oldWisp = ReplicatedStorage:FindFirstChild("CrystalWisp")
@@ -2303,6 +2469,250 @@ for index = 1, 12 do
     glow.Brightness = 0.45
     glow.Parent = crystal
 end
+
+-- A dedicated combat volume keeps the Crystal Grotto encounter isolated from Grove and Rootvault.
+local grottoCombatRegion = makePart(
+    crystalGrotto,
+    "CrystalGrottoCombatRegion",
+    Vector3.new(46, 24, 42),
+    CFrame.new(grottoCenter + Vector3.new(0, 12, 0)),
+    palette.lilac,
+    Enum.Material.ForceField,
+    nil,
+    1
+)
+grottoCombatRegion.CanCollide = false
+grottoCombatRegion.CanTouch = false
+grottoCombatRegion.CanQuery = true
+grottoCombatRegion:SetAttribute("RegionId", "CrystalGrotto")
+CollectionService:AddTag(grottoCombatRegion, "GiantbackCombatRegion")
+
+-- Shardling: a fast crystal scavenger that feints before committing to a damaging dash.
+local function spawnCrystalShardling()
+    if not crystalGrotto.Parent then return end
+    local shardling = Instance.new("Model")
+    shardling.Name = "CrystalGrottoShardling01"
+    shardling:SetAttribute("EnemyId", "CrystalGrottoShardling01")
+    shardling:SetAttribute("EncounterId", "CrystalGrottoShardling01")
+    shardling:SetAttribute("RegionId", "CrystalGrotto")
+    shardling:SetAttribute("ArchetypeId", "Shardling")
+    shardling:SetAttribute("CombatState", "Idle")
+    shardling:SetAttribute("AggroRange", 28)
+    shardling:SetAttribute("AttackRange", 6)
+    shardling:SetAttribute("AttackDamage", 7)
+    shardling:SetAttribute("AttackCooldown", 2.65)
+    shardling:SetAttribute("TelegraphSeconds", 0.9)
+    shardling:SetAttribute("PathRefreshSeconds", 0.72)
+    shardling:SetAttribute("ShardlingDashRange", 14)
+    shardling:SetAttribute("ShardlingDashDamage", 13)
+    shardling.Parent = crystalGrotto
+
+    local spawnPosition = grottoCenter + Vector3.new(-13, 3, 8)
+    local root = makeEnemyPart(
+        shardling, "HumanoidRootPart", Vector3.new(1.7, 1.9, 1),
+        CFrame.lookAt(spawnPosition, spawnPosition + Vector3.new(1, 0, -0.4)), palette.ink
+    )
+    root.Transparency = 1
+    root.Massless = false
+    local torso = makeEnemyPart(
+        shardling, "Torso", Vector3.new(1.65, 1.8, 1.2),
+        root.CFrame, palette.lilac, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    torso.CanCollide = true
+    local head = makeEnemyPart(
+        shardling, "Head", Vector3.new(1.15, 1.05, 1.05),
+        root.CFrame * CFrame.new(0, 1.35, -0.08), palette.lilacLight, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    local rightArm = makeEnemyPart(
+        shardling, "Right Arm", Vector3.new(0.55, 1.45, 0.65),
+        root.CFrame * CFrame.new(1.0, 0.05, 0), palette.stone, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    local leftArm = makeEnemyPart(
+        shardling, "Left Arm", Vector3.new(0.55, 1.45, 0.65),
+        root.CFrame * CFrame.new(-1.0, 0.05, 0), palette.stone, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    local rightLeg = makeEnemyPart(
+        shardling, "Right Leg", Vector3.new(0.62, 1.25, 0.72),
+        root.CFrame * CFrame.new(0.43, -1.25, 0), palette.ink, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    local leftLeg = makeEnemyPart(
+        shardling, "Left Leg", Vector3.new(0.62, 1.25, 0.72),
+        root.CFrame * CFrame.new(-0.43, -1.25, 0), palette.ink, Enum.Material.Slate, Enum.PartType.Ball
+    )
+
+    joinRig(shardling, "RootJoint", root, torso, CFrame.new(), CFrame.new())
+    joinRig(shardling, "Neck", torso, head, CFrame.new(0, 0.9, 0), CFrame.new(0, -0.55, 0))
+    joinRig(shardling, "Right Shoulder", torso, rightArm, CFrame.new(0.82, 0.48, 0), CFrame.new(0, 0.48, 0))
+    joinRig(shardling, "Left Shoulder", torso, leftArm, CFrame.new(-0.82, 0.48, 0), CFrame.new(0, 0.48, 0))
+    joinRig(shardling, "Right Hip", torso, rightLeg, CFrame.new(0.42, -0.75, 0), CFrame.new(0, 0.6, 0))
+    joinRig(shardling, "Left Hip", torso, leftLeg, CFrame.new(-0.42, -0.75, 0), CFrame.new(0, 0.6, 0))
+
+    local function addShardlingCrystal(name, size, frame, color, parentPart, shape)
+        local shard = makeEnemyPart(shardling, name, size, frame, color, Enum.Material.Neon, shape or Enum.PartType.Wedge)
+        shard.CanQuery = false
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = parentPart
+        weld.Part1 = shard
+        weld.Parent = shard
+        return shard
+    end
+
+    local core = addShardlingCrystal(
+        "Shardling core", Vector3.new(0.48, 0.58, 0.3),
+        torso.CFrame * CFrame.new(0, 0.02, -0.59), palette.water, torso, Enum.PartType.Ball
+    )
+    addLight(core, palette.water, 8, 0.6)
+    for index = 1, 4 do
+        local side = index % 2 == 0 and 1 or -1
+        local shard = addShardlingCrystal(
+            "Back shard " .. tostring(index),
+            Vector3.new(0.48, 1.25 + (index % 2) * 0.35, 0.5),
+            torso.CFrame * CFrame.new(side * (0.42 + math.floor((index - 1) / 2) * 0.22), 0.72 - (index % 2) * 0.24, 0.42)
+                * CFrame.Angles(math.rad(-18), 0, math.rad(side * 18)),
+            index % 2 == 0 and palette.moon or palette.lilacLight,
+            torso
+        )
+        addLight(shard, shard.Color, 4, 0.2)
+    end
+    for side = -1, 1, 2 do
+        local eye = addShardlingCrystal(
+            side < 0 and "Left eye" or "Right eye",
+            Vector3.new(0.12, 0.16, 0.08),
+            head.CFrame * CFrame.new(side * 0.25, 0.06, -0.49),
+            palette.gold, head, Enum.PartType.Ball
+        )
+        addLight(eye, palette.gold, 3, 0.2)
+    end
+
+    local humanoid = Instance.new("Humanoid")
+    humanoid.DisplayName = "Осколочник"
+    humanoid.MaxHealth = 72
+    humanoid.Health = 72
+    humanoid.WalkSpeed = 12
+    humanoid.BreakJointsOnDeath = false
+    humanoid.Parent = shardling
+    shardling.PrimaryPart = root
+    humanoid.Died:Connect(function()
+        task.delay(3, function()
+            if shardling.Parent then shardling:Destroy() end
+        end)
+        task.delay(25, function()
+            if crystalGrotto.Parent then spawnCrystalShardling() end
+        end)
+    end)
+
+    CollectionService:AddTag(shardling, "GiantbackEnemy")
+    root:SetNetworkOwner(nil)
+end
+spawnCrystalShardling()
+
+
+-- Crystal Warden: a compact but unmistakable crystal-armoured guardian of the grotto.
+local function spawnCrystalWarden()
+    if not crystalGrotto.Parent then return end
+    local warden = Instance.new("Model")
+    warden.Name = "CrystalGrottoWarden01"
+    warden:SetAttribute("EnemyId", "CrystalGrottoWarden01")
+    warden:SetAttribute("EncounterId", "CrystalGrottoWarden01")
+    warden:SetAttribute("RegionId", "CrystalGrotto")
+    warden:SetAttribute("ArchetypeId", "CrystalWarden")
+    warden:SetAttribute("CombatState", "Idle")
+    warden:SetAttribute("AggroRange", 30)
+    warden:SetAttribute("AttackRange", 16)
+    warden:SetAttribute("AttackDamage", 10)
+    warden:SetAttribute("AttackCooldown", 3.2)
+    warden:SetAttribute("TelegraphSeconds", 1.2)
+    warden:SetAttribute("PathRefreshSeconds", 1.0)
+    warden:SetAttribute("CrystalFanRange", 16)
+    warden:SetAttribute("CrystalFanDamage", 16)
+    warden:SetAttribute("CrystalFanDot", 0.72)
+    warden.Parent = crystalGrotto
+
+    local spawnPosition = grottoCenter + Vector3.new(0, 3, 3)
+    local root = makeEnemyPart(warden, "HumanoidRootPart", Vector3.new(2, 2, 1), CFrame.lookAt(spawnPosition, spawnPosition + Vector3.new(0, 0, -1)), palette.ink)
+    root.Transparency = 1
+    root.Massless = false
+    local torso = makeEnemyPart(warden, "Torso", Vector3.new(2.5, 2.6, 1.65), root.CFrame, palette.stone, Enum.Material.Slate, Enum.PartType.Ball)
+    torso.CanCollide = true
+    local head = makeEnemyPart(warden, "Head", Vector3.new(1.55, 1.5, 1.45), root.CFrame * CFrame.new(0, 1.9, -0.04), palette.lilac, Enum.Material.Slate, Enum.PartType.Ball)
+    local rightArm = makeEnemyPart(warden, "Right Arm", Vector3.new(0.9, 2.1, 1), root.CFrame * CFrame.new(1.55, 0, 0), palette.stone, Enum.Material.Slate)
+    local leftArm = makeEnemyPart(warden, "Left Arm", Vector3.new(0.9, 2.1, 1), root.CFrame * CFrame.new(-1.55, 0, 0), palette.stone, Enum.Material.Slate)
+    local rightLeg = makeEnemyPart(warden, "Right Leg", Vector3.new(0.95, 1.9, 1), root.CFrame * CFrame.new(0.58, -2, 0), palette.ink, Enum.Material.Slate)
+    local leftLeg = makeEnemyPart(warden, "Left Leg", Vector3.new(0.95, 1.9, 1), root.CFrame * CFrame.new(-0.58, -2, 0), palette.ink, Enum.Material.Slate)
+    rightLeg.CanCollide = true
+    leftLeg.CanCollide = true
+
+    joinRig(warden, "RootJoint", root, torso, CFrame.new(), CFrame.new())
+    joinRig(warden, "Neck", torso, head, CFrame.new(0, 1.25, 0), CFrame.new(0, -0.72, 0))
+    joinRig(warden, "Right Shoulder", torso, rightArm, CFrame.new(1.2, 0.7, 0), CFrame.new(0, 0.7, 0))
+    joinRig(warden, "Left Shoulder", torso, leftArm, CFrame.new(-1.2, 0.7, 0), CFrame.new(0, 0.7, 0))
+    joinRig(warden, "Right Hip", torso, rightLeg, CFrame.new(0.58, -1.05, 0), CFrame.new(0, 0.95, 0))
+    joinRig(warden, "Left Hip", torso, leftLeg, CFrame.new(-0.58, -1.05, 0), CFrame.new(0, 0.95, 0))
+
+    local function addWardenCrystal(name, size, frame, color, parentPart, shape)
+        local shard = makeEnemyPart(warden, name, size, frame, color, Enum.Material.Neon, shape or Enum.PartType.Wedge)
+        shard.CanQuery = false
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = parentPart
+        weld.Part1 = shard
+        weld.Parent = shard
+        return shard
+    end
+
+    local core = addWardenCrystal("Warden prism core", Vector3.new(0.72, 0.95, 0.35), torso.CFrame * CFrame.new(0, 0.05, -0.82), palette.moon, torso, Enum.PartType.Ball)
+    addLight(core, palette.moon, 12, 0.9)
+    for index = 1, 5 do
+        local angle = math.rad(-48 + (index - 1) * 24)
+        local shard = addWardenCrystal(
+            "Crown crystal " .. tostring(index),
+            Vector3.new(0.62, 1.9 + (index % 2) * 0.45, 0.58),
+            head.CFrame * CFrame.new(math.sin(angle) * 0.72, 0.95 + (index == 3 and 0.22 or 0), 0) * CFrame.Angles(0, 0, -angle),
+            index % 2 == 0 and palette.water or palette.lilacLight,
+            head
+        )
+        addLight(shard, shard.Color, 5, 0.25)
+    end
+    for side = -1, 1, 2 do
+        addWardenCrystal(
+            side < 0 and "Left shoulder prism" or "Right shoulder prism",
+            Vector3.new(0.8, 1.65, 1.1),
+            torso.CFrame * CFrame.new(side * 1.05, 0.85, 0) * CFrame.Angles(0, 0, math.rad(-side * 18)),
+            palette.lilacLight,
+            torso
+        )
+        local eye = addWardenCrystal(
+            side < 0 and "Left cyan eye" or "Right cyan eye",
+            Vector3.new(0.16, 0.2, 0.1),
+            head.CFrame * CFrame.new(side * 0.34, 0.05, -0.68),
+            palette.water,
+            head,
+            Enum.PartType.Ball
+        )
+        addLight(eye, palette.water, 4, 0.35)
+    end
+
+    local humanoid = Instance.new("Humanoid")
+    humanoid.DisplayName = "Кристальный страж"
+    humanoid.MaxHealth = 130
+    humanoid.Health = 130
+    humanoid.WalkSpeed = 7.5
+    humanoid.BreakJointsOnDeath = false
+    humanoid.Parent = warden
+    warden.PrimaryPart = root
+    humanoid.Died:Connect(function()
+        task.delay(3, function()
+            if warden.Parent then warden:Destroy() end
+        end)
+        task.delay(30, function()
+            if crystalGrotto.Parent then spawnCrystalWarden() end
+        end)
+    end)
+
+    CollectionService:AddTag(warden, "GiantbackEnemy")
+    root:SetNetworkOwner(nil)
+end
+spawnCrystalWarden()
+
 
 local grottoEntrance = makePart(
     workspace.Dusk, "CrystalGrottoEntrance", Vector3.new(5.5, 6.5, 1.5),

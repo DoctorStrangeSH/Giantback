@@ -607,6 +607,7 @@ local function updateBossHud(enemy)
     local maxHealth = math.max(1, tonumber(enemy:GetAttribute("CombatMaxHealth")) or (humanoid and humanoid.MaxHealth) or 1)
     local phase = math.clamp(tonumber(enemy:GetAttribute("BossPhase")) or 1, 1, 3)
     local ratio = math.clamp(health / maxHealth, 0, 1)
+    bossName.Text = string.upper((humanoid and humanoid.DisplayName) or tostring(enemy:GetAttribute("BossDisplayName") or "БОСС"))
     bossHealthFill.Size = UDim2.fromScale(ratio, 1)
     bossHealthFill.BackgroundColor3 = phase == 1 and Color3.fromRGB(170, 92, 194)
         or (phase == 2 and Color3.fromRGB(190, 104, 255) or Color3.fromRGB(226, 91, 77))
@@ -846,7 +847,13 @@ RunService.RenderStepped:Connect(function()
             setJointPose(rootJoint, -0.12, 0, 0)
             setJointPose(waistJoint, -0.08, 0, 0)
             setJointPose(neck, 0.18, 0, 0)
-        elseif state == "Telegraph" or state == "PollenTelegraph" then
+        elseif state == "ShardlingFeintTelegraph" or state == "ShardlingDashTelegraph" then
+            setJointPose(rightArm, -1.9, 0, -0.72)
+            setJointPose(leftArm, -1.45, 0, 0.72)
+            setJointPose(rootJoint, 0.24, 0, 0)
+            setJointPose(waistJoint, 0.18, 0, 0)
+            setJointPose(neck, -0.22, 0, 0)
+        elseif state == "Telegraph" or state == "PollenTelegraph" or state == "CrystalFanTelegraph" then
             setJointPose(rightArm, isBoss and -1.9 or -1.45, 0, -0.55)
             setJointPose(leftArm, -0.35, 0, 0.2)
             setJointPose(rootJoint, -0.08, 0, 0)
@@ -990,7 +997,7 @@ local function showBossPhaseTransition(enemy, phase)
     if phase <= 1 then return end
 
     local root = enemy:FindFirstChild("HumanoidRootPart")
-    local core = enemy:FindFirstChild("SealCore", true)
+    local core = enemy:FindFirstChild("SealCore", true) or enemy:FindFirstChild("PrismGuardianCore", true)
     if not root then return end
 
     local accent = phase == 2 and Color3.fromRGB(190, 104, 255) or Color3.fromRGB(255, 105, 91)
@@ -1053,11 +1060,127 @@ local function showBossPhaseTransition(enemy, phase)
     end)
 end
 
+local function showCrystalFanTelegraph(enemy)
+    if not enemy or not enemy:IsA("Model") or not enemy:IsDescendantOf(Workspace) then return end
+    local root = enemy:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local range = math.clamp(tonumber(enemy:GetAttribute("CrystalFanRange")) or 16, 10, 22)
+    local origin = root.Position + Vector3.new(0, 0.45, 0)
+    local look = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z)
+    if look.Magnitude < 0.01 then return end
+    look = look.Unit
+    local right = Vector3.new(-look.Z, 0, look.X)
+    local markerFolder = Instance.new("Folder")
+    markerFolder.Name = "LocalCrystalFanTelegraph"
+    markerFolder.Parent = Workspace
+
+    for _, angle in {-38, 0, 38} do
+        local radians = math.rad(angle)
+        local direction = (look * math.cos(radians) + right * math.sin(radians)).Unit
+        local endpoint = origin + direction * range
+        local midpoint = (origin + endpoint) * 0.5
+        local marker = Instance.new("Part")
+        marker.Name = "CrystalFanWarningLine"
+        marker.Anchored = true
+        marker.CanCollide = false
+        marker.CanTouch = false
+        marker.CanQuery = false
+        marker.CastShadow = false
+        marker.Material = Enum.Material.Neon
+        marker.Color = Color3.fromRGB(172, 226, 255)
+        marker.Transparency = 0.22
+        marker.Size = Vector3.new(0.18, 0.18, range)
+        marker.CFrame = CFrame.lookAt(midpoint, endpoint)
+        marker.Parent = markerFolder
+        TweenService:Create(
+            marker,
+            TweenInfo.new(math.max(tonumber(enemy:GetAttribute("TelegraphSeconds")) or 1.15, 1.15), Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Transparency = 0.62}
+        ):Play()
+    end
+
+    task.delay(math.max(tonumber(enemy:GetAttribute("TelegraphSeconds")) or 1.15, 1.15) + 0.35, function()
+        if markerFolder.Parent then markerFolder:Destroy() end
+    end)
+end
+
+local function showShardlingDashTelegraph(enemy, isFeint)
+    if not enemy or not enemy:IsA("Model") or not enemy:IsDescendantOf(Workspace) then return end
+    local root = enemy:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local range = isFeint and 8 or math.clamp(tonumber(enemy:GetAttribute("ShardlingDashRange")) or 14, 8, 18)
+    local warning = isFeint
+        and math.clamp((tonumber(enemy:GetAttribute("TelegraphSeconds")) or 0.9) * 0.72, 0.45, 0.85)
+        or math.max(tonumber(enemy:GetAttribute("TelegraphSeconds")) or 0.9, 0.9)
+    local direction = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z)
+    if direction.Magnitude < 0.01 then return end
+    direction = direction.Unit
+
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    rayParams.FilterDescendantsInstances = {enemy}
+    local floorHit = Workspace:Raycast(root.Position, Vector3.new(0, -24, 0), rayParams)
+    local floorPosition = floorHit and floorHit.Position or (root.Position - Vector3.new(0, 3, 0))
+    local endpoint = floorPosition + direction * range
+    local midpoint = (floorPosition + endpoint) * 0.5
+
+    local marker = Instance.new("Part")
+    marker.Name = isFeint and "LocalShardlingFeintTelegraph" or "LocalShardlingDashTelegraph"
+    marker.Anchored = true
+    marker.CanCollide = false
+    marker.CanTouch = false
+    marker.CanQuery = false
+    marker.CastShadow = false
+    marker.Material = Enum.Material.Neon
+    marker.Color = isFeint and Color3.fromRGB(255, 205, 105) or Color3.fromRGB(255, 105, 91)
+    marker.Transparency = 0.18
+    marker.Size = Vector3.new(0.22, 0.16, range)
+    marker.CFrame = CFrame.lookAt(midpoint + Vector3.new(0, 0.12, 0), endpoint + Vector3.new(0, 0.12, 0))
+    marker.Parent = Workspace
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "LocalShardlingTelegraphHighlight"
+    highlight.Adornee = enemy
+    highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+    highlight.FillColor = marker.Color
+    highlight.OutlineColor = Color3.fromRGB(255, 242, 214)
+    highlight.FillTransparency = 0.72
+    highlight.OutlineTransparency = 0.08
+    highlight.Parent = enemy
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "LocalShardlingAttackLabel"
+    billboard.Size = UDim2.fromOffset(150, 34)
+    billboard.StudsOffset = Vector3.new(0, 3.1, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = 65
+    billboard.Parent = root
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.fromScale(1, 1)
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.GothamBold
+    label.Text = isFeint and "ОБМАННЫЙ РЫВОК" or "РЫВОК!"
+    label.TextColor3 = marker.Color
+    label.TextStrokeTransparency = 0.25
+    label.TextScaled = true
+    label.Parent = billboard
+
+    task.delay(warning + 0.3, function()
+        if marker.Parent then marker:Destroy() end
+        if highlight.Parent then highlight:Destroy() end
+        if billboard.Parent then billboard:Destroy() end
+    end)
+end
+
 local function bindBossTelegraph(enemy)
     if not enemy:IsA("Model") then return end
     local isBoss = enemy:GetAttribute("IsBoss") == true
     local isMossling = enemy:GetAttribute("ArchetypeId") == "Mossling"
-    if not isBoss and not isMossling then return end
+    local isCrystalWarden = enemy:GetAttribute("ArchetypeId") == "CrystalWarden"
+    local isShardling = enemy:GetAttribute("ArchetypeId") == "Shardling"
+    if not isBoss and not isMossling and not isCrystalWarden and not isShardling then return end
 
     enemy:GetAttributeChangedSignal("BossAttack"):Connect(function()
         local attack = enemy:GetAttribute("BossAttack")
@@ -1065,6 +1188,12 @@ local function bindBossTelegraph(enemy)
             showBossSlamTelegraph(enemy)
         elseif attack == "PollenBurst" and isMossling then
             showMosslingPollenTelegraph(enemy)
+        elseif attack == "CrystalFan" and isCrystalWarden then
+            showCrystalFanTelegraph(enemy)
+        elseif attack == "ShardlingFeint" and isShardling then
+            showShardlingDashTelegraph(enemy, true)
+        elseif attack == "ShardlingDash" and isShardling then
+            showShardlingDashTelegraph(enemy, false)
         end
     end)
     if isBoss then
@@ -1077,6 +1206,12 @@ local function bindBossTelegraph(enemy)
         showBossSlamTelegraph(enemy)
     elseif enemy:GetAttribute("BossAttack") == "PollenBurst" and isMossling then
         showMosslingPollenTelegraph(enemy)
+    elseif enemy:GetAttribute("BossAttack") == "CrystalFan" and isCrystalWarden then
+        showCrystalFanTelegraph(enemy)
+    elseif enemy:GetAttribute("BossAttack") == "ShardlingFeint" and isShardling then
+        showShardlingDashTelegraph(enemy, true)
+    elseif enemy:GetAttribute("BossAttack") == "ShardlingDash" and isShardling then
+        showShardlingDashTelegraph(enemy, false)
     end
 end
 
