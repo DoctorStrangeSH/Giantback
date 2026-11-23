@@ -32,10 +32,10 @@ class RebootContractTests(unittest.TestCase):
             )
 
     def test_compact_topbar_reserves_a_gap_without_overlapping_brand_and_resources(self):
-        self.assertIn("local topBarUsableWidth = math.max(0, topBar.AbsoluteSize.X - 8)", HUD)
-        self.assertIn("local brandWidth = math.floor(topBarUsableWidth * 0.42)", HUD)
-        self.assertIn("local resourcesWidth = topBarUsableWidth - brandWidth", HUD)
-        self.assertIn("resources.Size = UDim2.fromOffset(resourcesWidth, 58)", HUD)
+        self.assertIn('brand.Size = UDim2.fromOffset(compact and (narrow and 112 or 132) or 178, compact and 48 or 58)', HUD)
+        self.assertIn('resources.Size = UDim2.fromOffset(compact and (narrow and 150 or 174) or 214, compact and 48 or 58)', HUD)
+        self.assertIn('topBar.Position = UDim2.fromOffset(compact and 8 or 16, compact and 8 or 16)', HUD)
+        self.assertIn('local narrow = viewport.X < 420', HUD)
 
     def test_hud_callbacks_are_forward_declared_before_renderers_use_them(self):
         toast_decl = HUD.index("local showToast")
@@ -54,7 +54,8 @@ class RebootContractTests(unittest.TestCase):
         self.assertIn("toastTween:Cancel()", HUD)
 
     def test_compact_panel_height_is_clamped_for_short_viewports(self):
-        self.assertIn("math.max(180, math.min(430, height - 150))", HUD)
+        self.assertIn("math.max(160, math.min(420, viewport.Y - (compact and 140 or 220)))", HUD)
+        self.assertIn("panel.Size = UDim2.fromOffset(panelWidth, panelHeight)", HUD)
 
     def test_product_spec_uses_fixed_archipelago(self):
         self.assertIn("Острова **не перемещаются**", SPEC)

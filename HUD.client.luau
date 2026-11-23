@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local event = ReplicatedStorage:WaitForChild("AlbumAction")
@@ -125,8 +126,8 @@ resources.BackgroundColor3 = palette.paper
 resources.Parent = topBar
 corner(resources, 18)
 stroke(resources, palette.paperDark, 0.1, 1)
-local woodLabel = label(resources, "Wood", "🪵  Дерево  0", UDim2.new(0.5, -8, 1, 0), UDim2.fromOffset(10, 0), 13, palette.ink, Enum.Font.GothamBold)
-local stoneLabel = label(resources, "Stone", "🪨  Камень  0", UDim2.new(0.5, -8, 1, 0), UDim2.new(0.5, 2, 0, 0), 13, palette.ink, Enum.Font.GothamBold)
+local woodLabel = label(resources, "Wood", "ДЕР.  0", UDim2.new(0.5, -8, 1, 0), UDim2.fromOffset(10, 0), 13, palette.ink, Enum.Font.GothamBold)
+local stoneLabel = label(resources, "Stone", "КАМ.  0", UDim2.new(0.5, -8, 1, 0), UDim2.new(0.5, 2, 0, 0), 13, palette.ink, Enum.Font.GothamBold)
 
 local objective = Instance.new("Frame")
 objective.Name = "ObjectiveCard"
@@ -241,6 +242,60 @@ local toastText = label(toast, "Text", "", UDim2.new(1, -24, 1, -8), UDim2.fromO
 toastText.TextXAlignment = Enum.TextXAlignment.Center
 local toastGeneration = 0
 local toastTween = nil
+local navButtons = {}
+local navDefinitions = {}
+
+local function updateResponsiveLayout()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+    local viewport = camera.ViewportSize
+    local compact = viewport.X < 620
+    local narrow = viewport.X < 420
+
+    topBar.Position = UDim2.fromOffset(compact and 8 or 16, compact and 8 or 16)
+    topBar.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 48 or 58)
+    brand.Size = UDim2.fromOffset(compact and (narrow and 112 or 132) or 178, compact and 48 or 58)
+    brandTitle.TextSize = compact and 14 or 18
+    brandSubtitle.Visible = not compact
+    resources.Size = UDim2.fromOffset(compact and (narrow and 150 or 174) or 214, compact and 48 or 58)
+    woodLabel.TextSize = compact and 10 or 13
+    stoneLabel.TextSize = compact and 10 or 13
+    objective.Position = UDim2.fromOffset(compact and 8 or 16, compact and 64 or 84)
+    objective.Size = UDim2.fromOffset(compact and (narrow and 210 or 250) or 352, compact and 112 or 138)
+    objectiveIcon.Size = UDim2.fromOffset(compact and 38 or 54, compact and 38 or 54)
+    objectiveIcon.Position = UDim2.fromOffset(10, 10)
+    objectiveEyebrow.Position = UDim2.fromOffset(compact and 56 or 76, 8)
+    objectiveText.Position = UDim2.fromOffset(compact and 56 or 76, 27)
+    objectiveHint.Visible = not compact
+    objectiveText.Size = UDim2.new(1, compact and -64 or -86, 0, compact and 30 or 34)
+    progressTrack.Position = UDim2.new(0, compact and 56 or 76, 1, -12)
+    progressTrack.Size = UDim2.new(1, compact and -68 or -92, 0, 5)
+    progressCount.Visible = not compact
+
+    nav.Position = UDim2.new(0.5, 0, 1, compact and -6 or -14)
+    nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 54 or 68)
+    navLayout.Padding = UDim.new(0, compact and 2 or 7)
+    for _, definition in navDefinitions do
+        local navButton = navButtons[definition.id]
+        if navButton then
+            navButton.Size = UDim2.new(1 / #navDefinitions, compact and -2 or -6, 1, -8)
+            navButton.Text = compact and definition.glyph or (definition.glyph .. "\\n" .. definition.title)
+            navButton.TextSize = compact and 20 or 13
+        end
+    end
+
+    local panelWidth = math.max(240, math.min(470, viewport.X - (compact and 16 or 48)))
+    local panelHeight = math.max(160, math.min(420, viewport.Y - (compact and 140 or 220)))
+    panel.Size = UDim2.fromOffset(panelWidth, panelHeight)
+    panel.Position = UDim2.new(0.5, 0, 0.5, compact and -18 or 0)
+    panelTitle.TextSize = compact and 16 or 20
+    panelSubtitle.TextSize = compact and 10 or 12
+    body.Position = UDim2.fromOffset(12, 72)
+    body.Size = UDim2.new(1, -24, 1, -84)
+    toast.Size = UDim2.fromOffset(math.min(380, math.max(190, viewport.X - 24)), 48)
+    toast.Position = UDim2.new(0.5, 0, 1, compact and -68 or -96)
+end
+
 
 local function clearBody()
     for _, child in body:GetChildren() do
@@ -259,10 +314,10 @@ local function addInfo(titleText, description, height)
 end
 
 local cropCatalog = {
-    {id = "Carrot", name = "Морковь", seed = "CarrotSeed", glyph = "🥕", grow = "5 мин", color = palette.gold},
-    {id = "Strawberry", name = "Клубника", seed = "StrawberrySeed", glyph = "🍓", grow = "12 мин · повторный сбор 8 мин", color = palette.coral},
-    {id = "Pumpkin", name = "Тыква", seed = "PumpkinSeed", glyph = "🎃", grow = "30 мин", color = palette.gold},
-    {id = "Cabbage", name = "Капуста", seed = "CabbageSeed", glyph = "🥬", grow = "20 мин", color = palette.mint},
+    {id = "Carrot", name = "Морковь", seed = "CarrotSeed", glyph = "◆", grow = "5 мин", color = palette.gold},
+    {id = "Strawberry", name = "Клубника", seed = "StrawberrySeed", glyph = "♥", grow = "12 мин · повторный сбор 8 мин", color = palette.coral},
+    {id = "Pumpkin", name = "Тыква", seed = "PumpkinSeed", glyph = "●", grow = "30 мин", color = palette.gold},
+    {id = "Cabbage", name = "Капуста", seed = "CabbageSeed", glyph = "✿", grow = "20 мин", color = palette.mint},
 }
 local cropById = {}
 for _, crop in cropCatalog do cropById[crop.id] = crop end
@@ -307,7 +362,7 @@ local function addPlot(plotId, index)
         stateText = string.format("%s растёт — осталось %02d:%02d", crop and crop.name or "Растение", minutes, seconds)
     end
     local item = card(body, "Plot" .. tostring(index), 66)
-    local icon = label(item, "Icon", not unlocked and "🔒" or (crop and crop.glyph or "＋"), UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 12), 23, palette.forest, Enum.Font.GothamBlack)
+    local icon = label(item, "Icon", not unlocked and "З" or (crop and crop.glyph or "＋"), UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 12), 23, palette.forest, Enum.Font.GothamBlack)
     icon.TextXAlignment = Enum.TextXAlignment.Center
     label(item, "Title", "Грядка " .. tostring(index), UDim2.new(1, -72, 0, 22), UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
     label(item, "State", stateText, UDim2.new(1, -72, 0, 30), UDim2.fromOffset(60, 31), 12, palette.muted)
@@ -320,7 +375,7 @@ local function renderCity()
     local cityLevel = tonumber(player:GetAttribute("City_Level")) or 1
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
     local homeSlot = tonumber(player:GetAttribute("HomeIslandSlot")) or 0
-    addInfo("Добро пожаловать домой!", "Это твой отдельный постоянный остров. Соседи видят его, но не могут менять твои постройки.", 84)
+    addInfo("Добро пожаловать домой!", "Это твой личный остров. Друзья могут приходить в гости, но строить и менять что-либо здесь можешь только ты.", 84)
     addInfo("Домашний остров №" .. tostring(homeSlot), "На сервере восемь отдельных островов. Твой дом и ферма не накладываются на чужие участки.", 76)
     addInfo("Уровень города: " .. tostring(cityLevel), "Развивай остров, собирай материалы и открывай новые территории мостами.", 76)
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
@@ -339,7 +394,7 @@ local function renderCity()
     addInfo("Находки и ферма", "🌙 Лунные семена: " .. tostring(moonSeeds) .. "   •   ✦ Звёздный осколок: " .. tostring(starShards)
         .. "   •   🥕 Семена: " .. tostring(carrotSeeds) .. "   •   Урожай: " .. tostring(carrots)
         .. "   •   ☀ Солнечные лепестки: " .. tostring(sunPetals) .. "   •   ☾ Лунные лепестки: " .. tostring(moonPetals), 98)
-    addInfo("Ферма: уровень " .. tostring(farmLevel), "У тебя есть четыре места для грядок. Открой вкладку «Ферма», чтобы посмотреть их состояние.", 76)
+    addInfo("Ферма: уровень " .. tostring(farmLevel), "На острове четыре грядки. Открой раздел «Ферма», чтобы выбрать семена, посадить растения и собрать урожай.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
 end
 
@@ -364,9 +419,9 @@ end
 
 local function renderPets()
     local pets = {
-        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "🦊"},
-        {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "🦋"},
-        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "✦"},
+        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "Л"},
+        {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "М"},
+        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "С"},
     }
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
@@ -483,8 +538,8 @@ local function renderTools()
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
     local catalog = {
-        {id = "Axe", name = "Топор путешественника", glyph = "🪓", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
-        {id = "Pickaxe", name = "Кирка путешественника", glyph = "⛏️", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
+        {id = "Axe", name = "Топор путешественника", glyph = "Т", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
+        {id = "Pickaxe", name = "Кирка путешественника", glyph = "К", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
     }
     for _, definition in catalog do
         local level = tonumber(player:GetAttribute("Tool_" .. definition.id .. "Level")) or 1
@@ -513,7 +568,7 @@ local function renderTools()
     local swordOwned = player:GetAttribute("Tool_SwordOwned") == true
     local swordEquipped = player:GetAttribute("Tool_Equipped") == "Sword"
     local swordCard = card(body, "Tool_Sword", 124)
-    label(swordCard, "SwordIcon", "⚔️", UDim2.fromOffset(44, 48), UDim2.fromOffset(10, 22), 28, palette.gold)
+    label(swordCard, "SwordIcon", "М", UDim2.fromOffset(44, 48), UDim2.fromOffset(10, 22), 28, palette.gold)
     label(swordCard, "SwordName", "Меч странника", UDim2.new(1, -156, 0, 24), UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
     label(swordCard, "SwordStatus", swordOwned and "Создан · можно сражаться на арене" or "Рецепт: 2 слитка + 6 дерева · свой верстак", UDim2.new(1, -156, 0, 46), UDim2.fromOffset(62, 35), 11, palette.muted)
     local swordEquip = button(swordCard, "SwordEquip", swordEquipped and "В РУКАХ" or "ВЗЯТЬ", UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 8), swordEquipped and palette.gold or palette.forest)
@@ -547,7 +602,7 @@ end
 local expeditionTracks = {
     {
         id = "Grove", title = "СОЛНЕЧНАЯ РОЩА", subtitle = "Следопытство и первые тайники",
-        icon = "🌿", color = palette.mint,
+        icon = "Р", color = palette.mint,
         steps = {
             {key = "Fox", title = "Познакомиться с лисёнком", hint = "Найди гнездо лисёнка в Солнечной роще."},
             {key = "Seed", title = "Найти лунное семя", hint = "Позови лисёнка у следов на тропе."},
@@ -556,7 +611,7 @@ local expeditionTracks = {
     },
     {
         id = "Dusk", title = "СУМЕРЕЧНАЯ ДОЛИНА", subtitle = "Лунные цветы и древние руны",
-        icon = "🌙", color = palette.lilac,
+        icon = "С", color = palette.lilac,
         steps = {
             {key = "Moth", title = "Познакомиться с лунной молью", hint = "Найди её в Сумеречной долине."},
             {key = "MoonBloom", title = "Пробудить лунный цветок", hint = "Позови моль к скрытому цветку."},
@@ -628,13 +683,12 @@ local panelTitles = {
     City = {"МОЙ ОСТРОВ", "Твой дом и будущий город"},
     Farm = {"МОЯ ФЕРМА", "Сажай, выращивай и собирай урожай"},
     Pets = {"МОИ ПИТОМЦЫ", "Друзья, которые помогают в приключениях"},
-    Tools = {"ИНСТРУМЕНТЫ", "Собирай ресурсы и улучшай снаряжение"},
-    World = {"КАРТА МИРА", "Открывай острова и исследуй новые места"},
+    Tools = {"ИНСТРУМЕНТЫ", "Добывай материалы и готовься к путешествиям"},
+    World = {"КАРТА МИРА", "Исследуй архипелаг и открывай новые земли"},
     Expeditions = {"ДНЕВНИК", "Твои открытия в Солнечной роще и Сумеречной долине"},
 }
 
 local activeTab = nil
-local navButtons = {}
 
 local function openTab(tabName)
     if activeTab == tabName and panel.Visible then
@@ -654,13 +708,13 @@ local function openTab(tabName)
     end
 end
 
-local navDefinitions = {
-    {id = "City", title = "ОСТРОВ", glyph = "⌂"},
-    {id = "Farm", title = "ФЕРМА", glyph = "♧"},
-    {id = "Pets", title = "ПИТОМЦЫ", glyph = "♡"},
-    {id = "Tools", title = "ИНСТРУМЕНТЫ", glyph = "⚒"},
-    {id = "World", title = "КАРТА", glyph = "✧"},
-    {id = "Expeditions", title = "ДНЕВНИК", glyph = "📖"},
+navDefinitions = {
+    {id = "City", title = "ОСТРОВ", glyph = "О"},
+    {id = "Farm", title = "ФЕРМА", glyph = "Ф"},
+    {id = "Pets", title = "ПИТОМЦЫ", glyph = "П"},
+    {id = "Tools", title = "ИНСТРУМЕНТЫ", glyph = "И"},
+    {id = "World", title = "КАРТА", glyph = "М"},
+    {id = "Expeditions", title = "ДНЕВНИК", glyph = "Д"},
 }
 
 for _, definition in navDefinitions do
@@ -672,6 +726,17 @@ for _, definition in navDefinitions do
     end)
     navButtons[definition.id] = navButton
 end
+
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateResponsiveLayout)
+updateResponsiveLayout()
+local function watchCamera(camera)
+    if camera then camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateResponsiveLayout) end
+    task.defer(updateResponsiveLayout)
+end
+watchCamera(workspace.CurrentCamera)
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+    watchCamera(workspace.CurrentCamera)
+end)
 
 closeButton.Activated:Connect(function()
     panel.Visible = false
@@ -951,51 +1016,6 @@ task.spawn(function()
     end
 end)
 
-local function updateLayout()
-    local width = gui.AbsoluteSize.X
-    local height = gui.AbsoluteSize.Y
-    local compact = width < 700
-    if compact then
-        -- Keep a real gap between the brand and resource tray on narrow screens.
-        local topBarUsableWidth = math.max(0, topBar.AbsoluteSize.X - 8)
-        local brandWidth = math.floor(topBarUsableWidth * 0.42)
-        local resourcesWidth = topBarUsableWidth - brandWidth
-        brand.Size = UDim2.fromOffset(brandWidth, 58)
-        brandTitle.TextSize = 16
-        brandSubtitle.TextSize = 8
-        resources.Size = UDim2.fromOffset(resourcesWidth, 58)
-        woodLabel.TextSize = 10
-        stoneLabel.TextSize = 10
-        objective.Size = UDim2.new(1, -32, 0, 138)
-        objective.Position = UDim2.fromOffset(16, 84)
-        panel.Size = UDim2.new(1, -24, 0, math.max(180, math.min(430, height - 150)))
-        panel.Position = UDim2.new(0.5, 0, 0.5, -8)
-        nav.Size = UDim2.new(1, -24, 0, 64)
-        nav.Position = UDim2.new(0.5, 0, 1, -10)
-        for _, navButton in navButtons do
-            navButton.TextSize = 10
-        end
-    else
-        brand.Size = UDim2.fromOffset(178, 58)
-        brandTitle.TextSize = 18
-        brandSubtitle.TextSize = 9
-        resources.Size = UDim2.fromOffset(214, 58)
-        objective.Size = UDim2.fromOffset(352, 138)
-        objective.Position = UDim2.fromOffset(16, 84)
-        panel.Size = UDim2.fromOffset(470, 420)
-        nav.Size = UDim2.fromOffset(560, 68)
-        nav.Position = UDim2.new(0.5, 0, 1, -14)
-        for _, navButton in navButtons do
-            navButton.TextSize = 13
-        end
-    end
-    if width < 410 then
-        resources.Size = UDim2.fromOffset(166, 58)
-        woodLabel.TextSize = 11
-        stoneLabel.TextSize = 11
-    end
-end
-
-gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateLayout)
-task.defer(updateLayout)
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateResponsiveLayout)
+task.defer(updateResponsiveLayout)
 refresh()
