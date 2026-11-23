@@ -1066,6 +1066,37 @@ local function init(player)
             end
         end)
     end
+    -- Server-side recovery for players who fall below the playable archipelago.
+    -- Preserve the character and current inventory instead of leaving it under the map.
+    task.spawn(function()
+        while player.Parent and sessions[player] == session do
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if root and root:IsA("BasePart") and humanoid and humanoid.Health > 0
+                and root.Position.Y < -80 then
+                local recovery = session.homeSpawn
+                if recovery and recovery.Parent then
+                    character:PivotTo(recovery.CFrame + Vector3.new(0, 6, 0))
+                    root.AssemblyLinearVelocity = Vector3.zero
+                    root.AssemblyAngularVelocity = Vector3.zero
+                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                    player:SetAttribute("FallRecoveryCount", (player:GetAttribute("FallRecoveryCount") or 0) + 1)
+                else
+                    local grove = workspace:FindFirstChild("Grove")
+                    local spawn = grove and grove:FindFirstChild("PublicSpawn")
+                    if spawn and spawn:IsA("BasePart") then
+                        character:PivotTo(spawn.CFrame + Vector3.new(0, 6, 0))
+                        root.AssemblyLinearVelocity = Vector3.zero
+                        root.AssemblyAngularVelocity = Vector3.zero
+                    end
+                end
+                task.wait(1.25)
+            end
+            task.wait(0.35)
+        end
+    end)
+
     session.characterConnection = player.CharacterAdded:Connect(placeCharacterAtHome)
     session.toolCharacterConnection = player.CharacterAdded:Connect(function()
         task.defer(function()
