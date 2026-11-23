@@ -126,6 +126,27 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                     transform = CFrame.new(0, math.sin(time * (mothAbility and 9 or 2.8)) * (mothAbility and 0.12 or 0.035), 0)
                         * aroundPoint(offset.Position, CFrame.Angles(0, 0, math.sin(time * 3.2) * 0.08))
                 end
+            elseif state.id == "HarvestSprite" then
+                local bobSpeed = resting and 1.4 or moving and 4.0 or 2.3
+                local bobAmount = resting and 0.025 or moving and 0.085 or 0.055
+                if petting then bobAmount += 0.035 end
+                local bob = math.sin(time * bobSpeed) * bobAmount
+                if part.Name == "Body" then
+                    transform = CFrame.new(0, bob, 0)
+                        * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 1.8) * 0.035, 0, math.sin(time * 2.2) * 0.045))
+                elseif part.Name == "Leaf" then
+                    transform = CFrame.new(0, bob, 0)
+                        * aroundPoint(offset.Position, CFrame.Angles(0, 0, math.sin(time * (petting and 7 or 2.6)) * (petting and 0.22 or 0.12)))
+                elseif part.Name == "Lantern core" then
+                    local light = part:FindFirstChildOfClass("PointLight")
+                    if light then
+                        light.Brightness = resting and 0.45 or 0.8 + math.sin(time * (petting and 9 or 3.5)) * 0.25
+                        light.Range = petting and 11 or 8
+                    end
+                    transform = CFrame.new(0, bob, 0) * CFrame.Angles(0, 0, math.sin(time * 3.2) * 0.08)
+                else
+                    transform = CFrame.new(0, bob, 0)
+                end
             elseif state.id == "CrystalWisp" then
                 local bobSpeed = resting and 1.35 or moving and 4.2 or 2.4
                 local bobAmount = resting and 0.035 or moving and 0.1 or 0.065
