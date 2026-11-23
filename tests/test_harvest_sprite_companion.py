@@ -15,9 +15,9 @@ STUDIO = (ROOT / "docs" / "STUDIO_PLAYTEST.md").read_text(encoding="utf-8")
 
 class HarvestSpriteCompanionContractTests(unittest.TestCase):
     def test_companion_is_in_every_server_owned_profile_registry(self):
-        self.assertIn('local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик"}', WORLD)
+        self.assertIn('local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик", BrambleBun = "Колючка", MossTurtle = "Мохопанцирь", Glowcap = "Светошляп", Dewdrop = "Росинка", Starling = "Звёздокрыл"}', WORLD)
         self.assertIn('"HarvestSprite"', WORLD[WORLD.index("local progress ="):WORLD.index("local inventoryKeys")])
-        self.assertIn('local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite"}', WORLD)
+        self.assertIn('local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}', WORLD)
         self.assertIn('HarvestSprite = "Радость"', WORLD)
         self.assertIn('old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 14)', WORLD)
 
@@ -71,7 +71,7 @@ class HarvestSpriteCompanionContractTests(unittest.TestCase):
     def test_studio_acceptance_and_roadmap_are_explicit(self):
         self.assertIn("## Фестиваль урожая — питомец Тыквик", STUDIO)
         self.assertIn("сезонного питомца Тыквика", ROADMAP)
-        self.assertIn("Уникальные фестивальные яйца", ROADMAP)
+        self.assertIn("Магазин фестивальных предметов", ROADMAP)
 
 
 if __name__ == "__main__":

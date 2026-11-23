@@ -903,6 +903,11 @@ local function renderPets()
         {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "М"},
         {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "С"},
         {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "Т"},
+        {id = "BrambleBun", name = "Колючка", role = "Редкий • Лесной ёжик", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "К"},
+        {id = "MossTurtle", name = "Мохопанцирь", role = "Редкий • Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "М"},
+        {id = "Glowcap", name = "Светошляп", role = "Эпический • Грибной огонёк", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "Г"},
+        {id = "Dewdrop", name = "Росинка", role = "Эпический • Капля ручья", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "Р"},
+        {id = "Starling", name = "Звёздокрыл", role = "Легендарный • Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "З"},
     }
     local compact = gui.AbsoluteSize.X < 620
     for _, pet in pets do
@@ -916,6 +921,11 @@ local function renderPets()
         iconPlate.BackgroundColor3 = pet.id == "Fox" and Color3.fromRGB(244, 215, 171)
             or pet.id == "Moth" and Color3.fromRGB(222, 215, 244)
             or pet.id == "HarvestSprite" and Color3.fromRGB(255, 220, 158)
+            or pet.id == "BrambleBun" and Color3.fromRGB(239, 211, 177)
+            or pet.id == "MossTurtle" and Color3.fromRGB(199, 226, 181)
+            or pet.id == "Glowcap" and Color3.fromRGB(220, 203, 239)
+            or pet.id == "Dewdrop" and Color3.fromRGB(181, 226, 235)
+            or pet.id == "Starling" and Color3.fromRGB(199, 211, 243)
             or Color3.fromRGB(198, 229, 224)
         iconPlate.BorderSizePixel = 0
         iconPlate.Parent = item
@@ -937,7 +947,7 @@ local function renderPets()
         descriptionLabel.TextWrapped = true
         descriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
         local mood = player:GetAttribute("Companion_" .. pet.id .. "_Mood") or (pet.id == "Fox" and "Любопытство" or pet.id == "Moth" and "Спокойствие" or "Сияние")
-        local moodLine = pet.id == "Fox" and "Любопытный исследователь" or pet.id == "Moth" and "Нежная хранительница света" or pet.id == "HarvestSprite" and "Добрый хранитель урожая" or "Кристальный проводник"
+        local moodLine = pet.id == "Fox" and "Любопытный исследователь" or pet.id == "Moth" and "Нежная хранительница света" or pet.id == "HarvestSprite" and "Добрый хранитель урожая" or pet.id == "BrambleBun" and "Осторожный собиратель" or pet.id == "MossTurtle" and "Спокойный защитник" or pet.id == "Glowcap" and "Светлый мечтатель" or pet.id == "Dewdrop" and "Весёлый непоседа" or pet.id == "Starling" and "Звёздный наблюдатель" or "Кристальный проводник"
         local moodGlyph = mood == "Радость" and "✦" or mood == "Довольство" and "♡" or pet.id == "Fox" and "⌕" or "☾"
         local moodLabel = label(item, "Mood", owned and (moodGlyph .. " " .. moodLine .. " · " .. mood) or "Характер откроется при знакомстве",
             compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, -220, 0, 18),
@@ -981,7 +991,9 @@ local function renderPets()
         end
         local wispTalent = "Призменное чутьё: скрытые жилы на " .. tostring(16 + (companionLevel - 1) * 3) .. " сек."
         local harvestTalent = "Осенний огонёк: уникальный сезонный спутник."
-        local talentLabel = label(item, "Talent", owned and (pet.id == "Fox" and foxTalent or pet.id == "Moth" and mothTalent or pet.id == "HarvestSprite" and harvestTalent or wispTalent) or "Найди питомца, чтобы открыть талант",
+        local festivalTalent = "Питомец Фестиваля урожая: развивай дружбу и открывай его характер."
+        local isFestivalHatchling = pet.id == "BrambleBun" or pet.id == "MossTurtle" or pet.id == "Glowcap" or pet.id == "Dewdrop" or pet.id == "Starling"
+        local talentLabel = label(item, "Talent", owned and (pet.id == "Fox" and foxTalent or pet.id == "Moth" and mothTalent or pet.id == "HarvestSprite" and harvestTalent or isFestivalHatchling and festivalTalent or wispTalent) or "Найди питомца, чтобы открыть талант",
             UDim2.new(1, -28, 0, compact and 34 or 20),
             UDim2.fromOffset(16, compact and 202 or 179), 10, palette.forest)
         talentLabel.TextWrapped = true
@@ -1073,6 +1085,8 @@ local function renderTools()
     local moonPetals = tonumber(player:GetAttribute("Resource_MoonPetal")) or 0
     addInfo("Редкие находки", "Лунные семена: " .. tostring(moonSeeds) .. "   •   Звёздные осколки: " .. tostring(starShards)
         .. "   •   Солнечные лепестки: " .. tostring(sunPetals) .. "   •   Лунные лепестки: " .. tostring(moonPetals), 76)
+    local harvestEggs = tonumber(player:GetAttribute("Resource_HarvestEgg")) or 0
+    addInfo("Праздничное яйцо", harvestEggs > 0 and ("В рюкзаке: " .. tostring(harvestEggs) .. " шт. Открой раздел «Экспедиции», чтобы вылупить нового питомца.") or "Яйцо можно получить за 50 очков Фестиваля урожая.", 54)
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
     local catalog = {
@@ -1360,6 +1374,35 @@ local function renderDailyQuests()
             event:FireServer("ClaimHarvestSprite")
         end
     end)
+    local eggClaimed = player:GetAttribute("SeasonalEvent_FestivalEggClaimed") == true
+    local eggCount = math.max(0, math.floor(tonumber(player:GetAttribute("Resource_HarvestEgg")) or 0))
+    local eggClaim = button(body, "ClaimFestivalEgg", eggClaimed and "ПРИЗОВОЕ ЯЙЦО УЖЕ ПОЛУЧЕНО" or "ПОЛУЧИТЬ ПРИЗОВОЕ ЯЙЦО • 50 ОЧКОВ", UDim2.new(1, 0, 0, 44), UDim2.new(), eggClaimed and palette.forestLight or palette.gold)
+    eggClaim.TextColor3 = eggClaimed and palette.white or palette.ink
+    eggClaim.TextSize = 12
+    eggClaim.AutoButtonColor = eventActive and eventPoints >= 50 and not eggClaimed
+    eggClaim.Activated:Connect(function()
+        if eggClaimed then
+            showToast("Призовое яйцо этого фестиваля уже получено.")
+        elseif not eventActive then
+            showToast("Призовое яйцо доступно во время Фестиваля урожая.")
+        elseif eventPoints < 50 then
+            showToast("Набери 50 очков фестиваля, чтобы получить яйцо.")
+        else
+            event:FireServer("ClaimFestivalEgg")
+        end
+    end)
+    local hatchEgg = button(body, "HatchFestivalEgg", eggCount > 0 and ("ВЫЛУПИТЬ ЯЙЦО • " .. tostring(eggCount) .. " ШТ.") or "ЯЙЦО ПОКА НЕ ПОЛУЧЕНО", UDim2.new(1, 0, 0, 44), UDim2.new(), eggCount > 0 and palette.forest or palette.forestLight)
+    hatchEgg.TextColor3 = palette.white
+    hatchEgg.TextSize = 12
+    hatchEgg.AutoButtonColor = eggCount > 0
+    hatchEgg.Activated:Connect(function()
+        if eggCount > 0 then
+            event:FireServer("HatchFestivalEgg")
+        else
+            showToast("Сначала набери 50 очков и забери призовое яйцо.")
+        end
+    end)
+    addInfo("ПРИЗОВОЕ ЯЙЦО • ШАНСЫ", "Колючка — 40% • Мохопанцирь — 32% • Светошляп — 18% • Росинка — 8% • Звёздокрыл — 2%. Шансы указаны для полного набора; уже открытые виды исключаются, их вес перераспределяется между оставшимися.", 76)
     addInfo("ПРАЗДНИЧНЫЕ НАГРАДЫ", tostring(eventPoints) .. "/100 очков • доступно рубежей: " .. tostring(eventClaimable) .. " • " .. tostring(eventCoins) .. " Coins + " .. tostring(eventShards) .. " осколков", 48)
 end
 

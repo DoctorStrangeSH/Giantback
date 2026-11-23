@@ -77,7 +77,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('if player:GetAttribute("CrystalCache") then', WORLD)
         self.assertIn('player:SetAttribute("CrystalCache", true)', WORLD)
         self.assertIn('session.inventory.CrystalSigil = (session.inventory.CrystalSigil or 0) + 1', WORLD)
-        self.assertIn('"CrystalSigil", "PrismSeed"}', WORLD.split("local toolIds")[0])
+        self.assertIn('"CrystalSigil", "PrismSeed", "HarvestEgg"}', WORLD.split("local toolIds")[0])
 
     def test_rune_puzzle_and_cache_are_real_visual_interactions(self):
         self.assertIn('name = "CrystalRuneMoon"', VISUALS)
@@ -121,7 +121,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('crystalEchoInside[player] = nil', WORLD)
 
     def test_prism_seed_is_a_unique_persistent_server_reward(self):
-        self.assertIn('"PrismSeed"}', WORLD.split("local toolIds")[0])
+        self.assertIn('"PrismSeed", "HarvestEgg"}', WORLD.split("local toolIds")[0])
         self.assertIn('if player:GetAttribute("PrismSeedFound") then', WORLD)
         self.assertIn('player:SetAttribute("PrismSeedFound", true)', WORLD)
         self.assertIn('session.inventory.PrismSeed = (session.inventory.PrismSeed or 0) + 1', WORLD)
@@ -136,7 +136,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
 
 
     def test_crystal_wisp_is_a_persistent_third_companion_with_grotto_mutations(self):
-        self.assertIn('local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite"}', WORLD)
+        self.assertIn('local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}', WORLD)
         self.assertIn('CrystalWisp = "Кристальный светляк"', WORLD)
         self.assertIn('CrystalWisp = {', WORLD)
         self.assertIn('biome = "CrystalGrotto"', WORLD)
