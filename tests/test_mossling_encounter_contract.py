@@ -23,7 +23,7 @@ class MosslingEncounterContracts(unittest.TestCase):
     def test_recognizable_telegraphed_enemy_with_capped_damage(self):
         self.assertIn('humanoid.DisplayName = "Моховичок"', VISUALS)
         self.assertIn('mossling:SetAttribute("AttackDamage", 6)', VISUALS)
-        self.assertIn('mossling:SetAttribute("TelegraphSeconds", 1.05)', VISUALS)
+        self.assertIn('mossling:SetAttribute("TelegraphSeconds", 1.15)', VISUALS)
         self.assertIn('local state = mossling:GetAttribute("CombatState")', VISUALS)
         self.assertIn('local telegraphing = state == "Telegraph" or state == "PollenTelegraph"', VISUALS)
         self.assertIn('warningText.Text = telegraphing and "УКЛОНЯЙСЯ!" or "АТАКА!"', VISUALS)
