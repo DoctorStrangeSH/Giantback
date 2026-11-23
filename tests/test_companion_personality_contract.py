@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+STARDUST = (ROOT / "modules/MothStardust.luau").read_text(encoding="utf-8")
 FOLLOW = (ROOT / "modules/CompanionFollow.luau").read_text(encoding="utf-8")
 ACTIVITY = (ROOT / "modules/CompanionActivity.luau").read_text(encoding="utf-8")
 
@@ -39,8 +40,8 @@ class CompanionPersonalityContractTests(unittest.TestCase):
         self.assertIn('window[1] - bondStage * 1.5', ACTIVITY)
         self.assertIn('window[2] - bondStage * 2', ACTIVITY)
         self.assertIn('personalityRadius - bondStage * 0.035', FOLLOW)
-        self.assertIn('local function updateMothStardust(model, owner)', ALBUM)
-        self.assertIn('emitter:GetAttribute("AppliedBondStage") == bondStage', ALBUM)
+        self.assertIn('local function updateMothStardust(model, owner)', STARDUST)
+        self.assertIn('emitter:GetAttribute("AppliedBondStage") == bondStage', STARDUST)
         self.assertIn('updateMothStardust(model, owner)', ALBUM)
 
     def test_fox_idle_curiosity_frequency_depends_on_personality(self):
