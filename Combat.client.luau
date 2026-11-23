@@ -846,7 +846,7 @@ RunService.RenderStepped:Connect(function()
             setJointPose(rootJoint, -0.12, 0, 0)
             setJointPose(waistJoint, -0.08, 0, 0)
             setJointPose(neck, 0.18, 0, 0)
-        elseif state == "Telegraph" then
+        elseif state == "Telegraph" or state == "PollenTelegraph" then
             setJointPose(rightArm, isBoss and -1.9 or -1.45, 0, -0.55)
             setJointPose(leftArm, -0.35, 0, 0.2)
             setJointPose(rootJoint, -0.08, 0, 0)
