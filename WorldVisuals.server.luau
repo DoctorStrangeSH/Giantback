@@ -2321,12 +2321,8 @@ grottoCombatRegion.CanQuery = true
 grottoCombatRegion:SetAttribute("RegionId", "CrystalGrotto")
 CollectionService:AddTag(grottoCombatRegion, "GiantbackCombatRegion")
 
--- Crystal Warden: a compact but unmistakable crystal-armoured guardian of the grotto.
 -- Shardling: a fast crystal scavenger that feints before committing to a damaging dash.
 local function spawnCrystalShardling()
-
-local function spawnCrystalWarden()
-
     if not crystalGrotto.Parent then return end
     local shardling = Instance.new("Model")
     shardling.Name = "CrystalGrottoShardling01"
@@ -2443,6 +2439,10 @@ local function spawnCrystalWarden()
     root:SetNetworkOwner(nil)
 end
 spawnCrystalShardling()
+
+
+-- Crystal Warden: a compact but unmistakable crystal-armoured guardian of the grotto.
+local function spawnCrystalWarden()
     if not crystalGrotto.Parent then return end
     local warden = Instance.new("Model")
     warden.Name = "CrystalGrottoWarden01"
@@ -2546,7 +2546,6 @@ spawnCrystalShardling()
     root:SetNetworkOwner(nil)
 end
 spawnCrystalWarden()
-spawnCrystalShardling()
 
 
 local grottoEntrance = makePart(
