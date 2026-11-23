@@ -2194,6 +2194,24 @@ for _, wallSpec in {
     local wall = makePart(echoChamber, "CrystalEcho" .. wallSpec.name, wallSpec.size, CFrame.new(echoCenter + wallSpec.offset), palette.stone, Enum.Material.Rock)
     setSolid(wall)
 end
+
+-- Echo Chamber has its own combat volume so the hidden boss never leaks into the main grotto.
+local echoCombatRegion = makePart(
+    echoChamber,
+    "CrystalEchoCombatRegion",
+    Vector3.new(28, 18, 26),
+    CFrame.new(echoCenter + Vector3.new(0, 9, 0)),
+    palette.lilac,
+    Enum.Material.ForceField,
+    nil,
+    1
+)
+echoCombatRegion.CanCollide = false
+echoCombatRegion.CanTouch = false
+echoCombatRegion.CanQuery = true
+echoCombatRegion:SetAttribute("RegionId", "CrystalEchoChamber")
+CollectionService:AddTag(echoCombatRegion, "GiantbackCombatRegion")
+
 local echoGate = makePart(
     crystalGrotto, "CrystalEchoGate", Vector3.new(5, 6, 1.2),
     CFrame.new(grottoCenter + Vector3.new(0, 3, 20)), palette.gold, Enum.Material.ForceField
@@ -2241,6 +2259,152 @@ for index = 1, 4 do
     )
     addLight(shard, palette.lilacLight, 5, 0.25)
 end
+
+-- The hidden Echo Chamber guardian is a true three-phase boss, separate from the grotto patrols.
+local function spawnCrystalEchoPrismGuardian()
+    if not echoChamber.Parent then return end
+    local boss = Instance.new("Model")
+    boss.Name = "CrystalEchoPrismGuardian01"
+    boss:SetAttribute("EnemyId", "CrystalEchoPrismGuardian01")
+    boss:SetAttribute("EncounterId", "CrystalEchoPrismGuardian01")
+    boss:SetAttribute("RegionId", "CrystalEchoChamber")
+    boss:SetAttribute("ArchetypeId", "PrismGuardian")
+    boss:SetAttribute("IsBoss", true)
+    boss:SetAttribute("CombatState", "Idle")
+    boss:SetAttribute("AggroRange", 36)
+    boss:SetAttribute("AttackRange", 7)
+    boss:SetAttribute("AttackDamage", 13)
+    boss:SetAttribute("AttackCooldown", 3.2)
+    boss:SetAttribute("TelegraphSeconds", 1.15)
+    boss:SetAttribute("PathRefreshSeconds", 1.0)
+    boss:SetAttribute("Phase2WalkSpeed", 9)
+    boss:SetAttribute("Phase2AttackDamage", 17)
+    boss:SetAttribute("Phase2AttackCooldown", 2.45)
+    boss:SetAttribute("Phase2TelegraphSeconds", 0.95)
+    boss:SetAttribute("Phase2PathRefreshSeconds", 0.85)
+    boss:SetAttribute("Phase2SlamRadius", 15)
+    boss:SetAttribute("Phase2SlamDamage", 18)
+    boss:SetAttribute("Phase3WalkSpeed", 12)
+    boss:SetAttribute("Phase3AttackDamage", 21)
+    boss:SetAttribute("Phase3AttackCooldown", 1.85)
+    boss:SetAttribute("Phase3TelegraphSeconds", 0.8)
+    boss:SetAttribute("Phase3PathRefreshSeconds", 0.65)
+    boss:SetAttribute("Phase3SlamRadius", 19)
+    boss:SetAttribute("Phase3SlamDamage", 23)
+    boss.Parent = echoChamber
+
+    local spawnPosition = echoCenter + Vector3.new(0, 4, 0)
+    local root = makeEnemyPart(
+        boss, "HumanoidRootPart", Vector3.new(3, 3, 2),
+        CFrame.lookAt(spawnPosition, spawnPosition + Vector3.new(0, 0, -1)), palette.ink
+    )
+    root.Transparency = 1
+    root.Massless = false
+    local torso = makeEnemyPart(
+        boss, "Torso", Vector3.new(4, 4.2, 2.5),
+        root.CFrame, palette.stone, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    torso.CanCollide = true
+    local head = makeEnemyPart(
+        boss, "Head", Vector3.new(2.35, 2.25, 2.15),
+        root.CFrame * CFrame.new(0, 3.05, -0.05), palette.lilac, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    local rightArm = makeEnemyPart(
+        boss, "Right Arm", Vector3.new(1.35, 3.35, 1.5),
+        root.CFrame * CFrame.new(2.45, 0, 0), palette.stone, Enum.Material.Slate
+    )
+    local leftArm = makeEnemyPart(
+        boss, "Left Arm", Vector3.new(1.35, 3.35, 1.5),
+        root.CFrame * CFrame.new(-2.45, 0, 0), palette.stone, Enum.Material.Slate
+    )
+    local rightLeg = makeEnemyPart(
+        boss, "Right Leg", Vector3.new(1.45, 2.8, 1.55),
+        root.CFrame * CFrame.new(0.95, -2.9, 0), palette.ink, Enum.Material.Slate
+    )
+    local leftLeg = makeEnemyPart(
+        boss, "Left Leg", Vector3.new(1.45, 2.8, 1.55),
+        root.CFrame * CFrame.new(-0.95, -2.9, 0), palette.ink, Enum.Material.Slate
+    )
+    rightLeg.CanCollide = true
+    leftLeg.CanCollide = true
+
+    joinRig(boss, "RootJoint", root, torso, CFrame.new(), CFrame.new())
+    joinRig(boss, "Neck", torso, head, CFrame.new(0, 2.0, 0), CFrame.new(0, -1.12, 0))
+    joinRig(boss, "Right Shoulder", torso, rightArm, CFrame.new(1.9, 1.1, 0), CFrame.new(0, 1.1, 0))
+    joinRig(boss, "Left Shoulder", torso, leftArm, CFrame.new(-1.9, 1.1, 0), CFrame.new(0, 1.1, 0))
+    joinRig(boss, "Right Hip", torso, rightLeg, CFrame.new(0.9, -1.85, 0), CFrame.new(0, 1.35, 0))
+    joinRig(boss, "Left Hip", torso, leftLeg, CFrame.new(-0.9, -1.85, 0), CFrame.new(0, 1.35, 0))
+
+    local function addGuardianCrystal(name, size, frame, color, parentPart, shape)
+        local crystal = makeEnemyPart(boss, name, size, frame, color, Enum.Material.Neon, shape or Enum.PartType.Wedge)
+        crystal.CanQuery = false
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = parentPart
+        weld.Part1 = crystal
+        weld.Parent = crystal
+        return crystal
+    end
+
+    local core = addGuardianCrystal(
+        "PrismGuardianCore", Vector3.new(1.25, 1.55, 0.55),
+        torso.CFrame * CFrame.new(0, 0.1, -1.28), palette.moon, torso, Enum.PartType.Ball
+    )
+    addLight(core, palette.moon, 18, 1.2)
+    for index = 1, 7 do
+        local angle = math.rad(-54 + (index - 1) * 18)
+        local crown = addGuardianCrystal(
+            "PrismCrown" .. tostring(index),
+            Vector3.new(0.78, 2.35 + (index % 2) * 0.55, 0.7),
+            head.CFrame * CFrame.new(math.sin(angle) * 1.1, 1.0 + (index == 4 and 0.35 or 0), 0)
+                * CFrame.Angles(0, 0, -angle),
+            index % 2 == 0 and palette.water or palette.lilacLight,
+            head
+        )
+        addLight(crown, crown.Color, 6, 0.3)
+    end
+    for side = -1, 1, 2 do
+        local shoulder = addGuardianCrystal(
+            side < 0 and "LeftShoulderPrism" or "RightShoulderPrism",
+            Vector3.new(1.15, 2.2, 1.4),
+            torso.CFrame * CFrame.new(side * 1.8, 1.35, 0.1) * CFrame.Angles(0, 0, math.rad(-side * 20)),
+            palette.lilacLight,
+            torso
+        )
+        addLight(shoulder, palette.lilacLight, 7, 0.35)
+        local eye = addGuardianCrystal(
+            side < 0 and "LeftPrismEye" or "RightPrismEye",
+            Vector3.new(0.22, 0.25, 0.12),
+            head.CFrame * CFrame.new(side * 0.52, 0.08, -0.98),
+            palette.gold,
+            head,
+            Enum.PartType.Ball
+        )
+        addLight(eye, palette.gold, 5, 0.4)
+    end
+
+    local humanoid = Instance.new("Humanoid")
+    humanoid.DisplayName = "Хранитель Призмы"
+    humanoid.MaxHealth = 480
+    humanoid.Health = 480
+    humanoid.WalkSpeed = 7
+    humanoid.JumpPower = 0
+    humanoid.BreakJointsOnDeath = false
+    humanoid.RequiresNeck = true
+    humanoid.Parent = boss
+    boss.PrimaryPart = root
+    humanoid.Died:Connect(function()
+        task.delay(3, function()
+            if boss.Parent then boss:Destroy() end
+        end)
+        task.delay(90, function()
+            if echoChamber.Parent then spawnCrystalEchoPrismGuardian() end
+        end)
+    end)
+
+    CollectionService:AddTag(boss, "GiantbackEnemy")
+    root:SetNetworkOwner(nil)
+end
+spawnCrystalEchoPrismGuardian()
 
 -- Procedural companion model shared by the wild encounter and owner followers.
 local oldWisp = ReplicatedStorage:FindFirstChild("CrystalWisp")
