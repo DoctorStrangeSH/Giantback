@@ -2300,6 +2300,8 @@ local function spawnCrystalEchoPrismGuardian()
     )
     root.Transparency = 1
     root.Massless = false
+    root.Transparency = 1
+    root.Massless = false
     local torso = makeEnemyPart(
         boss, "Torso", Vector3.new(4, 4.2, 2.5),
         root.CFrame, palette.stone, Enum.Material.Slate, Enum.PartType.Ball
