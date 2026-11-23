@@ -134,5 +134,24 @@ class CrystalWardenEncounterTests(unittest.TestCase):
         self.assertIn('enemy:GetAttribute("ArchetypeId") == "SealKeeper"', phase_three)
 
 
+    def test_echo_relics_are_unique_persisted_resources_and_use_custom_crystal_colors(self):
+        self.assertIn("CrystalEchoStarPrism01 = true", WORLD.split("local resourceNodeIds", 1)[1].split("}", 1)[0])
+        self.assertIn("CrystalEchoMoonGlass01 = true", WORLD.split("local resourceNodeIds", 1)[1].split("}", 1)[0])
+        self.assertIn("CrystalEchoVoidGeode01 = true", WORLD.split("local resourceNodeIds", 1)[1].split("}", 1)[0])
+        self.assertIn('"StarPrism", "MoonGlass", "VoidGeode"', WORLD.split("local inventoryKeys", 1)[1].split("}", 1)[0])
+        self.assertIn('itemId = "StarPrism", displayName = "Звёздная призма"', WORLD)
+        self.assertIn('itemId = "MoonGlass", displayName = "Лунное стекло"', WORLD)
+        self.assertIn('itemId = "VoidGeode", displayName = "Пустотная жеода"', WORLD)
+        self.assertIn('area = "CrystalEchoChamber"', WORLD)
+        self.assertIn('kind = "unique"', WORLD)
+        self.assertIn('session.collectedNodes[def.key] = true', WORLD)
+        self.assertIn('old.collectedNodes = savedCollected', WORLD)
+        self.assertIn('player:GetAttribute("InCrystalEcho") == true', WORLD)
+        self.assertIn('player:SetAttribute("InCrystalEcho", true)', WORLD)
+        self.assertIn('player:SetAttribute("InCrystalEcho", false)', WORLD)
+        self.assertIn("local crystalColor = def.crystalColor or Color3.fromRGB(132, 102, 196)", WORLD)
+
+
+
 if __name__ == "__main__":
     unittest.main()
