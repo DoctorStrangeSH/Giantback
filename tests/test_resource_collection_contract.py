@@ -31,7 +31,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("for nodeId, collected in savedCollected do", WORLD)
 
     def test_profile_schema_and_migration_compatible_fields(self):
-        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 11)", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 12)", WORLD)
         self.assertIn('"IronOre", "IronIngot"', WORLD)
 
     def test_saving_legacy_schema_never_downgrades_newer_profile(self):
