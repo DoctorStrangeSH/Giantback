@@ -31,9 +31,9 @@ local occupiedHomeSlots = {}
 if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
-local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик"}
-local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite"}
-local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed"}
+local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик", BrambleBun = "Колючка", MossTurtle = "Мохопанцирь", Glowcap = "Светошляп", Dewdrop = "Росинка", Starling = "Звёздокрыл"}
+local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
+local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed", "HarvestEgg"}
 local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local swordRecipe = {IronIngot = 2, Wood = 6}
 local combatRewardDefinitions = {
@@ -505,7 +505,7 @@ local function useWarehouse(player, ownerUserId, action)
     if session.online then save(player) end
 end
 
-local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite"}
+local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
 local COMPANION_MAX_LEVEL = 5
 
 local function companionXpToNext(level)
@@ -540,6 +540,11 @@ local companionMoodDefaults = {
     Moth = "Спокойствие",
     CrystalWisp = "Любопытство",
     HarvestSprite = "Радость",
+    BrambleBun = "Любопытство",
+    MossTurtle = "Спокойствие",
+    Glowcap = "Радость",
+    Dewdrop = "Игривость",
+    Starling = "Любопытство",
 }
 
 local companionPersonalities = {"Любопытный", "Озорной", "Смелый", "Застенчивый"}
@@ -614,7 +619,8 @@ local function normalizeCompanionMutations(raw)
     local result = {}
     for _, id in COMPANION_IDS do
         local saved = raw[id]
-        local definition = type(saved) == "string" and companionMutationLookup[id][saved] or nil
+        local lookup = companionMutationLookup[id] or {}
+        local definition = type(saved) == "string" and lookup[saved] or nil
         result[id] = definition and definition.id or nil
     end
     return result
@@ -1176,6 +1182,7 @@ local function normalizeSeasonalEvent(raw)
         points = sameEvent and math.clamp(math.floor(tonumber(saved.points) or 0), 0, 100) or 0,
         claimedMilestones = claimed,
         harvestSpriteClaimed = sameEvent and saved.harvestSpriteClaimed == true or false,
+        festivalEggClaimed = sameEvent and saved.festivalEggClaimed == true or false,
     }
 end
 
@@ -1211,6 +1218,7 @@ local function syncSeasonalEvent(player)
     player:SetAttribute("SeasonalEvent_RewardStarShards", starShards)
     player:SetAttribute("SeasonalEvent_ClaimableCount", available)
     player:SetAttribute("SeasonalEvent_HarvestSpriteClaimed", session.seasonalEvent.harvestSpriteClaimed == true)
+    player:SetAttribute("SeasonalEvent_FestivalEggClaimed", session.seasonalEvent.festivalEggClaimed == true)
     for _, milestone in SEASONAL_EVENT_MILESTONES do
         local key = tostring(milestone.points)
         player:SetAttribute("SeasonalEvent_Milestone_" .. key .. "_Claimed", session.seasonalEvent.claimedMilestones[key] == true)
@@ -1822,6 +1830,118 @@ local function claimHarvestSprite(player)
     tip(player, "Знакомься с Тыквиком! Он стал твоим новым спутником и уже следует за тобой.")
 end
 
+
+
+local FESTIVAL_EGG_PETS = {
+    {id = "BrambleBun", weight = 40, rarity = "Редкий"},
+    {id = "MossTurtle", weight = 32, rarity = "Редкий"},
+    {id = "Glowcap", weight = 18, rarity = "Эпический"},
+    {id = "Dewdrop", weight = 8, rarity = "Эпический"},
+    {id = "Starling", weight = 2, rarity = "Легендарный"},
+}
+
+local function claimFestivalEgg(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Призовое яйцо недоступно: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+
+    local window = getHarvestFestivalWindow()
+    if not window.active then
+        return tip(player, "Призовое яйцо можно получить только во время Фестиваля урожая.")
+    end
+
+    session.seasonalEvent = normalizeSeasonalEvent(session.seasonalEvent)
+    if session.seasonalEvent.points < 50 then
+        return tip(player, "Набери 50 очков фестиваля, чтобы получить призовое яйцо.")
+    end
+    if session.seasonalEvent.festivalEggClaimed then
+        return tip(player, "Призовое яйцо этого фестиваля уже получено.")
+    end
+
+    session.economyBusy = true
+    session.seasonalEvent.festivalEggClaimed = true
+    session.inventory.HarvestEgg = (session.inventory.HarvestEgg or 0) + 1
+    syncInventory(player)
+    syncSeasonalEvent(player)
+
+    if not save(player) then
+        session.seasonalEvent.festivalEggClaimed = false
+        session.inventory.HarvestEgg = math.max(0, (session.inventory.HarvestEgg or 1) - 1)
+        syncInventory(player)
+        syncSeasonalEvent(player)
+        session.economyBusy = false
+        return tip(player, "Не удалось сохранить яйцо. Награда возвращена — попробуй ещё раз.")
+    end
+
+    session.economyBusy = false
+    tip(player, "Призовое яйцо получено! Открой его в окне Фестиваля урожая.")
+end
+
+local function hatchFestivalEgg(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Вылупление недоступно: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+    if (session.inventory.HarvestEgg or 0) < 1 then
+        return tip(player, "У тебя пока нет призового яйца.")
+    end
+
+    local available = {}
+    local totalWeight = 0
+    for _, definition in FESTIVAL_EGG_PETS do
+        if player:GetAttribute(definition.id) ~= true then
+            table.insert(available, definition)
+            totalWeight += definition.weight
+        end
+    end
+    if #available == 0 then
+        return tip(player, "Ты уже собрал всех пяти фестивальных питомцев!")
+    end
+
+    local roll = math.random(1, totalWeight)
+    local selected = available[1]
+    for _, definition in available do
+        roll -= definition.weight
+        if roll <= 0 then
+            selected = definition
+            break
+        end
+    end
+
+    local companionId = selected.id
+    local previousEggs = session.inventory.HarvestEgg
+    local previousCompanion = player:GetAttribute("Companion")
+    local previousBiome = session.companionDiscoveryBiomes[companionId]
+    local previousMutation = session.companionMutations[companionId]
+    session.economyBusy = true
+    session.inventory.HarvestEgg -= 1
+    session.companionDiscoveryBiomes[companionId] = "Grove"
+    session.companionMutations[companionId] = nil
+    player:SetAttribute(companionId, true)
+    player:SetAttribute("Companion", companionId)
+    syncInventory(player)
+    syncCompanionProgress(player)
+
+    if not save(player) then
+        session.inventory.HarvestEgg = previousEggs
+        session.companionDiscoveryBiomes[companionId] = previousBiome
+        session.companionMutations[companionId] = previousMutation
+        player:SetAttribute(companionId, false)
+        player:SetAttribute("Companion", previousCompanion or "")
+        syncInventory(player)
+        syncCompanionProgress(player)
+        session.economyBusy = false
+        return tip(player, "Вылупление не сохранилось. Яйцо и коллекция восстановлены — попробуй ещё раз.")
+    end
+
+    session.economyBusy = false
+    tip(player, "Ура! Из яйца вылупился " .. (pets[companionId] or "новый питомец") .. "! Он уже следует за тобой.")
+end
 
 save = function(player)
     local session = sessions[player]
@@ -2527,6 +2647,16 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "ClaimHarvestSprite" then
         claimHarvestSprite(player)
+        return
+    end
+
+    if action == "ClaimFestivalEgg" then
+        claimFestivalEgg(player)
+        return
+    end
+
+    if action == "HatchFestivalEgg" then
+        hatchFestivalEgg(player)
         return
     end
 
