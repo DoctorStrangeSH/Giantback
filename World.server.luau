@@ -4223,6 +4223,23 @@ local function spawnResource(def)
                 })
                 return tip(player, "Эта находка уже есть в твоей коллекции.")
             end
+            local hitsRequired = math.clamp(math.floor(tonumber(def.hitsRequired) or 1), 1, 10)
+            if def.requiredTool and (session.toolLevels[def.requiredTool] or 1) >= 2 then
+                hitsRequired = math.max(1, hitsRequired - 1)
+            end
+            if hitsRequired > 1 then
+                local hitNow = os.clock()
+                local lastHitAt = session.resourceHitCooldowns[def.key] or 0
+                if hitNow - lastHitAt < 0.4 then return end
+                session.resourceHitCooldowns[def.key] = hitNow
+                local hits = math.min(hitsRequired, (session.resourceHits[def.key] or 0) + 1)
+                session.resourceHits[def.key] = hits
+                event:FireClient(player, "ResourceHit", {nodeId = def.key, hits = hits, maxHits = hitsRequired})
+                if hits < hitsRequired then
+                    return tip(player, def.displayName .. ": удар " .. tostring(hits) .. "/" .. tostring(hitsRequired))
+                end
+                session.resourceHits[def.key] = nil
+            end
             session.collectedNodes[def.key] = true
         else
             local readyAt = session.resourceCooldowns[def.key] or 0
