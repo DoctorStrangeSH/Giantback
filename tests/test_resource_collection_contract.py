@@ -38,7 +38,7 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("math.max(tonumber(old.schemaVersion) or 0, 11)", WORLD)
         self.assertIn("local savedIsland = type(old.island) == \"table\" and old.island", WORLD)
         self.assertIn("savedIsland.buildings = citySnapshot.buildings", WORLD)
-        self.assertIn("savedIsland.buildings = {}", WORLD)
+        self.assertIn("savedIsland.buildings = citySnapshot.buildings", WORLD)
         self.assertIn("data.resourceCooldowns", WORLD)
         self.assertIn("data.collectedNodes", WORLD)
 
