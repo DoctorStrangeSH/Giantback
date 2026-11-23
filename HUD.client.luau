@@ -1254,6 +1254,48 @@ local function renderDailyQuests()
         streakText ..= " • следующий бонус +" .. tostring(nextBonus) .. " на " .. tostring(nextMilestone) .. " днях"
     end
     addInfo("СЕРИЯ ЗАДАНИЙ", streakText, 54)
+
+    local weeklyWeek = player:GetAttribute("WeeklyChallenge_Week") or "—"
+    local weeklyClaimed = player:GetAttribute("WeeklyChallenge_Claimed") == true
+    local weeklyReward = tonumber(player:GetAttribute("WeeklyChallenge_Reward")) or 0
+    local weeklyCount = math.clamp(math.floor(tonumber(player:GetAttribute("WeeklyChallenge_Count")) or 0), 0, 3)
+    addInfo("НЕДЕЛЬНЫЕ ИСПЫТАНИЯ", "Три особые цели на неделю • " .. tostring(weeklyWeek) .. ". Выполни их все, чтобы получить сундук с монетами и звёздным осколком.", 78)
+
+    local weeklyCompleted = 0
+    for index = 1, weeklyCount do
+        local prefix = "WeeklyChallenge_" .. tostring(index) .. "_"
+        local title = player:GetAttribute(prefix .. "Title") or "Испытание путешественника"
+        local description = player:GetAttribute(prefix .. "Description") or "Выполняй приключения на этой неделе."
+        local progress = tonumber(player:GetAttribute(prefix .. "Progress")) or 0
+        local goal = math.max(1, tonumber(player:GetAttribute(prefix .. "Goal")) or 1)
+        local challengeReward = math.max(0, math.floor(tonumber(player:GetAttribute(prefix .. "Reward")) or 0))
+        local done = progress >= goal
+        if done then weeklyCompleted += 1 end
+
+        local item = card(body, "WeeklyChallenge_" .. tostring(index), 72)
+        item.BackgroundColor3 = done and Color3.fromRGB(235, 242, 224) or palette.paper
+        label(item, "Number", "★", UDim2.fromOffset(36, 42), UDim2.fromOffset(10, 12), 18, done and palette.forestLight or palette.gold, Enum.Font.GothamBlack)
+        label(item, "Title", title, UDim2.new(1, -118, 0, 22), UDim2.fromOffset(54, 7), 13, palette.ink, Enum.Font.GothamBold)
+        label(item, "Hint", done and "Испытание выполнено!" or description, UDim2.new(1, -118, 0, 20), UDim2.fromOffset(54, 29), 10, palette.muted)
+        label(item, "Reward", "+" .. tostring(challengeReward) .. " Coins", UDim2.new(1, -118, 0, 16), UDim2.fromOffset(54, 51), 9, palette.gold, Enum.Font.GothamBold)
+        local progressLabel = label(item, "Progress", tostring(math.min(progress, goal)) .. "/" .. tostring(goal), UDim2.fromOffset(56, 24), UDim2.new(1, -66, 0.5, -12), 13, done and palette.forest or palette.ink, Enum.Font.GothamBlack)
+        progressLabel.TextXAlignment = Enum.TextXAlignment.Center
+    end
+
+    local weeklyClaim = button(body, "ClaimWeeklyChallenges", weeklyClaimed and "НЕДЕЛЬНАЯ НАГРАДА ПОЛУЧЕНА" or "ОТКРЫТЬ НЕДЕЛЬНЫЙ СУНДУК", UDim2.new(1, 0, 0, 46), UDim2.new(), weeklyClaimed and palette.forestLight or palette.gold)
+    weeklyClaim.TextColor3 = weeklyClaimed and palette.white or palette.ink
+    weeklyClaim.TextSize = 12
+    weeklyClaim.AutoButtonColor = not weeklyClaimed
+    weeklyClaim.Activated:Connect(function()
+        if weeklyClaimed then
+            showToast("Недельная награда уже получена.")
+        elseif weeklyCount == 0 or weeklyCompleted < weeklyCount then
+            showToast("Выполни все три недельных испытания.")
+        else
+            event:FireServer("ClaimWeeklyChallenges")
+        end
+    end)
+    addInfo("НАГРАДА НЕДЕЛИ", tostring(weeklyCompleted) .. " из " .. tostring(weeklyCount) .. " испытаний • " .. tostring(weeklyReward) .. " Coins + 1 звёздный осколок", 52)
 end
 
 local function renderExpeditions()
