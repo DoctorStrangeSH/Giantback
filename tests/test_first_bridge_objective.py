@@ -24,14 +24,13 @@ class FirstBridgeObjectiveTests(unittest.TestCase):
         self.assertIn('Подойди к мосту у края острова и нажми E или кнопку действия.', HUD)
         self.assertIn('Собери материалы для первого моста', HUD)
 
-    def test_hints_have_nonoverlapping_vertical_ranges(self):
-        self.assertIn('objective.Size = UDim2.fromOffset(352, 138)', HUD)
-        self.assertIn('objective.Size = UDim2.new(1, -32, 0, 138)', HUD)
-        self.assertIn('UDim2.fromOffset(76, 66), 11', HUD)
-        self.assertIn('UDim2.fromOffset(76, 29), 14', HUD)
-        # Text: 29..63, hint: 66..98, count: 109..121, bar: 125..131
-        self.assertLessEqual(29 + 34, 66)
-        self.assertLessEqual(66 + 32, 138 - 29)
+    def test_objective_layout_adapts_without_overlapping_hints(self):
+        self.assertIn('objective.Size = UDim2.fromOffset(compact and (narrow and 210 or 250) or 352, compact and 112 or 138)', HUD)
+        self.assertIn('objectiveHint.Visible = not compact', HUD)
+        self.assertIn('objectiveText.Size = UDim2.new(1, compact and -64 or -86, 0, compact and 30 or 34)', HUD)
+        self.assertIn('progressTrack.Position = UDim2.new(0, compact and 56 or 76, 1, -12)', HUD)
+        self.assertIn('objectiveHint.Position = UDim2.fromOffset(76, 66)', HUD)
+        self.assertIn('objectiveText.Position = UDim2.fromOffset(compact and 56 or 76, 27)', HUD)
 
     def test_uses_server_attributes_without_client_mutation(self):
         self.assertNotIn('player:SetAttribute("Resource_Wood"', HUD)
