@@ -724,6 +724,8 @@ local function renderCity()
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
     local homeSlot = tonumber(player:GetAttribute("HomeIslandSlot")) or 0
     addInfo("Добро пожаловать домой!", "Это твой личный остров. Друзья могут приходить в гости, но строить и менять что-либо здесь можешь только ты.", 84)
+    local coins = tonumber(player:GetAttribute("Coins")) or 0
+    addInfo("Кошелёк • " .. tostring(coins) .. " монет", "Выращивай морковь, клубнику, тыкву и капусту, а затем продавай весь урожай на фермерском рынке.", 68)
     addInfo("Домашний остров №" .. tostring(homeSlot), "На сервере восемь личных островов. Дом и ферма на твоём участке принадлежат только тебе.", 76)
     addInfo("Уровень города: " .. tostring(cityLevel), "Строй и улучшай свой остров, собирай материалы и открывай новые места.", 76)
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0

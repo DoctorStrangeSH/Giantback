@@ -86,6 +86,20 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('"FlowerBloom"', WORLD)
         self.assertIn('renderIslandDecoration(cityModel, meadow, decoration, index, ownerUserId)', WORLD)
 
+    def test_market_sells_only_harvest_and_saves_currency(self):
+        self.assertIn('local cropSalePrices = {Carrot = 4, Strawberry = 7, Pumpkin = 12, Cabbage = 9}', WORLD)
+        self.assertIn('local function sellIslandHarvest(player, ownerUserId)', WORLD)
+        self.assertIn('if player.UserId ~= ownerUserId then return tip(player, "Этот рынок принадлежит другому игроку.") end', WORLD)
+        self.assertIn('if not session.online then return tip(player, "Рынок временно не работает: сохранение профиля недоступно.") end', WORLD)
+        self.assertIn('old.coins = coinSnapshot', WORLD)
+        self.assertIn('session.coins = math.clamp(math.floor(tonumber(data.coins) or 0), 0, MAX_COINS)', WORLD)
+        self.assertIn('player:SetAttribute("Coins", math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS))', WORLD)
+        self.assertIn('if not save(player) then', WORLD)
+        self.assertIn('session.marketBusy = true', WORLD)
+        self.assertIn('prompt(marketAnchor, "Фермерский рынок", "Продать весь урожай"', WORLD)
+        self.assertIn('"MarketAwning"', WORLD)
+        self.assertIn('"MarketSign"', WORLD)
+
     def test_city_menu_offers_both_placeable_items(self):
         self.assertIn('local decorationCount = tonumber(player:GetAttribute("City_DecorationCount")) or 0', HUD)
         self.assertIn('{id = "Path", title = "Каменная дорожка"', HUD)
