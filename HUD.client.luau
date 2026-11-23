@@ -126,8 +126,8 @@ resources.BackgroundColor3 = palette.paper
 resources.Parent = topBar
 corner(resources, 18)
 stroke(resources, palette.paperDark, 0.1, 1)
-local woodLabel = label(resources, "Wood", "🪵  Дерево  0", UDim2.new(0.5, -8, 1, 0), UDim2.fromOffset(10, 0), 13, palette.ink, Enum.Font.GothamBold)
-local stoneLabel = label(resources, "Stone", "🪨  Камень  0", UDim2.new(0.5, -8, 1, 0), UDim2.new(0.5, 2, 0, 0), 13, palette.ink, Enum.Font.GothamBold)
+local woodLabel = label(resources, "Wood", "ДЕР.  0", UDim2.new(0.5, -8, 1, 0), UDim2.fromOffset(10, 0), 13, palette.ink, Enum.Font.GothamBold)
+local stoneLabel = label(resources, "Stone", "КАМ.  0", UDim2.new(0.5, -8, 1, 0), UDim2.new(0.5, 2, 0, 0), 13, palette.ink, Enum.Font.GothamBold)
 
 local objective = Instance.new("Frame")
 objective.Name = "ObjectiveCard"
@@ -286,7 +286,7 @@ local function updateResponsiveLayout()
 
     local panelWidth = math.max(240, math.min(470, viewport.X - (compact and 16 or 48)))
     local panelHeight = math.max(220, math.min(420, viewport.Y - (compact and 150 or 190)))
-    panel.Size = UDim2.fromOffset(panelWidth, panelHeight)
+    panel.Size = UDim2.fromOffset(panelWidth, math.max(220, math.min(420, viewport.Y - (compact and 190 or 220))))
     panel.Position = UDim2.new(0.5, 0, 0.5, compact and -18 or 0)
     panelTitle.TextSize = compact and 16 or 20
     panelSubtitle.TextSize = compact and 10 or 12
@@ -314,10 +314,10 @@ local function addInfo(titleText, description, height)
 end
 
 local cropCatalog = {
-    {id = "Carrot", name = "Морковь", seed = "CarrotSeed", glyph = "🥕", grow = "5 мин", color = palette.gold},
-    {id = "Strawberry", name = "Клубника", seed = "StrawberrySeed", glyph = "🍓", grow = "12 мин · повторный сбор 8 мин", color = palette.coral},
-    {id = "Pumpkin", name = "Тыква", seed = "PumpkinSeed", glyph = "🎃", grow = "30 мин", color = palette.gold},
-    {id = "Cabbage", name = "Капуста", seed = "CabbageSeed", glyph = "🥬", grow = "20 мин", color = palette.mint},
+    {id = "Carrot", name = "Морковь", seed = "CarrotSeed", glyph = "◆", grow = "5 мин", color = palette.gold},
+    {id = "Strawberry", name = "Клубника", seed = "StrawberrySeed", glyph = "♥", grow = "12 мин · повторный сбор 8 мин", color = palette.coral},
+    {id = "Pumpkin", name = "Тыква", seed = "PumpkinSeed", glyph = "●", grow = "30 мин", color = palette.gold},
+    {id = "Cabbage", name = "Капуста", seed = "CabbageSeed", glyph = "✿", grow = "20 мин", color = palette.mint},
 }
 local cropById = {}
 for _, crop in cropCatalog do cropById[crop.id] = crop end
@@ -375,7 +375,7 @@ local function renderCity()
     local cityLevel = tonumber(player:GetAttribute("City_Level")) or 1
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
     local homeSlot = tonumber(player:GetAttribute("HomeIslandSlot")) or 0
-    addInfo("Добро пожаловать домой!", "Это твой отдельный постоянный остров. Соседи видят его, но не могут менять твои постройки.", 84)
+    addInfo("Добро пожаловать домой!", "Это твой личный остров. Друзья могут приходить в гости, но строить и менять что-либо здесь можешь только ты.", 84)
     addInfo("Домашний остров №" .. tostring(homeSlot), "На сервере восемь отдельных островов. Твой дом и ферма не накладываются на чужие участки.", 76)
     addInfo("Уровень города: " .. tostring(cityLevel), "Развивай остров, собирай материалы и открывай новые территории мостами.", 76)
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
@@ -394,7 +394,7 @@ local function renderCity()
     addInfo("Находки и ферма", "🌙 Лунные семена: " .. tostring(moonSeeds) .. "   •   ✦ Звёздный осколок: " .. tostring(starShards)
         .. "   •   🥕 Семена: " .. tostring(carrotSeeds) .. "   •   Урожай: " .. tostring(carrots)
         .. "   •   ☀ Солнечные лепестки: " .. tostring(sunPetals) .. "   •   ☾ Лунные лепестки: " .. tostring(moonPetals), 98)
-    addInfo("Ферма: уровень " .. tostring(farmLevel), "У тебя есть четыре места для грядок. Открой вкладку «Ферма», чтобы посмотреть их состояние.", 76)
+    addInfo("Ферма: уровень " .. tostring(farmLevel), "На острове четыре грядки. Открой раздел «Ферма», чтобы выбрать семена, посадить растения и собрать урожай.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
 end
 
@@ -419,8 +419,8 @@ end
 
 local function renderPets()
     local pets = {
-        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "🦊"},
-        {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "🦋"},
+        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "Л"},
+        {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "М"},
         {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "✦"},
     }
     for _, pet in pets do
@@ -538,8 +538,8 @@ local function renderTools()
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
     local catalog = {
-        {id = "Axe", name = "Топор путешественника", glyph = "🪓", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
-        {id = "Pickaxe", name = "Кирка путешественника", glyph = "⛏️", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
+        {id = "Axe", name = "Топор путешественника", glyph = "⚒", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
+        {id = "Pickaxe", name = "Кирка путешественника", glyph = "⌁", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
     }
     for _, definition in catalog do
         local level = tonumber(player:GetAttribute("Tool_" .. definition.id .. "Level")) or 1
@@ -568,7 +568,7 @@ local function renderTools()
     local swordOwned = player:GetAttribute("Tool_SwordOwned") == true
     local swordEquipped = player:GetAttribute("Tool_Equipped") == "Sword"
     local swordCard = card(body, "Tool_Sword", 124)
-    label(swordCard, "SwordIcon", "⚔️", UDim2.fromOffset(44, 48), UDim2.fromOffset(10, 22), 28, palette.gold)
+    label(swordCard, "SwordIcon", "⚔", UDim2.fromOffset(44, 48), UDim2.fromOffset(10, 22), 28, palette.gold)
     label(swordCard, "SwordName", "Меч странника", UDim2.new(1, -156, 0, 24), UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
     label(swordCard, "SwordStatus", swordOwned and "Создан · можно сражаться на арене" or "Рецепт: 2 слитка + 6 дерева · свой верстак", UDim2.new(1, -156, 0, 46), UDim2.fromOffset(62, 35), 11, palette.muted)
     local swordEquip = button(swordCard, "SwordEquip", swordEquipped and "В РУКАХ" or "ВЗЯТЬ", UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 8), swordEquipped and palette.gold or palette.forest)
@@ -683,8 +683,8 @@ local panelTitles = {
     City = {"МОЙ ОСТРОВ", "Твой дом и будущий город"},
     Farm = {"МОЯ ФЕРМА", "Сажай, выращивай и собирай урожай"},
     Pets = {"МОИ ПИТОМЦЫ", "Друзья, которые помогают в приключениях"},
-    Tools = {"ИНСТРУМЕНТЫ", "Собирай ресурсы и улучшай снаряжение"},
-    World = {"КАРТА МИРА", "Открывай острова и исследуй новые места"},
+    Tools = {"ИНСТРУМЕНТЫ", "Добывай материалы и готовься к путешествиям"},
+    World = {"КАРТА МИРА", "Исследуй архипелаг и открывай новые земли"},
     Expeditions = {"ДНЕВНИК", "Твои открытия в Солнечной роще и Сумеречной долине"},
 }
 
