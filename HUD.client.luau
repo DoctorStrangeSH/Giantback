@@ -456,6 +456,36 @@ local function renderCity()
         .. "   •   ☀ Солнечные лепестки: " .. tostring(sunPetals) .. "   •   ☾ Лунные лепестки: " .. tostring(moonPetals), 98)
     addInfo("Ферма: уровень " .. tostring(farmLevel), "На острове четыре грядки. Открой раздел «Ферма», чтобы выбрать семена, посадить растения и собрать урожай.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
+    local decorationCount = tonumber(player:GetAttribute("City_DecorationCount")) or 0
+    addInfo("Свободное строительство", "Построено украшений: " .. tostring(decorationCount) .. "/12. Встань на свободное место лужайки, повернись к площадке и выбери предмет.", 82)
+    local compact = gui.AbsoluteSize.X < 620
+    local catalog = {
+        {id = "Path", title = "Каменная дорожка", description = "Четыре каменные плиты. Цена: 2 дерева.", cost = "2 ДЕРЕВА", glyph = "Д"},
+        {id = "FlowerBed", title = "Цветочная клумба", description = "Деревянная рамка и четыре цветка. Цена: 4 дерева и 2 камня.", cost = "4 ДЕРЕВА · 2 КАМНЯ", glyph = "Ц"},
+    }
+    for _, definition in catalog do
+        local item = card(body, "Build_" .. definition.id, compact and 116 or 86)
+        local glyph = label(item, "Glyph", definition.glyph, UDim2.fromOffset(42, 42),
+            UDim2.fromOffset(10, compact and 8 or 20), 24, palette.gold, Enum.Font.GothamBlack)
+        glyph.TextXAlignment = Enum.TextXAlignment.Center
+        local title = label(item, "Title", definition.title,
+            compact and UDim2.new(1, -68, 0, 22) or UDim2.new(1, -150, 0, 22),
+            UDim2.fromOffset(60, 8), 13, palette.ink, Enum.Font.GothamBold)
+        title.TextWrapped = true
+        local description = label(item, "Description", definition.description,
+            compact and UDim2.new(1, -28, 0, 32) or UDim2.new(1, -150, 0, 38),
+            UDim2.fromOffset(compact and 14 or 60, compact and 34 or 34), 10, palette.muted)
+        description.TextWrapped = true
+        description.TextYAlignment = Enum.TextYAlignment.Top
+        local action = button(item, "Place", compact and "ПОСТРОИТЬ · " .. definition.cost or "ПОСТРОИТЬ",
+            compact and UDim2.new(1, -24, 0, 28) or UDim2.fromOffset(124, 32),
+            compact and UDim2.fromOffset(12, 78) or UDim2.new(1, -136, 0, 26),
+            palette.forest)
+        action.TextSize = compact and 9 or 10
+        action.Activated:Connect(function()
+            event:FireServer("PlaceIslandDecoration", definition.id)
+        end)
+    end
 end
 
 local function renderFarm()
