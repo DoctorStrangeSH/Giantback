@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+FOLLOW = (ROOT / "modules/CompanionFollow.luau").read_text(encoding="utf-8")
 ACTIVITY = (ROOT / "modules/CompanionActivity.luau").read_text(encoding="utf-8")
 
 
@@ -37,7 +38,7 @@ class CompanionPersonalityContractTests(unittest.TestCase):
         self.assertIn('owner:GetAttribute("Companion_" .. id .. "_BondStage")', ACTIVITY)
         self.assertIn('window[1] - bondStage * 1.5', ACTIVITY)
         self.assertIn('window[2] - bondStage * 2', ACTIVITY)
-        self.assertIn('personalityRadius - bondStage * 0.035', ALBUM)
+        self.assertIn('personalityRadius - bondStage * 0.035', FOLLOW)
         self.assertIn('local function updateMothStardust(model, owner)', ALBUM)
         self.assertIn('emitter:GetAttribute("AppliedBondStage") == bondStage', ALBUM)
         self.assertIn('updateMothStardust(model, owner)', ALBUM)
@@ -50,11 +51,11 @@ class CompanionPersonalityContractTests(unittest.TestCase):
         self.assertIn('owner:GetAttribute("Companion_Fox_Personality")', ACTIVITY)
 
     def test_moth_orbit_and_stardust_depend_on_personality(self):
-        self.assertIn('["Любопытный"] = 0.9', ALBUM)
-        self.assertIn('["Озорной"] = 1.18', ALBUM)
-        self.assertIn('["Смелый"] = 0.78', ALBUM)
-        self.assertIn('["Застенчивый"] = 0.52', ALBUM)
-        self.assertIn('owner:GetAttribute("Companion_Moth_Personality")', ALBUM)
+        self.assertIn('["Любопытный"] = 0.9', FOLLOW)
+        self.assertIn('["Озорной"] = 1.18', FOLLOW)
+        self.assertIn('["Смелый"] = 0.78', FOLLOW)
+        self.assertIn('["Застенчивый"] = 0.52', FOLLOW)
+        self.assertIn('owner:GetAttribute("Companion_Moth_Personality")', FOLLOW)
         self.assertIn('["Озорной"] = 12', ALBUM)
         self.assertIn('["Застенчивый"] = 4', ALBUM)
 
