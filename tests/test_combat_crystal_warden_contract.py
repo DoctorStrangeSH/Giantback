@@ -82,6 +82,7 @@ class CrystalWardenEncounterTests(unittest.TestCase):
         self.assertIn('local useShardlingDash = enemy:GetAttribute("ArchetypeId") == "Shardling"', COMBAT)
         dash = COMBAT.split("elseif useShardlingDash then", 1)[1].split('\n                    else\n                        enemy:SetAttribute("CombatState", "Telegraph")', 1)[0]
         self.assertIn('enemy:SetAttribute("BossAttack", "ShardlingDash")', dash)
+        self.assertIn("if isEnemyAlive(enemy) and targetPlayer.Parent then", dash)
         self.assertIn('enemy:SetAttribute("CombatState", "ShardlingDashTelegraph")', dash)
         self.assertIn("local projection = horizontalOffset:Dot(direction)", dash)
         self.assertIn("local lateral = (horizontalOffset - direction * projection).Magnitude", dash)
