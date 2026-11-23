@@ -1112,6 +1112,136 @@ local DAILY_QUEST_DEFINITIONS = {
 
 local DAILY_QUEST_DIFFICULTIES = {"easy", "medium", "hard"}
 
+local WEEKLY_CHALLENGE_COUNT = 3
+local WEEKLY_CHALLENGE_REWARD_ITEM = "StarShard"
+local WEEKLY_CHALLENGE_DEFINITIONS = {
+    Gather = {goal = 30, reward = 40, category = "Gathering", title = "Хранитель запасов", description = "Собери 30 ресурсов в мире."},
+    Farm = {goal = 15, reward = 50, category = "Farming", title = "Большой урожай", description = "Посади или собери 15 культур."},
+    Market = {goal = 10, reward = 50, category = "Market", title = "Торговая неделя", description = "Продай 10 единиц урожая."},
+    Companion = {goal = 5, reward = 60, category = "Companion", title = "Лучший друг", description = "Покорми питомца или сыграй с ним 5 раз."},
+    Explore = {goal = 2, reward = 50, category = "Exploration", title = "Следопыт", description = "Найди 2 тайника в мире."},
+    Combat = {goal = 2, reward = 70, category = "Combat", title = "Защитник островов", description = "Победи 2 противников в приключении."},
+}
+
+local function currentWeeklyChallengeWeek()
+    return os.date("!%Y-%W")
+end
+
+local function getEligibleWeeklyChallengeIds(player, session)
+    local eligible = {"Gather", "Farm", "Market"}
+    local ownsCompanion = false
+    for _, companionId in COMPANION_IDS do
+        if player:GetAttribute(companionId) == true then
+            ownsCompanion = true
+            break
+        end
+    end
+    if ownsCompanion then table.insert(eligible, "Companion") end
+    if player:GetAttribute("Fox") == true then table.insert(eligible, "Explore") end
+    if session.tools.Sword == true then table.insert(eligible, "Combat") end
+    return eligible
+end
+
+local function normalizeWeeklyChallenges(raw, player, session)
+    local week = currentWeeklyChallengeWeek()
+    local saved = type(raw) == "table" and raw or {}
+    local selected = {}
+    local progress = {}
+    if saved.week == week and type(saved.challenges) == "table" then
+        local seen = {}
+        for _, challengeId in saved.challenges do
+            if #selected >= WEEKLY_CHALLENGE_COUNT then break end
+            if WEEKLY_CHALLENGE_DEFINITIONS[challengeId] and not seen[challengeId] then
+                table.insert(selected, challengeId)
+                seen[challengeId] = true
+            end
+        end
+    end
+    if #selected ~= WEEKLY_CHALLENGE_COUNT then
+        local eligible = getEligibleWeeklyChallengeIds(player, session)
+        local weekSeed = tonumber(string.gsub(week, "%-", "")) or 0
+        local random = Random.new((math.abs(player.UserId) % 1000003 + weekSeed) % 2147483647)
+        for index = #eligible, 2, -1 do
+            local swapIndex = random:NextInteger(1, index)
+            eligible[index], eligible[swapIndex] = eligible[swapIndex], eligible[index]
+        end
+        selected = {}
+        for index = 1, math.min(WEEKLY_CHALLENGE_COUNT, #eligible) do
+            selected[index] = eligible[index]
+        end
+        saved = {}
+    end
+    for _, challengeId in selected do
+        local definition = WEEKLY_CHALLENGE_DEFINITIONS[challengeId]
+        local value = saved.week == week and type(saved.progress) == "table" and saved.progress[challengeId] or 0
+        progress[challengeId] = math.clamp(math.floor(tonumber(value) or 0), 0, definition.goal)
+    end
+    return {
+        version = 1,
+        week = week,
+        challenges = selected,
+        progress = progress,
+        claimed = saved.week == week and saved.claimed == true or false,
+    }
+end
+
+local function getWeeklyChallengeReward(weeklyChallenges)
+    local total = 0
+    for _, challengeId in weeklyChallenges.challenges do
+        local definition = WEEKLY_CHALLENGE_DEFINITIONS[challengeId]
+        total += definition and definition.reward or 0
+    end
+    return total
+end
+
+local function syncWeeklyChallenges(player)
+    local session = sessions[player]
+    if not session then return end
+    session.weeklyChallenges = normalizeWeeklyChallenges(session.weeklyChallenges, player, session)
+    player:SetAttribute("WeeklyChallenge_Week", session.weeklyChallenges.week)
+    player:SetAttribute("WeeklyChallenge_Count", #session.weeklyChallenges.challenges)
+    player:SetAttribute("WeeklyChallenge_Claimed", session.weeklyChallenges.claimed)
+    player:SetAttribute("WeeklyChallenge_Reward", getWeeklyChallengeReward(session.weeklyChallenges))
+    for index, challengeId in session.weeklyChallenges.challenges do
+        local definition = WEEKLY_CHALLENGE_DEFINITIONS[challengeId]
+        local prefix = "WeeklyChallenge_" .. tostring(index) .. "_"
+        player:SetAttribute(prefix .. "Id", challengeId)
+        player:SetAttribute(prefix .. "Title", definition.title)
+        player:SetAttribute(prefix .. "Description", definition.description)
+        player:SetAttribute(prefix .. "Goal", definition.goal)
+        player:SetAttribute(prefix .. "Progress", session.weeklyChallenges.progress[challengeId] or 0)
+        player:SetAttribute(prefix .. "Reward", definition.reward)
+    end
+end
+
+local function addWeeklyChallengeProgress(player, dailyQuestId, amount)
+    local session = sessions[player]
+    if not session then return false end
+    local challengeId = ({
+        Gather = "Gather",
+        Plant = "Farm",
+        Harvest = "Farm",
+        Sell = "Market",
+        Scout = "Explore",
+        Feed = "Companion",
+        Play = "Companion",
+        WinEncounter = "Combat",
+    })[dailyQuestId]
+    if not challengeId then return false end
+    session.weeklyChallenges = normalizeWeeklyChallenges(session.weeklyChallenges, player, session)
+    if session.weeklyChallenges.claimed or not table.find(session.weeklyChallenges.challenges, challengeId) then
+        return false
+    end
+    local definition = WEEKLY_CHALLENGE_DEFINITIONS[challengeId]
+    local previous = session.weeklyChallenges.progress[challengeId] or 0
+    local nextValue = math.clamp(previous + math.max(0, math.floor(tonumber(amount) or 0)), 0, definition.goal)
+    if nextValue == previous then return false end
+    session.weeklyChallenges.progress[challengeId] = nextValue
+    syncWeeklyChallenges(player)
+    return true
+end
+
+
 local function currentDailyQuestDay()
     return os.date("!%Y-%m-%d")
 end
