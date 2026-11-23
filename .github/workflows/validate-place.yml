@@ -260,7 +260,7 @@ jobs:
               "ResourcePicked",
               "p.MaxActivationDistance + 1",
               "kind = \"renewable\"",
-              "old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 12)",
+              "old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 13)",
               "old.coins = coinSnapshot",
               "local seedShopOffers = {",
               "local function buyFarmSeeds(player, cropId)",
