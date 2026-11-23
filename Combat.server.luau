@@ -503,6 +503,8 @@ local function performAttack(player, state, now)
     state.comboExpiresAt = now + COMBO_WINDOW_SECONDS
     state.attackReadyAt = now + COMBO_COOLDOWN[comboStep]
     player:SetAttribute("CombatComboStep", comboStep)
+    -- Visual swing is sent only after the server accepts timing and region/weapon checks.
+    remote:FireClient(player, "CombatSwing", {comboStep = comboStep, charged = false})
 
     local forward = root.CFrame.LookVector
     local hitCFrame = CFrame.lookAt(root.Position + forward * 3.5, root.Position + forward * 4.5)
@@ -578,6 +580,7 @@ local function performChargedAttack(player, state, now)
     state.comboStep = 0
     state.comboExpiresAt = 0
     player:SetAttribute("CombatComboStep", 0)
+    remote:FireClient(player, "CombatSwing", {charged = true})
 
     local forward = root.CFrame.LookVector
     local hitCFrame = CFrame.lookAt(root.Position + forward * 4, root.Position + forward * 5)
