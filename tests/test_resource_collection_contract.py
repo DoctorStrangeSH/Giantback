@@ -31,11 +31,11 @@ class ResourceCollectionContractTests(unittest.TestCase):
         self.assertIn("for nodeId, collected in savedCollected do", WORLD)
 
     def test_profile_schema_and_migration_compatible_fields(self):
-        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 13)", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 14)", WORLD)
         self.assertIn('"IronOre", "IronIngot"', WORLD)
 
     def test_saving_legacy_schema_never_downgrades_newer_profile(self):
-        self.assertIn("math.max(tonumber(old.schemaVersion) or 0, 13)", WORLD)
+        self.assertIn("math.max(tonumber(old.schemaVersion) or 0, 14)", WORLD)
         self.assertIn("local savedIsland = type(old.island) == \"table\" and old.island", WORLD)
         self.assertIn("savedIsland.buildings = citySnapshot.buildings", WORLD)
         self.assertIn("savedIsland.buildings = citySnapshot.buildings", WORLD)

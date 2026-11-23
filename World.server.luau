@@ -1112,6 +1112,117 @@ local DAILY_QUEST_DEFINITIONS = {
 
 local DAILY_QUEST_DIFFICULTIES = {"easy", "medium", "hard"}
 
+local SEASONAL_EVENT_MILESTONES = {
+    {points = 20, coins = 30, starShards = 0},
+    {points = 50, coins = 0, starShards = 1},
+    {points = 100, coins = 80, starShards = 2},
+}
+local SEASONAL_EVENT_POINT_VALUES = {
+    Gather = 1,
+    GatherWood = 2,
+    GatherStone = 2,
+    Plant = 1,
+    Harvest = 2,
+    Sell = 2,
+    Scout = 3,
+    Feed = 2,
+    Play = 3,
+    CraftSword = 4,
+    UpgradeTool = 4,
+    WinEncounter = 5,
+}
+
+local function getHarvestFestivalWindow()
+    local year = tonumber(os.date("!%Y")) or 2026
+    local now = DateTime.now().UnixTimestamp
+    local startAt = DateTime.fromUniversalTime(year, 11, 23, 0, 0, 0).UnixTimestamp
+    local endAt = DateTime.fromUniversalTime(year, 12, 8, 0, 0, 0).UnixTimestamp
+    if now >= endAt then
+        year += 1
+        startAt = DateTime.fromUniversalTime(year, 11, 23, 0, 0, 0).UnixTimestamp
+        endAt = DateTime.fromUniversalTime(year, 12, 8, 0, 0, 0).UnixTimestamp
+    end
+    return {
+        id = "harvest-festival-" .. tostring(year),
+        year = year,
+        startAt = startAt,
+        endAt = endAt,
+        active = now >= startAt and now < endAt,
+    }
+end
+
+local function normalizeSeasonalEvent(raw)
+    local window = getHarvestFestivalWindow()
+    local saved = type(raw) == "table" and raw or {}
+    local sameEvent = saved.eventId == window.id
+    local claimed = {}
+    if sameEvent and type(saved.claimedMilestones) == "table" then
+        for _, milestone in SEASONAL_EVENT_MILESTONES do
+            local key = tostring(milestone.points)
+            claimed[key] = saved.claimedMilestones[key] == true
+        end
+    end
+    return {
+        version = 1,
+        eventId = window.id,
+        points = sameEvent and math.clamp(math.floor(tonumber(saved.points) or 0), 0, 100) or 0,
+        claimedMilestones = claimed,
+    }
+end
+
+local function getSeasonalEventAvailableReward(seasonalEvent)
+    local coins, starShards, available = 0, 0, 0
+    for _, milestone in SEASONAL_EVENT_MILESTONES do
+        local key = tostring(milestone.points)
+        if seasonalEvent.points >= milestone.points and seasonalEvent.claimedMilestones[key] ~= true then
+            coins += milestone.coins
+            starShards += milestone.starShards
+            available += 1
+        end
+    end
+    return coins, starShards, available
+end
+
+local function syncSeasonalEvent(player)
+    local session = sessions[player]
+    if not session then return end
+    local window = getHarvestFestivalWindow()
+    session.seasonalEvent = normalizeSeasonalEvent(session.seasonalEvent)
+    local coins, starShards, available = getSeasonalEventAvailableReward(session.seasonalEvent)
+    player:SetAttribute("SeasonalEvent_Id", window.id)
+    player:SetAttribute("SeasonalEvent_Active", window.active)
+    player:SetAttribute("SeasonalEvent_Title", "Фестиваль урожая")
+    player:SetAttribute("SeasonalEvent_Description", "Собирай ресурсы, выращивай урожай, помогай питомцам и открывай праздничные награды.")
+    player:SetAttribute("SeasonalEvent_Period", "23 ноября — 8 декабря • UTC")
+    player:SetAttribute("SeasonalEvent_StartAt", window.startAt)
+    player:SetAttribute("SeasonalEvent_EndAt", window.endAt)
+    player:SetAttribute("SeasonalEvent_Points", session.seasonalEvent.points)
+    player:SetAttribute("SeasonalEvent_Goal", 100)
+    player:SetAttribute("SeasonalEvent_RewardCoins", coins)
+    player:SetAttribute("SeasonalEvent_RewardStarShards", starShards)
+    player:SetAttribute("SeasonalEvent_ClaimableCount", available)
+    for _, milestone in SEASONAL_EVENT_MILESTONES do
+        local key = tostring(milestone.points)
+        player:SetAttribute("SeasonalEvent_Milestone_" .. key .. "_Claimed", session.seasonalEvent.claimedMilestones[key] == true)
+    end
+end
+
+local function addSeasonalEventProgress(player, questId, amount)
+    local session = sessions[player]
+    local pointValue = SEASONAL_EVENT_POINT_VALUES[questId]
+    if not session or not pointValue then return false end
+    local window = getHarvestFestivalWindow()
+    if not window.active then return false end
+    session.seasonalEvent = normalizeSeasonalEvent(session.seasonalEvent)
+    local previous = session.seasonalEvent.points
+    local nextValue = math.clamp(previous + pointValue * math.max(0, math.floor(tonumber(amount) or 0)), 0, 100)
+    if nextValue == previous then return false end
+    session.seasonalEvent.points = nextValue
+    syncSeasonalEvent(player)
+    return true
+end
+
+
 local WEEKLY_CHALLENGE_COUNT = 3
 local WEEKLY_CHALLENGE_REWARD_ITEM = "StarShard"
 local WEEKLY_CHALLENGE_DEFINITIONS = {
@@ -1452,11 +1563,12 @@ addDailyQuestProgress = function(player, questId, amount, saveProgress)
     local definition = DAILY_QUEST_DEFINITIONS[questId]
     if not session or not definition or not player:GetAttribute("Ready") then return end
     local weeklyChanged = addWeeklyChallengeProgress(player, questId, amount)
+    local seasonalChanged = addSeasonalEventProgress(player, questId, amount)
     session.dailyQuests = normalizeDailyQuests(session.dailyQuests, player, session)
     if session.dailyQuests.claimed or not table.find(session.dailyQuests.quests, questId) then
         syncDailyQuests(player)
-        if weeklyChanged and saveProgress ~= false and session.online and not save(player) then
-            warn("Weekly challenge progress save will be retried:", player.UserId, questId)
+        if (weeklyChanged or seasonalChanged) and saveProgress ~= false and session.online and not save(player) then
+            warn("Weekly/seasonal challenge progress save will be retried:", player.UserId, questId)
         end
         return
     end
@@ -1471,7 +1583,7 @@ addDailyQuestProgress = function(player, questId, amount, saveProgress)
     session.dailyQuests.progress[questId] = nextValue
     syncDailyQuests(player)
     if saveProgress ~= false and session.online and not save(player) then
-        warn("Daily/weekly quest progress save will be retried:", player.UserId, questId)
+        warn("Daily/weekly/seasonal quest progress save will be retried:", player.UserId, questId)
     end
 end
 
@@ -1482,6 +1594,7 @@ task.spawn(function()
             if player:GetAttribute("Ready") then
                 syncDailyQuests(player)
                 syncWeeklyChallenges(player)
+                syncSeasonalEvent(player)
             end
         end
     end
@@ -1593,6 +1706,63 @@ local function claimWeeklyChallenges(player)
 end
 
 
+
+local function claimSeasonalEventRewards(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Праздничные награды временно недоступны: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции с монетами.") end
+
+    local window = getHarvestFestivalWindow()
+    if not window.active then
+        return tip(player, "Фестиваль урожая сейчас не проводится.")
+    end
+    session.seasonalEvent = normalizeSeasonalEvent(session.seasonalEvent)
+    local rewardCoins, rewardStarShards, available = getSeasonalEventAvailableReward(session.seasonalEvent)
+    if available <= 0 then
+        return tip(player, "Пока нет доступных праздничных наград. Набери ещё очков фестиваля!")
+    end
+
+    local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    local previousStarShards = math.clamp(math.floor(tonumber(session.inventory.StarShard) or 0), 0, 1000000)
+    if MAX_COINS - previousCoins < rewardCoins then
+        return tip(player, "Освободи место минимум для " .. tostring(rewardCoins) .. " монет.")
+    end
+    if 1000000 - previousStarShards < rewardStarShards then
+        return tip(player, "В рюкзаке недостаточно места для звёздных осколков.")
+    end
+
+    local previousClaims = table.clone(session.seasonalEvent.claimedMilestones)
+    session.economyBusy = true
+    session.coins = previousCoins + rewardCoins
+    session.inventory.StarShard = previousStarShards + rewardStarShards
+    for _, milestone in SEASONAL_EVENT_MILESTONES do
+        local key = tostring(milestone.points)
+        if session.seasonalEvent.points >= milestone.points then
+            session.seasonalEvent.claimedMilestones[key] = true
+        end
+    end
+    syncInventory(player)
+    syncFarm(player)
+    syncSeasonalEvent(player)
+    if not save(player) then
+        session.coins = previousCoins
+        session.inventory.StarShard = previousStarShards
+        session.seasonalEvent.claimedMilestones = previousClaims
+        syncInventory(player)
+        syncFarm(player)
+        syncSeasonalEvent(player)
+        session.economyBusy = false
+        return tip(player, "Не удалось сохранить праздничные награды. Монеты и осколки возвращены — попробуй ещё раз.")
+    end
+
+    session.economyBusy = false
+    tip(player, "Фестиваль урожая: получено " .. tostring(rewardCoins) .. " Coins и " .. tostring(rewardStarShards) .. " звёздных осколков!")
+end
+
+
 save = function(player)
     local session = sessions[player]
     if not session or not session.online or not store then return false end
@@ -1658,6 +1828,7 @@ save = function(player)
         }
         local dailyQuestSnapshot = normalizeDailyQuests(session.dailyQuests, player, session)
         local weeklyChallengeSnapshot = normalizeWeeklyChallenges(session.weeklyChallenges, player, session)
+        local seasonalEventSnapshot = normalizeSeasonalEvent(session.seasonalEvent)
         local completedCombatSnapshot = {}
         for encounterId, completed in session.completedCombatEncounters do
             if type(encounterId) == "string" and #encounterId <= 64 and completed == true then
@@ -1674,7 +1845,7 @@ save = function(player)
                     old[key] = old[key] == true or snapshot[key]
                 end
                 -- Never downgrade a profile written by a newer feature branch.
-                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 13)
+                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 14)
                 old.coins = coinSnapshot
 
                 local savedTools = type(old.tools) == "table" and old.tools or {}
@@ -1723,6 +1894,7 @@ save = function(player)
                 old.completedCombatEncounters = savedCombatEncounters
                 old.dailyQuests = dailyQuestSnapshot
                 old.weeklyChallenges = weeklyChallengeSnapshot
+                old.seasonalEvent = seasonalEventSnapshot
 
                 local savedCompanions = type(old.companions) == "table" and old.companions or {}
                 for _, companionId in COMPANION_IDS do
@@ -1791,6 +1963,7 @@ local function init(player)
         completedCombatEncounters = {},
         dailyQuests = nil,
         weeklyChallenges = nil,
+        seasonalEvent = nil,
         companionProgress = normalizeCompanionProgress(nil),
         companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth, CrystalWisp = companionMoodDefaults.CrystalWisp},
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
@@ -1956,6 +2129,7 @@ local function init(player)
             end
             session.dailyQuests = data.dailyQuests
             session.weeklyChallenges = data.weeklyChallenges
+            session.seasonalEvent = data.seasonalEvent
 
             session.companionProgress = normalizeCompanionProgress(data.companions)
             local savedCompanions = type(data.companions) == "table" and data.companions or {}
@@ -2012,6 +2186,7 @@ local function init(player)
     syncTools(player)
     syncDailyQuests(player)
     syncWeeklyChallenges(player)
+    syncSeasonalEvent(player)
 end
 local combatRewardFunction = ServerStorage:FindFirstChild("GiantbackGrantCombatReward")
 if combatRewardFunction and not combatRewardFunction:IsA("BindableFunction") then
@@ -2276,6 +2451,11 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "ClaimWeeklyChallenges" then
         claimWeeklyChallenges(player)
+        return
+    end
+
+    if action == "ClaimSeasonalEventRewards" then
+        claimSeasonalEventRewards(player)
         return
     end
 
