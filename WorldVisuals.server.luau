@@ -1086,6 +1086,71 @@ region.Parent = arena
 region:SetAttribute("RegionId", "GroveTraining")
 CollectionService:AddTag(region, "GiantbackCombatRegion")
 
+-- Passive combat practice target. Hits go through Combat.server.luau, not a client prompt.
+local dummy = Instance.new("Model")
+dummy.Name = "GroveTrainingDummy01"
+dummy:SetAttribute("EnemyId", "GroveTrainingDummy01")
+dummy:SetAttribute("EncounterId", "GroveTrainingDummy01")
+dummy:SetAttribute("RegionId", "GroveTraining")
+dummy:SetAttribute("IsTrainingDummy", true)
+dummy:SetAttribute("CombatState", "Ready")
+dummy:SetAttribute("TrainingHitCount", 0)
+dummy.Parent = arena
+local dummyBase = arenaCenter + Vector3.new(13, 0, 9)
+local dummyRoot = Instance.new("Part")
+dummyRoot.Name = "HumanoidRootPart"
+dummyRoot.Size = Vector3.new(2.2, 3.8, 2.2)
+dummyRoot.CFrame = CFrame.new(dummyBase + Vector3.new(0, 2.8, 0))
+dummyRoot.Transparency = 1
+dummyRoot.Anchored = true
+dummyRoot.CanCollide = false
+dummyRoot.CanTouch = false
+dummyRoot.CanQuery = false
+dummyRoot.Parent = dummy
+dummy.PrimaryPart = dummyRoot
+local dummyHumanoid = Instance.new("Humanoid")
+dummyHumanoid.MaxHealth = 100
+dummyHumanoid.Health = 100
+dummyHumanoid.WalkSpeed = 0
+dummyHumanoid.RequiresNeck = false
+dummyHumanoid.DisplayName = "Тренировочный манекен"
+dummyHumanoid.Parent = dummy
+for _, detail in {
+    {name = "Torso", size = Vector3.new(2.0, 3.2, 1.35), shift = Vector3.new(0, 0, 0)},
+    {name = "Head", size = Vector3.new(1.45, 1.5, 1.45), shift = Vector3.new(0, 2.4, 0)},
+    {name = "Левая рука", size = Vector3.new(0.65, 2.3, 0.8), shift = Vector3.new(-1.5, 0.15, 0)},
+    {name = "Правая рука", size = Vector3.new(0.65, 2.3, 0.8), shift = Vector3.new(1.5, 0.15, 0)},
+} do
+    local piece = Instance.new("Part")
+    piece.Name = detail.name
+    piece.Size = detail.size
+    piece.CFrame = dummyRoot.CFrame * CFrame.new(detail.shift)
+    piece.Anchored = true
+    piece.CanCollide = false
+    piece.CanTouch = false
+    piece.CanQuery = true
+    piece.Color = Color3.fromRGB(172, 127, 80)
+    piece.Material = Enum.Material.Wood
+    piece.Parent = dummy
+end
+local dummySign = Instance.new("BillboardGui")
+dummySign.Name = "TrainingTargetLabel"
+dummySign.Adornee = dummyRoot
+dummySign.Size = UDim2.fromOffset(180, 42)
+dummySign.StudsOffsetWorldSpace = Vector3.new(0, 4.8, 0)
+dummySign.AlwaysOnTop = true
+dummySign.Parent = dummy
+local dummyText = Instance.new("TextLabel")
+dummyText.Size = UDim2.fromScale(1, 1)
+dummyText.BackgroundTransparency = 1
+dummyText.Text = "ТРЕНИРОВКА\\nАтакуй, чтобы проверить комбо"
+dummyText.Font = Enum.Font.GothamBold
+dummyText.TextScaled = true
+dummyText.TextColor3 = Color3.fromRGB(255, 232, 166)
+dummyText.TextStrokeTransparency = 0.35
+dummyText.Parent = dummySign
+CollectionService:AddTag(dummy, "GiantbackEnemy")
+
 local function makeEnemyPart(model, name, size, frame, color, material, shape)
     local part = Instance.new("Part")
     part.Name = name
