@@ -48,6 +48,7 @@ local combatRewardDefinitions = {
     RootvaultSealKeeper01 = {itemId = "RootvaultSigil", amount = 1, coins = 25},
     CrystalGrottoWarden01 = {itemId = "CrystalShard", amount = 2, coins = 15},
     CrystalGrottoShardling01 = {itemId = "CrystalShard", amount = 1, coins = 8},
+    CrystalEchoPrismGuardian01 = {itemId = "CrystalShard", amount = 5, coins = 45},
 }
 local toolUpgradeCosts = {Axe = {Wood = 8, Stone = 6}, Pickaxe = {Wood = 6, Stone = 8}}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
