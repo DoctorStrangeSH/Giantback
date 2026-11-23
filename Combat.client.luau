@@ -255,7 +255,75 @@ local function findEnemyRoot(enemyId)
     return nil
 end
 
+-- Cosmetic motion is client-only. The server still owns all hit detection, damage
+-- and timing; rejected attacks never play a sword swing.
+local swingSequence = 0
+local activeSwordTweens = {}
+local swordRestGrips = setmetatable({}, {__mode = "k"})
+
+local function clearSwordSwing()
+    swingSequence += 1
+    for _, tween in activeSwordTweens do
+        tween:Cancel()
+    end
+    table.clear(activeSwordTweens)
+    local character = player.Character
+    local equipped = character and character:FindFirstChild("Меч странника")
+    local restGrip = equipped and swordRestGrips[equipped]
+    if restGrip and equipped:IsA("Tool") then equipped.Grip = restGrip end
+end
+
+local function playSwordSwing(data)
+    if type(data) ~= "table" then return end
+    local character = player.Character
+    if not character then return end
+    local sword = character:FindFirstChild("Меч странника")
+    if not sword or not sword:IsA("Tool") or sword:GetAttribute("PetKingdomsToolId") ~= "Sword" then return end
+    local handle = sword:FindFirstChild("Handle")
+    if not handle or not handle:IsA("BasePart") then return end
+
+    clearSwordSwing()
+    local sequence = swingSequence
+    local restGrip = swordRestGrips[sword]
+    if not restGrip then
+        restGrip = sword.Grip
+        swordRestGrips[sword] = restGrip
+    end
+    local charged = data.charged == true
+    local comboStep = math.clamp(math.floor(tonumber(data.comboStep) or 1), 1, 3)
+    local direction = comboStep % 2 == 0 and -1 or 1
+    local windup = charged and 0.16 or 0.075
+    local followThrough = charged and 0.23 or (comboStep == 3 and 0.18 or 0.13)
+    local windupGrip = restGrip * CFrame.Angles(math.rad(-38), 0, math.rad(32 * direction))
+    local strikeGrip = restGrip * CFrame.Angles(math.rad(75), 0, math.rad(-62 * direction))
+    if charged then
+        windupGrip = restGrip * CFrame.Angles(math.rad(-75), 0, math.rad(32))
+        strikeGrip = restGrip * CFrame.Angles(math.rad(115), 0, math.rad(-18))
+    end
+    local opening = TweenService:Create(sword, TweenInfo.new(windup, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Grip = windupGrip})
+    table.insert(activeSwordTweens, opening)
+    opening:Play()
+    task.delay(windup, function()
+        if swingSequence ~= sequence or sword.Parent ~= character or player.Character ~= character then return end
+        local strike = TweenService:Create(sword, TweenInfo.new(followThrough, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Grip = strikeGrip})
+        table.insert(activeSwordTweens, strike)
+        strike:Play()
+        task.delay(followThrough, function()
+            if swingSequence ~= sequence or sword.Parent ~= character or player.Character ~= character then return end
+            local recover = TweenService:Create(sword, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Grip = restGrip})
+            table.insert(activeSwordTweens, recover)
+            recover:Play()
+        end)
+    end)
+end
+
+player.CharacterRemoving:Connect(clearSwordSwing)
+
 remote.OnClientEvent:Connect(function(message, data)
+    if message == "CombatSwing" then
+        playSwordSwing(data)
+        return
+    end
     if message == "CombatRejected" and type(data) == "table" then
         local copy = rejectionMessages[data.code]
         if copy then showFeedback(copy, Color3.fromRGB(255, 207, 153)) end
