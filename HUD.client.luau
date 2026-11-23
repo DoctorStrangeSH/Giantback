@@ -727,6 +727,7 @@ for _, definition in navDefinitions do
     navButtons[definition.id] = navButton
 end
 
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateResponsiveLayout)
 updateResponsiveLayout()
 local function watchCamera(camera)
     if camera then camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateResponsiveLayout) end
