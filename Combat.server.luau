@@ -715,7 +715,7 @@ local function performCompanionSkill(player, state, now)
         local target, targetEntry
         local bestDistance = FOX_SKILL_RANGE
         for enemy, entry in enemies do
-            if entry.regionId == regionId and isEnemyAlive(enemy) then
+            if entry.regionId == regionId and isEnemyAlive(enemy) and not entry.isTrainingDummy then
                 local distance = (entry.root.Position - playerRoot.Position).Magnitude
                 if distance < bestDistance then
                     bestDistance = distance
