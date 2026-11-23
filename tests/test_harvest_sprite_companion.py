@@ -17,7 +17,7 @@ class HarvestSpriteCompanionContractTests(unittest.TestCase):
     def test_companion_is_in_every_server_owned_profile_registry(self):
         self.assertIn('local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик"}', WORLD)
         self.assertIn('"HarvestSprite"', WORLD[WORLD.index("local progress ="):WORLD.index("local inventoryKeys")])
-        self.assertIn('local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite"}', WORLD)
+        self.assertIn('local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}', WORLD)
         self.assertIn('HarvestSprite = "Радость"', WORLD)
         self.assertIn('old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 14)', WORLD)
 
