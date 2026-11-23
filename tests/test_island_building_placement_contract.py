@@ -49,7 +49,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('local movingDecoration = moveIndex and session.city.buildings[moveIndex] or nil', WORLD)
         self.assertIn('session.city.buildings[moveIndex] = decoration', WORLD)
         self.assertIn('if index ~= moveIndex and existing.x == x and existing.z == z then', WORLD)
-        self.assertIn('local refund = decoration.id == "Path" and {Wood = 1, Stone = 0}', WORLD)
+        self.assertIn('local refunds = {Path = {Wood = 1, Stone = 0}, FlowerBed = {Wood = 2, Stone = 1}, Cottage = {Wood = 4, Stone = 3}}', WORLD)
         self.assertIn('session.inventory.Wood = (session.inventory.Wood or 0) + refund.Wood', WORLD)
         self.assertIn('session.inventory.Stone = (session.inventory.Stone or 0) + refund.Stone', WORLD)
         self.assertIn('if session.online then save(player) end', WORLD)
