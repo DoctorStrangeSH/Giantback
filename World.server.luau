@@ -2252,12 +2252,12 @@ placeIslandDecoration = function(player, payload)
     local x = tonumber(payload.x)
     local z = tonumber(payload.z)
     local rotation = tonumber(payload.rotation)
-    if not x or not z or not rotation or x ~= x or z ~= z or rotation ~= rotation then
+    if not x or not z or not rotation
+        or x ~= x or z ~= z or rotation ~= rotation
+        or math.abs(x) == math.huge or math.abs(z) == math.huge or math.abs(rotation) == math.huge
+        or x % 1 ~= 0 or z % 1 ~= 0 or rotation % 1 ~= 0 then
         return tip(player, "Выбери место на строительной площадке.")
     end
-    x = math.floor(x)
-    z = math.floor(z)
-    rotation = math.floor(rotation)
     if x < 0 or x > 12 or x % 4 ~= 0 or z < -4 or z > 4 or z % 4 ~= 0
         or rotation < 0 or rotation >= 360 or rotation % 90 ~= 0 then
         return tip(player, "Это место нельзя использовать для строительства.")
