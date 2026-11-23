@@ -1,3 +1,17 @@
+## Интеграция `main` и восстановление функций — 23.11.2026
+
+- [x] Перенести игровой Reboot из `feat/combat-c0-contract` в `main` через PR #8, сохранив обе истории Git.
+- [x] Проверить автоматическую сборку интеграционного коммита: Validate Giantback place #2210 и #2211 — SUCCESS.
+- [x] Проверить положение семи веток относительно `main`; три ветки полностью входят в его историю, четыре пока имеют уникальные коммиты.
+- [x] Проверить, что модули `HarvestMotion` и `ResourceNodeVisibility` действительно встроены в сборку.
+- [x] Выявить отсутствующие в `main` возможности V2: меч, тренировочный манекен, Mossling; не считать их выполненными.
+- [ ] Перенести меч и манекен из V2 без замены текущих скриптов целиком; покрыть серверные ограничения, сохранение и UI тестами.
+- [ ] Перенести Mossling и третью ступень инструментов после сверки профиля schemaVersion >= 11 и стоимости рецептов.
+- [ ] Проверить уникальные отличия четырёх расходящихся веток, закрыть только обоснованно ненужные ветки после сохранения истории.
+- [ ] Пройти Roblox Studio Edit/Play, 2-player и Mobile Device Emulator по `docs/STUDIO_PLAYTEST.md`; CI это не заменяет.
+- [ ] Утвердить реальные MeshPart, затем удалить заменённые блок-ауты, не ломая игру.
+- [ ] Отметить 1.0 готовой только после полного Release Gate.
+
 ## Asset Pipeline 1.0 — Studio import and asset staging
 
 - [x] Add client-only, state-aware first Grove world guidance: after repairing the home bridge, highlight the Fox nest; after equipping Fox, highlight the scouting trail until the first lunar seed/cache is active. Automatically remove previous markers on quest changes; retain server-owned ProximityPrompts and rewards. Studio visual acceptance remains pending.
