@@ -131,7 +131,7 @@ local stoneLabel = label(resources, "Stone", "🪨  Камень  0", UDim2.new(
 local objective = Instance.new("Frame")
 objective.Name = "ObjectiveCard"
 objective.Position = UDim2.fromOffset(16, 84)
-objective.Size = UDim2.fromOffset(352, 94)
+objective.Size = UDim2.fromOffset(352, 120)
 objective.BackgroundColor3 = palette.paper
 objective.Parent = gui
 corner(objective, 18)
@@ -149,6 +149,8 @@ objectiveGlyph.TextXAlignment = Enum.TextXAlignment.Center
 local objectiveEyebrow = label(objective, "Eyebrow", "ТВОЯ СЛЕДУЮЩАЯ ЦЕЛЬ", UDim2.new(1, -82, 0, 18), UDim2.fromOffset(76, 10), 10, palette.forestLight, Enum.Font.GothamBold)
 local objectiveText = label(objective, "Objective", "Загружаем твой остров…", UDim2.new(1, -86, 0, 46), UDim2.fromOffset(76, 29), 14, palette.ink, Enum.Font.GothamBold)
 objectiveText.TextYAlignment = Enum.TextYAlignment.Top
+local objectiveHint = label(objective, "Hint", "", UDim2.new(1, -88, 0, 32), UDim2.fromOffset(76, 66), 11, palette.forestLight, Enum.Font.GothamBold)
+objectiveHint.TextYAlignment = Enum.TextYAlignment.Top
 
 local progressTrack = Instance.new("Frame")
 progressTrack.Name = "AdventureProgressTrack"
@@ -712,15 +714,20 @@ local function getTutorialProgress()
     return completed, total
 end
 
+local function bridgeResourceProgress()
+    local wood = math.max(0, math.floor(tonumber(player:GetAttribute("Resource_Wood")) or 0))
+    local stone = math.max(0, math.floor(tonumber(player:GetAttribute("Resource_Stone")) or 0))
+    return wood, stone
+end
+
 getObjective = function()
     if not player:GetAttribute("Ready") then return "Загружаем твой остров…" end
     if not player:GetAttribute("Bridge_HomeToGrove") then
-        local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
-        local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
+        local wood, stone = bridgeResourceProgress()
         if wood < 5 or stone < 3 then
-            return "Собери дерево и камень у дома. Для моста нужно 5 дерева и 3 камня."
+            return "Собери материалы для первого моста"
         end
-        return "Материалы готовы! Подойди к деревянному мосту и восстанови его."
+        return "Материалы готовы! Восстанови мост."
     end
     local activeCacheId = player:GetAttribute("FoxCacheSpot")
     if type(activeCacheId) == "string" and activeCacheId ~= "" then
@@ -748,11 +755,23 @@ local function refresh()
     stoneLabel.Text = "🪨  Камень  " .. tostring(player:GetAttribute("Resource_Stone") or 0)
     objectiveText.Text = getObjective()
     local completed, total = getTutorialProgress()
-    objectiveEyebrow.Text = completed >= total
-        and "ПРИКЛЮЧЕНИЕ ПРОДОЛЖАЕТСЯ"
-        or ("ПУТЕШЕСТВИЕ • ШАГ " .. tostring(completed + 1) .. " ИЗ " .. tostring(total))
-    objectiveGlyph.Text = completed >= total and "★" or tostring(completed + 1)
-    progressCount.Text = tostring(completed) .. " / " .. tostring(total)
+    local bridgeBuilt = player:GetAttribute("Bridge_HomeToGrove") == true
+    if player:GetAttribute("Ready") and not bridgeBuilt then
+        local wood, stone = bridgeResourceProgress()
+        objectiveEyebrow.Text = "НАЧНИ ЗДЕСЬ • ПЕРВЫЙ МОСТ"
+        objectiveGlyph.Text = "⚒"
+        objectiveHint.Text = wood >= 5 and stone >= 3
+            and "Подойди к мосту у края острова и нажми E или кнопку действия."
+            or ("🪵 " .. tostring(math.min(wood, 5)) .. "/5   🪨 " .. tostring(math.min(stone, 3)) .. "/3\nДерево — топор · Камень — кирка")
+        progressCount.Text = tostring(completed) .. " / " .. tostring(total)
+    else
+        objectiveEyebrow.Text = completed >= total
+            and "ПРИКЛЮЧЕНИЕ ПРОДОЛЖАЕТСЯ"
+            or ("ПУТЕШЕСТВИЕ • ШАГ " .. tostring(completed + 1) .. " ИЗ " .. tostring(total))
+        objectiveGlyph.Text = completed >= total and "★" or tostring(completed + 1)
+        objectiveHint.Text = bridgeBuilt and "Исследуй мир и открывай новых питомцев." or "Подготавливаем остров…"
+        progressCount.Text = tostring(completed) .. " / " .. tostring(total)
+    end
     if progressTween then progressTween:Cancel() end
     progressTween = TweenService:Create(progressFill, TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         Size = UDim2.fromScale(math.clamp(completed / total, 0, 1), 1),
@@ -901,7 +920,7 @@ local function updateLayout()
         resources.Size = UDim2.fromOffset(resourcesWidth, 58)
         woodLabel.TextSize = 10
         stoneLabel.TextSize = 10
-        objective.Size = UDim2.new(1, -32, 0, 94)
+        objective.Size = UDim2.new(1, -32, 0, 120)
         objective.Position = UDim2.fromOffset(16, 84)
         panel.Size = UDim2.new(1, -24, 0, math.max(180, math.min(430, height - 150)))
         panel.Position = UDim2.new(0.5, 0, 0.5, -8)
@@ -915,7 +934,7 @@ local function updateLayout()
         brandTitle.TextSize = 18
         brandSubtitle.TextSize = 9
         resources.Size = UDim2.fromOffset(214, 58)
-        objective.Size = UDim2.fromOffset(352, 94)
+        objective.Size = UDim2.fromOffset(352, 120)
         objective.Position = UDim2.fromOffset(16, 84)
         panel.Size = UDim2.fromOffset(470, 420)
         nav.Size = UDim2.fromOffset(560, 68)
