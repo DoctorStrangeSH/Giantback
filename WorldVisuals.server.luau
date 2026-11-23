@@ -415,6 +415,236 @@ for index = 1, 4 do
     )
 end
 
+-- The Harvest Festival is a real seasonal world event, not only a journal counter.
+-- Keep its decoration on every personal island so players see the event from spawn.
+local festivalYear = tonumber(os.date("!%Y")) or 2026
+local festivalNow = DateTime.now().UnixTimestamp
+local festivalStart = DateTime.fromUniversalTime(festivalYear, 11, 23, 0, 0, 0).UnixTimestamp
+local festivalEnd = DateTime.fromUniversalTime(festivalYear, 12, 8, 0, 0, 0).UnixTimestamp
+if festivalNow >= festivalEnd then
+    festivalYear += 1
+    festivalStart = DateTime.fromUniversalTime(festivalYear, 11, 23, 0, 0, 0).UnixTimestamp
+    festivalEnd = DateTime.fromUniversalTime(festivalYear, 12, 8, 0, 0, 0).UnixTimestamp
+end
+
+if festivalNow >= festivalStart and festivalNow < festivalEnd then
+    local harvestFestival = makeFolder(homeDetails, "HarvestFestival")
+
+    local function addFestivalPumpkin(position, scale, lantern)
+        local pumpkin = Instance.new("Model")
+        pumpkin.Name = lantern and "HarvestLantern" or "HarvestPumpkin"
+        pumpkin.Parent = harvestFestival
+
+        local orange = Color3.fromRGB(226, 126, 61)
+        local body = orb(
+            pumpkin,
+            "Pumpkin body",
+            position + Vector3.new(0, 0.72 * scale, 0),
+            Vector3.new(1.55, 1.22, 1.42) * scale,
+            orange,
+            Enum.Material.SmoothPlastic
+        )
+        for ribIndex = 1, 5 do
+            local angle = (ribIndex - 1) * math.pi * 2 / 5
+            local rib = orb(
+                pumpkin,
+                "Pumpkin rib",
+                position + Vector3.new(math.cos(angle) * 0.42 * scale, 0.72 * scale, math.sin(angle) * 0.38 * scale),
+                Vector3.new(0.62, 1.02, 0.78) * scale,
+                ribIndex % 2 == 0 and Color3.fromRGB(238, 145, 72) or orange,
+                Enum.Material.SmoothPlastic
+            )
+            rib.CFrame = CFrame.new(rib.Position) * CFrame.Angles(0, -angle, 0)
+        end
+        cylinder(
+            pumpkin,
+            "Pumpkin stem",
+            position + Vector3.new(0, 1.42 * scale, 0),
+            0.38 * scale,
+            0.2 * scale,
+            Color3.fromRGB(91, 117, 68),
+            Enum.Material.Wood
+        )
+        local leaf = orb(
+            pumpkin,
+            "Pumpkin leaf",
+            position + Vector3.new(0.28 * scale, 1.34 * scale, 0.12 * scale),
+            Vector3.new(0.72, 0.16, 0.42) * scale,
+            palette.leafLight,
+            Enum.Material.Grass
+        )
+        leaf.CFrame = leaf.CFrame * CFrame.Angles(0, 0, math.rad(-22))
+
+        if lantern then
+            for side = -1, 1, 2 do
+                orb(
+                    pumpkin,
+                    "Lantern eye",
+                    position + Vector3.new(side * 0.3 * scale, 0.84 * scale, -0.61 * scale),
+                    Vector3.new(0.17, 0.2, 0.12) * scale,
+                    palette.cream,
+                    Enum.Material.Neon
+                )
+            end
+            local glow = orb(
+                pumpkin,
+                "Lantern glow",
+                position + Vector3.new(0, 0.58 * scale, -0.68 * scale),
+                Vector3.new(0.22, 0.16, 0.1) * scale,
+                palette.gold,
+                Enum.Material.Neon,
+                0.12
+            )
+            addLight(glow, palette.gold, 8 * scale, 0.38)
+        end
+        body.CastShadow = true
+    end
+
+    local function addWheatSheaf(position, scale)
+        local sheaf = Instance.new("Model")
+        sheaf.Name = "HarvestWheatSheaf"
+        sheaf.Parent = harvestFestival
+        for stalkIndex = 1, 7 do
+            local offset = (stalkIndex - 4) * 0.13 * scale
+            local lean = (stalkIndex - 4) * 4
+            local stalk = cylinder(
+                sheaf,
+                "Golden wheat stalk",
+                position + Vector3.new(offset, 0.88 * scale, 0),
+                1.85 * scale,
+                0.075 * scale,
+                Color3.fromRGB(190, 151, 74),
+                Enum.Material.Grass
+            )
+            stalk.CFrame = stalk.CFrame * CFrame.Angles(0, 0, math.rad(lean))
+            local head = orb(
+                sheaf,
+                "Wheat head",
+                position + Vector3.new(offset * 1.8, (1.85 + math.abs(stalkIndex - 4) * 0.07) * scale, 0),
+                Vector3.new(0.2, 0.48, 0.18) * scale,
+                Color3.fromRGB(244, 203, 116),
+                Enum.Material.Grass
+            )
+            head.CFrame = head.CFrame * CFrame.Angles(0, 0, math.rad(lean))
+        end
+        cylinder(
+            sheaf,
+            "Wheat ribbon",
+            position + Vector3.new(0, 0.42 * scale, 0),
+            0.16 * scale,
+            0.82 * scale,
+            palette.coral,
+            Enum.Material.Fabric
+        )
+    end
+
+    -- A readable banner turns the existing garden arch into the festival entrance.
+    local banner = makePart(
+        harvestFestival,
+        "Harvest Festival Banner",
+        Vector3.new(6.8, 1.12, 0.24),
+        CFrame.new(-12.2, 14.72, 5.78),
+        Color3.fromRGB(153, 82, 58),
+        Enum.Material.WoodPlanks
+    )
+    local bannerGui = Instance.new("SurfaceGui")
+    bannerGui.Name = "FestivalTitle"
+    bannerGui.Face = Enum.NormalId.Front
+    bannerGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+    bannerGui.PixelsPerStud = 54
+    bannerGui.Parent = banner
+    local bannerText = Instance.new("TextLabel")
+    bannerText.Name = "Title"
+    bannerText.Size = UDim2.fromScale(1, 1)
+    bannerText.BackgroundTransparency = 1
+    bannerText.Text = "ФЕСТИВАЛЬ УРОЖАЯ"
+    bannerText.TextColor3 = palette.cream
+    bannerText.TextStrokeColor3 = palette.bark
+    bannerText.TextStrokeTransparency = 0.55
+    bannerText.Font = Enum.Font.GothamBold
+    bannerText.TextScaled = true
+    bannerText.TextWrapped = true
+    bannerText.Parent = bannerGui
+
+    -- A curved leaf-and-berry garland follows the arch instead of blocking the path.
+    for index = 1, 9 do
+        local alpha = (index - 1) / 8
+        local x = -16.0 + alpha * 7.6
+        local y = 15.2 - math.sin(alpha * math.pi) * 0.48
+        local leaf = orb(
+            harvestFestival,
+            "Festival garland leaf",
+            Vector3.new(x, y, 5.55),
+            Vector3.new(0.62, 0.18, 0.34),
+            index % 2 == 0 and palette.leafLight or palette.leaf,
+            Enum.Material.Grass
+        )
+        leaf.CFrame = leaf.CFrame * CFrame.Angles(0, 0, math.rad((index % 2 == 0 and 18 or -18)))
+        if index % 2 == 0 then
+            orb(
+                harvestFestival,
+                "Festival garland berry",
+                Vector3.new(x, y - 0.22, 5.46),
+                Vector3.new(0.2, 0.22, 0.2),
+                palette.coral,
+                Enum.Material.SmoothPlastic
+            )
+        end
+    end
+
+    -- The props frame the arch but stay outside the stepping-stone route.
+    addFestivalPumpkin(Vector3.new(-19.0, 12.14, 9.4), 0.9, true)
+    addFestivalPumpkin(Vector3.new(-5.5, 12.14, 9.4), 0.82, false)
+    addFestivalPumpkin(Vector3.new(-17.3, 12.14, 12.0), 0.58, false)
+    addFestivalPumpkin(Vector3.new(-7.0, 12.14, 12.0), 0.62, true)
+    addWheatSheaf(Vector3.new(-20.0, 12.14, 6.8), 0.9)
+    addWheatSheaf(Vector3.new(-4.3, 12.14, 6.8), 0.9)
+
+    -- A small harvest basket gives the entrance a clear seasonal focal point.
+    local basketPosition = Vector3.new(-12.2, 12.14, 11.2)
+    local basket = Instance.new("Model")
+    basket.Name = "HarvestBasket"
+    basket.Parent = harvestFestival
+    cylinder(
+        basket,
+        "Woven basket body",
+        basketPosition + Vector3.new(0, 0.48, 0),
+        0.92,
+        1.65,
+        Color3.fromRGB(151, 105, 67),
+        Enum.Material.WoodPlanks
+    )
+    cylinder(
+        basket,
+        "Basket rim",
+        basketPosition + Vector3.new(0, 0.96, 0),
+        0.14,
+        1.78,
+        Color3.fromRGB(190, 139, 83),
+        Enum.Material.Wood
+    )
+    for index = 1, 5 do
+        local angle = index * math.pi * 2 / 5
+        local cropPosition = basketPosition + Vector3.new(math.cos(angle) * 0.42, 1.22 + (index % 2) * 0.08, math.sin(angle) * 0.36)
+        orb(
+            basket,
+            "Harvest fruit",
+            cropPosition,
+            Vector3.new(0.55, 0.48, 0.5),
+            index % 2 == 0 and palette.coral or Color3.fromRGB(232, 159, 74),
+            Enum.Material.SmoothPlastic
+        )
+        orb(
+            basket,
+            "Harvest leaf",
+            cropPosition + Vector3.new(0, 0.28, 0),
+            Vector3.new(0.28, 0.08, 0.2),
+            palette.leafLight,
+            Enum.Material.Grass
+        )
+    end
+end
+
 -- A dedicated, readable rest nook gives collected companions a visible home.
 local petSanctuary = makeFolder(homeDetails, "PetSanctuary")
 local sanctuaryCenter = Vector3.new(-23, 12.16, -8.5)
