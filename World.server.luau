@@ -1132,7 +1132,7 @@ local function syncDailyQuests(player)
     end
 end
 
-local function addDailyQuestProgress(player, questId, amount)
+local function addDailyQuestProgress(player, questId, amount, saveProgress)
     local session = sessions[player]
     local definition = DAILY_QUEST_DEFINITIONS[questId]
     if not session or not definition or not player:GetAttribute("Ready") then return end
@@ -1146,7 +1146,7 @@ local function addDailyQuestProgress(player, questId, amount)
     if nextValue == previous then return end
     session.dailyQuests.progress[questId] = nextValue
     syncDailyQuests(player)
-    if session.online and not save(player) then
+    if saveProgress ~= false and session.online and not save(player) then
         warn("Daily quest progress save will be retried:", player.UserId, questId)
     end
 end
@@ -3268,7 +3268,7 @@ local function spawnResource(def)
             readyAt = nextReadyAt,
         })
         tip(player, "Получено: " .. def.displayName .. " ×" .. tostring(rewardAmount))
-        addDailyQuestProgress(player, "Gather", 1)
+        addDailyQuestProgress(player, "Gather", 1, false)
 
         if session.online and not save(player) then
             warn("Resource pickup save will be retried:", player.UserId, def.key)
