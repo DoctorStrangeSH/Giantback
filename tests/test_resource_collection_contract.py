@@ -61,8 +61,8 @@ class ResourceCollectionContractTests(unittest.TestCase):
 
 
     def test_tools_are_persisted_and_restored_after_respawn(self):
-        self.assertIn("local toolIds = {Axe = true, Pickaxe = true}", WORLD)
-        self.assertIn("tools = {Axe = true, Pickaxe = true}", WORLD)
+        self.assertIn("local toolIds = {Axe = true, Pickaxe = true, Sword = true}", WORLD)
+        self.assertIn("tools = {Axe = true, Pickaxe = true, Sword = false}", WORLD)
         self.assertIn("local function createHarvestTool(toolId, level)", WORLD)
         self.assertIn("local function ensurePlayerTools(player, session)", WORLD)
         self.assertIn("session.toolCharacterConnection", WORLD)

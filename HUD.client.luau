@@ -510,7 +510,27 @@ local function renderTools()
             end
         end)
     end
-    addInfo("Как добывать", "Подойди к дереву, камню или железной жиле и нажимай действие несколько раз. У железа больше прочность. У плавильни запускай переплавку и возвращайся за слитком через минуту.", 76)
+    local swordOwned = player:GetAttribute("Tool_SwordOwned") == true
+    local swordEquipped = player:GetAttribute("Tool_Equipped") == "Sword"
+    local swordCard = card(body, "Tool_Sword", 124)
+    label(swordCard, "SwordIcon", "⚔️", UDim2.fromOffset(44, 48), UDim2.fromOffset(10, 22), 28, palette.gold)
+    label(swordCard, "SwordName", "Меч странника", UDim2.new(1, -156, 0, 24), UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
+    label(swordCard, "SwordStatus", swordOwned and "Создан · можно сражаться на арене" or "Рецепт: 2 слитка + 6 дерева · свой верстак", UDim2.new(1, -156, 0, 46), UDim2.fromOffset(62, 35), 11, palette.muted)
+    local swordEquip = button(swordCard, "SwordEquip", swordEquipped and "В РУКАХ" or "ВЗЯТЬ", UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 8), swordEquipped and palette.gold or palette.forest)
+    swordEquip.TextSize = 10
+    swordEquip.Activated:Connect(function()
+        if swordOwned then event:FireServer("EquipTool", "Sword") end
+    end)
+    local canCraftSword = not swordOwned and ingots >= 2 and wood >= 6
+    local swordCraft = button(swordCard, "SwordCraft", swordOwned and "СОЗДАН" or "СОЗДАТЬ", UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 52), canCraftSword and palette.coral or palette.muted)
+    swordCraft.TextSize = 10
+    swordCraft.Activated:Connect(function()
+        if not swordOwned then
+            event:FireServer("CraftSword")
+            if not canCraftSword then showToast("Нужно 2 слитка и 6 дерева. Меч создаётся у своего верстака.") end
+        end
+    end)
+    addInfo("Как добывать", "Собирай дерево и камень инструментами. Железную руду переплавляй в слитки, затем создай меч у верстака. На боевой арене используй обычную атаку и комбо.", 90)
 end
 
 local function renderWorld()
@@ -912,6 +932,10 @@ event.OnClientEvent:Connect(function(message, payload)
         return
     elseif message == "CompanionPlayFinished" then
         finishCompanionPlay(payload)
+        return
+    elseif message == "SwordCrafted" then
+        showToast("Меч странника готов! Оружие появилось в инвентаре.")
+        refresh()
         return
     end
     if type(message) == "string" and message ~= "ResourceState" and message ~= "ResourcePicked" then
