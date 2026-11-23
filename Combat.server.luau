@@ -550,7 +550,7 @@ local function registerEnemy(enemy)
                         enemy:SetAttribute("CombatState", "ShardlingDashTelegraph")
                         task.wait(math.max(entry.telegraphSeconds, 0.9))
 
-                        if isEnemyAlive(enemy) then
+                        if isEnemyAlive(enemy) and targetPlayer.Parent then
                             local _, dashTargetRoot = getCharacterParts(targetPlayer)
                             if dashTargetRoot and getPlayerRegion(targetPlayer) == entry.regionId then
                                 local offset = dashTargetRoot.Position - root.Position
