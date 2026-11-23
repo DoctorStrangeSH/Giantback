@@ -26,7 +26,7 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn("getEligibleDailyQuestIds(player, session)", WORLD)
         self.assertIn("Random.new(seed)", WORLD)
         self.assertIn("random:NextInteger(1, index)", WORLD)
-        self.assertIn("version = 2", WORLD)
+        self.assertIn("version = 3", WORLD)
         self.assertIn("quests = selected", WORLD)
 
     def test_locked_content_is_excluded_from_the_daily_pool(self):
@@ -61,7 +61,7 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn("session.dailyQuests = data.dailyQuests", WORLD)
         self.assertIn("session.dailyQuests.claimed = true", WORLD)
         self.assertIn("session.dailyQuests.claimed = false", WORLD)
-        self.assertIn("MAX_COINS - previousCoins < DAILY_QUEST_REWARD", WORLD)
+        self.assertIn("MAX_COINS - previousCoins < credited", WORLD)
 
     def test_journal_renders_server_selected_quest_cards(self):
         self.assertIn("local function renderDailyQuests()", HUD)
