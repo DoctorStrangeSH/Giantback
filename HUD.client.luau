@@ -1195,26 +1195,26 @@ local function renderDailyQuests()
     local day = player:GetAttribute("DailyQuest_Day") or "—"
     local claimed = player:GetAttribute("DailyQuest_Claimed") == true
     local reward = tonumber(player:GetAttribute("DailyQuest_Reward")) or 40
-    addInfo("ЕЖЕДНЕВНЫЕ ЗАДАНИЯ", "Обновляются каждый день по UTC. Выполни все три задания и забери награду " .. tostring(reward) .. " монет. День: " .. tostring(day), 82)
+    local count = math.clamp(math.floor(tonumber(player:GetAttribute("DailyQuest_Count")) or 0), 0, 3)
+    addInfo("ЕЖЕДНЕВНЫЕ ЗАДАНИЯ", "Каждый день выбираются 3 задания из доступного тебе набора. Выполни их все и забери " .. tostring(reward) .. " монет. День: " .. tostring(day), 82)
 
-    local definitions = {
-        {id = "Gather", icon = "01", title = "Собрать ресурсы", hint = "Собери любые 3 ресурса в мире.", goal = 3},
-        {id = "Sell", icon = "02", title = "Торговый день", hint = "Продай на рынке 3 единицы урожая.", goal = 3},
-        {id = "Scout", icon = "03", title = "Тайник разведчика", hint = "Найди и забери один тайник с лисёнком.", goal = 1},
-    }
     local completed = 0
-    for _, quest in definitions do
-        local progress = tonumber(player:GetAttribute("DailyQuest_" .. quest.id)) or 0
-        local goal = tonumber(player:GetAttribute("DailyQuest_" .. quest.id .. "_Goal")) or quest.goal
+    for index = 1, count do
+        local prefix = "DailyQuest_" .. tostring(index) .. "_"
+        local title = player:GetAttribute(prefix .. "Title") or "Задание путешественника"
+        local description = player:GetAttribute(prefix .. "Description") or "Выполни игровую цель."
+        local progress = tonumber(player:GetAttribute(prefix .. "Progress")) or 0
+        local goal = math.max(1, tonumber(player:GetAttribute(prefix .. "Goal")) or 1)
         local done = progress >= goal
         if done then completed += 1 end
-        local item = card(body, "DailyQuest_" .. quest.id, 72)
+
+        local item = card(body, "DailyQuest_" .. tostring(index), 72)
         item.BackgroundColor3 = done and Color3.fromRGB(235, 242, 224) or palette.paper
-        label(item, "Icon", quest.icon, UDim2.fromOffset(36, 42), UDim2.fromOffset(10, 14), 22, palette.forest, Enum.Font.GothamBold)
-        label(item, "Title", quest.title, UDim2.new(1, -118, 0, 22), UDim2.fromOffset(54, 8), 13, palette.ink, Enum.Font.GothamBold)
-        label(item, "Hint", done and "Готово! Задание выполнено." or quest.hint, UDim2.new(1, -118, 0, 20), UDim2.fromOffset(54, 31), 10, palette.muted)
-        local count = label(item, "Progress", tostring(progress) .. "/" .. tostring(goal), UDim2.fromOffset(56, 24), UDim2.new(1, -66, 0.5, -12), 13, done and palette.forest or palette.ink, Enum.Font.GothamBlack)
-        count.TextXAlignment = Enum.TextXAlignment.Center
+        label(item, "Number", tostring(index), UDim2.fromOffset(36, 42), UDim2.fromOffset(10, 14), 19, done and palette.forestLight or palette.gold, Enum.Font.GothamBlack)
+        label(item, "Title", title, UDim2.new(1, -118, 0, 22), UDim2.fromOffset(54, 8), 13, palette.ink, Enum.Font.GothamBold)
+        label(item, "Hint", done and "Задание выполнено!" or description, UDim2.new(1, -118, 0, 24), UDim2.fromOffset(54, 31), 10, palette.muted)
+        local countLabel = label(item, "Progress", tostring(math.min(progress, goal)) .. "/" .. tostring(goal), UDim2.fromOffset(56, 24), UDim2.new(1, -66, 0.5, -12), 13, done and palette.forest or palette.ink, Enum.Font.GothamBlack)
+        countLabel.TextXAlignment = Enum.TextXAlignment.Center
     end
 
     local claim = button(body, "ClaimDailyQuests", claimed and "НАГРАДА ПОЛУЧЕНА" or "ЗАБРАТЬ " .. tostring(reward) .. " МОНЕТ", UDim2.new(1, 0, 0, 46), UDim2.new(), claimed and palette.forestLight or palette.gold)
@@ -1224,13 +1224,13 @@ local function renderDailyQuests()
     claim.Activated:Connect(function()
         if claimed then
             showToast("Награда за сегодня уже получена.")
-        elseif completed < #definitions then
+        elseif count == 0 or completed < count then
             showToast("Выполни все три задания, чтобы забрать награду.")
         else
             event:FireServer("ClaimDailyQuests")
         end
     end)
-    addInfo("ПРОГРЕСС ДНЯ", tostring(completed) .. " из 3 заданий выполнено" .. (claimed and " • награда получена" or ""), 52)
+    addInfo("ПРОГРЕСС ДНЯ", tostring(completed) .. " из " .. tostring(count) .. " заданий выполнено" .. (claimed and " • награда получена" or ""), 52)
 end
 
 local function renderExpeditions()
