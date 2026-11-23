@@ -33,7 +33,7 @@ class ExpeditionJournalContractTests(unittest.TestCase):
         self.assertIn('id = "Discovered_MoonGlass", name = "Лунное стекло"', HUD)
         self.assertIn('id = "Discovered_VoidGeode", name = "Пустотная жеода"', HUD)
         self.assertIn('player:GetAttribute(relic.id) == true', HUD)
-        self.assertIn('foundRelics .. "/3"', HUD)
+        self.assertIn('tostring(foundRelics) .. "/3"', HUD)
         self.assertIn('rewardButton.Activated:Connect', HUD)
         self.assertIn('event:FireServer("ClaimCrystalRelicSet")', HUD)
         self.assertIn('"CrystalRelicSetRewardClaimed"', WORLD)
