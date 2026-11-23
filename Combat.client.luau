@@ -259,6 +259,7 @@ end
 -- and timing; rejected attacks never play a sword swing.
 local swingSequence = 0
 local activeSwordTweens = {}
+local swordRestGrips = setmetatable({}, {__mode = "k"})
 
 local function clearSwordSwing()
     swingSequence += 1
@@ -266,6 +267,10 @@ local function clearSwordSwing()
         tween:Cancel()
     end
     table.clear(activeSwordTweens)
+    local character = player.Character
+    local equipped = character and character:FindFirstChild("Меч странника")
+    local restGrip = equipped and swordRestGrips[equipped]
+    if restGrip and equipped:IsA("Tool") then equipped.Grip = restGrip end
 end
 
 local function playSwordSwing(data)
@@ -279,7 +284,11 @@ local function playSwordSwing(data)
 
     clearSwordSwing()
     local sequence = swingSequence
-    local restGrip = sword.Grip
+    local restGrip = swordRestGrips[sword]
+    if not restGrip then
+        restGrip = sword.Grip
+        swordRestGrips[sword] = restGrip
+    end
     local charged = data.charged == true
     local comboStep = math.clamp(math.floor(tonumber(data.comboStep) or 1), 1, 3)
     local direction = comboStep % 2 == 0 and -1 or 1
