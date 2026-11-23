@@ -88,6 +88,46 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn('player:GetAttribute(prefix .. "Difficulty")', HUD)
         self.assertIn('difficultyNames = {easy = "ЛЕГКО", medium = "СРЕДНЕ", hard = "СЛОЖНО"}', HUD)
 
+    def test_harvest_festival_uses_a_recurring_utc_window(self):
+        self.assertIn('DateTime.fromUniversalTime(year, 11, 23, 0, 0, 0)', WORLD)
+        self.assertIn('DateTime.fromUniversalTime(year, 12, 8, 0, 0, 0)', WORLD)
+        self.assertIn('id = "harvest-festival-" .. tostring(year)', WORLD)
+        self.assertIn("local function normalizeSeasonalEvent(raw)", WORLD)
+        self.assertIn("local function syncSeasonalEvent(player)", WORLD)
+
+    def test_seasonal_event_points_only_follow_server_validated_gameplay_actions(self):
+        for marker in (
+            "Gather = 1", "GatherWood = 2", "GatherStone = 2",
+            "Plant = 1", "Harvest = 2", "Sell = 2", "Scout = 3",
+            "Feed = 2", "Play = 3", "CraftSword = 4",
+            "UpgradeTool = 4", "WinEncounter = 5",
+        ):
+            self.assertIn(marker, WORLD)
+        self.assertIn("local seasonalChanged = addSeasonalEventProgress(player, questId, amount)", WORLD)
+        self.assertIn("if (weeklyChanged or seasonalChanged)", WORLD)
+
+    def test_seasonal_event_milestones_and_rewards_are_atomic(self):
+        self.assertIn("{points = 20, coins = 30, starShards = 0}", WORLD)
+        self.assertIn("{points = 50, coins = 0, starShards = 1}", WORLD)
+        self.assertIn("{points = 100, coins = 80, starShards = 2}", WORLD)
+        self.assertIn("local function claimSeasonalEventRewards(player)", WORLD)
+        self.assertIn("local previousClaims = table.clone(session.seasonalEvent.claimedMilestones)", WORLD)
+        self.assertIn("session.seasonalEvent.claimedMilestones = previousClaims", WORLD)
+        self.assertIn('if action == "ClaimSeasonalEventRewards" then', WORLD)
+
+    def test_seasonal_event_progress_persists_and_migrates_profile(self):
+        self.assertIn("local seasonalEventSnapshot = normalizeSeasonalEvent(session.seasonalEvent)", WORLD)
+        self.assertIn("old.seasonalEvent = seasonalEventSnapshot", WORLD)
+        self.assertIn("session.seasonalEvent = data.seasonalEvent", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 14)", WORLD)
+
+    def test_journal_displays_harvest_festival_track_and_claim_button(self):
+        self.assertIn('player:GetAttribute("SeasonalEvent_Active")', HUD)
+        self.assertIn('player:GetAttribute("SeasonalEvent_Points")', HUD)
+        self.assertIn('button(body, "ClaimSeasonalEventRewards"', HUD)
+        self.assertIn('event:FireServer("ClaimSeasonalEventRewards")', HUD)
+        self.assertIn('addInfo("СЕЗОННОЕ СОБЫТИЕ • " .. eventStatus', HUD)
+
     def test_weekly_challenges_rotate_and_persist_by_utc_week(self):
         self.assertIn('os.date("!%Y-%W")', WORLD)
         self.assertIn("local function normalizeWeeklyChallenges(raw, player, session)", WORLD)
