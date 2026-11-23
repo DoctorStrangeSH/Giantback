@@ -54,7 +54,8 @@ class RebootContractTests(unittest.TestCase):
         self.assertIn("toastTween:Cancel()", HUD)
 
     def test_compact_panel_height_is_clamped_for_short_viewports(self):
-        self.assertIn("math.max(180, math.min(430, height - 150))", HUD)
+        self.assertIn("math.max(160, math.min(420, viewport.Y - (compact and 140 or 220)))", HUD)
+        self.assertIn("panel.Size = UDim2.fromOffset(panelWidth, panelHeight)", HUD)
 
     def test_product_spec_uses_fixed_archipelago(self):
         self.assertIn("Острова **не перемещаются**", SPEC)
