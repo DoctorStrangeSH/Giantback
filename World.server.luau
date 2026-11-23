@@ -252,6 +252,13 @@ local function syncFarm(player)
         table.insert(occupiedCells, tostring(decoration.x) .. "," .. tostring(decoration.z))
     end
     player:SetAttribute("City_BuildingCells", table.concat(occupiedCells, ";"))
+    for index = 1, 12 do
+        local decoration = session.city.buildings[index]
+        player:SetAttribute("City_Decoration_" .. tostring(index) .. "_Id", decoration and decoration.id or "")
+        player:SetAttribute("City_Decoration_" .. tostring(index) .. "_X", decoration and decoration.x or 0)
+        player:SetAttribute("City_Decoration_" .. tostring(index) .. "_Z", decoration and decoration.z or 0)
+        player:SetAttribute("City_Decoration_" .. tostring(index) .. "_Rotation", decoration and decoration.rotation or 0)
+    end
     player:SetAttribute("Farm_SelectedCrop", session.selectedCropId or defaultCropId)
     for _, plotId in farmPlotIds do
         local plot = session.city.farm.plots[plotId]
