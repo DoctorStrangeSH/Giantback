@@ -28,6 +28,26 @@ class ExpeditionJournalContractTests(unittest.TestCase):
             self.assertIn('key = "' + key + '"', HUD)
             self.assertIn('"' + key + '"', WORLD)
 
+    def test_crystal_relic_collection_uses_persistent_discovery_flags(self):
+        self.assertIn('id = "Discovered_StarPrism", name = "Звёздная призма"', HUD)
+        self.assertIn('id = "Discovered_MoonGlass", name = "Лунное стекло"', HUD)
+        self.assertIn('id = "Discovered_VoidGeode", name = "Пустотная жеода"', HUD)
+        self.assertIn('player:GetAttribute(relic.id) == true', HUD)
+        self.assertIn('foundRelics .. "/3"', HUD)
+        self.assertIn('rewardButton.Activated:Connect', HUD)
+        self.assertIn('event:FireServer("ClaimCrystalRelicSet")', HUD)
+        self.assertIn('"CrystalRelicSetRewardClaimed"', WORLD)
+
+    def test_crystal_relic_set_reward_is_server_validated_and_one_time(self):
+        self.assertIn('if action == "ClaimCrystalRelicSet" then', WORLD)
+        self.assertIn('player:GetAttribute("Discovered_StarPrism") ~= true', WORLD)
+        self.assertIn('player:GetAttribute("Discovered_MoonGlass") ~= true', WORLD)
+        self.assertIn('player:GetAttribute("Discovered_VoidGeode") ~= true', WORLD)
+        self.assertIn('player:GetAttribute("CrystalRelicSetRewardClaimed") == true', WORLD)
+        self.assertIn('session.coins = previousCoins + reward', WORLD)
+        self.assertIn('if not save(player) then', WORLD)
+        self.assertIn('player:SetAttribute("CrystalRelicSetRewardClaimed", false)', WORLD)
+
     def test_journal_is_read_only_and_refreshes_from_replicated_attributes(self):
         self.assertIn("return player:GetAttribute(step.key) == true", HUD)
         self.assertIn("player.AttributeChanged:Connect(refresh)", HUD)
