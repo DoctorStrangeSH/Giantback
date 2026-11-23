@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 
 local remote = ReplicatedStorage:WaitForChild("CombatAction")
 if not remote:IsA("RemoteEvent") then
@@ -94,14 +95,66 @@ ContextActionService:SetTitle("GiantbackBlock", "БЛОК")
 ContextActionService:SetTitle("GiantbackDodge", "УКЛОН")
 ContextActionService:SetTitle("GiantbackCharge", "ЗАРЯД")
 ContextActionService:SetTitle("GiantbackCompanion", "ПИТОМЕЦ")
-ContextActionService:SetPosition("GiantbackAttack", UDim2.new(1, -92, 1, -190))
-ContextActionService:SetPosition("GiantbackBlock", UDim2.new(1, -188, 1, -112))
-ContextActionService:SetPosition("GiantbackDodge", UDim2.new(1, -92, 1, -92))
-ContextActionService:SetPosition("GiantbackCharge", UDim2.new(1, -188, 1, -205))
-ContextActionService:SetPosition("GiantbackCompanion", UDim2.new(1, -280, 1, -145))
+-- Five touch actions share a compact 3+2 grid above the HUD navigation.
+-- ContextActionService also supports keyboard/gamepad without these touch buttons.
+local TOUCH_ACTIONS = {"GiantbackAttack", "GiantbackBlock", "GiantbackDodge", "GiantbackCharge", "GiantbackCompanion"}
+local TOUCH_POSITIONS = {
+    UDim2.new(1, -78, 1, -178),
+    UDim2.new(1, -148, 1, -178),
+    UDim2.new(1, -218, 1, -178),
+    UDim2.new(1, -112, 1, -252),
+    UDim2.new(1, -190, 1, -252),
+}
+for i, actionName in TOUCH_ACTIONS do
+    ContextActionService:SetPosition(actionName, TOUCH_POSITIONS[i])
+end
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+-- Keep touch combat buttons out of the way while exploring/building.
+-- Regions are the same tagged parts the authoritative server checks for attacks.
+local function insideCombatRegion()
+    if player:GetAttribute("Ready") ~= true then return false end
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not root or not humanoid or humanoid.Health <= 0 then return false end
+    for _, regionPart in CollectionService:GetTagged("GiantbackCombatRegion") do
+        if regionPart:IsA("BasePart") and regionPart:IsDescendantOf(Workspace) then
+            local localPoint = regionPart.CFrame:PointToObjectSpace(root.Position)
+            local half = regionPart.Size * 0.5
+            if math.abs(localPoint.X) <= half.X
+                and math.abs(localPoint.Y) <= half.Y
+                and math.abs(localPoint.Z) <= half.Z then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function updateTouchControls()
+    if not UserInputService.TouchEnabled then return end
+    local visible = insideCombatRegion()
+    for i, actionName in TOUCH_ACTIONS do
+        local touchButton = ContextActionService:GetButton(actionName)
+        if touchButton then
+            touchButton.Size = UDim2.fromOffset(58, 58)
+            touchButton.Position = TOUCH_POSITIONS[i]
+            touchButton.Visible = visible
+        end
+    end
+end
+if UserInputService.TouchEnabled then
+    task.defer(updateTouchControls)
+    task.spawn(function()
+        while player.Parent do
+            updateTouchControls()
+            task.wait(0.25)
+        end
+    end)
+end
+
 local feedbackGui = Instance.new("ScreenGui")
 feedbackGui.Name = "GiantbackCombatFeedback"
 feedbackGui.DisplayOrder = 35
