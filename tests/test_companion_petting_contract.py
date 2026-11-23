@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+INTERACTIONS = (ROOT / "modules/CompanionInteractions.luau").read_text(encoding="utf-8")
 FOLLOW = (ROOT / "modules/CompanionFollow.luau").read_text(encoding="utf-8")
 ACTIVITY = (ROOT / "modules/CompanionActivity.luau").read_text(encoding="utf-8")
 ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
@@ -32,12 +33,12 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn("petButton.Active = owned and equipped", HUD)
 
     def test_equipped_companion_can_be_petted_from_world_prompt(self):
-        self.assertIn("local function attachWorldPetPrompt(model, companionId)", ALBUM)
-        self.assertIn('prompt.Name = "WorldPetPrompt"', ALBUM)
-        self.assertIn('prompt.ActionText = "Погладить"', ALBUM)
-        self.assertIn("prompt.HoldDuration = 0.35", ALBUM)
-        self.assertIn("prompt.GamepadKeyCode = Enum.KeyCode.ButtonX", ALBUM)
-        self.assertIn('event:FireServer("PetCompanion", companionId)', ALBUM)
+        self.assertIn("local function attachWorldPetPrompt(model, companionId)", INTERACTIONS)
+        self.assertIn('prompt.Name = "WorldPetPrompt"', INTERACTIONS)
+        self.assertIn('prompt.ActionText = "Погладить"', INTERACTIONS)
+        self.assertIn("prompt.HoldDuration = 0.35", INTERACTIONS)
+        self.assertIn("prompt.GamepadKeyCode = Enum.KeyCode.ButtonX", INTERACTIONS)
+        self.assertIn('event:FireServer("PetCompanion", companionId)', INTERACTIONS)
         self.assertIn("attachWorldPetPrompt(model, id)", ALBUM)
 
     def test_species_play_distinct_affection_poses(self):
@@ -61,10 +62,10 @@ class CompanionPettingContractTests(unittest.TestCase):
     def test_petting_feedback_visuals_scale_with_server_relationship_stage(self):
         self.assertIn("bondStage = bondStage", WORLD)
         self.assertIn("payload.bondStage", ALBUM)
-        self.assertIn("local function playCompanionPettingBurst(model, companionId, bondStage)", ALBUM)
-        self.assertIn("local sparkCount = 5 + bondStage * 2", ALBUM)
-        self.assertIn("baseColor:Lerp(palette.gold, bondStage / 4)", ALBUM)
-        self.assertIn('bondStage >= 4 and (index % 2 == 0 and "♥" or "✧")', ALBUM)
+        self.assertIn("local function playCompanionPettingBurst(model, companionId, bondStage)", INTERACTIONS)
+        self.assertIn("local sparkCount = 5 + bondStage * 2", INTERACTIONS)
+        self.assertIn("baseColor:Lerp(palette.gold, bondStage / 4)", INTERACTIONS)
+        self.assertIn('bondStage >= 4 and (index % 2 == 0 and "♥" or "✧")', INTERACTIONS)
         self.assertIn("playCompanionPettingBurst(model, id, bondStage)", ALBUM)
         self.assertIn("pendingPetBurst[id] ~= nil", ALBUM)
 
@@ -75,7 +76,7 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn("swaySpeed = 10.5", ANIMATION)
         self.assertIn("if petting and not mothAbility then", ANIMATION)
         self.assertIn("flapSpeed = 17", ANIMATION)
-        self.assertIn("CompanionPettingBurstLocal", ALBUM)
+        self.assertIn("CompanionPettingBurstLocal", INTERACTIONS)
 
 
 if __name__ == "__main__":
