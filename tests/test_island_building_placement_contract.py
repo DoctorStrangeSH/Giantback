@@ -87,7 +87,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('renderIslandDecoration(cityModel, meadow, decoration, index, ownerUserId)', WORLD)
 
     def test_market_sells_only_harvest_and_saves_currency(self):
-        self.assertIn('local cropSalePrices = {Carrot = 4, Strawberry = 7, Pumpkin = 12, Cabbage = 9}', WORLD)
+        self.assertIn('local cropSalePrices = {Carrot = 4, Strawberry = 3, Pumpkin = 18, Cabbage = 12}', WORLD)
         self.assertIn('local function sellIslandHarvest(player, ownerUserId)', WORLD)
         self.assertIn('if player.UserId ~= ownerUserId then return tip(player, "Этот рынок принадлежит другому игроку.") end', WORLD)
         self.assertIn('if not session.online then return tip(player, "Рынок временно не работает: сохранение профиля недоступно.") end', WORLD)
