@@ -32,7 +32,7 @@ class MosslingEncounterContracts(unittest.TestCase):
         self.assertIn('entry.regionId == getPlayerRegion(player)', COMBAT)
 
     def test_one_time_authoritative_reward_and_respawn(self):
-        self.assertIn('GroveMossling01 = {itemId = "Stone", amount = 2}', WORLD)
+        self.assertRegex(WORLD, r'GroveMossling01 = \{itemId = "Stone", amount = 2(?:, [^}]+)?\}')
         self.assertIn('    GroveMossling01 = true,', COMBAT.split("local REWARD_ENCOUNTERS = {", 1)[1])
         self.assertIn('if session.completedCombatEncounters[encounterId] then return true end', WORLD)
         self.assertIn('session.completedCombatEncounters[encounterId] = true', WORLD)
