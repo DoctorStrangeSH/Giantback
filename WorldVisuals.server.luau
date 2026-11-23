@@ -1115,8 +1115,8 @@ dummyHumanoid.WalkSpeed = 0
 dummyHumanoid.DisplayName = "Тренировочный манекен"
 dummyHumanoid.Parent = dummy
 for _, detail in {
-    {name = "Туловище", size = Vector3.new(2.0, 3.2, 1.35), shift = Vector3.new(0, 0, 0)},
-    {name = "Голова", size = Vector3.new(1.45, 1.5, 1.45), shift = Vector3.new(0, 2.4, 0)},
+    {name = "Torso", size = Vector3.new(2.0, 3.2, 1.35), shift = Vector3.new(0, 0, 0)},
+    {name = "Head", size = Vector3.new(1.45, 1.5, 1.45), shift = Vector3.new(0, 2.4, 0)},
     {name = "Левая рука", size = Vector3.new(0.65, 2.3, 0.8), shift = Vector3.new(-1.5, 0.15, 0)},
     {name = "Правая рука", size = Vector3.new(0.65, 2.3, 0.8), shift = Vector3.new(1.5, 0.15, 0)},
 } do
