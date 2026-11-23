@@ -37,6 +37,11 @@ python build.py
 
 Затем открой Giantback.rbxlx в Roblox Studio. CI проверяет сборку и исходники, но не заменяет реальный Studio playtest.
 
+### Тестирование в Roblox Studio
+
+В успешном артефакте **Giantback-visual-build** теперь лежат `docs/STUDIO_PLAYTEST.md` и `tools/roblox/studio_playtest_preflight.luau`. Открой место в Studio, выполни скрипт в Command Bar сначала в Edit, затем в Play (Server context) и пройди проверку двух игроков и мобильного интерфейса по [чек-листу](docs/STUDIO_PLAYTEST.md). Диагностика только читает состояние, ничего не публикует и не утверждает MeshPart.
+
+
 ## Монетизация
 Фиксированная косметика, архитектурные наборы, образы питомцев и добровольная поддержка. Нет платных случайных яиц и pay-to-win.
 
