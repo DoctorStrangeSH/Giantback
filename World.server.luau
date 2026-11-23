@@ -1669,7 +1669,7 @@ save = function(player)
                     old[key] = old[key] == true or snapshot[key]
                 end
                 -- Never downgrade a profile written by a newer feature branch.
-                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 12)
+                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 13)
                 old.coins = coinSnapshot
 
                 local savedTools = type(old.tools) == "table" and old.tools or {}
