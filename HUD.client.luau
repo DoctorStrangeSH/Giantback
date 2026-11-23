@@ -903,11 +903,11 @@ local function renderPets()
         {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "М"},
         {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "С"},
         {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "Т"},
-        {id = "BrambleBun", name = "Колючка", role = "Лесной ёжик", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "К"},
-        {id = "MossTurtle", name = "Мохопанцирь", role = "Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "М"},
-        {id = "Glowcap", name = "Светошляп", role = "Грибной огонёк", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "Г"},
-        {id = "Dewdrop", name = "Росинка", role = "Капля ручья", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "Р"},
-        {id = "Starling", name = "Звёздокрыл", role = "Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "З"},
+        {id = "BrambleBun", name = "Колючка", role = "Редкий • Лесной ёжик", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "К"},
+        {id = "MossTurtle", name = "Мохопанцирь", role = "Редкий • Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "М"},
+        {id = "Glowcap", name = "Светошляп", role = "Эпический • Грибной огонёк", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "Г"},
+        {id = "Dewdrop", name = "Росинка", role = "Эпический • Капля ручья", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "Р"},
+        {id = "Starling", name = "Звёздокрыл", role = "Легендарный • Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "З"},
     }
     local compact = gui.AbsoluteSize.X < 620
     for _, pet in pets do
@@ -921,6 +921,11 @@ local function renderPets()
         iconPlate.BackgroundColor3 = pet.id == "Fox" and Color3.fromRGB(244, 215, 171)
             or pet.id == "Moth" and Color3.fromRGB(222, 215, 244)
             or pet.id == "HarvestSprite" and Color3.fromRGB(255, 220, 158)
+            or pet.id == "BrambleBun" and Color3.fromRGB(239, 211, 177)
+            or pet.id == "MossTurtle" and Color3.fromRGB(199, 226, 181)
+            or pet.id == "Glowcap" and Color3.fromRGB(220, 203, 239)
+            or pet.id == "Dewdrop" and Color3.fromRGB(181, 226, 235)
+            or pet.id == "Starling" and Color3.fromRGB(199, 211, 243)
             or Color3.fromRGB(198, 229, 224)
         iconPlate.BorderSizePixel = 0
         iconPlate.Parent = item
@@ -1397,7 +1402,7 @@ local function renderDailyQuests()
             showToast("Сначала набери 50 очков и забери призовое яйцо.")
         end
     end)
-    addInfo("ПРИЗОВОЕ ЯЙЦО • ШАНСЫ", "Колючка — 40% • Мохопанцирь — 32% • Светошляп — 18% • Росинка — 8% • Звёздокрыл — 2%. Дубликаты исключены: каждое вылупление открывает нового питомца.", 76)
+    addInfo("ПРИЗОВОЕ ЯЙЦО • ШАНСЫ", "Колючка — 40% • Мохопанцирь — 32% • Светошляп — 18% • Росинка — 8% • Звёздокрыл — 2%. Шансы указаны для полного набора; уже открытые виды исключаются, их вес перераспределяется между оставшимися.", 76)
     addInfo("ПРАЗДНИЧНЫЕ НАГРАДЫ", tostring(eventPoints) .. "/100 очков • доступно рубежей: " .. tostring(eventClaimable) .. " • " .. tostring(eventCoins) .. " Coins + " .. tostring(eventShards) .. " осколков", 48)
 end
 
