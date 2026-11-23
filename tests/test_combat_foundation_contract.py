@@ -435,7 +435,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn("local FOX_SKILL_RANGE = 18", COMBAT)
         self.assertIn('local companionId = player:GetAttribute("Companion")', COMBAT)
         self.assertIn('player:GetAttribute(companionId) ~= true', COMBAT)
-        self.assertIn('if entry.regionId == regionId and isEnemyAlive(enemy) then', COMBAT)
+        self.assertIn('if entry.regionId == regionId and isEnemyAlive(enemy) and not entry.isTrainingDummy then', COMBAT)
         self.assertIn("local damage = FOX_SKILL_DAMAGE + (companionLevel - 1) * FOX_SKILL_DAMAGE_PER_LEVEL", COMBAT)
         self.assertIn("dealEnemyDamage(target, targetEntry, damage)", COMBAT)
         self.assertIn("targetEntry.contributors[player] = true", COMBAT)
