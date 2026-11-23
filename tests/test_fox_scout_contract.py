@@ -135,7 +135,7 @@ class FoxScoutContractTests(unittest.TestCase):
     def test_hud_guides_players_by_the_fox_pawprint_trail(self):
         self.assertIn("Следуй по золотым следам лап", HUD)
         self.assertIn("Лисёнок нашёл тайник! Иди по золотым следам.", HUD)
-        self.assertIn("увидеть золотые следы", HUD)
+        self.assertIn("увидеть следы к тайнику", HUD)
 
     def test_hud_explains_the_fox_scout_ability_and_active_find(self):
         self.assertIn("Находит тайники и древние следы скрытых проходов", HUD)
