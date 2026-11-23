@@ -151,7 +151,7 @@ class CrystalWardenEncounterTests(unittest.TestCase):
         self.assertIn('discoveryAttribute = "Discovered_MoonGlass"', WORLD)
         self.assertIn('discoveryAttribute = "Discovered_VoidGeode"', WORLD)
         self.assertIn('session.collectedNodes[def.key] = true', WORLD)
-        unique_branch = WORLD.split('if def.kind == "unique" then', 1)[1].split("\\n        else", 1)[0]
+        unique_branch = WORLD.split('if def.kind == "unique" then', 1)[1].split("\n        else", 1)[0]
         self.assertIn("local hitsRequired = math.clamp", unique_branch)
         self.assertIn('event:FireClient(player, "ResourceHit"', unique_branch)
         self.assertIn("if hits < hitsRequired then", unique_branch)
