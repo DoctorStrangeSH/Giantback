@@ -32,7 +32,7 @@ class WandererSwordContract(unittest.TestCase):
         self.assertIn('Sword = savedTools.Sword == true', WORLD)
         self.assertIn('equipped = toolIds[session.equippedTool] and session.equippedTool or "Axe"', WORLD)
         self.assertIn('session.equippedTool = toolIds[savedEquippedTool]', WORLD)
-        self.assertIn('math.max(tonumber(old.schemaVersion) or 0, 13)', WORLD)
+        self.assertIn('math.max(tonumber(old.schemaVersion) or 0, 14)', WORLD)
 
     def test_live_gear_and_ui(self):
         self.assertIn('local toolIds = {Axe = true, Pickaxe = true, Sword = true}', WORLD)
