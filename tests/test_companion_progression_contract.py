@@ -12,7 +12,7 @@ CI = (ROOT / ".github/workflows/validate-place.yml").read_text(encoding="utf-8")
 class CompanionProgressionContractTests(unittest.TestCase):
     def test_companion_progression_is_versioned_and_persisted(self):
         self.assertIn("COMPANION_MAX_LEVEL = 5", WORLD)
-        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 13)", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 14)", WORLD)
         self.assertIn("old.coins = coinSnapshot", WORLD)
         self.assertIn("local companionProgressSnapshot = normalizeCompanionProgress(session.companionProgress)", WORLD)
         self.assertIn('local savedCompanions = type(old.companions) == "table" and old.companions or {}', WORLD)
