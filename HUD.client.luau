@@ -383,23 +383,42 @@ local cropCatalog = {
 local cropById = {}
 for _, crop in cropCatalog do cropById[crop.id] = crop end
 
+local farmUpgradeCosts = {[2] = 60, [3] = 150}
+
+local seedShopOffers = {
+    Carrot = {amount = 3, cost = 12},
+    Strawberry = {amount = 3, cost = 21},
+    Pumpkin = {amount = 2, cost = 20},
+    Cabbage = {amount = 2, cost = 16},
+}
+
 local function addSeedChoice(crop, selectedCrop)
     local seeds = tonumber(player:GetAttribute("Resource_" .. crop.seed)) or 0
+    local coins = tonumber(player:GetAttribute("Coins")) or 0
+    local offer = seedShopOffers[crop.id]
     local selected = selectedCrop == crop.id
-    local item = card(body, "Seed_" .. crop.id, 66)
+    local item = card(body, "Seed_" .. crop.id, 82)
     item.BackgroundColor3 = selected and Color3.fromRGB(235, 241, 218) or palette.paper
-    local icon = label(item, "Icon", crop.glyph, UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 12), 25, crop.color, Enum.Font.GothamBold)
+    local icon = label(item, "Icon", crop.glyph, UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 20), 25, crop.color, Enum.Font.GothamBold)
     icon.TextXAlignment = Enum.TextXAlignment.Center
-    label(item, "Name", crop.name, UDim2.new(1, -166, 0, 22), UDim2.fromOffset(60, 7), 15, palette.ink, Enum.Font.GothamBold)
-    label(item, "Details", crop.grow .. "  •  семян: " .. tostring(seeds), UDim2.new(1, -166, 0, 27), UDim2.fromOffset(60, 31), 11, palette.muted)
-    local choose = button(item, "Choose", selected and "ВЫБРАНО" or "ВЫБРАТЬ", UDim2.fromOffset(94, 34), UDim2.new(1, -106, 0.5, -17), selected and palette.gold or palette.forest)
+    label(item, "Name", crop.name, UDim2.new(1, -174, 0, 22), UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
+    label(item, "Details", crop.grow .. "  •  семян: " .. tostring(seeds), UDim2.new(1, -174, 0, 38), UDim2.fromOffset(60, 32), 10, palette.muted)
+    local choose = button(item, "Choose", selected and "ВЫБРАНО" or "ВЫБРАТЬ",
+        UDim2.fromOffset(102, 29), UDim2.new(1, -112, 0, 7), selected and palette.gold or palette.forest)
     choose.TextSize = 10
     choose.Activated:Connect(function()
         if seeds < 1 then
-            showToast("Семена закончились. Найди или получи новые семена.")
+            showToast("Семян нет. Купи набор ниже, а затем выбери культуру.")
             return
         end
         event:FireServer("SelectCrop", crop.id)
+    end)
+    local buy = button(item, "BuySeeds", "КУПИТЬ ×" .. tostring(offer.amount) .. " · " .. tostring(offer.cost) .. " мон.",
+        UDim2.fromOffset(102, 29), UDim2.new(1, -112, 0, 44), coins >= offer.cost and palette.gold or palette.paperDark)
+    buy.TextColor3 = coins >= offer.cost and palette.ink or palette.muted
+    buy.TextSize = 8
+    buy.Activated:Connect(function()
+        event:FireServer("BuySeeds", crop.id)
     end)
 end
 
@@ -822,6 +841,38 @@ local function renderCity()
     end
 end
 
+local function addFarmUpgrade(farmLevel)
+    local coins = tonumber(player:GetAttribute("Coins")) or 0
+    local nextLevel = farmLevel + 1
+    local cost = farmUpgradeCosts[nextLevel]
+    local item = card(body, "FarmUpgrade", 82)
+    local title = farmLevel >= 3 and "Ферма • максимальный уровень" or ("Улучшение фермы → уровень " .. tostring(nextLevel))
+    label(item, "Name", title, UDim2.new(1, -142, 0, 24), UDim2.fromOffset(12, 8), 14, palette.ink, Enum.Font.GothamBold)
+    local description = farmLevel == 1 and "Откроет две дополнительные грядки" or "Откроет последнюю грядку"
+    label(item, "Details", farmLevel >= 3 and "Все четыре грядки доступны" or description,
+        UDim2.new(1, -142, 0, 30), UDim2.fromOffset(12, 36), 10, palette.muted)
+    local action = button(item, "UpgradeFarm",
+        farmLevel >= 3 and "МАКС." or (tostring(cost) .. " МОН."),
+        UDim2.fromOffset(112, 38), UDim2.new(1, -122, 0.5, -19),
+        farmLevel >= 3 and palette.paperDark or (coins >= cost and palette.gold or palette.paperDark))
+    if farmLevel >= 3 or coins < cost then
+        action.TextColor3 = palette.muted
+    else
+        action.TextColor3 = palette.ink
+    end
+    action.TextSize = 10
+    action.Active = farmLevel < 3
+    action.AutoButtonColor = farmLevel < 3 and coins >= cost
+    action.Activated:Connect(function()
+        if farmLevel >= 3 then return end
+        if coins < cost then
+            showToast("Нужно ещё " .. tostring(cost - coins) .. " монет. Продай собранный урожай на рынке.")
+            return
+        end
+        event:FireServer("UpgradeFarm")
+    end)
+end
+
 local function renderFarm()
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
     local selectedCrop = player:GetAttribute("Farm_SelectedCrop") or "Carrot"
@@ -833,9 +884,11 @@ local function renderFarm()
         if amount > 0 then table.insert(harvestSummary, crop.name .. " ×" .. tostring(amount)) end
     end
     addInfo("Ферма • уровень " .. tostring(farmLevel), "Семян всего: " .. tostring(totalSeeds) .. ( #harvestSummary > 0 and "   •   Урожай: " .. table.concat(harvestSummary, ", ") or "   •   Урожай пока не собран"), 78)
-    addInfo("1. Выбери семена", "Выбери культуру — её можно будет посадить на любой свободной грядке.", 64)
+    addInfo("1. Развитие фермы", "Улучшай ферму за монеты, чтобы открывать новые грядки. Сейчас доступно: " .. tostring(farmLevel == 1 and 1 or (farmLevel == 2 and 3 or 4)) .. " из 4.", 68)
+    addFarmUpgrade(farmLevel)
+    addInfo("2. Семена и магазин", "Монеты: " .. tostring(tonumber(player:GetAttribute("Coins")) or 0) .. ". Выбери культуру для посадки или купи набор семян. Покупка сохраняется в рюкзаке.", 76)
     for _, crop in cropCatalog do addSeedChoice(crop, selectedCrop) end
-    addInfo("2. Посади и собери", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
+    addInfo("3. Посади и собери", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
     for index = 1, 4 do
         addPlot(string.format("Plot%02d", index), index)
     end

@@ -69,6 +69,14 @@ local farmPlotIds = {"Plot01", "Plot02", "Plot03", "Plot04"}
 local warehouseItemIds = {"Wood", "Stone", "IronOre", "IronIngot", "Carrot", "Strawberry", "Pumpkin", "Cabbage"}
 local WAREHOUSE_CAPACITY = 120
 local cropSalePrices = {Carrot = 4, Strawberry = 7, Pumpkin = 12, Cabbage = 9}
+local seedShopOffers = {
+    Carrot = {amount = 3, cost = 12},
+    Strawberry = {amount = 3, cost = 21},
+    Pumpkin = {amount = 2, cost = 20},
+    Cabbage = {amount = 2, cost = 16},
+}
+local MAX_SEED_STACK = 999
+local farmUpgradeCosts = {[2] = 60, [3] = 150}
 local MAX_COINS = 2000000000
 local cropDefinitions = {
     Carrot = {seedItemId = "CarrotSeed", harvestItemId = "Carrot", growthSeconds = 300, reward = 1, displayName = "Морковь"},
@@ -310,8 +318,8 @@ local function sellIslandHarvest(player, ownerUserId)
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
     if not session.online then return tip(player, "Рынок временно не работает: сохранение профиля недоступно.") end
-    if session.marketBusy then return end
-    session.marketBusy = true
+    if session.economyBusy then return end
+    session.economyBusy = true
 
     local sold = {}
     local totalCoins = 0
@@ -325,14 +333,14 @@ local function sellIslandHarvest(player, ownerUserId)
         end
     end
     if totalItems == 0 then
-        session.marketBusy = false
+        session.economyBusy = false
         return tip(player, "Пока нечего продавать. Сначала собери урожай на грядках.")
     end
 
     local previousCoins = session.coins or 0
     local credited = math.min(totalCoins, MAX_COINS - previousCoins)
     if credited <= 0 then
-        session.marketBusy = false
+        session.economyBusy = false
         return tip(player, "Кошелёк полон. Потрать немного монет перед следующей продажей.")
     end
 
@@ -361,12 +369,89 @@ local function sellIslandHarvest(player, ownerUserId)
         session.coins = previousCoins
         syncInventory(player)
         syncFarm(player)
-        session.marketBusy = false
+        session.economyBusy = false
         return tip(player, "Не удалось сохранить продажу. Урожай возвращён в рюкзак.")
     end
 
-    session.marketBusy = false
+    session.economyBusy = false
     tip(player, "Продано урожая: " .. tostring(totalItems) .. " шт. Получено " .. tostring(credited) .. " монет.")
+end
+
+local function buyFarmSeeds(player, cropId)
+    local session = sessions[player]
+    local offer = seedShopOffers[cropId]
+    local definition = cropDefinitions[cropId]
+    if not session or not offer or not definition then return end
+    if not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Магазин временно недоступен: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return end
+
+    local seedItemId = definition.seedItemId
+    local currentSeeds = math.max(0, math.floor(tonumber(session.inventory[seedItemId]) or 0))
+    if currentSeeds + offer.amount > MAX_SEED_STACK then
+        return tip(player, "В рюкзаке уже слишком много этих семян. Сначала посади часть.")
+    end
+    local currentCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    if currentCoins < offer.cost then
+        return tip(player, "Не хватает монет: нужно " .. tostring(offer.cost) .. ", у тебя " .. tostring(currentCoins) .. ".")
+    end
+
+    session.economyBusy = true
+    session.coins = currentCoins - offer.cost
+    session.inventory[seedItemId] = currentSeeds + offer.amount
+    syncInventory(player)
+    syncFarm(player)
+
+    if not save(player) then
+        session.coins = currentCoins
+        session.inventory[seedItemId] = currentSeeds
+        syncInventory(player)
+        syncFarm(player)
+        session.economyBusy = false
+        return tip(player, "Покупка не сохранена. Монеты возвращены, семена не списаны.")
+    end
+
+    session.economyBusy = false
+    tip(player, "Куплено: " .. tostring(offer.amount) .. " • " .. definition.displayName .. ".")
+end
+
+local function upgradeFarm(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Улучшение фермы временно недоступно: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return end
+
+    local currentLevel = math.clamp(math.floor(tonumber(session.city.farm.level) or 1), 1, 3)
+    if currentLevel >= 3 then
+        return tip(player, "Ферма уже улучшена до максимального уровня.")
+    end
+    local nextLevel = currentLevel + 1
+    local cost = farmUpgradeCosts[nextLevel]
+    local currentCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    if currentCoins < cost then
+        return tip(player, "Для улучшения фермы нужно " .. tostring(cost) .. " монет. У тебя " .. tostring(currentCoins) .. ".")
+    end
+
+    session.economyBusy = true
+    session.coins = currentCoins - cost
+    session.city.farm.level = nextLevel
+    syncFarm(player)
+
+    if not save(player) then
+        session.coins = currentCoins
+        session.city.farm.level = currentLevel
+        syncFarm(player)
+        session.economyBusy = false
+        return tip(player, "Улучшение не сохранено. Монеты возвращены, уровень фермы восстановлен.")
+    end
+
+    session.economyBusy = false
+    local unlocked = nextLevel == 2 and "Открыты грядки №2 и №3!" or "Открыта грядка №4!"
+    tip(player, "Ферма улучшена до уровня " .. tostring(nextLevel) .. ". " .. unlocked)
 end
 
 local function useWarehouse(player, ownerUserId, action)
@@ -1174,7 +1259,7 @@ local function init(player)
     local session = {
         inventory = {},
         coins = 0,
-        marketBusy = false,
+        economyBusy = false,
         tools = {Axe = true, Pickaxe = true, Sword = false},
         toolLevels = {Axe = 1, Pickaxe = 1},
         equippedTool = "Axe",
@@ -1771,6 +1856,17 @@ event.OnServerEvent:Connect(function(player, action, payload)
             end
         end
         event:FireClient(player, "ResourceState", state)
+        return
+    end
+
+    if action == "UpgradeFarm" then
+        upgradeFarm(player)
+        return
+    end
+
+    if action == "BuySeeds" then
+        if type(payload) ~= "string" then return end
+        buyFarmSeeds(player, payload)
         return
     end
 
