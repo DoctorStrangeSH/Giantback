@@ -31,6 +31,11 @@ local names = {
     Moth = "Лунная моль",
     CrystalWisp = "Кристальный светляк",
     HarvestSprite = "Тыквик",
+    BrambleBun = "Колючка",
+    MossTurtle = "Мохопанцирь",
+    Glowcap = "Светошляп",
+    Dewdrop = "Росинка",
+    Starling = "Звёздокрыл",
 }
 
 -- One clear discovery marker at a time; personal quest progress remains server-owned.
@@ -46,7 +51,7 @@ local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCachePrompts = {}
 local foxCacheHighlights = {}
 local foxSniffUntil = 0
-local pettingUntil = {Fox = 0, Moth = 0, CrystalWisp = 0, HarvestSprite = 0}
+local pettingUntil = {Fox = 0, Moth = 0, CrystalWisp = 0, HarvestSprite = 0, BrambleBun = 0, MossTurtle = 0, Glowcap = 0, Dewdrop = 0, Starling = 0}
 local pendingPetBurst = {}
 local lastFoxCacheSpot = ""
 local foxScentTrailFolder = nil
