@@ -2224,6 +2224,7 @@ save = function(player)
 end
 local function init(player)
     if sessions[player] then return end
+    player:SetAttribute("InCrystalEcho", false)
     local session = {
         inventory = {},
         coins = 0,
