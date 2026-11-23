@@ -173,6 +173,20 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 else
                     transform = CFrame.new(0, bob, 0)
                 end
+            else
+                local bobSpeed = resting and 1.45 or moving and 4.1 or 2.35
+                local bobAmount = resting and 0.025 or moving and 0.085 or 0.055
+                if petting then bobAmount += 0.025 end
+                local bob = math.sin(time * bobSpeed) * bobAmount
+                if part.Name == "Body" then
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 1.8) * 0.025, 0, math.sin(time * 2.1) * 0.035))
+                elseif string.find(string.lower(part.Name), "wing") or string.find(string.lower(part.Name), "fin") or string.find(string.lower(part.Name), "ear") or string.find(string.lower(part.Name), "leaf") or string.find(string.lower(part.Name), "crest") then
+                    local side = offset.Position.X >= rigOrigin.X and 1 or -1
+                    local sway = math.sin(time * (petting and 6.5 or resting and 1.1 or 2.8) + side) * (petting and 0.18 or resting and 0.035 or 0.09)
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(0, 0, sway * side))
+                else
+                    transform = CFrame.new(0, bob, 0)
+                end
             end
 
             part.CFrame = pivot * transform * offset
