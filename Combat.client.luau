@@ -846,7 +846,7 @@ RunService.RenderStepped:Connect(function()
             setJointPose(rootJoint, -0.12, 0, 0)
             setJointPose(waistJoint, -0.08, 0, 0)
             setJointPose(neck, 0.18, 0, 0)
-        elseif state == "Telegraph" or state == "PollenTelegraph" then
+        elseif state == "Telegraph" or state == "PollenTelegraph" or state == "CrystalFanTelegraph" then
             setJointPose(rightArm, isBoss and -1.9 or -1.45, 0, -0.55)
             setJointPose(leftArm, -0.35, 0, 0.2)
             setJointPose(rootJoint, -0.08, 0, 0)
@@ -1053,11 +1053,57 @@ local function showBossPhaseTransition(enemy, phase)
     end)
 end
 
+local function showCrystalFanTelegraph(enemy)
+    if not enemy or not enemy:IsA("Model") or not enemy:IsDescendantOf(Workspace) then return end
+    local root = enemy:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local range = math.clamp(tonumber(enemy:GetAttribute("CrystalFanRange")) or 16, 10, 22)
+    local origin = root.Position + Vector3.new(0, 0.45, 0)
+    local look = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z)
+    if look.Magnitude < 0.01 then return end
+    look = look.Unit
+    local right = Vector3.new(-look.Z, 0, look.X)
+    local markerFolder = Instance.new("Folder")
+    markerFolder.Name = "LocalCrystalFanTelegraph"
+    markerFolder.Parent = Workspace
+
+    for _, angle in {-38, 0, 38} do
+        local radians = math.rad(angle)
+        local direction = (look * math.cos(radians) + right * math.sin(radians)).Unit
+        local endpoint = origin + direction * range
+        local midpoint = (origin + endpoint) * 0.5
+        local marker = Instance.new("Part")
+        marker.Name = "CrystalFanWarningLine"
+        marker.Anchored = true
+        marker.CanCollide = false
+        marker.CanTouch = false
+        marker.CanQuery = false
+        marker.CastShadow = false
+        marker.Material = Enum.Material.Neon
+        marker.Color = Color3.fromRGB(172, 226, 255)
+        marker.Transparency = 0.22
+        marker.Size = Vector3.new(0.18, 0.18, range)
+        marker.CFrame = CFrame.lookAt(midpoint, endpoint)
+        marker.Parent = markerFolder
+        TweenService:Create(
+            marker,
+            TweenInfo.new(math.max(tonumber(enemy:GetAttribute("TelegraphSeconds")) or 1.15, 1.15), Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Transparency = 0.62}
+        ):Play()
+    end
+
+    task.delay(math.max(tonumber(enemy:GetAttribute("TelegraphSeconds")) or 1.15, 1.15) + 0.35, function()
+        if markerFolder.Parent then markerFolder:Destroy() end
+    end)
+end
+
 local function bindBossTelegraph(enemy)
     if not enemy:IsA("Model") then return end
     local isBoss = enemy:GetAttribute("IsBoss") == true
     local isMossling = enemy:GetAttribute("ArchetypeId") == "Mossling"
-    if not isBoss and not isMossling then return end
+    local isCrystalWarden = enemy:GetAttribute("ArchetypeId") == "CrystalWarden"
+    if not isBoss and not isMossling and not isCrystalWarden then return end
 
     enemy:GetAttributeChangedSignal("BossAttack"):Connect(function()
         local attack = enemy:GetAttribute("BossAttack")
@@ -1065,6 +1111,8 @@ local function bindBossTelegraph(enemy)
             showBossSlamTelegraph(enemy)
         elseif attack == "PollenBurst" and isMossling then
             showMosslingPollenTelegraph(enemy)
+        elseif attack == "CrystalFan" and isCrystalWarden then
+            showCrystalFanTelegraph(enemy)
         end
     end)
     if isBoss then
@@ -1077,6 +1125,8 @@ local function bindBossTelegraph(enemy)
         showBossSlamTelegraph(enemy)
     elseif enemy:GetAttribute("BossAttack") == "PollenBurst" and isMossling then
         showMosslingPollenTelegraph(enemy)
+    elseif enemy:GetAttribute("BossAttack") == "CrystalFan" and isCrystalWarden then
+        showCrystalFanTelegraph(enemy)
     end
 end
 
