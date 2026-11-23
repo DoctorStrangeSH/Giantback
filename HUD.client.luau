@@ -631,7 +631,7 @@ local function updatePlacementGhost()
 end
 
 local function beginIslandPlacement(decorationId, moveIndex)
-    if decorationId ~= "Path" and decorationId ~= "FlowerBed" then return end
+    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" then return end
     finishPlacement()
     placementState = decorationId
     placementMoveIndex = moveIndex
