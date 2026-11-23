@@ -642,7 +642,7 @@ local function renderTools()
 end
 
 local function renderWorld()
-    addInfo("Твой архипелаг", "Острова не перемещаются. Восемь личных участков соединены мостами с общей Солнечной рощей.", 84)
+    addInfo("Твой архипелаг", "Все острова остаются на своих местах. Восемь личных участков соединены мостами с общей Солнечной рощей.", 84)
     local bridgeHome = workspace:FindFirstChild("BridgeToGrove")
     local bridgeForest = workspace:FindFirstChild("BridgeToDusk")
     addInfo("Домашний остров", "Твой отдельный дом и ферма. Соседи могут прийти в гости, но не могут менять твои вещи.", 68)
