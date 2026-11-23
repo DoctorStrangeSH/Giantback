@@ -208,7 +208,7 @@ local function normalizeCity(raw)
     local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}
     for _, saved in ipairs(rawBuildings) do
         if #city.buildings >= 24 then break end
-        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage") then
+        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse") then
             local x = tonumber(saved.x)
             local z = tonumber(saved.z)
             local rotation = tonumber(saved.rotation) or 0
@@ -2427,6 +2427,13 @@ removeIslandDecoration = function(player, payload)
         return tip(player, "Подойди ближе к постройке на своём острове.")
     end
 
+    if decoration.id == "Warehouse" then
+        for _, itemId in ipairs(warehouseItemIds) do
+            if (session.city.storage[itemId] or 0) > 0 then
+                return tip(player, "Перед разборкой склада сначала забери все материалы.")
+            end
+        end
+    end
     local model = cityModel:FindFirstChild("Decoration_" .. tostring(index))
     if model then model:Destroy() end
     local refunds = {Path = {Wood = 1, Stone = 0}, FlowerBed = {Wood = 2, Stone = 1}, Cottage = {Wood = 4, Stone = 3}, Warehouse = {Wood = 5, Stone = 4}}
