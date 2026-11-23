@@ -1,5 +1,6 @@
 ## Asset Pipeline 1.0 — Studio import and asset staging
 
+- [x] Improve first-minute onboarding: show first bridge objective with live wood/stone counts and actual home-pile interaction hint; first owner-only home pile pickups provide 5 wood and 3 stone before bridge repair so the player can complete their first bridge without waiting for the 60-second cooldown. Normal post-bridge pickups remain 3/2 with 60-second cooldown; Studio UX playtest remains pending.
 - [x] Bundle a read-only Roblox Studio Edit/Play preflight and Russian 1.0 gameplay/multiplayer/mobile acceptance checklist with the downloadable Giantback.rbxlx artifact; no actual Studio playtest or imported MeshPart approval claimed.
 - [x] Extract level-driven companion growth scaling and cosmetic mutation tints/highlights/legendary aura into CompanionAppearance ModuleScript; preserve live rig animation recapture and server-owned mutation rolls.
 - [x] Extract Moth stardust attachment creation and bond/personality refresh into MothStardust ModuleScript; fix misplaced emitter lookup and missing lilacLight/moon palette keys.
