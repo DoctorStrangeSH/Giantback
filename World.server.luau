@@ -68,6 +68,8 @@ local foxCacheRewards = {
 local farmPlotIds = {"Plot01", "Plot02", "Plot03", "Plot04"}
 local warehouseItemIds = {"Wood", "Stone", "IronOre", "IronIngot", "Carrot", "Strawberry", "Pumpkin", "Cabbage"}
 local WAREHOUSE_CAPACITY = 120
+local cropSalePrices = {Carrot = 4, Strawberry = 7, Pumpkin = 12, Cabbage = 9}
+local MAX_COINS = 2000000000
 local cropDefinitions = {
     Carrot = {seedItemId = "CarrotSeed", harvestItemId = "Carrot", growthSeconds = 300, reward = 1, displayName = "Морковь"},
     Strawberry = {seedItemId = "StrawberrySeed", harvestItemId = "Strawberry", growthSeconds = 720, regrowSeconds = 480, reward = 2, displayName = "Клубника"},
@@ -254,6 +256,7 @@ local function syncFarm(player)
 
     player:SetAttribute("City_Level", session.city.level)
     player:SetAttribute("Farm_Level", session.city.farm.level)
+    player:SetAttribute("Coins", math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS))
     local storedTotal = 0
     for _, itemId in ipairs(warehouseItemIds) do
         local amount = session.city.storage[itemId] or 0
@@ -301,6 +304,68 @@ local function syncInventory(player)
 end
 
 local save
+
+local function sellIslandHarvest(player, ownerUserId)
+    if player.UserId ~= ownerUserId then return tip(player, "Этот рынок принадлежит другому игроку.") end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then return tip(player, "Рынок временно не работает: сохранение профиля недоступно.") end
+    if session.marketBusy then return end
+    session.marketBusy = true
+
+    local sold = {}
+    local totalCoins = 0
+    local totalItems = 0
+    for cropId, price in pairs(cropSalePrices) do
+        local amount = math.max(0, math.floor(tonumber(session.inventory[cropId]) or 0))
+        if amount > 0 then
+            sold[cropId] = amount
+            totalItems += amount
+            totalCoins += amount * price
+        end
+    end
+    if totalItems == 0 then
+        session.marketBusy = false
+        return tip(player, "Пока нечего продавать. Сначала собери урожай на грядках.")
+    end
+
+    local previousCoins = session.coins or 0
+    local credited = math.min(totalCoins, MAX_COINS - previousCoins)
+    if credited <= 0 then
+        session.marketBusy = false
+        return tip(player, "Кошелёк полон. Потрать немного монет перед следующей продажей.")
+    end
+
+    local remainingCredit = credited
+    for cropId, amount in pairs(sold) do
+        local price = cropSalePrices[cropId]
+        local sellAmount = math.min(amount, math.floor(remainingCredit / price))
+        if sellAmount > 0 then
+            session.inventory[cropId] -= sellAmount
+            remainingCredit -= sellAmount * price
+            sold[cropId] = sellAmount
+        else
+            sold[cropId] = 0
+        end
+    end
+    session.coins = previousCoins + credited
+    syncInventory(player)
+    syncFarm(player)
+
+    if not save(player) then
+        for cropId, amount in pairs(sold) do
+            session.inventory[cropId] = (session.inventory[cropId] or 0) + amount
+        end
+        session.coins = previousCoins
+        syncInventory(player)
+        syncFarm(player)
+        session.marketBusy = false
+        return tip(player, "Не удалось сохранить продажу. Урожай возвращён в рюкзак.")
+    end
+
+    session.marketBusy = false
+    tip(player, "Продано урожая: " .. tostring(totalItems) .. " шт. Получено " .. tostring(credited) .. " монет.")
+end
 
 local function useWarehouse(player, ownerUserId, action)
     if player.UserId ~= ownerUserId then return tip(player, "Этот склад принадлежит другому игроку.") end
@@ -992,6 +1057,7 @@ save = function(player)
             },
         }
         local citySnapshot = normalizeCity(session.city)
+        local coinSnapshot = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
         local foxScoutSnapshot = {
             activeCacheId = foxCacheIdSet[session.foxCacheActiveId] and session.foxCacheActiveId or nil,
             readyAt = math.max(0, math.floor(tonumber(session.foxSearchReadyAt) or 0)),
@@ -1013,7 +1079,8 @@ save = function(player)
                     old[key] = old[key] == true or snapshot[key]
                 end
                 -- Never downgrade a profile written by a newer feature branch.
-                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 11)
+                old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 12)
+                old.coins = coinSnapshot
 
                 local savedTools = type(old.tools) == "table" and old.tools or {}
                 savedTools.Axe = toolsSnapshot.Axe
@@ -1104,6 +1171,8 @@ local function init(player)
     if sessions[player] then return end
     local session = {
         inventory = {},
+        coins = 0,
+        marketBusy = false,
         tools = {Axe = true, Pickaxe = true, Sword = false},
         toolLevels = {Axe = 1, Pickaxe = 1},
         equippedTool = "Axe",
@@ -1249,6 +1318,7 @@ local function init(player)
             local savedEquippedTool = savedTools.equipped
             session.equippedTool = toolIds[savedEquippedTool] and session.tools[savedEquippedTool] and savedEquippedTool or "Axe"
             session.city = normalizeCity(type(data.island) == "table" and data.island or data.city)
+            session.coins = math.clamp(math.floor(tonumber(data.coins) or 0), 0, MAX_COINS)
             session.selectedCropId = session.city.farm.selectedCropId or defaultCropId
 
             local savedCooldowns = type(data.resourceCooldowns) == "table" and data.resourceCooldowns or {}
@@ -2247,6 +2317,57 @@ createPersonalCity = function(player, session)
 
     local meadow = homeIsland:FindFirstChild("Meadow")
     if meadow then
+        local market = Instance.new("Model")
+        market.Name = "HarvestMarket"
+        market:SetAttribute("OwnerUserId", ownerUserId)
+        market.Parent = cityModel
+        local marketFrame = meadow.CFrame * CFrame.new(-5, meadow.Size.Y / 2 + 0.18, -10)
+        local counter = makeFarmVisualPart(market, "MarketCounter", Vector3.new(4.2, 1.15, 1.35),
+            marketFrame * CFrame.new(0, 0.58, 0), Color3.fromRGB(139, 91, 55), Enum.PartType.Block, Enum.Material.WoodPlanks)
+        makeFarmVisualPart(market, "MarketCounterTop", Vector3.new(4.5, 0.18, 1.55),
+            marketFrame * CFrame.new(0, 1.25, 0), Color3.fromRGB(198, 151, 91), Enum.PartType.Block, Enum.Material.Wood)
+        for _, side in {-1, 1} do
+            makeFarmVisualPart(market, "MarketPost", Vector3.new(0.18, 3.25, 0.18),
+                marketFrame * CFrame.new(side * 2.0, 1.65, 0.48), Color3.fromRGB(111, 75, 49), Enum.PartType.Block, Enum.Material.Wood)
+        end
+        makeFarmVisualPart(market, "MarketAwning", Vector3.new(4.55, 0.22, 2.0),
+            marketFrame * CFrame.new(0, 3.28, 0.38), Color3.fromRGB(226, 157, 91), Enum.PartType.Block, Enum.Material.Fabric)
+        local marketSign = makeFarmVisualPart(market, "MarketSign", Vector3.new(2.25, 0.72, 0.16),
+            marketFrame * CFrame.new(0, 2.48, -0.72), Color3.fromRGB(244, 218, 161), Enum.PartType.Block, Enum.Material.Wood)
+        local marketSignGui = Instance.new("SurfaceGui")
+        marketSignGui.Name = "MarketSignGui"
+        marketSignGui.Face = Enum.NormalId.Front
+        marketSignGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+        marketSignGui.PixelsPerStud = 48
+        marketSignGui.Parent = marketSign
+        local marketSignText = Instance.new("TextLabel")
+        marketSignText.Size = UDim2.fromScale(1, 1)
+        marketSignText.BackgroundTransparency = 1
+        marketSignText.Text = "РЫНОК"
+        marketSignText.TextColor3 = Color3.fromRGB(84, 60, 39)
+        marketSignText.Font = Enum.Font.GothamBold
+        marketSignText.TextScaled = true
+        marketSignText.Parent = marketSignGui
+        for index, fruitColor in ipairs({
+            Color3.fromRGB(231, 91, 74), Color3.fromRGB(242, 170, 72), Color3.fromRGB(137, 190, 103),
+        }) do
+            local fruit = makeFarmVisualPart(market, "MarketProduce", Vector3.new(0.48, 0.48, 0.48),
+                marketFrame * CFrame.new(-1.0 + (index - 1) * 0.9, 1.62, -0.08), fruitColor, Enum.PartType.Ball, Enum.Material.SmoothPlastic)
+        end
+        local marketAnchor = Instance.new("Part")
+        marketAnchor.Name = "PromptAnchor"
+        marketAnchor.Size = Vector3.new(0.5, 0.5, 0.5)
+        marketAnchor.Transparency = 1
+        marketAnchor.Anchored = true
+        marketAnchor.CanCollide = false
+        marketAnchor.CanTouch = false
+        marketAnchor.CanQuery = true
+        marketAnchor.CFrame = marketFrame * CFrame.new(0, 1.7, -1.25)
+        marketAnchor.Parent = market
+        prompt(marketAnchor, "Фермерский рынок", "Продать весь урожай", function(visitor)
+            sellIslandHarvest(visitor, ownerUserId)
+        end)
+
         local workshop = Instance.new("Model")
         workshop.Name = "Workshop"
         workshop:SetAttribute("OwnerUserId", ownerUserId)
