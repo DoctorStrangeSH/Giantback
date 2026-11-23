@@ -80,6 +80,10 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('{id = "Cottage", title = "Уютный домик"', HUD)
         self.assertIn('placementState == "Cottage" and wood >= 8 and stone >= 6', HUD)
         self.assertIn('CottagePreviewWalls', HUD)
+        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" then return end', HUD)
+        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" then', WORLD)
+        self.assertIn('placedMessages[decorationId]', WORLD)
+        self.assertIn('Cottage = {Wood = 4, Stone = 3}', WORLD)
         self.assertIn('beginIslandPlacement(definition.id)', HUD)
         self.assertIn('action.TextSize = compact and 9 or 10', HUD)
 
