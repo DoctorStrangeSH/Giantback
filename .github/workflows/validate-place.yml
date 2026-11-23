@@ -121,6 +121,7 @@ jobs:
               'local function currentWeeklyChallengeWeek()',
               "local function normalizeWeeklyChallenges(raw, player, session)",
               "local function addWeeklyChallengeProgress(player, dailyQuestId, amount)",
+              "if weeklyChanged and saveProgress ~= false and session.online and not save(player) then",
               "local function claimWeeklyChallenges(player)",
               "local weeklyChallengeSnapshot = normalizeWeeklyChallenges(session.weeklyChallenges, player, session)",
               "old.weeklyChallenges = weeklyChallengeSnapshot",
