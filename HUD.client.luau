@@ -1296,6 +1296,49 @@ local function renderDailyQuests()
         end
     end)
     addInfo("НАГРАДА НЕДЕЛИ", tostring(weeklyCompleted) .. " из " .. tostring(weeklyCount) .. " испытаний • " .. tostring(weeklyReward) .. " Coins + 1 звёздный осколок", 52)
+
+    local eventActive = player:GetAttribute("SeasonalEvent_Active") == true
+    local eventTitle = player:GetAttribute("SeasonalEvent_Title") or "Сезонное событие"
+    local eventDescription = player:GetAttribute("SeasonalEvent_Description") or "Выполняй особые задания и собирай награды."
+    local eventPeriod = player:GetAttribute("SeasonalEvent_Period") or "23 ноября — 8 декабря • UTC"
+    local eventPoints = math.clamp(math.floor(tonumber(player:GetAttribute("SeasonalEvent_Points")) or 0), 0, 100)
+    local eventClaimable = math.clamp(math.floor(tonumber(player:GetAttribute("SeasonalEvent_ClaimableCount")) or 0), 0, 3)
+    local eventCoins = math.max(0, math.floor(tonumber(player:GetAttribute("SeasonalEvent_RewardCoins")) or 0))
+    local eventShards = math.max(0, math.floor(tonumber(player:GetAttribute("SeasonalEvent_RewardStarShards")) or 0))
+    local eventStatus = eventActive and "СОБЫТИЕ ИДЁТ" or "СЛЕДУЮЩИЙ ФЕСТИВАЛЬ СКОРО"
+    addInfo("СЕЗОННОЕ СОБЫТИЕ • " .. eventStatus, eventTitle .. " — " .. eventDescription .. " Период: " .. eventPeriod .. ".", 82)
+
+    local eventCard = card(body, "SeasonalHarvestFestival", 142)
+    eventCard.BackgroundColor3 = Color3.fromRGB(244, 235, 207)
+    label(eventCard, "FestivalIcon", "✿", UDim2.fromOffset(42, 44), UDim2.fromOffset(10, 8), 24, palette.forest, Enum.Font.GothamBlack)
+    label(eventCard, "FestivalTitle", "ПУТЬ УРОЖАЯ", UDim2.new(1, -70, 0, 22), UDim2.fromOffset(58, 8), 13, palette.ink, Enum.Font.GothamBold)
+    label(eventCard, "FestivalPoints", tostring(eventPoints) .. " / 100 очков фестиваля", UDim2.new(1, -70, 0, 20), UDim2.fromOffset(58, 31), 11, palette.forest, Enum.Font.GothamBold)
+    local milestoneLines = {
+        {points = 20, text = "20 очков • 30 Coins"},
+        {points = 50, text = "50 очков • 1 звёздный осколок"},
+        {points = 100, text = "100 очков • 80 Coins + 2 осколка"},
+    }
+    for index, milestone in milestoneLines do
+        local claimed = player:GetAttribute("SeasonalEvent_Milestone_" .. tostring(milestone.points) .. "_Claimed") == true
+        local reached = eventPoints >= milestone.points
+        local status = claimed and "✓" or (reached and "●" or "○")
+        label(eventCard, "Milestone" .. tostring(index), status .. "  " .. milestone.text, UDim2.new(1, -20, 0, 17), UDim2.fromOffset(14, 57 + (index - 1) * 19), 10, claimed and palette.forest or (reached and palette.gold or palette.muted), Enum.Font.GothamBold)
+    end
+
+    local eventClaim = button(body, "ClaimSeasonalEventRewards", eventClaimable > 0 and "ЗАБРАТЬ ПРАЗДНИЧНЫЕ НАГРАДЫ" or "СОБИРАЙ ОЧКИ ФЕСТИВАЛЯ", UDim2.new(1, 0, 0, 44), UDim2.new(), eventClaimable > 0 and palette.gold or palette.forestLight)
+    eventClaim.TextColor3 = eventClaimable > 0 and palette.ink or palette.white
+    eventClaim.TextSize = 12
+    eventClaim.AutoButtonColor = eventActive and eventClaimable > 0
+    eventClaim.Activated:Connect(function()
+        if not eventActive then
+            showToast("Фестиваль урожая проходит с 23 ноября по 8 декабря по UTC.")
+        elseif eventClaimable <= 0 then
+            showToast("Набери ещё очков, чтобы открыть праздничные награды.")
+        else
+            event:FireServer("ClaimSeasonalEventRewards")
+        end
+    end)
+    addInfo("ПРАЗДНИЧНЫЕ НАГРАДЫ", tostring(eventPoints) .. "/100 очков • доступно рубежей: " .. tostring(eventClaimable) .. " • " .. tostring(eventCoins) .. " Coins + " .. tostring(eventShards) .. " осколков", 48)
 end
 
 local function renderExpeditions()
