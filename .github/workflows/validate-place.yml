@@ -216,7 +216,7 @@ jobs:
               "woodCost, stoneCost = 5, 3",
               "savedIsland.bridges.homeToGrove = citySnapshot.bridges.homeToGrove == true",
               "Resource_Wood",
-              "local toolIds = {Axe = true, Pickaxe = true}",
+              "local toolIds = {Axe = true, Pickaxe = true, Sword = true}",
               "local function createHarvestTool(toolId, level)",
               "local function renderTools()",
               "LocalHarvestProgress",
