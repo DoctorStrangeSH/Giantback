@@ -313,6 +313,8 @@ end
 
 local save
 
+local addDailyQuestProgress
+
 local function sellIslandHarvest(player, ownerUserId)
     if player.UserId ~= ownerUserId then return tip(player, "Этот рынок принадлежит другому игроку.") end
     local session = sessions[player]
@@ -1132,7 +1134,7 @@ local function syncDailyQuests(player)
     end
 end
 
-local function addDailyQuestProgress(player, questId, amount, saveProgress)
+addDailyQuestProgress = function(player, questId, amount, saveProgress)
     local session = sessions[player]
     local definition = DAILY_QUEST_DEFINITIONS[questId]
     if not session or not definition or not player:GetAttribute("Ready") then return end
