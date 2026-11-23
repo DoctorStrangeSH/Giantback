@@ -1451,9 +1451,13 @@ addDailyQuestProgress = function(player, questId, amount, saveProgress)
     local session = sessions[player]
     local definition = DAILY_QUEST_DEFINITIONS[questId]
     if not session or not definition or not player:GetAttribute("Ready") then return end
+    local weeklyChanged = addWeeklyChallengeProgress(player, questId, amount)
     session.dailyQuests = normalizeDailyQuests(session.dailyQuests, player, session)
     if session.dailyQuests.claimed or not table.find(session.dailyQuests.quests, questId) then
         syncDailyQuests(player)
+        if weeklyChanged and saveProgress ~= false and session.online and not save(player) then
+            warn("Weekly challenge progress save will be retried:", player.UserId, questId)
+        end
         return
     end
     local previous = session.dailyQuests.progress[questId] or 0
@@ -1462,7 +1466,7 @@ addDailyQuestProgress = function(player, questId, amount, saveProgress)
     session.dailyQuests.progress[questId] = nextValue
     syncDailyQuests(player)
     if saveProgress ~= false and session.online and not save(player) then
-        warn("Daily quest progress save will be retried:", player.UserId, questId)
+        warn("Daily/weekly quest progress save will be retried:", player.UserId, questId)
     end
 end
 
@@ -1470,7 +1474,10 @@ task.spawn(function()
     while true do
         task.wait(60)
         for _, player in Players:GetPlayers() do
-            if player:GetAttribute("Ready") then syncDailyQuests(player) end
+            if player:GetAttribute("Ready") then
+                syncDailyQuests(player)
+                syncWeeklyChallenges(player)
+            end
         end
     end
 end)
@@ -1594,6 +1601,7 @@ save = function(player)
             searchCount = math.max(0, math.floor(tonumber(session.foxSearchCount) or 0)),
         }
         local dailyQuestSnapshot = normalizeDailyQuests(session.dailyQuests, player, session)
+        local weeklyChallengeSnapshot = normalizeWeeklyChallenges(session.weeklyChallenges, player, session)
         local completedCombatSnapshot = {}
         for encounterId, completed in session.completedCombatEncounters do
             if type(encounterId) == "string" and #encounterId <= 64 and completed == true then
@@ -1658,6 +1666,7 @@ save = function(player)
                 end
                 old.completedCombatEncounters = savedCombatEncounters
                 old.dailyQuests = dailyQuestSnapshot
+                old.weeklyChallenges = weeklyChallengeSnapshot
 
                 local savedCompanions = type(old.companions) == "table" and old.companions or {}
                 for _, companionId in COMPANION_IDS do
@@ -1725,6 +1734,7 @@ local function init(player)
         foxSearchCount = 0,
         completedCombatEncounters = {},
         dailyQuests = nil,
+        weeklyChallenges = nil,
         companionProgress = normalizeCompanionProgress(nil),
         companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth, CrystalWisp = companionMoodDefaults.CrystalWisp},
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
@@ -1889,6 +1899,7 @@ local function init(player)
                 end
             end
             session.dailyQuests = data.dailyQuests
+            session.weeklyChallenges = data.weeklyChallenges
 
             session.companionProgress = normalizeCompanionProgress(data.companions)
             local savedCompanions = type(data.companions) == "table" and data.companions or {}
@@ -1944,6 +1955,7 @@ local function init(player)
     player:SetAttribute("Ready", true)
     syncTools(player)
     syncDailyQuests(player)
+    syncWeeklyChallenges(player)
 end
 local combatRewardFunction = ServerStorage:FindFirstChild("GiantbackGrantCombatReward")
 if combatRewardFunction and not combatRewardFunction:IsA("BindableFunction") then
