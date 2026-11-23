@@ -9,7 +9,9 @@ HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 class IslandBuildingPlacementContractTests(unittest.TestCase):
     def test_only_known_decorations_are_normalized_and_saved(self):
-        self.assertIn('saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage"', WORLD)
+        self.assertIn('saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse"', WORLD)
+        self.assertIn('city.storage[itemId] = math.clamp(math.floor(tonumber(rawStorage[itemId]) or 0), 0, WAREHOUSE_CAPACITY)', WORLD)
+        self.assertIn('savedIsland.storage = citySnapshot.storage', WORLD)
         self.assertIn('local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}', WORLD)
         self.assertIn('if #city.buildings >= 24 then break end', WORLD)
         self.assertIn('savedIsland.buildings = citySnapshot.buildings', WORLD)
@@ -17,7 +19,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
 
     def test_server_checks_ownership_location_bounds_capacity_and_cost(self):
         self.assertIn('if action == "PlaceIslandDecoration" then', WORLD)
-        self.assertIn('decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage"', WORLD)
+        self.assertIn('decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse"', WORLD)
         self.assertIn('if #session.city.buildings >= 12 and not moveIndex then', WORLD)
         self.assertIn('(root.Position - meadow.Position).Magnitude > 22', WORLD)
         self.assertIn('(root.Position - targetFrame.Position).Magnitude > 24', WORLD)
@@ -29,6 +31,11 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('Cottage = {Wood = 8, Stone = 6}', WORLD)
         self.assertIn('Warehouse = {Wood = 10, Stone = 8}', WORLD)
         self.assertIn('Warehouse = {Wood = 5, Stone = 4}', WORLD)
+        self.assertIn('Перед разборкой склада сначала забери все материалы.', WORLD)
+        self.assertIn('local function useWarehouse(player, ownerUserId, action)', WORLD)
+        self.assertIn('local WAREHOUSE_CAPACITY = 120', WORLD)
+        self.assertIn('Warehouse_Used', WORLD)
+        self.assertIn('Warehouse_Built', WORLD)
 
     def test_client_ghost_preview_and_manual_placement_controls(self):
         self.assertIn('local function createPlacementGhost(decorationId)', HUD)
@@ -87,10 +94,13 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('{id = "Warehouse", title = "Склад"', HUD)
         self.assertIn('placementState == "Warehouse" and wood >= 10 and stone >= 8', HUD)
         self.assertIn('WarehousePreviewBody', HUD)
+        self.assertIn('Warehouse_Used', HUD)
+        self.assertIn('Склад ещё не построен', HUD)
+        self.assertIn('Построй склад, чтобы хранить до 120 единиц', HUD)
         self.assertIn('placementState == "Cottage" and wood >= 8 and stone >= 6', HUD)
         self.assertIn('CottagePreviewWalls', HUD)
-        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" then return end', HUD)
-        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" then', WORLD)
+        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" then return end', HUD)
+        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" then', WORLD)
         self.assertIn('placedMessages[decorationId]', WORLD)
         self.assertIn('Cottage = {Wood = 4, Stone = 3}', WORLD)
         self.assertIn('beginIslandPlacement(definition.id)', HUD)
