@@ -257,6 +257,10 @@ prop(moth_stardust, "ProtectedString", "Source",
 companion_appearance = obj(storage, "ModuleScript", "CompanionAppearance")
 prop(companion_appearance, "ProtectedString", "Source",
      (root / "modules" / "CompanionAppearance.luau").read_text(encoding="utf-8"))
+
+grove_first_steps = obj(storage, "ModuleScript", "GroveFirstSteps")
+prop(grove_first_steps, "ProtectedString", "Source",
+     (root / "modules" / "GroveFirstSteps.luau").read_text(encoding="utf-8"))
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
     if name == "Fox":
