@@ -62,6 +62,26 @@ class CompanionMutationContractTests(unittest.TestCase):
         self.assertIn('LegendaryMutationParticles', APPEARANCE)
         self.assertIn('local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")', HUD)
 
+    def test_festival_egg_pets_have_weighted_mutations_and_visuals(self):
+        pet_forms = {
+            "BrambleBun": ("ThornBloom", "HazelnutGlow", "RoseBramble", "AncientHedge"),
+            "MossTurtle": ("FernShell", "RiverShell", "RuneShell", "WorldrootShell"),
+            "Glowcap": ("Dewcap", "Embercap", "Dreamcap", "CelestialCap"),
+            "Dewdrop": ("Rainbubble", "CoralDew", "PearlDew", "OceanHeart"),
+            "Starling": ("TwilightWing", "CometFeather", "NebulaWing", "CosmicCrown"),
+        }
+        for pet, forms in pet_forms.items():
+            self.assertIn('    ' + pet + ' = {', WORLD)
+            self.assertIn('id = "' + pet + '", title =', HUD)
+            for form in forms:
+                self.assertIn('id = "' + form + '"', WORLD)
+                self.assertIn(form + " = {color = Color3.fromRGB(", APPEARANCE)
+        self.assertEqual(sum('weight = 1, biome = "Grove"' in line for line in WORLD.splitlines()), 7)
+        for form in ("AncientHedge", "WorldrootShell", "CelestialCap", "OceanHeart", "CosmicCrown"):
+            visual = APPEARANCE.split(form + " = {color =", 1)[1].split("}", 1)[0]
+            self.assertIn("legendary = true", visual)
+        self.assertIn('tostring(discoveredMutations) .. "/" .. tostring(#mutationPets)', HUD)
+
     def test_visual_mutations_restore_base_colors_and_apply_bounded_tint(self):
         self.assertIn("local function applyCompanionMutation(model, owner, companionId)", APPEARANCE)
         self.assertIn("mutationOriginalColors", APPEARANCE)
