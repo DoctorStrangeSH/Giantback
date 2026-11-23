@@ -10,7 +10,7 @@ WORLD = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
 
 class MosslingPollenBurstTests(unittest.TestCase):
     def test_live_mossling_has_server_tuned_pollen_attack(self):
-        mossling = WORLD.split("local function spawnMossling()", 1)[1].split("end\n\nspawnMossling()", 1)[0]
+        mossling = WORLD.split("local function spawnMossling()", 1)[1].split("\nspawnMossling()\n\nlocal entranceGlow", 1)[0]
         self.assertIn('mossling:SetAttribute("ArchetypeId", "Mossling")', mossling)
         self.assertIn('mossling:SetAttribute("PollenRadius", 9)', mossling)
         self.assertIn('mossling:SetAttribute("PollenDamage", 8)', mossling)
