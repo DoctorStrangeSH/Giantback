@@ -46,7 +46,7 @@ class HarvestFestivalVisualContractTests(unittest.TestCase):
     def test_studio_acceptance_and_roadmap_track_the_visual_gate(self):
         self.assertIn("## Фестиваль урожая — сезонный декор", STUDIO)
         self.assertIn("## Сезонное событие — Фестиваль урожая", ROADMAP)
-        self.assertIn("уникальные питомцы/яйца и магазин фестивальных предметов", ROADMAP)
+        self.assertIn("Уникальные питомцы/яйца и магазин фестивальных предметов", ROADMAP)
 
 
 if __name__ == "__main__":
