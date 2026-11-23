@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+APPEARANCE = (ROOT / "modules/CompanionAppearance.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 
@@ -54,19 +55,19 @@ class CompanionMutationContractTests(unittest.TestCase):
         self.assertIn('"_MutationBiome"', WORLD)
 
     def test_legendary_mutations_receive_separate_particle_aura(self):
-        self.assertIn('Elderwood = {color =', ALBUM)
-        self.assertIn('Eclipse = {color =', ALBUM)
-        self.assertIn('if visual.legendary then', ALBUM)
-        self.assertIn('LegendaryMutationAttachment', ALBUM)
-        self.assertIn('LegendaryMutationParticles', ALBUM)
+        self.assertIn('Elderwood = {color =', APPEARANCE)
+        self.assertIn('Eclipse = {color =', APPEARANCE)
+        self.assertIn('if visual.legendary then', APPEARANCE)
+        self.assertIn('LegendaryMutationAttachment', APPEARANCE)
+        self.assertIn('LegendaryMutationParticles', APPEARANCE)
         self.assertIn('local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")', HUD)
 
     def test_visual_mutations_restore_base_colors_and_apply_bounded_tint(self):
-        self.assertIn("local function applyCompanionMutation(model, owner, companionId)", ALBUM)
-        self.assertIn("mutationOriginalColors", ALBUM)
-        self.assertIn("part.Color = originalColor", ALBUM)
-        self.assertIn("descendant.Color:Lerp(visual.color, accent and 0.58 or 0.24)", ALBUM)
-        self.assertIn("CompanionMutationHighlight", ALBUM)
+        self.assertIn("local function applyCompanionMutation(model, owner, companionId)", APPEARANCE)
+        self.assertIn("mutationOriginalColors", APPEARANCE)
+        self.assertIn("part.Color = originalColor", APPEARANCE)
+        self.assertIn("descendant.Color:Lerp(visual.color, accent and 0.58 or 0.24)", APPEARANCE)
+        self.assertIn("CompanionMutationHighlight", APPEARANCE)
         self.assertIn("applyCompanionMutation(model, owner, id)", ALBUM)
 
 
