@@ -76,6 +76,7 @@ local seedShopOffers = {
     Cabbage = {amount = 2, cost = 16},
 }
 local MAX_SEED_STACK = 999
+local farmUpgradeCosts = {[2] = 60, [3] = 150}
 local MAX_COINS = 2000000000
 local cropDefinitions = {
     Carrot = {seedItemId = "CarrotSeed", harvestItemId = "Carrot", growthSeconds = 300, reward = 1, displayName = "Морковь"},
@@ -414,6 +415,43 @@ local function buyFarmSeeds(player, cropId)
 
     session.economyBusy = false
     tip(player, "Куплено: " .. tostring(offer.amount) .. " • " .. definition.displayName .. ".")
+end
+
+local function upgradeFarm(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Улучшение фермы временно недоступно: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return end
+
+    local currentLevel = math.clamp(math.floor(tonumber(session.city.farm.level) or 1), 1, 3)
+    if currentLevel >= 3 then
+        return tip(player, "Ферма уже улучшена до максимального уровня.")
+    end
+    local nextLevel = currentLevel + 1
+    local cost = farmUpgradeCosts[nextLevel]
+    local currentCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    if currentCoins < cost then
+        return tip(player, "Для улучшения фермы нужно " .. tostring(cost) .. " монет. У тебя " .. tostring(currentCoins) .. ".")
+    end
+
+    session.economyBusy = true
+    session.coins = currentCoins - cost
+    session.city.farm.level = nextLevel
+    syncFarm(player)
+
+    if not save(player) then
+        session.coins = currentCoins
+        session.city.farm.level = currentLevel
+        syncFarm(player)
+        session.economyBusy = false
+        return tip(player, "Улучшение не сохранено. Монеты возвращены, уровень фермы восстановлен.")
+    end
+
+    session.economyBusy = false
+    local unlocked = nextLevel == 2 and "Открыты грядки №2 и №3!" or "Открыта грядка №4!"
+    tip(player, "Ферма улучшена до уровня " .. tostring(nextLevel) .. ". " .. unlocked)
 end
 
 local function useWarehouse(player, ownerUserId, action)
@@ -1818,6 +1856,11 @@ event.OnServerEvent:Connect(function(player, action, payload)
             end
         end
         event:FireClient(player, "ResourceState", state)
+        return
+    end
+
+    if action == "UpgradeFarm" then
+        upgradeFarm(player)
         return
     end
 
