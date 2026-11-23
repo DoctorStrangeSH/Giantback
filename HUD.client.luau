@@ -729,15 +729,20 @@ getObjective = function()
         end
         return "Материалы готовы! Восстанови мост."
     end
+    if not player:GetAttribute("Fox") then
+        return "Найди лисёнка в Солнечной роще"
+    end
+    if not player:GetAttribute("Seed") and player:GetAttribute("Companion") ~= "Fox" then
+        return "Позови лисёнка из коллекции питомцев"
+    end
     local activeCacheId = player:GetAttribute("FoxCacheSpot")
     if type(activeCacheId) == "string" and activeCacheId ~= "" then
         if player:GetAttribute("Companion") ~= "Fox" then
-            return "Позови лисёнка, чтобы увидеть золотые следы и забрать тайник."
+            return "Позови лисёнка, чтобы увидеть следы к тайнику."
         end
-        return "Лисёнок нашёл тайник! Следуй по золотым следам лап в Солнечной роще."
+        return "Лисёнок нашёл тайник! Иди по золотым следам."
     end
-    if not player:GetAttribute("Fox") then return "Пройди по деревянному мосту в Солнечную рощу и найди лисёнка." end
-    if not player:GetAttribute("Seed") then return "Позови лисёнка у следов на тропе: он найдёт лунное семя." end
+    if not player:GetAttribute("Seed") then return "Исследуй тропу с лисёнком и найди лунное семя." end
     if not player:GetAttribute("Moth") then return "Перейди через лесной мост в Лунную рощу и найди моль." end
     if not player:GetAttribute("MoonBloom") then return "Позови лунную моль в Лунной роще — её сияние раскроет скрытый цветок." end
     if not player:GetAttribute("MoonGateTrace") then return "Позови лисёнка у древних корней в Лунной роще — он найдёт скрытый проход." end
@@ -769,7 +774,24 @@ local function refresh()
             and "ПРИКЛЮЧЕНИЕ ПРОДОЛЖАЕТСЯ"
             or ("ПУТЕШЕСТВИЕ • ШАГ " .. tostring(completed + 1) .. " ИЗ " .. tostring(total))
         objectiveGlyph.Text = completed >= total and "★" or tostring(completed + 1)
-        objectiveHint.Text = bridgeBuilt and "Исследуй мир и открывай новых питомцев." or "Подготавливаем остров…"
+        if not bridgeBuilt then
+            objectiveHint.Text = "Подготавливаем остров…"
+        elseif not player:GetAttribute("Fox") then
+            objectiveHint.Text = "Перейди мост → найди гнездо в роще → нажми «Подружиться»."
+        elseif player:GetAttribute("Companion") ~= "Fox" and not player:GetAttribute("Seed") then
+            objectiveHint.Text = "Открой «ПИТОМЦЫ» внизу и выбери лисёнка."
+        elseif type(player:GetAttribute("FoxCacheSpot")) == "string"
+            and player:GetAttribute("FoxCacheSpot") ~= "" then
+            objectiveHint.Text = player:GetAttribute("Companion") == "Fox"
+                and "Ищи золотые следы лап возле тропы в роще."
+                or "Открой «ПИТОМЦЫ» и позови лисёнка к следам."
+        elseif not player:GetAttribute("Seed") then
+            objectiveHint.Text = "Пройди с лисёнком по тропе рощи: ищи находку."
+        elseif not player:GetAttribute("Moth") then
+            objectiveHint.Text = "По мосту из рощи иди в Сумеречную долину."
+        else
+            objectiveHint.Text = "Следуй цели, а открытия смотри в «ДНЕВНИКЕ»."
+        end
         progressCount.Text = tostring(completed) .. " / " .. tostring(total)
     end
     if progressTween then progressTween:Cancel() end
