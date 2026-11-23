@@ -1092,24 +1092,25 @@ applyHomeBridgeState = function(slotIndex, built)
     return true
 end
 
-local DAILY_QUEST_REWARD = 40
 local DAILY_STREAK_THREE_BONUS = 20
 local DAILY_STREAK_WEEK_BONUS = 60
 local DAILY_QUEST_COUNT = 3
 local DAILY_QUEST_DEFINITIONS = {
-    Gather = {goal = 4, title = "Собиратель", description = "Собери любые 4 ресурса в мире."},
-    GatherWood = {goal = 4, title = "Запас древесины", description = "Добудь 4 единицы древесины."},
-    GatherStone = {goal = 4, title = "Каменный запас", description = "Добудь 4 единицы камня."},
-    Plant = {goal = 2, title = "Зелёные ростки", description = "Посади 2 культуры на своей ферме."},
-    Harvest = {goal = 3, title = "Пора урожая", description = "Собери 3 единицы урожая."},
-    Sell = {goal = 3, title = "Торговый день", description = "Продай на рынке 3 единицы урожая."},
-    Scout = {goal = 1, title = "Тайник разведчика", description = "Найди и забери один тайник с лисёнком."},
-    Feed = {goal = 1, title = "Вкусняшка для друга", description = "Угости одного из своих питомцев."},
-    Play = {goal = 1, title = "Время поиграть", description = "Успешно сыграй с питомцем в мини-игру."},
-    CraftSword = {goal = 1, title = "Оружейник", description = "Создай меч странника у верстака."},
-    UpgradeTool = {goal = 1, title = "Мастер инструментов", description = "Улучши топор или кирку у верстака."},
-    WinEncounter = {goal = 1, title = "Храбрый исследователь", description = "Победи противника или босса в приключении."},
+    Gather = {goal = 4, difficulty = "easy", reward = 10, category = "Gathering", title = "Собиратель", description = "Собери любые 4 ресурса в мире."},
+    GatherWood = {goal = 4, difficulty = "medium", reward = 15, category = "Gathering", title = "Запас древесины", description = "Добудь 4 единицы древесины."},
+    GatherStone = {goal = 4, difficulty = "medium", reward = 15, category = "Gathering", title = "Каменный запас", description = "Добудь 4 единицы камня."},
+    Plant = {goal = 2, difficulty = "medium", reward = 15, category = "Farming", title = "Зелёные ростки", description = "Посади 2 культуры на своей ферме."},
+    Harvest = {goal = 3, difficulty = "medium", reward = 15, category = "Farming", title = "Пора урожая", description = "Собери 3 единицы урожая."},
+    Sell = {goal = 3, difficulty = "medium", reward = 15, category = "Market", title = "Торговый день", description = "Продай на рынке 3 единицы урожая."},
+    Scout = {goal = 1, difficulty = "easy", reward = 10, category = "Exploration", title = "Тайник разведчика", description = "Найди и забери один тайник с лисёнком."},
+    Feed = {goal = 1, difficulty = "easy", reward = 10, category = "Companion", title = "Вкусняшка для друга", description = "Угости одного из своих питомцев."},
+    Play = {goal = 1, difficulty = "medium", reward = 15, category = "Companion", title = "Время поиграть", description = "Успешно сыграй с питомцем в мини-игру."},
+    CraftSword = {goal = 1, difficulty = "medium", reward = 15, category = "Crafting", title = "Оружейник", description = "Создай меч странника у верстака."},
+    UpgradeTool = {goal = 1, difficulty = "hard", reward = 20, category = "Crafting", title = "Мастер инструментов", description = "Улучши топор или кирку у верстака."},
+    WinEncounter = {goal = 1, difficulty = "hard", reward = 20, category = "Combat", title = "Храбрый исследователь", description = "Победи противника или босса в приключении."},
 }
+
+local DAILY_QUEST_DIFFICULTIES = {"easy", "medium", "hard"}
 
 local function currentDailyQuestDay()
     return os.date("!%Y-%m-%d")
@@ -1156,19 +1157,73 @@ end
 
 local function rollDailyQuestIds(player, session, day)
     local eligible = getEligibleDailyQuestIds(player, session)
+    local buckets = {easy = {}, medium = {}, hard = {}}
+    for _, questId in eligible do
+        local definition = DAILY_QUEST_DEFINITIONS[questId]
+        if definition and buckets[definition.difficulty] then
+            table.insert(buckets[definition.difficulty], questId)
+        end
+    end
+
     local daySeed = tonumber(string.gsub(day, "%-", "")) or 0
     local seed = (math.abs(player.UserId) % 1000003 + daySeed) % 2147483647
     local random = Random.new(seed)
-    for index = #eligible, 2, -1 do
-        local swapIndex = random:NextInteger(1, index)
-        eligible[index], eligible[swapIndex] = eligible[swapIndex], eligible[index]
+    for _, difficulty in DAILY_QUEST_DIFFICULTIES do
+        local bucket = buckets[difficulty]
+        for index = #bucket, 2, -1 do
+            local swapIndex = random:NextInteger(1, index)
+            bucket[index], bucket[swapIndex] = bucket[swapIndex], bucket[index]
+        end
     end
 
     local selected = {}
-    for index = 1, math.min(DAILY_QUEST_COUNT, #eligible) do
-        selected[index] = eligible[index]
+    local selectedCategories = {}
+    local function pickFromBucket(bucket)
+        for _, questId in bucket do
+            local category = DAILY_QUEST_DEFINITIONS[questId].category
+            if not selectedCategories[category] then
+                table.insert(selected, questId)
+                selectedCategories[category] = true
+                return true
+            end
+        end
+        return false
+    end
+
+    -- First guarantee a spread across difficulty tiers whenever the player has them unlocked.
+    for _, difficulty in DAILY_QUEST_DIFFICULTIES do
+        if #selected >= DAILY_QUEST_COUNT then break end
+        pickFromBucket(buckets[difficulty])
+    end
+
+    -- New players may not have hard tasks yet; fill remaining slots with medium tasks first.
+    for _, difficulty in {"medium", "easy", "hard"} do
+        if #selected >= DAILY_QUEST_COUNT then break end
+        pickFromBucket(buckets[difficulty])
+    end
+
+    -- If the account has fewer distinct categories than slots, allow a second task from a category.
+    if #selected < DAILY_QUEST_COUNT then
+        for _, difficulty in DAILY_QUEST_DIFFICULTIES do
+            for _, questId in buckets[difficulty] do
+                if not table.find(selected, questId) then
+                    table.insert(selected, questId)
+                    if #selected >= DAILY_QUEST_COUNT then break end
+                end
+            end
+            if #selected >= DAILY_QUEST_COUNT then break end
+        end
     end
     return selected
+end
+
+local function getDailyQuestBaseReward(dailyQuests)
+    local total = 0
+    for _, questId in dailyQuests.quests do
+        local definition = DAILY_QUEST_DEFINITIONS[questId]
+        total += definition and definition.reward or 0
+    end
+    return total
 end
 
 local function getDailyStreakReward(dailyQuests, today)
@@ -1233,7 +1288,7 @@ local function syncDailyQuests(player)
     session.dailyQuests = normalizeDailyQuests(session.dailyQuests, player, session)
     local dayChanged = previousDay ~= nil and previousDay ~= session.dailyQuests.day
     player:SetAttribute("DailyQuest_Day", session.dailyQuests.day)
-    player:SetAttribute("DailyQuest_Reward", DAILY_QUEST_REWARD)
+    player:SetAttribute("DailyQuest_Reward", getDailyQuestBaseReward(session.dailyQuests))
     player:SetAttribute("DailyQuest_Claimed", session.dailyQuests.claimed)
     player:SetAttribute("DailyQuest_Count", #session.dailyQuests.quests)
     local streakAfterToday, streakBonusToday = getDailyStreakReward(session.dailyQuests, session.dailyQuests.day)
@@ -1251,6 +1306,8 @@ local function syncDailyQuests(player)
         player:SetAttribute(prefix .. "Title", definition.title)
         player:SetAttribute(prefix .. "Description", definition.description)
         player:SetAttribute(prefix .. "Goal", definition.goal)
+        player:SetAttribute(prefix .. "Reward", definition.reward)
+        player:SetAttribute(prefix .. "Difficulty", definition.difficulty)
         player:SetAttribute(prefix .. "Progress", session.dailyQuests.progress[questId] or 0)
     end
     if dayChanged and session.online and player:GetAttribute("Ready") then
@@ -1309,7 +1366,8 @@ local function claimDailyQuestReward(player)
     local previousBestStreak = session.dailyQuests.bestStreak
     local previousCompletedDay = session.dailyQuests.lastCompletedDay
     local nextStreak, streakBonus = getDailyStreakReward(session.dailyQuests, today)
-    local credited = DAILY_QUEST_REWARD + streakBonus
+    local baseReward = getDailyQuestBaseReward(session.dailyQuests)
+    local credited = baseReward + streakBonus
     if MAX_COINS - previousCoins < credited then
         return tip(player, "Освободи место минимум для " .. tostring(credited) .. " монет, а затем забери награду.")
     end
@@ -1333,7 +1391,7 @@ local function claimDailyQuestReward(player)
         return tip(player, "Не удалось сохранить награду. Попробуй забрать её ещё раз.")
     end
     session.economyBusy = false
-    local message = "Все ежедневные задания выполнены! Получено " .. tostring(DAILY_QUEST_REWARD) .. " монет."
+    local message = "Все ежедневные задания выполнены! Получено " .. tostring(baseReward) .. " монет."
     if streakBonus > 0 then
         message ..= " Бонус серии: +" .. tostring(streakBonus) .. " Coins (" .. tostring(nextStreak) .. " дней подряд)!"
     else
