@@ -1211,14 +1211,18 @@ local function renderDailyQuests()
         local description = player:GetAttribute(prefix .. "Description") or "Выполни игровую цель."
         local progress = tonumber(player:GetAttribute(prefix .. "Progress")) or 0
         local goal = math.max(1, tonumber(player:GetAttribute(prefix .. "Goal")) or 1)
+        local questReward = math.max(0, math.floor(tonumber(player:GetAttribute(prefix .. "Reward")) or 0))
+        local difficulty = player:GetAttribute(prefix .. "Difficulty") or "medium"
         local done = progress >= goal
         if done then completed += 1 end
 
-        local item = card(body, "DailyQuest_" .. tostring(index), 72)
+        local item = card(body, "DailyQuest_" .. tostring(index), 78)
         item.BackgroundColor3 = done and Color3.fromRGB(235, 242, 224) or palette.paper
         label(item, "Number", tostring(index), UDim2.fromOffset(36, 42), UDim2.fromOffset(10, 14), 19, done and palette.forestLight or palette.gold, Enum.Font.GothamBlack)
         label(item, "Title", title, UDim2.new(1, -118, 0, 22), UDim2.fromOffset(54, 8), 13, palette.ink, Enum.Font.GothamBold)
-        label(item, "Hint", done and "Задание выполнено!" or description, UDim2.new(1, -118, 0, 24), UDim2.fromOffset(54, 31), 10, palette.muted)
+        label(item, "Hint", done and "Задание выполнено!" or description, UDim2.new(1, -118, 0, 20), UDim2.fromOffset(54, 30), 10, palette.muted)
+        local difficultyNames = {easy = "ЛЕГКО", medium = "СРЕДНЕ", hard = "СЛОЖНО"}
+        local rewardText = label(item, "Reward", (difficultyNames[difficulty] or "СРЕДНЕ") .. "  •  +" .. tostring(questReward) .. " Coins", UDim2.new(1, -118, 0, 16), UDim2.fromOffset(54, 53), 9, difficulty == "hard" and palette.gold or palette.muted, Enum.Font.GothamBold)
         local countLabel = label(item, "Progress", tostring(math.min(progress, goal)) .. "/" .. tostring(goal), UDim2.fromOffset(56, 24), UDim2.new(1, -66, 0.5, -12), 13, done and palette.forest or palette.ink, Enum.Font.GothamBlack)
         countLabel.TextXAlignment = Enum.TextXAlignment.Center
     end
