@@ -1490,6 +1490,49 @@ local function renderExpeditions()
         end
     end
     addInfo("ПРОГРЕСС ИССЛЕДОВАНИЯ", "Открыто " .. tostring(totalCompleted) .. " из " .. tostring(totalSteps) .. " записей. Новые экспедиции появятся вместе с неизведанными землями.", 66)
+
+    local relics = {
+        {id = "Discovered_StarPrism", name = "Звёздная призма", rarity = "ЛЕГЕНДАРНАЯ", color = palette.gold, description = "Золотой кристалл, хранящий свет далёких звёзд."},
+        {id = "Discovered_MoonGlass", name = "Лунное стекло", rarity = "РЕДКАЯ", color = palette.water, description = "Хрупкий осколок, отражающий лунное сияние."},
+        {id = "Discovered_VoidGeode", name = "Пустотная жеода", rarity = "МИФИЧЕСКАЯ", color = palette.lilac, description = "Тёмная жеода с мерцающей энергией Эхо-камеры."},
+    }
+    local foundRelics = 0
+    for _, relic in relics do
+        if player:GetAttribute(relic.id) == true then foundRelics += 1 end
+    end
+    addInfo("КОЛЛЕКЦИЯ ЭХО-КАМЕРЫ", "Найди три древние реликвии в скрытой комнате Кристальной пещеры. Открытые находки сохраняются навсегда.", 76)
+    local collectionHeader = card(body, "CrystalRelicCollection", 62)
+    collectionHeader.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
+    label(collectionHeader, "CollectionIcon", "✦", UDim2.fromOffset(38, 42), UDim2.fromOffset(12, 10), 25, palette.lilac, Enum.Font.GothamBlack)
+    label(collectionHeader, "CollectionTitle", "РЕЛИКВИИ ДРЕВНЕЙ ПЕЩЕРЫ", UDim2.new(1, -128, 0, 22), UDim2.fromOffset(58, 8), 12, palette.ink, Enum.Font.GothamBlack)
+    label(collectionHeader, "CollectionCount", tostring(foundRelics) .. "/3", UDim2.fromOffset(52, 28), UDim2.new(1, -62, 0.5, -14), 15, palette.forest, Enum.Font.GothamBlack)
+    for index, relic in relics do
+        local found = player:GetAttribute(relic.id) == true
+        local item = card(body, "CrystalRelic_" .. tostring(index), 78)
+        item.BackgroundColor3 = found and Color3.fromRGB(235, 242, 224) or palette.paper
+        label(item, "RelicGlyph", found and "✦" or "?", UDim2.fromOffset(34, 40), UDim2.fromOffset(10, 18), 22, found and relic.color or palette.muted, Enum.Font.GothamBlack)
+        label(item, "RelicName", found and relic.name or "Неизвестная реликвия", UDim2.new(1, -62, 0, 21), UDim2.fromOffset(52, 7), 12, palette.ink, Enum.Font.GothamBold)
+        label(item, "RelicRarity", found and relic.rarity or "РЕДКОСТЬ НЕИЗВЕСТНА", UDim2.new(1, -62, 0, 16), UDim2.fromOffset(52, 29), 9, found and relic.color or palette.muted, Enum.Font.GothamBlack)
+        label(item, "RelicHint", found and relic.description or "Ищи сияющие жилы в Эхо-камере.", UDim2.new(1, -62, 0, 22), UDim2.fromOffset(52, 48), 9, palette.muted)
+    end
+    local rewardClaimed = player:GetAttribute("CrystalRelicSetRewardClaimed") == true
+    local rewardButton = button(
+        body,
+        "ClaimCrystalRelicSet",
+        rewardClaimed and "НАГРАДА ПОЛУЧЕНА" or (foundRelics == 3 and "ЗАБРАТЬ НАГРАДУ • 150 МОНЕТ" or "СОБЕРИ ВСЕ 3 РЕЛИКВИИ"),
+        UDim2.new(1, 0, 0, 44),
+        UDim2.new(),
+        rewardClaimed and palette.forestLight or (foundRelics == 3 and palette.gold or palette.muted)
+    )
+    rewardButton.TextColor3 = rewardClaimed and palette.white or palette.ink
+    rewardButton.TextSize = 12
+    rewardButton.Active = foundRelics == 3 and not rewardClaimed
+    rewardButton.AutoButtonColor = rewardButton.Active
+    rewardButton.Activated:Connect(function()
+        if foundRelics == 3 and not rewardClaimed then
+            event:FireServer("ClaimCrystalRelicSet")
+        end
+    end)
 end
 
 local renderers = {
