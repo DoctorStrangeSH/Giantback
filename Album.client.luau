@@ -32,6 +32,10 @@ local names = {
     CrystalWisp = "Кристальный светляк",
 }
 
+-- One clear discovery marker at a time; personal quest progress remains server-owned.
+local GroveFirstSteps = require(storage:WaitForChild("GroveFirstSteps"))
+local groveFirstSteps = GroveFirstSteps.new(player)
+
 local function getHomeIsland()
     local folder = workspace:FindFirstChild("PlayerIslands")
     return folder and folder:FindFirstChild("HomeIsland_" .. tostring(player.UserId))
