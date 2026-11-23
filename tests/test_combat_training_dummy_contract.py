@@ -26,6 +26,7 @@ class TrainingDummyContract(unittest.TestCase):
     def test_no_aggression_or_repeatable_reward(self):
         self.assertIn('and not entry.isTrainingDummy do', COMBAT)
         self.assertIn('if entry.isTrainingDummy then return end', COMBAT)
+        self.assertIn('and not entry.isTrainingDummy then', COMBAT)
         self.assertIn('math.max(0, entry.humanoid.Health - 1)', COMBAT)
         self.assertIn('task.delay(2.5, function()', COMBAT)
         self.assertIn('entry.trainingGeneration ~= generation', COMBAT)
