@@ -941,6 +941,49 @@ local function showBossSlamTelegraph(enemy)
     end)
 end
 
+local function showMosslingPollenTelegraph(enemy)
+    if not enemy or not enemy:IsA("Model") or not enemy:IsDescendantOf(Workspace) then return end
+    local root = enemy:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local radius = math.clamp(tonumber(enemy:GetAttribute("PollenRadius")) or 9, 6, 14)
+    local warning = math.max(tonumber(enemy:GetAttribute("TelegraphSeconds")) or 1.1, 1.1)
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    rayParams.FilterDescendantsInstances = {enemy}
+    local floorHit = Workspace:Raycast(root.Position, Vector3.new(0, -24, 0), rayParams)
+    local floorPosition = floorHit and floorHit.Position or (root.Position - Vector3.new(0, 3, 0))
+
+    local marker = Instance.new("Part")
+    marker.Name = "LocalMosslingPollenTelegraph"
+    marker.Shape = Enum.PartType.Cylinder
+    marker.Anchored = true
+    marker.CanCollide = false
+    marker.CanTouch = false
+    marker.CanQuery = false
+    marker.CastShadow = false
+    marker.Material = Enum.Material.Neon
+    marker.Color = Color3.fromRGB(155, 222, 112)
+    marker.Transparency = 0.28
+    marker.Size = Vector3.new(0.16, 1, 1)
+    marker.CFrame = CFrame.new(floorPosition + Vector3.new(0, 0.14, 0)) * CFrame.Angles(0, 0, math.rad(90))
+    marker.Parent = Workspace
+
+    TweenService:Create(
+        marker,
+        TweenInfo.new(warning, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = Vector3.new(0.16, radius * 2, radius * 2), Transparency = 0.72}
+    ):Play()
+    task.delay(warning + 0.4, function()
+        if not marker.Parent then return end
+        local fade = TweenService:Create(marker, TweenInfo.new(0.2), {Transparency = 1})
+        fade:Play()
+        fade.Completed:Once(function()
+            if marker.Parent then marker:Destroy() end
+        end)
+    end)
+end
+
 local function showBossPhaseTransition(enemy, phase)
     if not enemy or not enemy:IsA("Model") or not enemy:IsDescendantOf(Workspace) then return end
     phase = math.clamp(tonumber(phase) or 1, 1, 3)
@@ -1011,17 +1054,30 @@ local function showBossPhaseTransition(enemy, phase)
 end
 
 local function bindBossTelegraph(enemy)
-    if not enemy:IsA("Model") or enemy:GetAttribute("IsBoss") ~= true then return end
+    if not enemy:IsA("Model") then return end
+    local isBoss = enemy:GetAttribute("IsBoss") == true
+    local isMossling = enemy:GetAttribute("ArchetypeId") == "Mossling"
+    if not isBoss and not isMossling then return end
+
     enemy:GetAttributeChangedSignal("BossAttack"):Connect(function()
-        if enemy:GetAttribute("BossAttack") == "GroundSlam" then
+        local attack = enemy:GetAttribute("BossAttack")
+        if attack == "GroundSlam" and isBoss then
             showBossSlamTelegraph(enemy)
+        elseif attack == "PollenBurst" and isMossling then
+            showMosslingPollenTelegraph(enemy)
         end
     end)
-    enemy:GetAttributeChangedSignal("BossPhase"):Connect(function()
-        showBossPhaseTransition(enemy, enemy:GetAttribute("BossPhase"))
-    end)
-    if enemy:GetAttribute("BossAttack") == "GroundSlam" then
+    if isBoss then
+        enemy:GetAttributeChangedSignal("BossPhase"):Connect(function()
+            showBossPhaseTransition(enemy, enemy:GetAttribute("BossPhase"))
+        end)
+    end
+
+    local currentAttack = enemy:GetAttribute("BossAttack")
+    if currentAttack == "GroundSlam" and isBoss then
         showBossSlamTelegraph(enemy)
+    elseif currentAttack == "PollenBurst" and isMossling then
+        showMosslingPollenTelegraph(enemy)
     end
 end
 
