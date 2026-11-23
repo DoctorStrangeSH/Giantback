@@ -2823,8 +2823,13 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "CraftSword" then
         local session = sessions[player]
-        if not session then return end
+        if not session or not player:GetAttribute("Ready") then return end
+        if not session.online then
+            return tip(player, "Верстак временно недоступен: сохранение профиля не работает.")
+        end
+        if session.economyBusy then return end
         if session.tools.Sword == true then return tip(player, "Меч странника уже создан.") end
+
         local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         local city = session.homeIsland and session.homeIsland:FindFirstChild("PersonalCity")
         local station = city and city:FindFirstChild("Workshop")
@@ -2832,27 +2837,51 @@ event.OnServerEvent:Connect(function(player, action, payload)
         if not root or not anchor or (root.Position - anchor.Position).Magnitude > 14 then
             return tip(player, "Меч создаётся только у верстака на своём острове.")
         end
-        if (session.inventory.IronIngot or 0) < swordRecipe.IronIngot or (session.inventory.Wood or 0) < swordRecipe.Wood then
+
+        local previousIngots = math.max(0, math.floor(tonumber(session.inventory.IronIngot) or 0))
+        local previousWood = math.max(0, math.floor(tonumber(session.inventory.Wood) or 0))
+        if previousIngots < swordRecipe.IronIngot or previousWood < swordRecipe.Wood then
             return tip(player, "Для меча нужны 2 железных слитка и 6 дерева.")
         end
-        session.inventory.IronIngot -= swordRecipe.IronIngot
-        session.inventory.Wood -= swordRecipe.Wood
+
+        local previousEquipped = session.equippedTool
+        session.economyBusy = true
+        session.inventory.IronIngot = previousIngots - swordRecipe.IronIngot
+        session.inventory.Wood = previousWood - swordRecipe.Wood
         session.tools.Sword = true
         session.equippedTool = "Sword"
-        addDailyQuestProgress(player, "CraftSword", 1, false)
         syncInventory(player)
         syncTools(player)
+
+        if not save(player) then
+            session.inventory.IronIngot = previousIngots
+            session.inventory.Wood = previousWood
+            session.tools.Sword = false
+            session.equippedTool = previousEquipped
+            syncInventory(player)
+            syncTools(player)
+            session.economyBusy = false
+            return tip(player, "Меч не сохранился. Слитки и дерево возвращены — попробуй ещё раз.")
+        end
+
+        session.economyBusy = false
+        addDailyQuestProgress(player, "CraftSword", 1)
         event:FireClient(player, "SwordCrafted")
         tip(player, "Меч странника создан! Проверь оружие в руках и отправляйся на арену.")
-        if session.online then save(player) end
         return
     end
 
     if action == "UpgradeTool" then
         local session = sessions[player]
-        if not session or typeof(payload) ~= "string" or not toolUpgradeCosts[payload] then return end
+        if not session or typeof(payload) ~= "string" or not toolUpgradeCosts[payload] or not player:GetAttribute("Ready") then return end
+        if not session.online then
+            return tip(player, "Верстак временно недоступен: сохранение профиля не работает.")
+        end
+        if session.economyBusy then return end
         if session.tools[payload] ~= true then return tip(player, "Сначала открой этот инструмент.") end
-        if session.toolLevels[payload] >= 2 then return tip(player, "Инструмент уже улучшен до максимального уровня.") end
+        local previousLevel = math.clamp(math.floor(tonumber(session.toolLevels[payload]) or 1), 1, 2)
+        if previousLevel >= 2 then return tip(player, "Инструмент уже улучшен до максимального уровня.") end
+
         local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         local city = session.homeIsland and session.homeIsland:FindFirstChild("PersonalCity")
         local station = city and city:FindFirstChild("Workshop")
@@ -2860,30 +2889,60 @@ event.OnServerEvent:Connect(function(player, action, payload)
         if not root or not anchor or (root.Position - anchor.Position).Magnitude > 14 then
             return tip(player, "Улучшать инструменты можно только у верстака на своём острове.")
         end
+
         local cost = toolUpgradeCosts[payload]
-        if (session.inventory.Wood or 0) < cost.Wood or (session.inventory.Stone or 0) < cost.Stone then
+        local previousWood = math.max(0, math.floor(tonumber(session.inventory.Wood) or 0))
+        local previousStone = math.max(0, math.floor(tonumber(session.inventory.Stone) or 0))
+        if previousWood < cost.Wood or previousStone < cost.Stone then
             return tip(player, "Не хватает дерева ×" .. tostring(cost.Wood) .. " и камня ×" .. tostring(cost.Stone) .. ".")
         end
-        session.inventory.Wood -= cost.Wood
-        session.inventory.Stone -= cost.Stone
+
+        session.economyBusy = true
+        session.inventory.Wood = previousWood - cost.Wood
+        session.inventory.Stone = previousStone - cost.Stone
         session.toolLevels[payload] = 2
-        addDailyQuestProgress(player, "UpgradeTool", 1, false)
         syncInventory(player)
         syncTools(player)
+
+        if not save(player) then
+            session.inventory.Wood = previousWood
+            session.inventory.Stone = previousStone
+            session.toolLevels[payload] = previousLevel
+            syncInventory(player)
+            syncTools(player)
+            session.economyBusy = false
+            return tip(player, "Улучшение не сохранилось. Материалы возвращены, уровень инструмента восстановлен.")
+        end
+
+        session.economyBusy = false
+        addDailyQuestProgress(player, "UpgradeTool", 1)
         event:FireClient(player, "ToolUpgraded", payload)
         tip(player, payload == "Axe" and "Топор улучшен! Деревья рубятся быстрее." or "Кирка улучшена! Камень добывается быстрее.")
-        if session.online then save(player) end
         return
     end
 
     if action == "EquipTool" then
         local session = sessions[player]
-        if not session or typeof(payload) ~= "string" or not toolIds[payload] then return end
+        if not session or typeof(payload) ~= "string" or not toolIds[payload] or not player:GetAttribute("Ready") then return end
+        if not session.online then
+            return tip(player, "Экипировка временно недоступна: сохранение профиля не работает.")
+        end
+        if session.economyBusy then return end
         if session.tools[payload] ~= true then return tip(player, "Этот инструмент ещё не открыт.") end
+
+        local previousEquipped = session.equippedTool
+        session.economyBusy = true
         session.equippedTool = payload
         syncTools(player)
+        if not save(player) then
+            session.equippedTool = previousEquipped
+            syncTools(player)
+            session.economyBusy = false
+            return tip(player, "Экипировка не сохранилась. Предыдущий инструмент восстановлен.")
+        end
+
+        session.economyBusy = false
         tip(player, payload == "Axe" and "Топор экипирован." or (payload == "Sword" and "Меч странника экипирован." or "Кирка экипирована."))
-        if session.online then save(player) end
         return
     end
 

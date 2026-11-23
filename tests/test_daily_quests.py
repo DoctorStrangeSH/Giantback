@@ -46,8 +46,8 @@ class DailyQuestContractTests(unittest.TestCase):
             'addDailyQuestProgress(player, "Scout", 1)',
             'addDailyQuestProgress(player, "Feed", 1, false)',
             'addDailyQuestProgress(player, "Play", 1, false)',
-            'addDailyQuestProgress(player, "CraftSword", 1, false)',
-            'addDailyQuestProgress(player, "UpgradeTool", 1, false)',
+            'addDailyQuestProgress(player, "CraftSword", 1)',
+            'addDailyQuestProgress(player, "UpgradeTool", 1)',
             'addDailyQuestProgress(player, "WinEncounter", 1)',
         ]
         for marker in markers:
