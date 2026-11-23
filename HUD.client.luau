@@ -421,7 +421,7 @@ local function renderPets()
     local pets = {
         {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "Л"},
         {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "М"},
-        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "✦"},
+        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "С"},
     }
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
@@ -538,8 +538,8 @@ local function renderTools()
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
     local catalog = {
-        {id = "Axe", name = "Топор путешественника", glyph = "⚒", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
-        {id = "Pickaxe", name = "Кирка путешественника", glyph = "⌁", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
+        {id = "Axe", name = "Топор путешественника", glyph = "Т", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
+        {id = "Pickaxe", name = "Кирка путешественника", glyph = "К", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
     }
     for _, definition in catalog do
         local level = tonumber(player:GetAttribute("Tool_" .. definition.id .. "Level")) or 1
@@ -709,12 +709,12 @@ local function openTab(tabName)
 end
 
 navDefinitions = {
-    {id = "City", title = "ОСТРОВ", glyph = "⌂"},
-    {id = "Farm", title = "ФЕРМА", glyph = "♧"},
-    {id = "Pets", title = "ПИТОМЦЫ", glyph = "♡"},
-    {id = "Tools", title = "ИНСТРУМЕНТЫ", glyph = "⚒"},
-    {id = "World", title = "КАРТА", glyph = "✧"},
-    {id = "Expeditions", title = "ДНЕВНИК", glyph = "▤"},
+    {id = "City", title = "ОСТРОВ", glyph = "О"},
+    {id = "Farm", title = "ФЕРМА", glyph = "Ф"},
+    {id = "Pets", title = "ПИТОМЦЫ", glyph = "П"},
+    {id = "Tools", title = "ИНСТРУМЕНТЫ", glyph = "И"},
+    {id = "World", title = "КАРТА", glyph = "М"},
+    {id = "Expeditions", title = "ДНЕВНИК", glyph = "Д"},
 }
 
 for _, definition in navDefinitions do
