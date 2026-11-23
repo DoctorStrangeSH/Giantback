@@ -247,12 +247,14 @@ toast.AnchorPoint = Vector2.new(0.5, 1)
 toast.Position = UDim2.new(0.5, 0, 1, -96)
 toast.Size = UDim2.fromOffset(380, 48)
 toast.BackgroundColor3 = palette.ink
+toast.ZIndex = 40
 toast.Visible = false
 toast.Parent = gui
 corner(toast, 15)
 stroke(toast, palette.gold, 0.3, 1)
 local toastText = label(toast, "Text", "", UDim2.new(1, -24, 1, -8), UDim2.fromOffset(12, 4), 14, palette.white, Enum.Font.GothamBold)
 toastText.TextXAlignment = Enum.TextXAlignment.Center
+toastText.ZIndex = 41
 local toastGeneration = 0
 local toastTween = nil
 local navButtons = {}
