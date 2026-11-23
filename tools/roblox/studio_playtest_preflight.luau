@@ -65,8 +65,13 @@ for _, name in expectedModules do
         "ReplicatedStorage." .. name, "ModuleScript absent in generated place")
 end
 
-record(child(ReplicatedStorage, "AlbumAction", "RemoteEvent") ~= nil,
-    "AlbumAction remote", "Expected ReplicatedStorage.AlbumAction")
+-- AlbumAction is created by World.server.luau at runtime, not written by build.py.
+if isRunning then
+    record(child(ReplicatedStorage, "AlbumAction", "RemoteEvent") ~= nil,
+        "AlbumAction runtime remote", "World server has not created AlbumAction yet")
+else
+    later("AlbumAction runtime remote", "Created by World script after Play begins")
+end
 record(child(ReplicatedStorage, "Fox", "Model") ~= nil,
     "Fox fallback", "Working Fox model template missing")
 record(child(ReplicatedStorage, "Moth", "Model") ~= nil,
