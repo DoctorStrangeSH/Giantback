@@ -19,7 +19,6 @@ class DailyQuestContractTests(unittest.TestCase):
         ):
             self.assertIn(quest_id + " = {goal = ", block)
         self.assertIn("local DAILY_QUEST_COUNT = 3", WORLD)
-        self.assertIn("local DAILY_QUEST_REWARD = 40", WORLD)
 
     def test_daily_selection_is_stable_per_player_and_utc_day(self):
         self.assertIn('os.date("!%Y-%m-%d")', WORLD)
@@ -70,6 +69,25 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn('event:FireServer("ClaimDailyQuests")', HUD)
         self.assertIn("Ежедневные задания и открытия мира", HUD)
 
+    def test_daily_quests_have_tiered_rewards(self):
+        self.assertIn('difficulty = "easy", reward = 10', WORLD)
+        self.assertIn('difficulty = "medium", reward = 15', WORLD)
+        self.assertIn('difficulty = "hard", reward = 20', WORLD)
+        self.assertIn("local function getDailyQuestBaseReward(dailyQuests)", WORLD)
+        self.assertIn('player:SetAttribute("DailyQuest_Reward", getDailyQuestBaseReward(session.dailyQuests))', WORLD)
+
+    def test_daily_selection_balances_tiers_and_avoids_duplicate_categories(self):
+        self.assertIn("local buckets = {easy = {}, medium = {}, hard = {}}", WORLD)
+        self.assertIn("local selectedCategories = {}", WORLD)
+        self.assertIn("pickFromBucket(buckets[difficulty])", WORLD)
+        self.assertIn('for _, difficulty in {"medium", "easy", "hard"} do', WORLD)
+        self.assertIn('local totalReward = reward + streakBonusToday', HUD)
+
+    def test_journal_shows_difficulty_and_individual_rewards(self):
+        self.assertIn('player:GetAttribute(prefix .. "Reward")', HUD)
+        self.assertIn('player:GetAttribute(prefix .. "Difficulty")', HUD)
+        self.assertIn('difficultyNames = {easy = "ЛЕГКО", medium = "СРЕДНЕ", hard = "СЛОЖНО"}', HUD)
+
     def test_streak_is_saved_across_daily_rollover(self):
         self.assertIn("streak = streak", WORLD)
         self.assertIn("bestStreak = bestStreak", WORLD)
@@ -82,7 +100,8 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn("local DAILY_STREAK_WEEK_BONUS = 60", WORLD)
         self.assertIn("nextStreak == 3 and DAILY_STREAK_THREE_BONUS", WORLD)
         self.assertIn("nextStreak % 7 == 0 and DAILY_STREAK_WEEK_BONUS", WORLD)
-        self.assertIn("local credited = DAILY_QUEST_REWARD + streakBonus", WORLD)
+        self.assertIn("local baseReward = getDailyQuestBaseReward(session.dailyQuests)", WORLD)
+        self.assertIn("local credited = baseReward + streakBonus", WORLD)
 
     def test_streak_and_coins_roll_back_together_on_save_failure(self):
         self.assertIn("session.dailyQuests.streak = previousStreak", WORLD)
