@@ -1015,51 +1015,6 @@ task.spawn(function()
     end
 end)
 
-local function updateLayout()
-    local width = gui.AbsoluteSize.X
-    local height = gui.AbsoluteSize.Y
-    local compact = width < 700
-    if compact then
-        -- Keep a real gap between the brand and resource tray on narrow screens.
-        local topBarUsableWidth = math.max(0, topBar.AbsoluteSize.X - 8)
-        local brandWidth = math.floor(topBarUsableWidth * 0.42)
-        local resourcesWidth = topBarUsableWidth - brandWidth
-        brand.Size = UDim2.fromOffset(brandWidth, 58)
-        brandTitle.TextSize = 16
-        brandSubtitle.TextSize = 8
-        resources.Size = UDim2.fromOffset(resourcesWidth, 58)
-        woodLabel.TextSize = 10
-        stoneLabel.TextSize = 10
-        objective.Size = UDim2.new(1, -32, 0, 138)
-        objective.Position = UDim2.fromOffset(16, 84)
-        panel.Size = UDim2.new(1, -24, 0, math.max(180, math.min(430, height - 150)))
-        panel.Position = UDim2.new(0.5, 0, 0.5, -8)
-        nav.Size = UDim2.new(1, -24, 0, 64)
-        nav.Position = UDim2.new(0.5, 0, 1, -10)
-        for _, navButton in navButtons do
-            navButton.TextSize = 10
-        end
-    else
-        brand.Size = UDim2.fromOffset(178, 58)
-        brandTitle.TextSize = 18
-        brandSubtitle.TextSize = 9
-        resources.Size = UDim2.fromOffset(214, 58)
-        objective.Size = UDim2.fromOffset(352, 138)
-        objective.Position = UDim2.fromOffset(16, 84)
-        panel.Size = UDim2.fromOffset(470, 420)
-        nav.Size = UDim2.fromOffset(560, 68)
-        nav.Position = UDim2.new(0.5, 0, 1, -14)
-        for _, navButton in navButtons do
-            navButton.TextSize = 13
-        end
-    end
-    if width < 410 then
-        resources.Size = UDim2.fromOffset(166, 58)
-        woodLabel.TextSize = 11
-        stoneLabel.TextSize = 11
-    end
-end
-
-gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateLayout)
-task.defer(updateLayout)
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateResponsiveLayout)
+task.defer(updateResponsiveLayout)
 refresh()
