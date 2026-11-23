@@ -20,15 +20,31 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('decorationId ~= "Path" and decorationId ~= "FlowerBed"', WORLD)
         self.assertIn('if #session.city.buildings >= 12 then', WORLD)
         self.assertIn('(root.Position - meadow.Position).Magnitude > 22', WORLD)
-        self.assertIn('localTarget.X < -2 or localTarget.X > 14', WORLD)
-        self.assertIn('localTarget.Z < -6 or localTarget.Z > 6', WORLD)
-        self.assertIn('local x = math.clamp(math.floor(localTarget.X / 4 + 0.5) * 4, 0, 12)', WORLD)
-        self.assertIn('local z = math.clamp(math.floor(localTarget.Z / 4 + 0.5) * 4, -4, 4)', WORLD)
+        self.assertIn('(root.Position - targetFrame.Position).Magnitude > 24', WORLD)
+        self.assertIn('x % 1 ~= 0 or z % 1 ~= 0 or rotation % 1 ~= 0', WORLD)
+        self.assertIn('x < 0 or x > 12 or x % 4 ~= 0', WORLD)
+        self.assertIn('z < -4 or z > 4 or z % 4 ~= 0', WORLD)
+        self.assertIn('rotation < 0 or rotation >= 360 or rotation % 90 ~= 0', WORLD)
         self.assertIn('if existing.x == x and existing.z == z then', WORLD)
         self.assertIn('decorationId == "Path" and {Wood = 2, Stone = 0} or {Wood = 4, Stone = 2}', WORLD)
 
+    def test_client_ghost_preview_and_manual_placement_controls(self):
+        self.assertIn('local function createPlacementGhost(decorationId)', HUD)
+        self.assertIn('workspace:Raycast(ray.Origin, ray.Direction * 600, params)', HUD)
+        self.assertIn('FilterDescendantsInstances = {meadow}', HUD)
+        self.assertIn('placementValid = inBounds and not occupied and enough and hasSpace', HUD)
+        self.assertIn('placementRotation = (placementRotation + 90) % 360', HUD)
+        self.assertIn('event:FireServer("PlaceIslandDecoration", {', HUD)
+        self.assertIn('placementButtons.Confirm.Active = placementValid', HUD)
+        self.assertIn('input.KeyCode == Enum.KeyCode.Escape', HUD)
+        self.assertIn('input.KeyCode == Enum.KeyCode.R', HUD)
+
+    def test_server_publishes_occupied_cells_for_preview(self):
+        self.assertIn('player:SetAttribute("City_BuildingCells", table.concat(occupiedCells, ";"))', WORLD)
+        self.assertIn('local occupiedCells = {}', WORLD)
+
     def test_rotation_and_visuals_are_server_generated(self):
-        self.assertIn('local rotation = (math.floor(math.deg(math.atan2(-localLook.X, -localLook.Z)) / 90 + 0.5) % 4) * 90', WORLD)
+        self.assertIn('local rotation = (math.floor((tonumber(decoration.rotation) or 0) / 90 + 0.5) % 4) * 90', WORLD)
         self.assertIn('local function renderIslandDecoration(', WORLD)
         self.assertIn('"PavingStone"', WORLD)
         self.assertIn('"FlowerBedSoil"', WORLD)
@@ -39,7 +55,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('local decorationCount = tonumber(player:GetAttribute("City_DecorationCount")) or 0', HUD)
         self.assertIn('{id = "Path", title = "Каменная дорожка"', HUD)
         self.assertIn('{id = "FlowerBed", title = "Цветочная клумба"', HUD)
-        self.assertIn('event:FireServer("PlaceIslandDecoration", definition.id)', HUD)
+        self.assertIn('beginIslandPlacement(definition.id)', HUD)
         self.assertIn('action.TextSize = compact and 9 or 10', HUD)
 
 

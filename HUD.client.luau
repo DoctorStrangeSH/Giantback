@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local TextService = game:GetService("TextService")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local event = ReplicatedStorage:WaitForChild("AlbumAction")
@@ -431,6 +432,269 @@ end
 local showToast
 local getObjective
 
+local placementState = nil
+local placementGhost = nil
+local placementOverlay = nil
+local placementStatus = nil
+local placementButtons = {}
+local placementRotation = 0
+local placementTarget = nil
+local placementValid = false
+local placementPointer = nil
+local placementConnection = nil
+local placementParts = {}
+
+local function clearPlacementGhost()
+    for _, part in ipairs(placementParts) do
+        if part and part.Parent then part:Destroy() end
+    end
+    table.clear(placementParts)
+    placementGhost = nil
+end
+
+local function makePlacementPart(name, size, offset, shape)
+    local part = Instance.new("Part")
+    part.Name = name
+    part.Size = size
+    part.Shape = shape or Enum.PartType.Block
+    part.Anchored = true
+    part.CanCollide = false
+    part.CanTouch = false
+    part.CanQuery = false
+    part.CastShadow = false
+    part.Material = Enum.Material.Neon
+    part.Transparency = 1
+    part.Parent = workspace
+    table.insert(placementParts, {part = part, offset = offset})
+    return part
+end
+
+local function createPlacementGhost(decorationId)
+    clearPlacementGhost()
+    if decorationId == "Path" then
+        for row = 1, 2 do
+            for column = 1, 2 do
+                local offset = Vector3.new((column - 1.5) * 1.72, 0.2, (row - 1.5) * 1.72)
+                makePlacementPart("PathPreview", Vector3.new(1.62, 0.24, 1.62), offset)
+            end
+        end
+    else
+        makePlacementPart("FlowerBedPreviewSoil", Vector3.new(3.35, 0.28, 3.35), Vector3.new(0, 0.18, 0))
+        for _, edge in {
+            {Vector3.new(3.8, 0.42, 0.28), Vector3.new(0, 0.34, -1.78)},
+            {Vector3.new(3.8, 0.42, 0.28), Vector3.new(0, 0.34, 1.78)},
+            {Vector3.new(0.28, 0.42, 3.35), Vector3.new(-1.78, 0.34, 0)},
+            {Vector3.new(0.28, 0.42, 3.35), Vector3.new(1.78, 0.34, 0)},
+        } do
+            makePlacementPart("FlowerBedPreviewEdge", edge[1], edge[2])
+        end
+        local colors = {
+            Color3.fromRGB(246, 190, 105), Color3.fromRGB(232, 143, 153),
+            Color3.fromRGB(195, 164, 224), Color3.fromRGB(246, 224, 157),
+        }
+        for index = 1, 4 do
+            local column = (index - 1) % 2
+            local row = math.floor((index - 1) / 2)
+            local offset = Vector3.new((column - 0.5) * 1.55, 0.72, (row - 0.5) * 1.55)
+            local flower = makePlacementPart("FlowerPreview", Vector3.new(0.62, 0.42, 0.62),
+                offset, Enum.PartType.Ball)
+            flower.Color = colors[index]
+        end
+    end
+end
+
+local function finishPlacement()
+    if placementConnection then placementConnection:Disconnect(); placementConnection = nil end
+    if placementOverlay then placementOverlay:Destroy(); placementOverlay = nil end
+    clearPlacementGhost()
+    placementState = nil
+    placementTarget = nil
+    placementPointer = nil
+    placementValid = false
+    table.clear(placementButtons)
+end
+
+local function getPlacementMeadow()
+    local islands = workspace:FindFirstChild("PlayerIslands")
+    local island = islands and islands:FindFirstChild("HomeIsland_" .. tostring(player.UserId))
+    return island and island:FindFirstChild("Meadow")
+end
+
+local function getOccupiedPlacementCells()
+    local result = {}
+    local encoded = player:GetAttribute("City_BuildingCells")
+    if type(encoded) ~= "string" then return result end
+    for cell in string.gmatch(encoded, "[^;]+") do
+        result[cell] = true
+    end
+    return result
+end
+
+local function updatePlacementGhost()
+    if not placementState then return end
+    local meadow = getPlacementMeadow()
+    local camera = workspace.CurrentCamera
+    if not meadow or not camera then
+        placementValid = false
+        placementTarget = nil
+        placementStatus.Text = "Не удалось найти лужайку твоего острова"
+        for _, entry in ipairs(placementParts) do
+            if entry.part and entry.part.Parent then entry.part.Transparency = 1 end
+        end
+        if placementButtons.Confirm then
+            placementButtons.Confirm.Active = false
+            placementButtons.Confirm.AutoButtonColor = false
+            placementButtons.Confirm.BackgroundColor3 = palette.muted
+        end
+        return
+    end
+
+    local pointer = placementPointer or UserInputService:GetMouseLocation()
+    local ray = camera:ScreenPointToRay(pointer.X, pointer.Y)
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Include
+    params.FilterDescendantsInstances = {meadow}
+    local hit = workspace:Raycast(ray.Origin, ray.Direction * 600, params)
+    if not hit then
+        placementValid = false
+        placementTarget = nil
+        placementStatus.Text = UserInputService.TouchEnabled
+            and "Коснись свободного места на лужайке"
+            or "Наведи курсор на лужайку"
+        for _, entry in ipairs(placementParts) do
+            if entry.part and entry.part.Parent then entry.part.Transparency = 1 end
+        end
+        if placementButtons.Confirm then
+            placementButtons.Confirm.Active = false
+            placementButtons.Confirm.AutoButtonColor = false
+            placementButtons.Confirm.BackgroundColor3 = palette.muted
+        end
+        return
+    end
+
+    local localPoint = meadow.CFrame:PointToObjectSpace(hit.Position)
+    local x = math.clamp(math.floor(localPoint.X / 4 + 0.5) * 4, 0, 12)
+    local z = math.clamp(math.floor(localPoint.Z / 4 + 0.5) * 4, -4, 4)
+    local inBounds = localPoint.X >= -2 and localPoint.X <= 14
+        and localPoint.Z >= -6 and localPoint.Z <= 6
+    local cellKey = tostring(x) .. "," .. tostring(z)
+    local occupied = getOccupiedPlacementCells()[cellKey] == true
+    local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
+    local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
+    local enough = placementState == "Path" and wood >= 2
+        or placementState == "FlowerBed" and wood >= 4 and stone >= 2
+    local count = tonumber(player:GetAttribute("City_DecorationCount")) or 0
+    local hasSpace = count < 12
+    placementValid = inBounds and not occupied and enough and hasSpace
+    placementTarget = {x = x, z = z, rotation = placementRotation}
+
+    local frame = meadow.CFrame * CFrame.new(x, meadow.Size.Y / 2 + 0.16, z)
+        * CFrame.Angles(0, math.rad(placementRotation), 0)
+    for _, entry in ipairs(placementParts) do
+        local part = entry.part
+        if part and part.Parent then
+            part.CFrame = frame * CFrame.new(entry.offset)
+            part.Transparency = 0.42
+            part.Color = placementValid and Color3.fromRGB(105, 235, 145)
+                or Color3.fromRGB(235, 100, 92)
+        end
+    end
+
+    if not inBounds then
+        placementStatus.Text = "За пределами строительной площадки"
+    elseif occupied then
+        placementStatus.Text = "Это место уже занято"
+    elseif not enough then
+        placementStatus.Text = "Не хватает материалов для постройки"
+    elseif not hasSpace then
+        placementStatus.Text = "Достигнут лимит: 12 построек"
+    else
+        placementStatus.Text = "Место свободно • Поворот: " .. tostring(placementRotation) .. "°"
+    end
+    placementButtons.Confirm.Active = placementValid
+    placementButtons.Confirm.AutoButtonColor = placementValid
+    placementButtons.Confirm.BackgroundColor3 = placementValid and palette.forest or palette.muted
+end
+
+local function beginIslandPlacement(decorationId)
+    if decorationId ~= "Path" and decorationId ~= "FlowerBed" then return end
+    finishPlacement()
+    placementState = decorationId
+    placementRotation = 0
+    createPlacementGhost(decorationId)
+    closeActivePanel()
+    placementOverlay = Instance.new("Frame")
+    placementOverlay.Name = "BuildPlacementControls"
+    placementOverlay.AnchorPoint = Vector2.new(0.5, 1)
+    placementOverlay.Position = UDim2.new(0.5, 0, 1, -88)
+    placementOverlay.Size = UDim2.new(1, -24, 0, 112)
+    placementOverlay.BackgroundColor3 = palette.ink
+    placementOverlay.BorderSizePixel = 0
+    placementOverlay.ZIndex = 45
+    placementOverlay.Parent = gui
+    corner(placementOverlay, 18)
+    stroke(placementOverlay, palette.gold, 0.2, 1.5)
+
+    placementStatus = label(placementOverlay, "Status", "Наведи на лужайку и выбери место",
+        UDim2.new(1, -20, 0, 24), UDim2.fromOffset(10, 7), 12, palette.white, Enum.Font.GothamBold)
+    placementStatus.TextXAlignment = Enum.TextXAlignment.Center
+    placementStatus.ZIndex = 46
+
+    local rotate = button(placementOverlay, "Rotate", "↻ ПОВОРОТ",
+        UDim2.new(0.32, -8, 0, 42), UDim2.new(0, 8, 0, 54), palette.forestLight)
+    local cancel = button(placementOverlay, "Cancel", "ОТМЕНА",
+        UDim2.new(0.32, -8, 0, 42), UDim2.new(0.34, 0, 0, 54), palette.coral)
+    local confirm = button(placementOverlay, "Confirm", "ПОСТРОИТЬ",
+        UDim2.new(0.32, -8, 0, 42), UDim2.new(0.68, 0, 0, 54), palette.forest)
+    for _, control in {rotate, cancel, confirm} do
+        control.ZIndex = 46
+        control.TextSize = 11
+    end
+    placementButtons.Confirm = confirm
+    confirm.Active = false
+    confirm.AutoButtonColor = false
+    confirm.BackgroundColor3 = palette.muted
+
+    rotate.Activated:Connect(function()
+        placementRotation = (placementRotation + 90) % 360
+        updatePlacementGhost()
+    end)
+    cancel.Activated:Connect(finishPlacement)
+    confirm.Activated:Connect(function()
+        if not placementValid or not placementTarget or not placementState then return end
+        event:FireServer("PlaceIslandDecoration", {
+            id = placementState,
+            x = placementTarget.x,
+            z = placementTarget.z,
+            rotation = placementTarget.rotation,
+        })
+        finishPlacement()
+    end)
+
+    if placementConnection then placementConnection:Disconnect() end
+    placementConnection = RunService.RenderStepped:Connect(updatePlacementGhost)
+end
+
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not placementState or processed then return end
+    if input.UserInputType == Enum.UserInputType.Touch then
+        placementPointer = Vector2.new(input.Position.X, input.Position.Y)
+        task.defer(updatePlacementGhost)
+    elseif input.KeyCode == Enum.KeyCode.R then
+        placementRotation = (placementRotation + 90) % 360
+        updatePlacementGhost()
+    elseif input.KeyCode == Enum.KeyCode.Escape or input.KeyCode == Enum.KeyCode.ButtonB then
+        finishPlacement()
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input, processed)
+    if not placementState or processed then return end
+    if input.UserInputType == Enum.UserInputType.Touch then
+        placementPointer = Vector2.new(input.Position.X, input.Position.Y)
+    end
+end)
+
 local function renderCity()
     local cityLevel = tonumber(player:GetAttribute("City_Level")) or 1
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
@@ -483,7 +747,7 @@ local function renderCity()
             palette.forest)
         action.TextSize = compact and 9 or 10
         action.Activated:Connect(function()
-            event:FireServer("PlaceIslandDecoration", definition.id)
+            beginIslandPlacement(definition.id)
         end)
     end
 end
