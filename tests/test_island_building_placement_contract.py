@@ -25,7 +25,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('x < 0 or x > 12 or x % 4 ~= 0', WORLD)
         self.assertIn('z < -4 or z > 4 or z % 4 ~= 0', WORLD)
         self.assertIn('rotation < 0 or rotation >= 360 or rotation % 90 ~= 0', WORLD)
-        self.assertIn('if existing.x == x and existing.z == z then', WORLD)
+        self.assertIn('if index ~= moveIndex and existing.x == x and existing.z == z then', WORLD)
         self.assertIn('decorationId == "Path" and {Wood = 2, Stone = 0} or {Wood = 4, Stone = 2}', WORLD)
 
     def test_client_ghost_preview_and_manual_placement_controls(self):
