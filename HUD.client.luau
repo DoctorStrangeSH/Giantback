@@ -1080,6 +1080,8 @@ local function renderTools()
     local moonPetals = tonumber(player:GetAttribute("Resource_MoonPetal")) or 0
     addInfo("Редкие находки", "Лунные семена: " .. tostring(moonSeeds) .. "   •   Звёздные осколки: " .. tostring(starShards)
         .. "   •   Солнечные лепестки: " .. tostring(sunPetals) .. "   •   Лунные лепестки: " .. tostring(moonPetals), 76)
+    local harvestEggs = tonumber(player:GetAttribute("Resource_HarvestEgg")) or 0
+    addInfo("Праздничное яйцо", harvestEggs > 0 and ("В рюкзаке: " .. tostring(harvestEggs) .. " шт. Открой раздел «Экспедиции», чтобы вылупить нового питомца.") or "Яйцо можно получить за 50 очков Фестиваля урожая.", 54)
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
     local catalog = {
