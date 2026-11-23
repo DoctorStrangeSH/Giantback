@@ -62,7 +62,9 @@ class BridgeRepairContractTests(unittest.TestCase):
 
     def test_hud_prioritizes_bridge_repair_and_displays_materials(self):
         self.assertIn('if not player:GetAttribute("Bridge_HomeToGrove") then', HUD)
-        self.assertIn("Для моста нужно 5 дерева и 3 камня", HUD)
+        self.assertIn('Собери материалы для первого моста', HUD)
+        self.assertIn('tostring(math.min(wood, 5)) .. "/5', HUD)
+        self.assertIn('tostring(math.min(stone, 3)) .. "/3', HUD)
         self.assertIn('Resource_Wood', HUD)
         self.assertIn('Resource_Stone', HUD)
         self.assertIn("woodLabel.Text =", HUD)
