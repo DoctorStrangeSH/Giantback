@@ -44,7 +44,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('local occupiedCells = {}', WORLD)
 
     def test_rotation_and_visuals_are_server_generated(self):
-        self.assertIn('local rotation = (math.floor(math.deg(math.atan2(-localLook.X, -localLook.Z)) / 90 + 0.5) % 4) * 90', WORLD)
+        self.assertIn('local rotation = math.floor(tonumber(decoration.rotation) or 0) / 90', WORLD)
         self.assertIn('local function renderIslandDecoration(', WORLD)
         self.assertIn('"PavingStone"', WORLD)
         self.assertIn('"FlowerBedSoil"', WORLD)
@@ -55,7 +55,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('local decorationCount = tonumber(player:GetAttribute("City_DecorationCount")) or 0', HUD)
         self.assertIn('{id = "Path", title = "Каменная дорожка"', HUD)
         self.assertIn('{id = "FlowerBed", title = "Цветочная клумба"', HUD)
-        self.assertIn('event:FireServer("PlaceIslandDecoration", definition.id)', HUD)
+        self.assertIn('beginIslandPlacement(definition.id)', HUD)
         self.assertIn('action.TextSize = compact and 9 or 10', HUD)
 
 
