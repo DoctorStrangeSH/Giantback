@@ -1112,6 +1112,7 @@ local dummyHumanoid = Instance.new("Humanoid")
 dummyHumanoid.MaxHealth = 100
 dummyHumanoid.Health = 100
 dummyHumanoid.WalkSpeed = 0
+dummyHumanoid.RequiresNeck = false
 dummyHumanoid.DisplayName = "Тренировочный манекен"
 dummyHumanoid.Parent = dummy
 for _, detail in {
