@@ -46,7 +46,7 @@ class HarvestFestivalEggContractTests(unittest.TestCase):
         ):
             self.assertIn(fragment, definitions)
         hatch_start = WORLD.index("local function hatchFestivalEgg")
-        hatch_end = WORLD.index("\\nsave = function(player)", hatch_start)
+        hatch_end = WORLD.index("\nsave = function(player)", hatch_start)
         hatch = WORLD[hatch_start:hatch_end]
         self.assertIn('if player:GetAttribute(definition.id) ~= true then', hatch)
         self.assertIn('session.inventory.HarvestEgg -= 1', hatch)
