@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local event = ReplicatedStorage:WaitForChild("AlbumAction")
@@ -241,6 +242,67 @@ local toastText = label(toast, "Text", "", UDim2.new(1, -24, 1, -8), UDim2.fromO
 toastText.TextXAlignment = Enum.TextXAlignment.Center
 local toastGeneration = 0
 local toastTween = nil
+
+local function updateResponsiveLayout()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+    local viewport = camera.ViewportSize
+    local compact = viewport.X < 620
+    local narrow = viewport.X < 420
+
+    topBar.Position = UDim2.fromOffset(compact and 8 or 16, compact and 8 or 16)
+    topBar.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 48 or 58)
+    brand.Size = UDim2.fromOffset(compact and (narrow and 112 or 132) or 178, compact and 48 or 58)
+    brandTitle.TextSize = compact and 14 or 18
+    brandSubtitle.Visible = not compact
+    resources.Size = UDim2.fromOffset(compact and (narrow and 150 or 174) or 214, compact and 48 or 58)
+    woodLabel.TextSize = compact and 10 or 13
+    stoneLabel.TextSize = compact and 10 or 13
+    objective.Position = UDim2.fromOffset(compact and 8 or 16, compact and 64 or 84)
+    objective.Size = UDim2.fromOffset(compact and (narrow and 210 or 250) or 352, compact and 112 or 138)
+    objectiveIcon.Size = UDim2.fromOffset(compact and 38 or 54, compact and 38 or 54)
+    objectiveIcon.Position = UDim2.fromOffset(10, 10)
+    objectiveEyebrow.Position = UDim2.fromOffset(compact and 56 or 76, 8)
+    objectiveText.Position = UDim2.fromOffset(compact and 56 or 76, 27)
+    objectiveHint.Visible = not compact
+    objectiveText.Size = UDim2.new(1, compact and -64 or -86, 0, compact and 30 or 34)
+    progressTrack.Position = UDim2.new(0, compact and 56 or 76, 1, -12)
+    progressTrack.Size = UDim2.new(1, compact and -68 or -92, 0, 5)
+    progressCount.Visible = not compact
+
+    nav.Position = UDim2.new(0.5, 0, 1, compact and -6 or -14)
+    nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 54 or 68)
+    navLayout.Padding = UDim.new(0, compact and 2 or 7)
+    for _, definition in navDefinitions do
+        local navButton = navButtons[definition.id]
+        if navButton then
+            navButton.Size = UDim2.new(1 / #navDefinitions, compact and -2 or -6, 1, -8)
+            navButton.Text = compact and definition.glyph or (definition.glyph .. "\\n" .. definition.title)
+            navButton.TextSize = compact and 20 or 13
+        end
+    end
+
+    local panelWidth = math.max(240, math.min(470, viewport.X - (compact and 16 or 48)))
+    local panelHeight = math.max(220, math.min(420, viewport.Y - (compact and 150 or 190)))
+    panel.Size = UDim2.fromOffset(panelWidth, panelHeight)
+    panel.Position = UDim2.new(0.5, 0, 0.5, compact and -18 or 0)
+    panelTitle.TextSize = compact and 16 or 20
+    panelSubtitle.TextSize = compact and 10 or 12
+    body.Position = UDim2.fromOffset(12, 72)
+    body.Size = UDim2.new(1, -24, 1, -84)
+    toast.Size = UDim2.fromOffset(math.min(380, math.max(190, viewport.X - 24)), 48)
+    toast.Position = UDim2.new(0.5, 0, 1, compact and -68 or -96)
+end
+
+updateResponsiveLayout()
+if workspace.CurrentCamera then
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateResponsiveLayout)
+end
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+    local camera = workspace.CurrentCamera
+    if camera then camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateResponsiveLayout) end
+    task.defer(updateResponsiveLayout)
+end)
 
 local function clearBody()
     for _, child in body:GetChildren() do
@@ -660,7 +722,7 @@ local navDefinitions = {
     {id = "Pets", title = "ПИТОМЦЫ", glyph = "♡"},
     {id = "Tools", title = "ИНСТРУМЕНТЫ", glyph = "⚒"},
     {id = "World", title = "КАРТА", glyph = "✧"},
-    {id = "Expeditions", title = "ДНЕВНИК", glyph = "📖"},
+    {id = "Expeditions", title = "ДНЕВНИК", glyph = "▤"},
 }
 
 for _, definition in navDefinitions do
