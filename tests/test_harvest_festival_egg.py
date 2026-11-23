@@ -67,7 +67,7 @@ class HarvestFestivalEggContractTests(unittest.TestCase):
         self.assertIn('button(body, "HatchFestivalEgg"', HUD)
         self.assertIn('event:FireServer("ClaimFestivalEgg")', HUD)
         self.assertIn('event:FireServer("HatchFestivalEgg")', HUD)
-        self.assertIn("Дубликаты исключены", HUD)
+        self.assertIn("уже открытые виды исключаются", HUD)
         for companion_id in ("BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"):
             self.assertIn(f'{companion_id} =', ALBUM)
             self.assertIn(f'elseif state.id == "{companion_id}"', ANIMATION) if f'elseif state.id == "{companion_id}"' in ANIMATION else self.assertIn('local bobSpeed = resting and 1.45', ANIMATION)
