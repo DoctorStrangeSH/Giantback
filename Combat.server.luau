@@ -524,7 +524,9 @@ local function performAttack(player, state, now)
                 if offset.Magnitude <= attackRange and root.CFrame.LookVector:Dot(offset.Unit) >= 0.25 then
                     hitThisSwing[enemy] = true
                     entry.contributors[player] = true
+                    local healthBefore = entry.humanoid.Health
                     dealEnemyDamage(enemy, entry, COMBO_DAMAGE[comboStep])
+                    local damageDealt = math.max(0, math.floor(healthBefore - entry.humanoid.Health + 0.5))
                     if isFinisher and entry.root.Parent and not entry.isTrainingDummy then
                         -- Server-owned impact push: ordinary enemies are displaced clearly;
                         -- bosses resist the launch so the finisher never skips their phase loop.
@@ -541,6 +543,9 @@ local function performAttack(player, state, now)
                         enemyId = enemy:GetAttribute("EnemyId") or enemy.Name,
                         comboStep = comboStep,
                         finisher = isFinisher,
+                        damage = damageDealt,
+                        health = math.max(0, entry.humanoid.Health),
+                        maxHealth = entry.humanoid.MaxHealth,
                     })
                 end
             end
@@ -598,7 +603,9 @@ local function performChargedAttack(player, state, now)
                     and root.CFrame.LookVector:Dot(offset.Unit) >= 0.2 then
                     hitThisSwing[enemy] = true
                     entry.contributors[player] = true
+                    local healthBefore = entry.humanoid.Health
                     dealEnemyDamage(enemy, entry, damage)
+                    local damageDealt = math.max(0, math.floor(healthBefore - entry.humanoid.Health + 0.5))
                     if entry.root.Parent and not entry.isTrainingDummy then
                         local pushDirection = Vector3.new(forward.X, 0, forward.Z)
                         if pushDirection.Magnitude > 0 then
@@ -613,7 +620,9 @@ local function performChargedAttack(player, state, now)
                         enemyId = enemy:GetAttribute("EnemyId") or enemy.Name,
                         charged = true,
                         chargeRatio = chargeRatio,
-                        damage = damage,
+                        damage = damageDealt,
+                        health = math.max(0, entry.humanoid.Health),
+                        maxHealth = entry.humanoid.MaxHealth,
                     })
                 end
             end
