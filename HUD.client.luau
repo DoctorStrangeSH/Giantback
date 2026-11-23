@@ -902,6 +902,7 @@ local function renderPets()
         {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "Л"},
         {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "М"},
         {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "С"},
+        {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "Т"},
     }
     local compact = gui.AbsoluteSize.X < 620
     for _, pet in pets do
@@ -914,6 +915,7 @@ local function renderPets()
         iconPlate.Position = UDim2.fromOffset(10, compact and 10 or 24)
         iconPlate.BackgroundColor3 = pet.id == "Fox" and Color3.fromRGB(244, 215, 171)
             or pet.id == "Moth" and Color3.fromRGB(222, 215, 244)
+            or pet.id == "HarvestSprite" and Color3.fromRGB(255, 220, 158)
             or Color3.fromRGB(198, 229, 224)
         iconPlate.BorderSizePixel = 0
         iconPlate.Parent = item
@@ -935,7 +937,7 @@ local function renderPets()
         descriptionLabel.TextWrapped = true
         descriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
         local mood = player:GetAttribute("Companion_" .. pet.id .. "_Mood") or (pet.id == "Fox" and "Любопытство" or pet.id == "Moth" and "Спокойствие" or "Сияние")
-        local moodLine = pet.id == "Fox" and "Любопытный исследователь" or pet.id == "Moth" and "Нежная хранительница света" or "Кристальный проводник"
+        local moodLine = pet.id == "Fox" and "Любопытный исследователь" or pet.id == "Moth" and "Нежная хранительница света" or pet.id == "HarvestSprite" and "Добрый хранитель урожая" or "Кристальный проводник"
         local moodGlyph = mood == "Радость" and "✦" or mood == "Довольство" and "♡" or pet.id == "Fox" and "⌕" or "☾"
         local moodLabel = label(item, "Mood", owned and (moodGlyph .. " " .. moodLine .. " · " .. mood) or "Характер откроется при знакомстве",
             compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, -220, 0, 18),
@@ -978,7 +980,8 @@ local function renderPets()
             end
         end
         local wispTalent = "Призменное чутьё: скрытые жилы на " .. tostring(16 + (companionLevel - 1) * 3) .. " сек."
-        local talentLabel = label(item, "Talent", owned and (pet.id == "Fox" and foxTalent or pet.id == "Moth" and mothTalent or wispTalent) or "Найди питомца, чтобы открыть талант",
+        local harvestTalent = "Осенний огонёк: уникальный сезонный спутник."
+        local talentLabel = label(item, "Talent", owned and (pet.id == "Fox" and foxTalent or pet.id == "Moth" and mothTalent or pet.id == "HarvestSprite" and harvestTalent or wispTalent) or "Найди питомца, чтобы открыть талант",
             UDim2.new(1, -28, 0, compact and 34 or 20),
             UDim2.fromOffset(16, compact and 202 or 179), 10, palette.forest)
         talentLabel.TextWrapped = true
@@ -1339,6 +1342,22 @@ local function renderDailyQuests()
             showToast("Набери ещё очков, чтобы открыть праздничные награды.")
         else
             event:FireServer("ClaimSeasonalEventRewards")
+        end
+    end)
+    local spriteClaimed = player:GetAttribute("SeasonalEvent_HarvestSpriteClaimed") == true or player:GetAttribute("HarvestSprite") == true
+    local spriteClaim = button(body, "ClaimHarvestSprite", spriteClaimed and "ТЫКВИК УЖЕ С ТОБОЙ" or "ПОЛУЧИТЬ ТЫКВИКА • 100 ОЧКОВ", UDim2.new(1, 0, 0, 44), UDim2.new(), spriteClaimed and palette.forestLight or palette.gold)
+    spriteClaim.TextColor3 = spriteClaimed and palette.white or palette.ink
+    spriteClaim.TextSize = 12
+    spriteClaim.AutoButtonColor = eventActive and eventPoints >= 100 and not spriteClaimed
+    spriteClaim.Activated:Connect(function()
+        if spriteClaimed then
+            showToast("Тыквик уже путешествует с тобой!")
+        elseif not eventActive then
+            showToast("Тыквика можно получить во время Фестиваля урожая.")
+        elseif eventPoints < 100 then
+            showToast("Набери 100 очков фестиваля, чтобы познакомиться с Тыквиком.")
+        else
+            event:FireServer("ClaimHarvestSprite")
         end
     end)
     addInfo("ПРАЗДНИЧНЫЕ НАГРАДЫ", tostring(eventPoints) .. "/100 очков • доступно рубежей: " .. tostring(eventClaimable) .. " • " .. tostring(eventCoins) .. " Coins + " .. tostring(eventShards) .. " осколков", 48)

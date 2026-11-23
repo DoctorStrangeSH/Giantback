@@ -31,8 +31,8 @@ local occupiedHomeSlots = {}
 if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
-local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк"}
-local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit"}
+local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик"}
+local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed"}
 local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local swordRecipe = {IronIngot = 2, Wood = 6}
@@ -505,7 +505,7 @@ local function useWarehouse(player, ownerUserId, action)
     if session.online then save(player) end
 end
 
-local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp"}
+local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite"}
 local COMPANION_MAX_LEVEL = 5
 
 local function companionXpToNext(level)
@@ -539,6 +539,7 @@ local companionMoodDefaults = {
     Fox = "Любопытство",
     Moth = "Спокойствие",
     CrystalWisp = "Любопытство",
+    HarvestSprite = "Радость",
 }
 
 local companionPersonalities = {"Любопытный", "Озорной", "Смелый", "Застенчивый"}
@@ -591,6 +592,12 @@ local companionMutationDefinitions = {
         {id = "EchoSpark", name = "Искра эха", rarity = "Редкий", weight = 48, biome = "CrystalGrotto"},
         {id = "Starseed", name = "Звёздное семя", rarity = "Эпический", weight = 11, biome = "CrystalGrotto"},
         {id = "HeartOfPrism", name = "Сердце призмы", rarity = "Легендарный", weight = 1, biome = "CrystalGrotto"},
+    },
+    HarvestSprite = {
+        {id = "AmberGlow", name = "Янтарное сияние", rarity = "Необычный", weight = 140, biome = "Grove"},
+        {id = "CloverCrown", name = "Клеверная корона", rarity = "Редкий", weight = 48, biome = "Grove"},
+        {id = "GoldenHarvest", name = "Золотой урожай", rarity = "Эпический", weight = 11, biome = "Grove"},
+        {id = "AutumnHeart", name = "Сердце осени", rarity = "Легендарный", weight = 1, biome = "Grove"},
     },
 }
 
@@ -1168,6 +1175,7 @@ local function normalizeSeasonalEvent(raw)
         eventId = window.id,
         points = sameEvent and math.clamp(math.floor(tonumber(saved.points) or 0), 0, 100) or 0,
         claimedMilestones = claimed,
+        harvestSpriteClaimed = sameEvent and saved.harvestSpriteClaimed == true or false,
     }
 end
 
@@ -1202,6 +1210,7 @@ local function syncSeasonalEvent(player)
     player:SetAttribute("SeasonalEvent_RewardCoins", coins)
     player:SetAttribute("SeasonalEvent_RewardStarShards", starShards)
     player:SetAttribute("SeasonalEvent_ClaimableCount", available)
+    player:SetAttribute("SeasonalEvent_HarvestSpriteClaimed", session.seasonalEvent.harvestSpriteClaimed == true)
     for _, milestone in SEASONAL_EVENT_MILESTONES do
         local key = tostring(milestone.points)
         player:SetAttribute("SeasonalEvent_Milestone_" .. key .. "_Claimed", session.seasonalEvent.claimedMilestones[key] == true)
@@ -1764,6 +1773,56 @@ local function claimSeasonalEventRewards(player)
 end
 
 
+local function claimHarvestSprite(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Праздничный питомец временно недоступен: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+
+    local window = getHarvestFestivalWindow()
+    if not window.active then
+        return tip(player, "Тыквик появляется только во время Фестиваля урожая.")
+    end
+
+    session.seasonalEvent = normalizeSeasonalEvent(session.seasonalEvent)
+    if session.seasonalEvent.points < 100 then
+        return tip(player, "Набери 100 очков фестиваля, чтобы познакомиться с Тыквиком.")
+    end
+    if session.seasonalEvent.harvestSpriteClaimed or player:GetAttribute("HarvestSprite") == true then
+        return tip(player, "Тыквик уже путешествует с тобой!")
+    end
+
+    local previousMutation = session.companionMutations.HarvestSprite
+    local previousBiome = session.companionDiscoveryBiomes.HarvestSprite
+    local previousCompanion = player:GetAttribute("Companion")
+    session.economyBusy = true
+    session.seasonalEvent.harvestSpriteClaimed = true
+    session.companionDiscoveryBiomes.HarvestSprite = "Grove"
+    session.companionMutations.HarvestSprite = rollCompanionMutation("HarvestSprite", "Grove")
+    player:SetAttribute("HarvestSprite", true)
+    player:SetAttribute("Companion", "HarvestSprite")
+    syncCompanionProgress(player)
+    syncSeasonalEvent(player)
+
+    if not save(player) then
+        session.seasonalEvent.harvestSpriteClaimed = false
+        session.companionDiscoveryBiomes.HarvestSprite = previousBiome
+        session.companionMutations.HarvestSprite = previousMutation
+        player:SetAttribute("HarvestSprite", false)
+        player:SetAttribute("Companion", previousCompanion or "")
+        syncCompanionProgress(player)
+        syncSeasonalEvent(player)
+        session.economyBusy = false
+        return tip(player, "Не удалось сохранить Тыквика. Награда не списана — попробуй ещё раз.")
+    end
+
+    session.economyBusy = false
+    tip(player, "Знакомься с Тыквиком! Он стал твоим новым спутником и уже следует за тобой.")
+end
+
+
 save = function(player)
     local session = sessions[player]
     if not session or not session.online or not store then return false end
@@ -1966,7 +2025,7 @@ local function init(player)
         weeklyChallenges = nil,
         seasonalEvent = nil,
         companionProgress = normalizeCompanionProgress(nil),
-        companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth, CrystalWisp = companionMoodDefaults.CrystalWisp},
+        companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth, CrystalWisp = companionMoodDefaults.CrystalWisp, HarvestSprite = companionMoodDefaults.HarvestSprite},
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
         companionMutations = normalizeCompanionMutations(nil),
         companionDiscoveryBiomes = {},
@@ -2463,6 +2522,11 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "ClaimSeasonalEventRewards" then
         claimSeasonalEventRewards(player)
+        return
+    end
+
+    if action == "ClaimHarvestSprite" then
+        claimHarvestSprite(player)
         return
     end
 

@@ -30,6 +30,7 @@ local names = {
     Fox = "Лисёнок-корешок",
     Moth = "Лунная моль",
     CrystalWisp = "Кристальный светляк",
+    HarvestSprite = "Тыквик",
 }
 
 -- One clear discovery marker at a time; personal quest progress remains server-owned.
@@ -45,7 +46,7 @@ local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local foxCachePrompts = {}
 local foxCacheHighlights = {}
 local foxSniffUntil = 0
-local pettingUntil = {Fox = 0, Moth = 0, CrystalWisp = 0}
+local pettingUntil = {Fox = 0, Moth = 0, CrystalWisp = 0, HarvestSprite = 0}
 local pendingPetBurst = {}
 local lastFoxCacheSpot = ""
 local foxScentTrailFolder = nil
@@ -613,7 +614,7 @@ workspace.DescendantAdded:Connect(resourceVisibility.onDescendantAdded)
 event.OnClientEvent:Connect(function(message, payload)
     if message == "CompanionPetted" and type(payload) == "table" then
         local companionId = payload.companionId
-        if companionId == "Fox" or companionId == "Moth" then
+        if companionId == "Fox" or companionId == "Moth" or companionId == "HarvestSprite" then
             pettingUntil[companionId] = os.clock() + 2.8
             pendingPetBurst[companionId] = math.clamp(math.floor(tonumber(payload.bondStage) or 0), 0, 4)
         end

@@ -2585,6 +2585,103 @@ for index, side in {-1, 1} do
 end
 
 
+-- Harvest Sprite companion template: an original, seasonal creature with its own silhouette.
+local harvestSprite = ReplicatedStorage:FindFirstChild("HarvestSprite")
+if harvestSprite then harvestSprite:Destroy() end
+harvestSprite = Instance.new("Model")
+harvestSprite.Name = "HarvestSprite"
+harvestSprite:SetAttribute("CompanionId", "HarvestSprite")
+harvestSprite:SetAttribute("GiantbackSeasonalCompanion", true)
+harvestSprite.Parent = ReplicatedStorage
+
+local spriteBody = orb(
+    harvestSprite,
+    "Body",
+    Vector3.new(0, 0, 0),
+    Vector3.new(2.0, 1.72, 1.72),
+    Color3.fromRGB(226, 130, 62),
+    Enum.Material.SmoothPlastic
+)
+harvestSprite.PrimaryPart = spriteBody
+
+for ribIndex = 1, 5 do
+    local angle = (ribIndex - 1) * math.pi * 2 / 5
+    local rib = orb(
+        harvestSprite,
+        "Pumpkin rib",
+        Vector3.new(math.cos(angle) * 0.38, 0, math.sin(angle) * 0.34),
+        Vector3.new(0.62, 1.48, 0.72),
+        ribIndex % 2 == 0 and Color3.fromRGB(242, 155, 78) or Color3.fromRGB(211, 113, 54),
+        Enum.Material.SmoothPlastic
+    )
+    rib.CFrame = CFrame.new(rib.Position) * CFrame.Angles(0, -angle, 0)
+end
+
+local spriteStem = cylinder(
+    harvestSprite,
+    "Stem",
+    Vector3.new(0, 0.88, 0),
+    0.42,
+    0.22,
+    Color3.fromRGB(94, 125, 70),
+    Enum.Material.Wood
+)
+local spriteLeaf = orb(
+    harvestSprite,
+    "Leaf",
+    Vector3.new(0.28, 1.0, 0.05),
+    Vector3.new(0.82, 0.16, 0.42),
+    Color3.fromRGB(145, 190, 113),
+    Enum.Material.Grass
+)
+spriteLeaf.CFrame = spriteLeaf.CFrame * CFrame.Angles(0, 0, math.rad(-25))
+
+local spriteEyeLeft = orb(
+    harvestSprite,
+    "Eye left",
+    Vector3.new(-0.42, 0.2, -0.77),
+    Vector3.new(0.17, 0.21, 0.1),
+    Color3.fromRGB(57, 57, 43),
+    Enum.Material.SmoothPlastic
+)
+local spriteEyeRight = orb(
+    harvestSprite,
+    "Eye right",
+    Vector3.new(0.42, 0.2, -0.77),
+    Vector3.new(0.17, 0.21, 0.1),
+    Color3.fromRGB(57, 57, 43),
+    Enum.Material.SmoothPlastic
+)
+local spriteGlow = orb(
+    harvestSprite,
+    "Lantern core",
+    Vector3.new(0, -0.3, -0.82),
+    Vector3.new(0.26, 0.26, 0.12),
+    Color3.fromRGB(255, 218, 126),
+    Enum.Material.Neon,
+    0.08
+)
+addLight(spriteGlow, Color3.fromRGB(255, 184, 91), 8, 0.8)
+
+local spriteVine = cylinder(
+    harvestSprite,
+    "Vine tail",
+    Vector3.new(0.98, -0.24, 0.24),
+    0.8,
+    0.13,
+    Color3.fromRGB(94, 143, 82),
+    Enum.Material.Grass,
+    CFrame.Angles(math.rad(90), 0, math.rad(32))
+)
+local spriteBerry = orb(
+    harvestSprite,
+    "Berry tail",
+    Vector3.new(1.32, -0.24, 0.24),
+    Vector3.new(0.28, 0.28, 0.28),
+    Color3.fromRGB(202, 91, 73),
+    Enum.Material.SmoothPlastic
+)
+
 -- Let the gameplay bootstrap wait until the collectible models are fully decorated.
 local ready = ReplicatedStorage:FindFirstChild("GiantbackVisualsReady") or Instance.new("BoolValue")
 ready.Name = "GiantbackVisualsReady"
