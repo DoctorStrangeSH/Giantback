@@ -463,7 +463,7 @@ local function makePlacementPart(name, size, offset, shape)
     part.CanQuery = false
     part.CastShadow = false
     part.Material = Enum.Material.Neon
-    part.Transparency = 0.42
+    part.Transparency = 1
     part.Parent = workspace
     table.insert(placementParts, {part = part, offset = offset})
     return part
@@ -545,6 +545,9 @@ local function updatePlacementGhost()
         placementStatus.Text = UserInputService.TouchEnabled
             and "Коснись свободного места на лужайке"
             or "Наведи курсор на лужайку"
+        for _, entry in ipairs(placementParts) do
+            if entry.part and entry.part.Parent then entry.part.Transparency = 1 end
+        end
         return
     end
 
@@ -570,6 +573,7 @@ local function updatePlacementGhost()
         local part = entry.part
         if part and part.Parent then
             part.CFrame = frame * CFrame.new(entry.offset)
+            part.Transparency = 0.42
             part.Color = placementValid and Color3.fromRGB(105, 235, 145)
                 or Color3.fromRGB(235, 100, 92)
         end
