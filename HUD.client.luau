@@ -362,7 +362,7 @@ local function addPlot(plotId, index)
         stateText = string.format("%s растёт — осталось %02d:%02d", crop and crop.name or "Растение", minutes, seconds)
     end
     local item = card(body, "Plot" .. tostring(index), 66)
-    local icon = label(item, "Icon", not unlocked and "🔒" or (crop and crop.glyph or "＋"), UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 12), 23, palette.forest, Enum.Font.GothamBlack)
+    local icon = label(item, "Icon", not unlocked and "З" or (crop and crop.glyph or "＋"), UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 12), 23, palette.forest, Enum.Font.GothamBlack)
     icon.TextXAlignment = Enum.TextXAlignment.Center
     label(item, "Title", "Грядка " .. tostring(index), UDim2.new(1, -72, 0, 22), UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
     label(item, "State", stateText, UDim2.new(1, -72, 0, 30), UDim2.fromOffset(60, 31), 12, palette.muted)
@@ -568,7 +568,7 @@ local function renderTools()
     local swordOwned = player:GetAttribute("Tool_SwordOwned") == true
     local swordEquipped = player:GetAttribute("Tool_Equipped") == "Sword"
     local swordCard = card(body, "Tool_Sword", 124)
-    label(swordCard, "SwordIcon", "⚔", UDim2.fromOffset(44, 48), UDim2.fromOffset(10, 22), 28, palette.gold)
+    label(swordCard, "SwordIcon", "М", UDim2.fromOffset(44, 48), UDim2.fromOffset(10, 22), 28, palette.gold)
     label(swordCard, "SwordName", "Меч странника", UDim2.new(1, -156, 0, 24), UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
     label(swordCard, "SwordStatus", swordOwned and "Создан · можно сражаться на арене" or "Рецепт: 2 слитка + 6 дерева · свой верстак", UDim2.new(1, -156, 0, 46), UDim2.fromOffset(62, 35), 11, palette.muted)
     local swordEquip = button(swordCard, "SwordEquip", swordEquipped and "В РУКАХ" or "ВЗЯТЬ", UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 8), swordEquipped and palette.gold or palette.forest)
@@ -602,7 +602,7 @@ end
 local expeditionTracks = {
     {
         id = "Grove", title = "СОЛНЕЧНАЯ РОЩА", subtitle = "Следопытство и первые тайники",
-        icon = "🌿", color = palette.mint,
+        icon = "Р", color = palette.mint,
         steps = {
             {key = "Fox", title = "Познакомиться с лисёнком", hint = "Найди гнездо лисёнка в Солнечной роще."},
             {key = "Seed", title = "Найти лунное семя", hint = "Позови лисёнка у следов на тропе."},
@@ -611,7 +611,7 @@ local expeditionTracks = {
     },
     {
         id = "Dusk", title = "СУМЕРЕЧНАЯ ДОЛИНА", subtitle = "Лунные цветы и древние руны",
-        icon = "🌙", color = palette.lilac,
+        icon = "С", color = palette.lilac,
         steps = {
             {key = "Moth", title = "Познакомиться с лунной молью", hint = "Найди её в Сумеречной долине."},
             {key = "MoonBloom", title = "Пробудить лунный цветок", hint = "Позови моль к скрытому цветку."},
