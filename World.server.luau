@@ -1576,6 +1576,30 @@ local function collectFoxCache(player, cacheId)
     awardCompanionXp(player, "Fox", 30)
 end
 
+local explorationMilestoneCoins = {
+    MoonGateTrace = 3,
+    MoonGateOpen = 5,
+    MoonRelic = 6,
+    CrystalGrottoDiscovered = 8,
+    CrystalHeart = 8,
+    CrystalRunes = 5,
+    CrystalCache = 10,
+    CrystalEchoDiscovered = 8,
+    PrismSeedFound = 15,
+}
+
+local function grantExplorationCoins(player, milestoneId)
+    local session = sessions[player]
+    local amount = explorationMilestoneCoins[milestoneId]
+    if not session or not player:GetAttribute("Ready") or not amount then return 0 end
+    local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    local credited = math.min(amount, MAX_COINS - previousCoins)
+    if credited <= 0 then return 0 end
+    session.coins = previousCoins + credited
+    syncFarm(player)
+    return credited
+end
+
 local function searchMoonGate(player)
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
@@ -1597,7 +1621,8 @@ local function searchMoonGate(player)
     if (root.Position - anchor.Position).Magnitude > 10 then return end
 
     player:SetAttribute("MoonGateTrace", true)
-    tip(player, "Лисёнок нашёл древний след под корнями! Теперь позови лунную моль к рунам.")
+    local coinBonus = grantExplorationCoins(player, "MoonGateTrace")
+    tip(player, "Лисёнок нашёл древний след под корнями! Теперь позови лунную моль к рунам. +" .. tostring(coinBonus) .. " монет.")
     if session.online and not save(player) then
         warn("MoonGate Fox trace save will be retried:", player.UserId)
     end
@@ -1625,7 +1650,8 @@ local function revealMoonGate(player)
     if (root.Position - anchor.Position).Magnitude > 10 then return end
 
     player:SetAttribute("MoonGateOpen", true)
-    tip(player, "Лунная моль зажгла древние руны! Тайный проход открылся — за аркой спрятан звёздный осколок.")
+    local coinBonus = grantExplorationCoins(player, "MoonGateOpen")
+    tip(player, "Лунная моль зажгла древние руны! Тайный проход открылся — за аркой спрятан звёздный осколок. +" .. tostring(coinBonus) .. " монет.")
     if session.online and not save(player) then
         warn("MoonGate Moth reveal save will be retried:", player.UserId)
     end
@@ -1650,9 +1676,10 @@ local function collectMoonRelic(player)
     if (root.Position - anchor.Position).Magnitude > 10 then return end
 
     player:SetAttribute("MoonRelic", true)
+    local coinBonus = grantExplorationCoins(player, "MoonRelic")
     session.inventory.StarShard = (session.inventory.StarShard or 0) + 1
     syncInventory(player)
-    tip(player, "Редкая находка! Ты получил звёздный осколок ×1.")
+    tip(player, "Редкая находка! Ты получил звёздный осколок ×1 и " .. tostring(coinBonus) .. " монет.")
     if session.online and not save(player) then
         warn("Moon Relic reward save will be retried:", player.UserId)
     end
@@ -3451,8 +3478,9 @@ if crystalEntrance and crystalArrival then
         crystalGrottoInside[player] = true
         player:SetAttribute("InCrystalGrotto", true)
         player:SetAttribute("CrystalGrottoDiscovered", true)
+        local coinBonus = grantExplorationCoins(player, "CrystalGrottoDiscovered")
         character:PivotTo(crystalArrival.CFrame * CFrame.new(0, 4, 0))
-        tip(player, "Кристальная пещера открыта! Исследуй зал и найди древнее сердце.")
+        tip(player, "Кристальная пещера открыта! Исследуй зал и найди древнее сердце. +" .. tostring(coinBonus) .. " монет.")
         if session.online then save(player) end
     end)
 end
@@ -3507,7 +3535,8 @@ for expectedIndex, runeName in crystalRuneSequence do
             if state.nextIndex > #crystalRuneSequence then
                 crystalRuneProgress[player] = nil
                 player:SetAttribute("CrystalRunes", true)
-                tip(player, "Три руны запели в унисон! Древняя печать открыла тайник.")
+                local coinBonus = grantExplorationCoins(player, "CrystalRunes")
+                tip(player, "Три руны запели в унисон! Древняя печать открыла тайник. +" .. tostring(coinBonus) .. " монет.")
                 if session.online then save(player) end
             else
                 local nextLabel = state.nextIndex == 2 and "Рассвет" or "Прилив"
@@ -3534,9 +3563,10 @@ if crystalCache then
             return tip(player, "В тайнике больше нет сокровищ. Печать осталась в твоей коллекции.")
         end
         player:SetAttribute("CrystalCache", true)
+        local coinBonus = grantExplorationCoins(player, "CrystalCache")
         session.inventory.CrystalSigil = (session.inventory.CrystalSigil or 0) + 1
         syncInventory(player)
-        tip(player, "Сокровище найдено! Получена древняя печать ×1.")
+        tip(player, "Сокровище найдено! Получена древняя печать ×1 и " .. tostring(coinBonus) .. " монет.")
         if session.online and not save(player) then
             warn("Crystal Grotto cache save will be retried:", player.UserId)
             tip(player, "Печать получена. Сохранение будет повторено автоматически.")
@@ -3558,8 +3588,9 @@ if crystalEchoGate and crystalEchoArrival then
         end
         crystalEchoInside[player] = true
         player:SetAttribute("CrystalEchoDiscovered", true)
+        local coinBonus = grantExplorationCoins(player, "CrystalEchoDiscovered")
         character:PivotTo(crystalEchoArrival.CFrame * CFrame.new(0, 4, 0))
-        tip(player, "Секретная Эхо-камера открыта! Здесь растёт редкое призматическое семя.")
+        tip(player, "Секретная Эхо-камера открыта! Здесь растёт редкое призматическое семя. +" .. tostring(coinBonus) .. " монет.")
         if session.online then save(player) end
     end)
 end
@@ -3589,9 +3620,10 @@ if prismSeed then
             return tip(player, "Призматическое семя уже хранится в твоей коллекции.")
         end
         player:SetAttribute("PrismSeedFound", true)
+        local coinBonus = grantExplorationCoins(player, "PrismSeedFound")
         session.inventory.PrismSeed = (session.inventory.PrismSeed or 0) + 1
         syncInventory(player)
-        tip(player, "Невероятная находка! Получено призматическое семя ×1.")
+        tip(player, "Невероятная находка! Получено призматическое семя ×1 и " .. tostring(coinBonus) .. " монет.")
         if session.online and not save(player) then
             warn("Prism Seed reward save will be retried:", player.UserId)
             tip(player, "Семя получено. Сохранение будет повторено автоматически.")
@@ -3654,9 +3686,10 @@ if crystalHeart then
             return tip(player, "Сердце уже пробуждено. Его осколок хранится в твоей коллекции.")
         end
         player:SetAttribute("CrystalHeart", true)
+        local coinBonus = grantExplorationCoins(player, "CrystalHeart")
         session.inventory.CrystalShard = (session.inventory.CrystalShard or 0) + 1
         syncInventory(player)
-        tip(player, "Редкая находка! Получен кристальный осколок ×1.")
+        tip(player, "Редкая находка! Получен кристальный осколок ×1 и " .. tostring(coinBonus) .. " монет.")
         if session.online and not save(player) then
             warn("Crystal Grotto reward save will be retried:", player.UserId)
             tip(player, "Осколок получен. Сохранение временно задерживается и будет повторено автоматически.")
