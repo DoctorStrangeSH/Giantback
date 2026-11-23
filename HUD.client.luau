@@ -262,6 +262,8 @@ local navButtons = {}
 local navDefinitions = {}
 local closeActivePanel
 local applyPanelLayer
+local refreshActiveTab
+local lastCompactLayout
 
 local function updateResponsiveLayout()
     local camera = workspace.CurrentCamera
@@ -320,6 +322,11 @@ local function updateResponsiveLayout()
     body.Size = UDim2.new(1, -24, 1, -84)
     toast.Size = UDim2.fromOffset(math.min(380, math.max(190, viewport.X - 24)), 48)
     toast.Position = UDim2.new(0.5, 0, 1, compact and -68 or -96)
+
+    if lastCompactLayout ~= nil and lastCompactLayout ~= compact and refreshActiveTab then
+        refreshActiveTab()
+    end
+    lastCompactLayout = compact
 end
 
 
@@ -785,6 +792,13 @@ applyPanelLayer = function()
             descendant.ZIndex = 22
         end
     end
+end
+
+refreshActiveTab = function()
+    if not panel.Visible or not activeTab or not renderers[activeTab] then return end
+    clearBody()
+    renderers[activeTab]()
+    applyPanelLayer()
 end
 
 closeActivePanel = function()
