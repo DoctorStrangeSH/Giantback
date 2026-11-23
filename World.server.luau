@@ -765,6 +765,7 @@ local function finishCompanionPlay(player, success, reason)
         return
     end
 
+    addDailyQuestProgress(player, "Play", 1, false)
     local progressData = session.companionProgress[challenge.companionId]
     progressData.bond = math.clamp((progressData.bond or 0) + 15, 0, 1000)
     setCompanionMood(player, challenge.companionId, "Радость")
@@ -913,6 +914,7 @@ local function feedCompanion(player, companionId)
 
     local food = companionFeedFoods[foodId]
     session.inventory[foodId] -= 1
+    addDailyQuestProgress(player, "Feed", 1, false)
     local progressData = session.companionProgress[companionId]
     progressData.bond = math.clamp((progressData.bond or 0) + food.bond, 0, 1000)
     setCompanionMood(player, companionId, "Довольство")
@@ -1138,7 +1140,7 @@ addDailyQuestProgress = function(player, questId, amount, saveProgress)
     local session = sessions[player]
     local definition = DAILY_QUEST_DEFINITIONS[questId]
     if not session or not definition or not player:GetAttribute("Ready") then return end
-    session.dailyQuests = normalizeDailyQuests(session.dailyQuests)
+    session.dailyQuests = normalizeDailyQuests(session.dailyQuests, player, session)
     if session.dailyQuests.claimed then
         syncDailyQuests(player)
         return
@@ -1169,7 +1171,7 @@ local function claimDailyQuestReward(player)
         return tip(player, "Ежедневные задания временно недоступны: сохранение профиля не работает.")
     end
     if session.economyBusy then return tip(player, "Подожди завершения текущей операции с монетами.") end
-    session.dailyQuests = normalizeDailyQuests(session.dailyQuests)
+    session.dailyQuests = normalizeDailyQuests(session.dailyQuests, player, session)
     if session.dailyQuests.claimed then return tip(player, "Награда за сегодня уже получена. Новые задания появятся после обновления дня.") end
     for questId, definition in DAILY_QUEST_DEFINITIONS do
         if (session.dailyQuests.progress[questId] or 0) < definition.goal then
@@ -1261,7 +1263,7 @@ save = function(player)
             readyAt = math.max(0, math.floor(tonumber(session.foxSearchReadyAt) or 0)),
             searchCount = math.max(0, math.floor(tonumber(session.foxSearchCount) or 0)),
         }
-        local dailyQuestSnapshot = normalizeDailyQuests(session.dailyQuests)
+        local dailyQuestSnapshot = normalizeDailyQuests(session.dailyQuests, player, session)
         local completedCombatSnapshot = {}
         for encounterId, completed in session.completedCombatEncounters do
             if type(encounterId) == "string" and #encounterId <= 64 and completed == true then
@@ -1392,7 +1394,7 @@ local function init(player)
         foxSearchReadyAt = 0,
         foxSearchCount = 0,
         completedCombatEncounters = {},
-        dailyQuests = normalizeDailyQuests(nil),
+        dailyQuests = nil,
         companionProgress = normalizeCompanionProgress(nil),
         companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth, CrystalWisp = companionMoodDefaults.CrystalWisp},
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
@@ -1556,7 +1558,7 @@ local function init(player)
                     session.completedCombatEncounters[encounterId] = true
                 end
             end
-            session.dailyQuests = normalizeDailyQuests(data.dailyQuests)
+            session.dailyQuests = data.dailyQuests
 
             session.companionProgress = normalizeCompanionProgress(data.companions)
             local savedCompanions = type(data.companions) == "table" and data.companions or {}
@@ -1641,6 +1643,7 @@ combatRewardFunction.OnInvoke = function(player, encounterId)
         syncInventory(player)
         return false
     end
+    addDailyQuestProgress(player, "WinEncounter", 1)
     tip(player, "Победа! Получено: " .. reward.itemId .. " ×" .. tostring(reward.amount))
     return true
 end
@@ -1946,6 +1949,7 @@ event.OnServerEvent:Connect(function(player, action, payload)
         session.inventory.Wood -= swordRecipe.Wood
         session.tools.Sword = true
         session.equippedTool = "Sword"
+        addDailyQuestProgress(player, "CraftSword", 1, false)
         syncInventory(player)
         syncTools(player)
         event:FireClient(player, "SwordCrafted")
@@ -1973,6 +1977,7 @@ event.OnServerEvent:Connect(function(player, action, payload)
         session.inventory.Wood -= cost.Wood
         session.inventory.Stone -= cost.Stone
         session.toolLevels[payload] = 2
+        addDailyQuestProgress(player, "UpgradeTool", 1, false)
         syncInventory(player)
         syncTools(player)
         event:FireClient(player, "ToolUpgraded", payload)
@@ -2365,6 +2370,7 @@ local function interactFarmPlot(player, ownerUserId, plotId)
             return tip(player, "Нет семян: " .. definition.displayName .. ". Выбери другую культуру.")
         end
         session.inventory[definition.seedItemId] -= 1
+        addDailyQuestProgress(player, "Plant", 1, false)
         state.cropId = cropId
         state.plantedAt = now
         state.readyAt = now + definition.growthSeconds
@@ -2382,6 +2388,7 @@ local function interactFarmPlot(player, ownerUserId, plotId)
             return tip(player, definition.displayName .. " ещё растёт: осталось " .. tostring(math.ceil(remaining / 60)) .. " мин.")
         end
         session.inventory[definition.harvestItemId] = (session.inventory[definition.harvestItemId] or 0) + definition.reward
+        addDailyQuestProgress(player, "Harvest", definition.reward, false)
         if definition.regrowSeconds then
             state.plantedAt = now
             state.readyAt = now + definition.regrowSeconds
@@ -3271,6 +3278,8 @@ local function spawnResource(def)
         })
         tip(player, "Получено: " .. def.displayName .. " ×" .. tostring(rewardAmount))
         addDailyQuestProgress(player, "Gather", 1, false)
+        if def.itemId == "Wood" then addDailyQuestProgress(player, "GatherWood", rewardAmount, false) end
+        if def.itemId == "Stone" then addDailyQuestProgress(player, "GatherStone", rewardAmount, false) end
 
         if session.online and not save(player) then
             warn("Resource pickup save will be retried:", player.UserId, def.key)
