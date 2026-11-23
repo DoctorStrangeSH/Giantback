@@ -19,7 +19,7 @@ class SeedMarketShopContractTests(unittest.TestCase):
     def test_purchase_is_server_validated_and_persisted(self):
         self.assertIn("local function buyFarmSeeds(player, cropId)", WORLD)
         self.assertIn("if not session.online then", WORLD)
-        self.assertIn("if session.shopBusy then return end", WORLD)
+        self.assertIn("if session.economyBusy then return end", WORLD)
         self.assertIn("local MAX_SEED_STACK = 999", WORLD)
         self.assertIn("session.coins = currentCoins - offer.cost", WORLD)
         self.assertIn("session.inventory[seedItemId] = currentSeeds + offer.amount", WORLD)
@@ -38,7 +38,7 @@ class SeedMarketShopContractTests(unittest.TestCase):
     def test_studio_acceptance_is_documented(self):
         self.assertIn("## Магазин семян", ROADMAP)
         self.assertIn("## Магазин семян", STUDIO)
-        self.assertIn("лимиту 999 семян", STUDIO)
+        self.assertIn("лимита 999 семян", STUDIO)
 
 
 if __name__ == "__main__":
