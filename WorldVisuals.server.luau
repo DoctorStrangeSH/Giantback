@@ -2323,6 +2323,125 @@ CollectionService:AddTag(grottoCombatRegion, "GiantbackCombatRegion")
 
 -- Crystal Warden: a compact but unmistakable crystal-armoured guardian of the grotto.
 local function spawnCrystalWarden()
+
+-- Shardling: a fast crystal scavenger that feints before committing to a damaging dash.
+local function spawnCrystalShardling()
+    if not crystalGrotto.Parent then return end
+    local shardling = Instance.new("Model")
+    shardling.Name = "CrystalGrottoShardling01"
+    shardling:SetAttribute("EnemyId", "CrystalGrottoShardling01")
+    shardling:SetAttribute("EncounterId", "CrystalGrottoShardling01")
+    shardling:SetAttribute("RegionId", "CrystalGrotto")
+    shardling:SetAttribute("ArchetypeId", "Shardling")
+    shardling:SetAttribute("CombatState", "Idle")
+    shardling:SetAttribute("AggroRange", 28)
+    shardling:SetAttribute("AttackRange", 6)
+    shardling:SetAttribute("AttackDamage", 7)
+    shardling:SetAttribute("AttackCooldown", 2.65)
+    shardling:SetAttribute("TelegraphSeconds", 0.9)
+    shardling:SetAttribute("PathRefreshSeconds", 0.72)
+    shardling:SetAttribute("ShardlingDashRange", 14)
+    shardling:SetAttribute("ShardlingDashDamage", 13)
+    shardling.Parent = crystalGrotto
+
+    local spawnPosition = grottoCenter + Vector3.new(-13, 3, 8)
+    local root = makeEnemyPart(
+        shardling, "HumanoidRootPart", Vector3.new(1.7, 1.9, 1),
+        CFrame.lookAt(spawnPosition, spawnPosition + Vector3.new(1, 0, -0.4)), palette.ink
+    )
+    root.Transparency = 1
+    root.Massless = false
+    local torso = makeEnemyPart(
+        shardling, "Torso", Vector3.new(1.65, 1.8, 1.2),
+        root.CFrame, palette.lilac, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    torso.CanCollide = true
+    local head = makeEnemyPart(
+        shardling, "Head", Vector3.new(1.15, 1.05, 1.05),
+        root.CFrame * CFrame.new(0, 1.35, -0.08), palette.lilacLight, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    local rightArm = makeEnemyPart(
+        shardling, "Right Arm", Vector3.new(0.55, 1.45, 0.65),
+        root.CFrame * CFrame.new(1.0, 0.05, 0), palette.stone, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    local leftArm = makeEnemyPart(
+        shardling, "Left Arm", Vector3.new(0.55, 1.45, 0.65),
+        root.CFrame * CFrame.new(-1.0, 0.05, 0), palette.stone, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    local rightLeg = makeEnemyPart(
+        shardling, "Right Leg", Vector3.new(0.62, 1.25, 0.72),
+        root.CFrame * CFrame.new(0.43, -1.25, 0), palette.ink, Enum.Material.Slate, Enum.PartType.Ball
+    )
+    local leftLeg = makeEnemyPart(
+        shardling, "Left Leg", Vector3.new(0.62, 1.25, 0.72),
+        root.CFrame * CFrame.new(-0.43, -1.25, 0), palette.ink, Enum.Material.Slate, Enum.PartType.Ball
+    )
+
+    joinRig(shardling, "RootJoint", root, torso, CFrame.new(), CFrame.new())
+    joinRig(shardling, "Neck", torso, head, CFrame.new(0, 0.9, 0), CFrame.new(0, -0.55, 0))
+    joinRig(shardling, "Right Shoulder", torso, rightArm, CFrame.new(0.82, 0.48, 0), CFrame.new(0, 0.48, 0))
+    joinRig(shardling, "Left Shoulder", torso, leftArm, CFrame.new(-0.82, 0.48, 0), CFrame.new(0, 0.48, 0))
+    joinRig(shardling, "Right Hip", torso, rightLeg, CFrame.new(0.42, -0.75, 0), CFrame.new(0, 0.6, 0))
+    joinRig(shardling, "Left Hip", torso, leftLeg, CFrame.new(-0.42, -0.75, 0), CFrame.new(0, 0.6, 0))
+
+    local function addShardlingCrystal(name, size, frame, color, parentPart, shape)
+        local shard = makeEnemyPart(shardling, name, size, frame, color, Enum.Material.Neon, shape or Enum.PartType.Wedge)
+        shard.CanQuery = false
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = parentPart
+        weld.Part1 = shard
+        weld.Parent = shard
+        return shard
+    end
+
+    local core = addShardlingCrystal(
+        "Shardling core", Vector3.new(0.48, 0.58, 0.3),
+        torso.CFrame * CFrame.new(0, 0.02, -0.59), palette.water, torso, Enum.PartType.Ball
+    )
+    addLight(core, palette.water, 8, 0.6)
+    for index = 1, 4 do
+        local side = index % 2 == 0 and 1 or -1
+        local shard = addShardlingCrystal(
+            "Back shard " .. tostring(index),
+            Vector3.new(0.48, 1.25 + (index % 2) * 0.35, 0.5),
+            torso.CFrame * CFrame.new(side * (0.42 + math.floor((index - 1) / 2) * 0.22), 0.72 - (index % 2) * 0.24, 0.42)
+                * CFrame.Angles(math.rad(-18), 0, math.rad(side * 18)),
+            index % 2 == 0 and palette.moon or palette.lilacLight,
+            torso
+        )
+        addLight(shard, shard.Color, 4, 0.2)
+    end
+    for side = -1, 1, 2 do
+        local eye = addShardlingCrystal(
+            side < 0 and "Left eye" or "Right eye",
+            Vector3.new(0.12, 0.16, 0.08),
+            head.CFrame * CFrame.new(side * 0.25, 0.06, -0.49),
+            palette.gold, head, Enum.PartType.Ball
+        )
+        addLight(eye, palette.gold, 3, 0.2)
+    end
+
+    local humanoid = Instance.new("Humanoid")
+    humanoid.DisplayName = "Осколочник"
+    humanoid.MaxHealth = 72
+    humanoid.Health = 72
+    humanoid.WalkSpeed = 12
+    humanoid.BreakJointsOnDeath = false
+    humanoid.Parent = shardling
+    shardling.PrimaryPart = root
+    humanoid.Died:Connect(function()
+        task.delay(3, function()
+            if shardling.Parent then shardling:Destroy() end
+        end)
+        task.delay(25, function()
+            if crystalGrotto.Parent then spawnCrystalShardling() end
+        end)
+    end)
+
+    CollectionService:AddTag(shardling, "GiantbackEnemy")
+    root:SetNetworkOwner(nil)
+end
+spawnCrystalShardling()
     if not crystalGrotto.Parent then return end
     local warden = Instance.new("Model")
     warden.Name = "CrystalGrottoWarden01"
