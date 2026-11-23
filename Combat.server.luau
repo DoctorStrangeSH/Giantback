@@ -48,7 +48,7 @@ local DODGE_DURATION = 0.45
 local DODGE_COOLDOWN = 1.5
 local BLOCK_DAMAGE_MULTIPLIER = 0.25
 
-local ALLOWED_REGIONS = { GroveTraining = true, DuskTraining = true, Rootvault = true, CrystalGrotto = true }
+local ALLOWED_REGIONS = { GroveTraining = true, DuskTraining = true, Rootvault = true, CrystalGrotto = true, CrystalEchoChamber = true }
 local ALLOWED_WEAPONS = { SwordShield = true }
 local KNOWN_ENCOUNTERS = {
     GroveTrainingDummy01 = true,
@@ -61,6 +61,7 @@ local KNOWN_ENCOUNTERS = {
     RootvaultSealMinion = true,
     CrystalGrottoWarden01 = true,
     CrystalGrottoShardling01 = true,
+    CrystalEchoPrismGuardian01 = true,
 }
 local REWARD_ENCOUNTERS = {
     GroveGrunt01 = true,
@@ -71,6 +72,7 @@ local REWARD_ENCOUNTERS = {
     RootvaultSealKeeper01 = true,
     CrystalGrottoWarden01 = true,
     CrystalGrottoShardling01 = true,
+    CrystalEchoPrismGuardian01 = true,
 }
 
 local remote = ReplicatedStorage:FindFirstChild("CombatAction")
@@ -343,7 +345,8 @@ local function registerEnemy(enemy)
             entry.pathRefreshSeconds = math.clamp(tonumber(enemy:GetAttribute(prefix .. "PathRefreshSeconds")) or entry.pathRefreshSeconds, 0.5, 3)
             enemy:SetAttribute("BossPhase", nextPhase)
             enemy:SetAttribute("CombatState", "PhaseTransition")
-            if nextPhase == 3 and not entry.minionsSummoned then
+            if nextPhase == 3 and enemy:GetAttribute("ArchetypeId") == "SealKeeper"
+                and not entry.minionsSummoned then
                 entry.minionsSummoned = true
                 local activated = activateRootvaultBossMinions()
                 enemy:SetAttribute("SummonedMinions", activated)
