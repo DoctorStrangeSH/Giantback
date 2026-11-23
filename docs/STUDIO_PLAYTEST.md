@@ -4,7 +4,7 @@
 
 ## Получить актуальную игру
 
-1. Открой [GitHub Actions](https://github.com/DoctorStrangeSH/Giantback/actions/workflows/validate-place.yml) и выбери **последний успешный запуск нужной игровой ветки** `feat/combat-c0-contract` (PR #7).
+1. Открой [GitHub Actions](https://github.com/DoctorStrangeSH/Giantback/actions/workflows/validate-place.yml) и выбери **последний успешный запуск ветки `main`**. С 23 ноября 2026 игровые исходники включены в `main` через [PR #8](https://github.com/DoctorStrangeSH/Giantback/pull/8); старые PR #1/#7 не являются источником актуальной сборки.
 2. Внизу запуска скачай артефакт `Giantback-visual-build`. Внутри — `Giantback.rbxlx` и исходные ресурсы. Не путай файл сборки с исходными OBJ.
 3. Распакуй архив. Открой `Giantback.rbxlx` через **Roblox Studio → File → Open from File**.
 4. Если Roblox Studio предлагает сохранить копию, используй отдельную тестовую версию/файл. **Не публикуй поверх рабочей игры до приёмки.**
