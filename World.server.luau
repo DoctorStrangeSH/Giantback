@@ -1115,13 +1115,20 @@ end
 local function syncDailyQuests(player)
     local session = sessions[player]
     if not session then return end
+    local previousDay = session.dailyQuests and session.dailyQuests.day
     session.dailyQuests = normalizeDailyQuests(session.dailyQuests)
+    local dayChanged = previousDay ~= nil and previousDay ~= session.dailyQuests.day
     player:SetAttribute("DailyQuest_Day", session.dailyQuests.day)
     player:SetAttribute("DailyQuest_Reward", DAILY_QUEST_REWARD)
     player:SetAttribute("DailyQuest_Claimed", session.dailyQuests.claimed)
     for questId, definition in DAILY_QUEST_DEFINITIONS do
         player:SetAttribute("DailyQuest_" .. questId, session.dailyQuests.progress[questId] or 0)
         player:SetAttribute("DailyQuest_" .. questId .. "_Goal", definition.goal)
+    end
+    if dayChanged and session.online and player:GetAttribute("Ready") then
+        task.defer(function()
+            if sessions[player] == session then save(player) end
+        end)
     end
 end
 
@@ -1144,6 +1151,15 @@ local function addDailyQuestProgress(player, questId, amount)
     end
 end
 
+task.spawn(function()
+    while true do
+        task.wait(60)
+        for _, player in Players:GetPlayers() do
+            if player:GetAttribute("Ready") then syncDailyQuests(player) end
+        end
+    end
+end)
+
 local function claimDailyQuestReward(player)
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
@@ -1159,8 +1175,10 @@ local function claimDailyQuestReward(player)
         end
     end
     local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
-    local credited = math.min(DAILY_QUEST_REWARD, MAX_COINS - previousCoins)
-    if credited <= 0 then return tip(player, "Кошелёк полон. Потрать немного монет и забери награду.") end
+    if MAX_COINS - previousCoins < DAILY_QUEST_REWARD then
+        return tip(player, "Освободи место минимум для 40 монет, а затем забери награду.")
+    end
+    local credited = DAILY_QUEST_REWARD
     session.economyBusy = true
     session.coins = previousCoins + credited
     session.dailyQuests.claimed = true
