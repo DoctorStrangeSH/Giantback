@@ -29,7 +29,8 @@ class FirstBridgeObjectiveTests(unittest.TestCase):
         self.assertIn('objectiveHint.Visible = not compact', HUD)
         self.assertIn('objectiveText.Size = UDim2.new(1, compact and -64 or -86, 0, compact and 30 or 34)', HUD)
         self.assertIn('progressTrack.Position = UDim2.new(0, compact and 56 or 76, 1, -12)', HUD)
-        self.assertIn('objectiveHint.Position = UDim2.fromOffset(76, 66)', HUD)
+        self.assertIn('objectiveHint = label(objective, "Hint"', HUD)
+        self.assertIn('UDim2.fromOffset(76, 66), 11', HUD)
         self.assertIn('objectiveText.Position = UDim2.fromOffset(compact and 56 or 76, 27)', HUD)
 
     def test_uses_server_attributes_without_client_mutation(self):
