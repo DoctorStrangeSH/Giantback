@@ -1537,6 +1537,57 @@ local function claimDailyQuestReward(player)
     tip(player, message)
 end
 
+
+local function claimWeeklyChallenges(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Недельные испытания временно недоступны: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции с монетами.") end
+    session.weeklyChallenges = normalizeWeeklyChallenges(session.weeklyChallenges, player, session)
+    if session.weeklyChallenges.claimed then
+        return tip(player, "Недельная награда уже получена. Новые испытания появятся в понедельник.")
+    end
+    for _, challengeId in session.weeklyChallenges.challenges do
+        local definition = WEEKLY_CHALLENGE_DEFINITIONS[challengeId]
+        if (session.weeklyChallenges.progress[challengeId] or 0) < definition.goal then
+            return tip(player, "Заверши все три недельных испытания, чтобы открыть сундук.")
+        end
+    end
+
+    local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    local previousStarShards = math.clamp(math.floor(tonumber(session.inventory.StarShard) or 0), 0, 1000000)
+    local reward = getWeeklyChallengeReward(session.weeklyChallenges)
+    if MAX_COINS - previousCoins < reward then
+        return tip(player, "Освободи место минимум для " .. tostring(reward) .. " монет, чтобы забрать недельную награду.")
+    end
+    if previousStarShards >= 1000000 then
+        return tip(player, "В рюкзаке нет места для звёздного осколка. Освободи одну ячейку и попробуй снова.")
+    end
+
+    session.economyBusy = true
+    session.coins = previousCoins + reward
+    session.inventory.StarShard = previousStarShards + 1
+    session.weeklyChallenges.claimed = true
+    syncInventory(player)
+    syncFarm(player)
+    syncWeeklyChallenges(player)
+    if not save(player) then
+        session.coins = previousCoins
+        session.inventory.StarShard = previousStarShards
+        session.weeklyChallenges.claimed = false
+        syncInventory(player)
+        syncFarm(player)
+        syncWeeklyChallenges(player)
+        session.economyBusy = false
+        return tip(player, "Не удалось сохранить недельную награду. Монеты и осколок возвращены, попробуй ещё раз.")
+    end
+    session.economyBusy = false
+    tip(player, "Недельные испытания завершены! Получено " .. tostring(reward) .. " Coins и 1 звёздный осколок.")
+end
+
+
 save = function(player)
     local session = sessions[player]
     if not session or not session.online or not store then return false end
@@ -2215,6 +2266,11 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "ClaimDailyQuests" then
         claimDailyQuestReward(player)
+        return
+    end
+
+    if action == "ClaimWeeklyChallenges" then
+        claimWeeklyChallenges(player)
         return
     end
 
