@@ -38,6 +38,7 @@ local toolIds = {Axe = true, Pickaxe = true}
 local combatRewardDefinitions = {
     GroveGrunt01 = {itemId = "Wood", amount = 3},
     GroveScout02 = {itemId = "SunPetal", amount = 2},
+    GroveMossling01 = {itemId = "Stone", amount = 2},
     GroveTrialChest01 = {itemId = "StarShard", amount = 1},
     RootvaultChest01 = {itemId = "IronOre", amount = 3},
     RootvaultSentinel01 = {itemId = "RootvaultKey", amount = 1},

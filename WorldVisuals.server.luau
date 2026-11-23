@@ -1408,6 +1408,108 @@ if scoutShoulder and scoutShoulder:IsA("Motor6D") and scoutHighlight and scoutWa
 end
 CollectionService:AddTag(scout, "GiantbackEnemy")
 
+-- Mossling is a repeatable, readable live encounter in the existing Grove arena.
+-- It uses the same server-owned combat pipeline and a one-time persistent Stone reward.
+local mosslingTemplate = scout:Clone()
+mosslingTemplate.Name = "GroveMossling01"
+local mosslingSpawn = arenaCenter + Vector3.new(-12, 3, 8)
+
+local function spawnMossling()
+    if not combatGlade.Parent then return end
+    local mossling = mosslingTemplate:Clone()
+    mossling.Name = "GroveMossling01"
+    mossling:SetAttribute("EnemyId", "GroveMossling01")
+    mossling:SetAttribute("EncounterId", "GroveMossling01")
+    mossling:SetAttribute("RegionId", "GroveTraining")
+    mossling:SetAttribute("ArchetypeId", "Mossling")
+    mossling:SetAttribute("CombatState", "Idle")
+    mossling:SetAttribute("AggroRange", 25)
+    mossling:SetAttribute("AttackRange", 4.5)
+    mossling:SetAttribute("AttackDamage", 6)
+    mossling:SetAttribute("AttackCooldown", 2.8)
+    mossling:SetAttribute("TelegraphSeconds", 1.05)
+    mossling:SetAttribute("PathRefreshSeconds", 1.0)
+    mossling:PivotTo(CFrame.lookAt(mosslingSpawn, arenaCenter + Vector3.new(0, 3, 0)))
+
+    local humanoid = mossling:FindFirstChildOfClass("Humanoid")
+    if not humanoid then mossling:Destroy() return end
+    humanoid.DisplayName = "Моховичок"
+    humanoid.MaxHealth = 48
+    humanoid.Health = 48
+    humanoid.WalkSpeed = 8
+    humanoid.BreakJointsOnDeath = false
+
+    local mossHead = mossling:FindFirstChild("Head")
+    for _, piece in mossling:GetDescendants() do
+        if piece:IsA("BasePart") and piece.Name ~= "HumanoidRootPart" then
+            if piece.Name == "Amber eye" then
+                piece.Color = Color3.fromRGB(244, 229, 150)
+            else
+                piece.Color = Color3.fromRGB(72, 145, 91)
+                piece.Material = Enum.Material.Grass
+            end
+        end
+    end
+    for _, itemName in {"Rootwood club", "Rootwood club cap"} do
+        local item = mossling:FindFirstChild(itemName, true)
+        if item then item:Destroy() end
+    end
+    -- Distinctive leaf crown; decorative details are welded and never alter hit rewards.
+    if mossHead and mossHead:IsA("BasePart") then
+        for side = -1, 1, 2 do
+            local leaf = Instance.new("Part")
+            leaf.Name = "Mossling leaf"
+            leaf.Size = Vector3.new(0.7, 1.35, 0.3)
+            leaf.Color = Color3.fromRGB(135, 207, 103)
+            leaf.Material = Enum.Material.Grass
+            leaf.CanCollide = false
+            leaf.CanTouch = false
+            leaf.CanQuery = false
+            leaf.Massless = true
+            leaf.CFrame = mossHead.CFrame * CFrame.new(side * 0.5, 1.0, 0) * CFrame.Angles(0, 0, math.rad(-side * 30))
+            leaf.Parent = mossling
+            local weld = Instance.new("WeldConstraint")
+            weld.Part0 = mossHead
+            weld.Part1 = leaf
+            weld.Parent = leaf
+        end
+    end
+    local root = mossling:FindFirstChild("HumanoidRootPart")
+    local warning = mossling:FindFirstChild("CombatTelegraphWarning")
+    local highlight = mossling:FindFirstChild("CombatTelegraphHighlight")
+    local warningText = warning and warning:FindFirstChild("WarningText")
+    if warningText and warningText:IsA("TextLabel") then
+        warningText.Text = "УКЛОНЯЙСЯ!"
+    end
+    if highlight and highlight:IsA("Highlight") then
+        highlight.FillColor = Color3.fromRGB(177, 223, 104)
+        highlight.OutlineColor = Color3.fromRGB(244, 236, 148)
+    end
+    mossling:GetAttributeChangedSignal("CombatState"):Connect(function()
+        if not mossling.Parent then return end
+        local state = mossling:GetAttribute("CombatState")
+        if highlight then highlight.Enabled = state == "Telegraph" end
+        if warning then warning.Enabled = state == "Telegraph" or state == "Recover" end
+        if warningText then
+            warningText.Text = state == "Telegraph" and "УКЛОНЯЙСЯ!" or "АТАКА!"
+        end
+    end)
+    humanoid.Died:Connect(function()
+        task.delay(3, function()
+            if mossling.Parent then mossling:Destroy() end
+        end)
+        task.delay(20, function()
+            if combatGlade.Parent then spawnMossling() end
+        end)
+    end)
+    -- Clone inherits Scout tags. Re-add after parenting so combat registration is guaranteed.
+    CollectionService:RemoveTag(mossling, "GiantbackEnemy")
+    mossling.Parent = combatGlade
+    if root and root:IsA("BasePart") then root:SetNetworkOwner(nil) end
+    CollectionService:AddTag(mossling, "GiantbackEnemy")
+end
+spawnMossling()
+
 local entranceGlow = orb(arena, "Training glade welcome light", arenaCenter + Vector3.new(0, 6.4, -21), Vector3.new(0.65, 0.65, 0.65), palette.gold, Enum.Material.Neon)
 addLight(entranceGlow, palette.gold, 12, 0.55)
 
