@@ -1575,6 +1575,27 @@ local function renderExpeditions()
         label(item, "MutationRarity", found and (mutationRarity or "Необычная") or "РЕДКОСТЬ НЕИЗВЕСТНА", UDim2.new(1, -64, 0, 18), UDim2.fromOffset(52, 30), 10, found and pet.color or palette.muted, Enum.Font.GothamBlack)
         label(item, "MutationBiome", found and ("Обнаружен: " .. pet.biome) or ("Где искать: " .. pet.biome), UDim2.new(1, -64, 0, 20), UDim2.fromOffset(52, 50), 10, palette.muted)
     end
+    local codexClaimed = player:GetAttribute("CompanionCodexRewardClaimed") == true
+    local codexComplete = discoveredMutations == #mutationPets
+    local codexClaimButton = button(
+        body,
+        "ClaimCompanionCodex",
+        codexClaimed and "НАГРАДА ЗА АЛЬБОМ ПОЛУЧЕНА"
+            or (codexComplete and "ЗАБРАТЬ НАГРАДУ • 250 МОНЕТ"
+                or "ОТКРОЙ ВСЕ 9 ФОРМ ДЛЯ НАГРАДЫ"),
+        UDim2.new(1, 0, 0, 44),
+        UDim2.new(),
+        codexClaimed and palette.forestLight or (codexComplete and palette.gold or palette.muted)
+    )
+    codexClaimButton.TextColor3 = codexClaimed and palette.white or palette.ink
+    codexClaimButton.TextSize = 12
+    codexClaimButton.Active = codexComplete and not codexClaimed
+    codexClaimButton.AutoButtonColor = codexClaimButton.Active
+    codexClaimButton.Activated:Connect(function()
+        if codexComplete and not codexClaimed then
+            event:FireServer("ClaimCompanionCodexReward")
+        end
+    end)
 end
 
 local renderers = {
