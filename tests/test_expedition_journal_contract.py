@@ -48,6 +48,22 @@ class ExpeditionJournalContractTests(unittest.TestCase):
         self.assertIn('if not save(player) then', WORLD)
         self.assertIn('player:SetAttribute("CrystalRelicSetRewardClaimed", false)', WORLD)
 
+    def test_mutation_codex_is_visible_in_existing_journal(self):
+        self.assertIn('addInfo("АЛЬБОМ РЕДКИХ ФОРМ"', HUD)
+        self.assertIn('CompanionMutationCodexHeader', HUD)
+        self.assertIn('CompanionMutationCodex_', HUD)
+        for pet in ("Fox", "Moth", "CrystalWisp", "HarvestSprite"):
+            self.assertIn('id = "' + pet + '"', HUD)
+        self.assertIn('player:GetAttribute("Companion_" .. pet.id .. "_Mutation")', HUD)
+        self.assertIn('player:GetAttribute("Companion_" .. pet.id .. "_MutationName")', HUD)
+        self.assertIn('player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")', HUD)
+        self.assertIn('player:GetAttribute(pet.id) == true', HUD)
+        self.assertIn('tostring(discoveredMutations) .. "/" .. tostring(#mutationPets)', HUD)
+        self.assertIn('found and pet.glyph or "?"', HUD)
+        self.assertIn('"Неизвестная форма"', HUD)
+        self.assertNotIn('event:FireServer("GrantMutation"', HUD)
+        self.assertIn('player.AttributeChanged:Connect(refresh)', HUD)
+
     def test_journal_is_read_only_and_refreshes_from_replicated_attributes(self):
         self.assertIn("return player:GetAttribute(step.key) == true", HUD)
         self.assertIn("player.AttributeChanged:Connect(refresh)", HUD)
