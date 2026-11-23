@@ -285,8 +285,8 @@ local function updateResponsiveLayout()
     end
 
     local panelWidth = math.max(240, math.min(470, viewport.X - (compact and 16 or 48)))
-    local panelHeight = math.max(220, math.min(420, viewport.Y - (compact and 150 or 190)))
-    panel.Size = UDim2.fromOffset(panelWidth, math.max(220, math.min(420, viewport.Y - (compact and 190 or 220))))
+    local panelHeight = math.max(160, math.min(420, viewport.Y - (compact and 140 or 220)))
+    panel.Size = UDim2.fromOffset(panelWidth, panelHeight)
     panel.Position = UDim2.new(0.5, 0, 0.5, compact and -18 or 0)
     panelTitle.TextSize = compact and 16 or 20
     panelSubtitle.TextSize = compact and 10 or 12
