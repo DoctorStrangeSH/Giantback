@@ -855,7 +855,11 @@ local function addFarmUpgrade(farmLevel)
         farmLevel >= 3 and "МАКС." or (tostring(cost) .. " МОН."),
         UDim2.fromOffset(112, 38), UDim2.new(1, -122, 0.5, -19),
         farmLevel >= 3 and palette.paperDark or (coins >= cost and palette.gold or palette.paperDark))
-    action.TextColor3 = farmLevel >= 3 or coins < cost and palette.muted or palette.ink
+    if farmLevel >= 3 or coins < cost then
+        action.TextColor3 = palette.muted
+    else
+        action.TextColor3 = palette.ink
+    end
     action.TextSize = 10
     action.Active = farmLevel < 3
     action.AutoButtonColor = farmLevel < 3 and coins >= cost
