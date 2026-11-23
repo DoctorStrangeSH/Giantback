@@ -100,5 +100,36 @@ class CrystalWardenEncounterTests(unittest.TestCase):
         self.assertIn('state == "ShardlingFeintTelegraph" or state == "ShardlingDashTelegraph"', CLIENT)
 
 
+    def test_shardling_and_warden_have_independent_top_level_spawn_lifecycles(self):
+        self.assertLess(VISUALS.index("local function spawnCrystalShardling()"), VISUALS.index("local function spawnCrystalWarden()"))
+        shardling_body = VISUALS.split("local function spawnCrystalShardling()", 1)[1].split("-- Crystal Warden:", 1)[0]
+        self.assertIn('CollectionService:AddTag(shardling, "GiantbackEnemy")', shardling_body)
+        self.assertIn("if crystalGrotto.Parent then spawnCrystalShardling() end", shardling_body)
+        self.assertNotIn("local function spawnCrystalWarden()", shardling_body)
+
+    def test_echo_chamber_has_an_isolated_combat_region_and_three_phase_boss(self):
+        self.assertIn("CrystalEchoChamber = true", COMBAT.split("local ALLOWED_REGIONS", 1)[1].split("\n", 1)[0])
+        self.assertIn('local echoCombatRegion = makePart(', VISUALS)
+        self.assertIn('"CrystalEchoCombatRegion"', VISUALS)
+        self.assertIn('echoCombatRegion:SetAttribute("RegionId", "CrystalEchoChamber")', VISUALS)
+        self.assertIn('CollectionService:AddTag(echoCombatRegion, "GiantbackCombatRegion")', VISUALS)
+        self.assertIn('boss.Name = "CrystalEchoPrismGuardian01"', VISUALS)
+        self.assertIn('boss:SetAttribute("ArchetypeId", "PrismGuardian")', VISUALS)
+        self.assertIn('boss:SetAttribute("RegionId", "CrystalEchoChamber")', VISUALS)
+        self.assertIn('boss:SetAttribute("IsBoss", true)', VISUALS)
+        self.assertIn('humanoid.DisplayName = "Хранитель Призмы"', VISUALS)
+        self.assertIn("humanoid.MaxHealth = 480", VISUALS)
+        self.assertIn('boss:SetAttribute("Phase2SlamRadius", 15)', VISUALS)
+        self.assertIn('boss:SetAttribute("Phase3SlamRadius", 19)', VISUALS)
+        self.assertIn("if echoChamber.Parent then spawnCrystalEchoPrismGuardian() end", VISUALS)
+
+    def test_echo_boss_reward_is_one_time_and_does_not_awaken_rootvault_minions(self):
+        self.assertIn("CrystalEchoPrismGuardian01 = true", COMBAT.split("local KNOWN_ENCOUNTERS", 1)[1].split("local REWARD_ENCOUNTERS", 1)[0])
+        self.assertIn("CrystalEchoPrismGuardian01 = true", COMBAT.split("local REWARD_ENCOUNTERS", 1)[1].split("local remote", 1)[0])
+        self.assertIn('CrystalEchoPrismGuardian01 = {itemId = "CrystalShard", amount = 5, coins = 45}', WORLD)
+        phase_three = COMBAT.split("if nextPhase == 3", 1)[1].split("end", 1)[0]
+        self.assertIn('enemy:GetAttribute("ArchetypeId") == "SealKeeper"', phase_three)
+
+
 if __name__ == "__main__":
     unittest.main()
