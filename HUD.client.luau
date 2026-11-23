@@ -1198,9 +1198,9 @@ local function renderDailyQuests()
     addInfo("ЕЖЕДНЕВНЫЕ ЗАДАНИЯ", "Обновляются каждый день по UTC. Выполни все три задания и забери награду " .. tostring(reward) .. " монет. День: " .. tostring(day), 82)
 
     local definitions = {
-        {id = "Gather", icon = "🌿", title = "Собрать ресурсы", hint = "Собери любые 3 ресурса в мире.", goal = 3},
-        {id = "Sell", icon = "🧺", title = "Торговый день", hint = "Продай на рынке 3 единицы урожая.", goal = 3},
-        {id = "Scout", icon = "🦊", title = "Тайник разведчика", hint = "Найди и забери один тайник с лисёнком.", goal = 1},
+        {id = "Gather", icon = "01", title = "Собрать ресурсы", hint = "Собери любые 3 ресурса в мире.", goal = 3},
+        {id = "Sell", icon = "02", title = "Торговый день", hint = "Продай на рынке 3 единицы урожая.", goal = 3},
+        {id = "Scout", icon = "03", title = "Тайник разведчика", hint = "Найди и забери один тайник с лисёнком.", goal = 1},
     }
     local completed = 0
     for _, quest in definitions do
