@@ -479,7 +479,7 @@ local function createPlacementGhost(decorationId)
                 makePlacementPart("PathPreview", Vector3.new(1.62, 0.24, 1.62), offset)
             end
         end
-    else
+    elseif decorationId == "FlowerBed" then
         makePlacementPart("FlowerBedPreviewSoil", Vector3.new(3.35, 0.28, 3.35), Vector3.new(0, 0.18, 0))
         for _, edge in {
             {Vector3.new(3.8, 0.42, 0.28), Vector3.new(0, 0.34, -1.78)},
@@ -501,6 +501,15 @@ local function createPlacementGhost(decorationId)
                 offset, Enum.PartType.Ball)
             flower.Color = colors[index]
         end
+    else
+        makePlacementPart("CottagePreviewFoundation", Vector3.new(3.8, 0.24, 3.8), Vector3.new(0, 0.12, 0))
+        makePlacementPart("CottagePreviewWalls", Vector3.new(3.35, 2.25, 3.25), Vector3.new(0, 1.28, 0))
+        makePlacementPart("CottagePreviewRoof", Vector3.new(3.9, 1.2, 3.8), Vector3.new(0, 3.0, 0))
+        makePlacementPart("CottagePreviewDoor", Vector3.new(0.92, 1.72, 0.12), Vector3.new(0, 1.0, -1.68))
+        for _, side in {-1, 1} do
+            makePlacementPart("CottagePreviewWindow", Vector3.new(0.82, 0.72, 0.12), Vector3.new(side * 1.12, 1.52, -1.72))
+        end
+        makePlacementPart("CottagePreviewChimney", Vector3.new(0.62, 1.55, 0.62), Vector3.new(1.18, 3.2, 0.82))
     end
 end
 
@@ -586,7 +595,8 @@ local function updatePlacementGhost()
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
     local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
     local enough = placementMoveIndex ~= nil or (placementState == "Path" and wood >= 2
-        or placementState == "FlowerBed" and wood >= 4 and stone >= 2)
+        or placementState == "FlowerBed" and wood >= 4 and stone >= 2
+        or placementState == "Cottage" and wood >= 8 and stone >= 6)
     local count = tonumber(player:GetAttribute("City_DecorationCount")) or 0
     local hasSpace = placementMoveIndex ~= nil or count < 12
     placementValid = inBounds and not occupied and enough and hasSpace
@@ -734,14 +744,16 @@ local function renderCity()
     local catalog = {
         {id = "Path", title = "Каменная дорожка", description = "Четыре каменные плиты. Цена: 2 дерева.", cost = "2 ДЕРЕВА", glyph = "Д"},
         {id = "FlowerBed", title = "Цветочная клумба", description = "Деревянная рамка и четыре цветка. Цена: 4 дерева и 2 камня.", cost = "4 ДЕРЕВА · 2 КАМНЯ", glyph = "Ц"},
+        {id = "Cottage", title = "Уютный домик", description = "Домик с крышей, дверью, окнами и дымоходом. Цена: 8 дерева и 6 камня.", cost = "8 ДЕРЕВА · 6 КАМНЯ", glyph = "⌂"},
     }
     for index = 1, decorationCount do
         local decorationId = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Id")
         local x = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_X")
         local z = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Z")
         local rotation = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Rotation")
-        if decorationId == "Path" or decorationId == "FlowerBed" then
-            local title = decorationId == "Path" and "Каменная дорожка" or "Цветочная клумба"
+        if decorationId == "Path" or decorationId == "FlowerBed" or decorationId == "Cottage" then
+            local title = decorationId == "Path" and "Каменная дорожка"
+                or decorationId == "FlowerBed" and "Цветочная клумба" or "Уютный домик"
             local item = card(body, "PlacedDecoration_" .. tostring(index), compact and 112 or 86)
             label(item, "Title", title .. " №" .. tostring(index),
                 UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 7), 13, palette.ink, Enum.Font.GothamBold)
