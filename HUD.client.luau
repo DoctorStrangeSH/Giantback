@@ -715,7 +715,9 @@ local activeTab = nil
 local function applyPanelLayer()
     panel.ZIndex = 21
     for _, descendant in panel:GetDescendants() do
-        descendant.ZIndex = 22
+        if descendant:IsA("GuiObject") then
+            descendant.ZIndex = 22
+        end
     end
 end
 
@@ -785,6 +787,13 @@ end)
 
 closeButton.Activated:Connect(function()
     closeActivePanel()
+end)
+
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed or not panel.Visible then return end
+    if input.KeyCode == Enum.KeyCode.Escape or input.KeyCode == Enum.KeyCode.ButtonB then
+        closeActivePanel()
+    end
 end)
 
 showToast = function(message)
