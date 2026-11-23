@@ -850,7 +850,7 @@ local function renderFarm()
         if amount > 0 then table.insert(harvestSummary, crop.name .. " ×" .. tostring(amount)) end
     end
     addInfo("Ферма • уровень " .. tostring(farmLevel), "Семян всего: " .. tostring(totalSeeds) .. ( #harvestSummary > 0 and "   •   Урожай: " .. table.concat(harvestSummary, ", ") or "   •   Урожай пока не собран"), 78)
-    addInfo("1. Семена и магазин", "Выбери культуру для посадки или купи набор за монеты. Покупка сохраняется в рюкзаке.", 70)
+    addInfo("1. Семена и магазин", "Монеты: " .. tostring(tonumber(player:GetAttribute("Coins")) or 0) .. ". Выбери культуру для посадки или купи набор семян. Покупка сохраняется в рюкзаке.", 76)
     for _, crop in cropCatalog do addSeedChoice(crop, selectedCrop) end
     addInfo("2. Посади и собери", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
     for index = 1, 4 do
