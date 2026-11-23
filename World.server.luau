@@ -1705,6 +1705,63 @@ local function claimWeeklyChallenges(player)
 end
 
 
+
+local function claimSeasonalEventRewards(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Праздничные награды временно недоступны: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции с монетами.") end
+
+    local window = getHarvestFestivalWindow()
+    if not window.active then
+        return tip(player, "Фестиваль урожая сейчас не проводится.")
+    end
+    session.seasonalEvent = normalizeSeasonalEvent(session.seasonalEvent)
+    local rewardCoins, rewardStarShards, available = getSeasonalEventAvailableReward(session.seasonalEvent)
+    if available <= 0 then
+        return tip(player, "Пока нет доступных праздничных наград. Набери ещё очков фестиваля!")
+    end
+
+    local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    local previousStarShards = math.clamp(math.floor(tonumber(session.inventory.StarShard) or 0), 0, 1000000)
+    if MAX_COINS - previousCoins < rewardCoins then
+        return tip(player, "Освободи место минимум для " .. tostring(rewardCoins) .. " монет.")
+    end
+    if 1000000 - previousStarShards < rewardStarShards then
+        return tip(player, "В рюкзаке недостаточно места для звёздных осколков.")
+    end
+
+    local previousClaims = table.clone(session.seasonalEvent.claimedMilestones)
+    session.economyBusy = true
+    session.coins = previousCoins + rewardCoins
+    session.inventory.StarShard = previousStarShards + rewardStarShards
+    for _, milestone in SEASONAL_EVENT_MILESTONES do
+        local key = tostring(milestone.points)
+        if session.seasonalEvent.points >= milestone.points then
+            session.seasonalEvent.claimedMilestones[key] = true
+        end
+    end
+    syncInventory(player)
+    syncFarm(player)
+    syncSeasonalEvent(player)
+    if not save(player) then
+        session.coins = previousCoins
+        session.inventory.StarShard = previousStarShards
+        session.seasonalEvent.claimedMilestones = previousClaims
+        syncInventory(player)
+        syncFarm(player)
+        syncSeasonalEvent(player)
+        session.economyBusy = false
+        return tip(player, "Не удалось сохранить праздничные награды. Монеты и осколки возвращены — попробуй ещё раз.")
+    end
+
+    session.economyBusy = false
+    tip(player, "Фестиваль урожая: получено " .. tostring(rewardCoins) .. " Coins и " .. tostring(rewardStarShards) .. " звёздных осколков!")
+end
+
+
 save = function(player)
     local session = sessions[player]
     if not session or not session.online or not store then return false end
@@ -2393,6 +2450,11 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "ClaimWeeklyChallenges" then
         claimWeeklyChallenges(player)
+        return
+    end
+
+    if action == "ClaimSeasonalEventRewards" then
+        claimSeasonalEventRewards(player)
         return
     end
 
