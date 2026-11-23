@@ -375,10 +375,10 @@ local function addInfo(titleText, description, height)
 end
 
 local cropCatalog = {
-    {id = "Carrot", name = "Морковь", seed = "CarrotSeed", glyph = "◆", grow = "5 мин", color = palette.gold},
-    {id = "Strawberry", name = "Клубника", seed = "StrawberrySeed", glyph = "♥", grow = "12 мин · повторный сбор 8 мин", color = palette.coral},
-    {id = "Pumpkin", name = "Тыква", seed = "PumpkinSeed", glyph = "●", grow = "30 мин", color = palette.gold},
-    {id = "Cabbage", name = "Капуста", seed = "CabbageSeed", glyph = "✿", grow = "20 мин", color = palette.mint},
+    {id = "Carrot", name = "Морковь", seed = "CarrotSeed", glyph = "◆", grow = "5 мин", sale = 4, color = palette.gold},
+    {id = "Strawberry", name = "Клубника", seed = "StrawberrySeed", glyph = "♥", grow = "12 мин · повторный сбор 8 мин", sale = 3, color = palette.coral},
+    {id = "Pumpkin", name = "Тыква", seed = "PumpkinSeed", glyph = "●", grow = "30 мин", sale = 18, color = palette.gold},
+    {id = "Cabbage", name = "Капуста", seed = "CabbageSeed", glyph = "✿", grow = "20 мин", sale = 12, color = palette.mint},
 }
 local cropById = {}
 for _, crop in cropCatalog do cropById[crop.id] = crop end
@@ -878,17 +878,20 @@ local function renderFarm()
     local selectedCrop = player:GetAttribute("Farm_SelectedCrop") or "Carrot"
     local totalSeeds = 0
     local harvestSummary = {}
+    local marketPriceSummary = {}
     for _, crop in cropCatalog do
         totalSeeds += tonumber(player:GetAttribute("Resource_" .. crop.seed)) or 0
         local amount = tonumber(player:GetAttribute("Resource_" .. crop.id)) or 0
         if amount > 0 then table.insert(harvestSummary, crop.name .. " ×" .. tostring(amount)) end
+        table.insert(marketPriceSummary, crop.name .. " — " .. tostring(crop.sale) .. " мон.")
     end
     addInfo("Ферма • уровень " .. tostring(farmLevel), "Семян всего: " .. tostring(totalSeeds) .. ( #harvestSummary > 0 and "   •   Урожай: " .. table.concat(harvestSummary, ", ") or "   •   Урожай пока не собран"), 78)
     addInfo("1. Развитие фермы", "Улучшай ферму за монеты, чтобы открывать новые грядки. Сейчас доступно: " .. tostring(farmLevel == 1 and 1 or (farmLevel == 2 and 3 or 4)) .. " из 4.", 68)
     addFarmUpgrade(farmLevel)
     addInfo("2. Семена и магазин", "Монеты: " .. tostring(tonumber(player:GetAttribute("Coins")) or 0) .. ". Выбери культуру для посадки или купи набор семян. Покупка сохраняется в рюкзаке.", 76)
+    addInfo("3. Цены на рынке", table.concat(marketPriceSummary, "   •   ") .. ". Подойди к стойке «РЫНОК» на своём острове и продай собранный урожай. Семена и материалы рынок не покупает.", 92)
     for _, crop in cropCatalog do addSeedChoice(crop, selectedCrop) end
-    addInfo("3. Посади и собери", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
+    addInfo("4. Посади и собери", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
     for index = 1, 4 do
         addPlot(string.format("Plot%02d", index), index)
     end
