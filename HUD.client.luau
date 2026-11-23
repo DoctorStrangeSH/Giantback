@@ -1582,7 +1582,7 @@ local function renderExpeditions()
         "ClaimCompanionCodex",
         codexClaimed and "НАГРАДА ЗА АЛЬБОМ ПОЛУЧЕНА"
             or (codexComplete and "ЗАБРАТЬ НАГРАДУ • 250 МОНЕТ"
-                or "ОТКРОЙ ВСЕ 9 ФОРМ ДЛЯ НАГРАДЫ"),
+                or "СОБЕРИ 9 ФОРМ • +250 МОНЕТ"),
         UDim2.new(1, 0, 0, 44),
         UDim2.new(),
         codexClaimed and palette.forestLight or (codexComplete and palette.gold or palette.muted)
