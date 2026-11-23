@@ -69,6 +69,13 @@ local farmPlotIds = {"Plot01", "Plot02", "Plot03", "Plot04"}
 local warehouseItemIds = {"Wood", "Stone", "IronOre", "IronIngot", "Carrot", "Strawberry", "Pumpkin", "Cabbage"}
 local WAREHOUSE_CAPACITY = 120
 local cropSalePrices = {Carrot = 4, Strawberry = 7, Pumpkin = 12, Cabbage = 9}
+local seedShopOffers = {
+    Carrot = {amount = 3, cost = 12},
+    Strawberry = {amount = 3, cost = 21},
+    Pumpkin = {amount = 2, cost = 20},
+    Cabbage = {amount = 2, cost = 16},
+}
+local MAX_SEED_STACK = 999
 local MAX_COINS = 2000000000
 local cropDefinitions = {
     Carrot = {seedItemId = "CarrotSeed", harvestItemId = "Carrot", growthSeconds = 300, reward = 1, displayName = "Морковь"},
@@ -367,6 +374,46 @@ local function sellIslandHarvest(player, ownerUserId)
 
     session.marketBusy = false
     tip(player, "Продано урожая: " .. tostring(totalItems) .. " шт. Получено " .. tostring(credited) .. " монет.")
+end
+
+local function buyFarmSeeds(player, cropId)
+    local session = sessions[player]
+    local offer = seedShopOffers[cropId]
+    local definition = cropDefinitions[cropId]
+    if not session or not offer or not definition then return end
+    if not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Магазин временно недоступен: сохранение профиля не работает.")
+    end
+    if session.shopBusy then return end
+
+    local seedItemId = definition.seedItemId
+    local currentSeeds = math.max(0, math.floor(tonumber(session.inventory[seedItemId]) or 0))
+    if currentSeeds + offer.amount > MAX_SEED_STACK then
+        return tip(player, "В рюкзаке уже слишком много этих семян. Сначала посади часть.")
+    end
+    local currentCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    if currentCoins < offer.cost then
+        return tip(player, "Не хватает монет: нужно " .. tostring(offer.cost) .. ", у тебя " .. tostring(currentCoins) .. ".")
+    end
+
+    session.shopBusy = true
+    session.coins = currentCoins - offer.cost
+    session.inventory[seedItemId] = currentSeeds + offer.amount
+    syncInventory(player)
+    syncFarm(player)
+
+    if not save(player) then
+        session.coins = currentCoins
+        session.inventory[seedItemId] = currentSeeds
+        syncInventory(player)
+        syncFarm(player)
+        session.shopBusy = false
+        return tip(player, "Покупка не сохранена. Монеты возвращены, семена не списаны.")
+    end
+
+    session.shopBusy = false
+    tip(player, "Куплено: " .. tostring(offer.amount) .. " • " .. definition.displayName .. ".")
 end
 
 local function useWarehouse(player, ownerUserId, action)
@@ -1175,6 +1222,7 @@ local function init(player)
         inventory = {},
         coins = 0,
         marketBusy = false,
+        shopBusy = false,
         tools = {Axe = true, Pickaxe = true, Sword = false},
         toolLevels = {Axe = 1, Pickaxe = 1},
         equippedTool = "Axe",
@@ -1771,6 +1819,12 @@ event.OnServerEvent:Connect(function(player, action, payload)
             end
         end
         event:FireClient(player, "ResourceState", state)
+        return
+    end
+
+    if action == "BuySeeds" then
+        if type(payload) ~= "string" then return end
+        buyFarmSeeds(player, payload)
         return
     end
 
