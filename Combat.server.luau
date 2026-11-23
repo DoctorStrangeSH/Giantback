@@ -48,7 +48,7 @@ local DODGE_DURATION = 0.45
 local DODGE_COOLDOWN = 1.5
 local BLOCK_DAMAGE_MULTIPLIER = 0.25
 
-local ALLOWED_REGIONS = { GroveTraining = true, DuskTraining = true, Rootvault = true }
+local ALLOWED_REGIONS = { GroveTraining = true, DuskTraining = true, Rootvault = true, CrystalGrotto = true }
 local ALLOWED_WEAPONS = { SwordShield = true }
 local KNOWN_ENCOUNTERS = {
     GroveTrainingDummy01 = true,
@@ -59,6 +59,7 @@ local KNOWN_ENCOUNTERS = {
     RootvaultStalker01 = true,
     RootvaultSealKeeper01 = true,
     RootvaultSealMinion = true,
+    CrystalGrottoWarden01 = true,
 }
 local REWARD_ENCOUNTERS = {
     GroveGrunt01 = true,
@@ -67,6 +68,7 @@ local REWARD_ENCOUNTERS = {
     RootvaultSentinel01 = true,
     RootvaultStalker01 = true,
     RootvaultSealKeeper01 = true,
+    CrystalGrottoWarden01 = true,
 }
 
 local remote = ReplicatedStorage:FindFirstChild("CombatAction")
@@ -408,6 +410,8 @@ local function registerEnemy(enemy)
                     local useGroundSlam = entry.isBoss and entry.bossPhase >= 2 and entry.attackSequence % 2 == 0
                     local usePollenBurst = enemy:GetAttribute("ArchetypeId") == "Mossling"
                         and entry.attackSequence % 2 == 0
+                    local useCrystalFan = enemy:GetAttribute("ArchetypeId") == "CrystalWarden"
+                        and entry.attackSequence % 2 == 0
 
                     if useGroundSlam then
                         local phasePrefix = "Phase" .. tostring(entry.bossPhase)
@@ -466,6 +470,44 @@ local function registerEnemy(enemy)
                                                 end
                                             end
                                             currentHumanoid:TakeDamage(damage)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        enemy:SetAttribute("BossAttack", "")
+                    elseif useCrystalFan then
+                        local fanRange = math.clamp(tonumber(enemy:GetAttribute("CrystalFanRange")) or 16, 10, 22)
+                        local fanDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute("CrystalFanDamage")) or 16), 1, 24)
+                        local fanDot = math.clamp(tonumber(enemy:GetAttribute("CrystalFanDot")) or 0.72, 0.55, 0.9)
+                        local attackDirection = root.CFrame.LookVector
+                        enemy:SetAttribute("BossAttack", "CrystalFan")
+                        enemy:SetAttribute("CombatState", "CrystalFanTelegraph")
+                        task.wait(math.max(entry.telegraphSeconds, 1.15))
+
+                        if isEnemyAlive(enemy) then
+                            for _, player in Players:GetPlayers() do
+                                if player:GetAttribute("Ready") == true and getPlayerRegion(player) == entry.regionId then
+                                    local currentHumanoid, currentRoot = getCharacterParts(player)
+                                    if currentHumanoid and currentRoot then
+                                        local offset = currentRoot.Position - root.Position
+                                        local distance = offset.Magnitude
+                                        local inFan = distance > 0 and distance <= fanRange
+                                            and attackDirection:Dot(offset.Unit) >= fanDot
+                                        if inFan then
+                                            local playerState = playerStates[player]
+                                            local dodging = playerState and playerState.dodgingUntil > os.clock()
+                                            if not dodging then
+                                                local damage = fanDamage
+                                                if playerState and playerState.blocking then
+                                                    local towardWarden = root.Position - currentRoot.Position
+                                                    if towardWarden.Magnitude > 0
+                                                        and currentRoot.CFrame.LookVector:Dot(towardWarden.Unit) >= 0.35 then
+                                                        damage = math.max(1, math.floor(damage * BLOCK_DAMAGE_MULTIPLIER))
+                                                    end
+                                                end
+                                                currentHumanoid:TakeDamage(damage)
+                                            end
                                         end
                                     end
                                 end
