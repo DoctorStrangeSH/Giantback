@@ -12,7 +12,7 @@ class FirstBridgeObjectiveTests(unittest.TestCase):
         self.assertIn('local function bridgeResourceProgress()', HUD)
         self.assertIn('player:GetAttribute("Resource_Wood")', HUD)
         self.assertIn('player:GetAttribute("Resource_Stone")', HUD)
-        self.assertIn('"🪵 " .. tostring(math.min(wood, 5)) .. "/5', HUD)
+        self.assertIn('"Дерево " .. tostring(math.min(wood, 5)) .. "/5', HUD)
         self.assertIn('tostring(math.min(stone, 3)) .. "/3', HUD)
         self.assertIn('Подойди к кучам у дома и нажми кнопку сбора', HUD)
         self.assertIn('НАЧНИ ЗДЕСЬ • ПЕРВЫЙ МОСТ', HUD)
