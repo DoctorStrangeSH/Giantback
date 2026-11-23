@@ -117,7 +117,7 @@ jobs:
               "GiantbackDodge",
               "GiantbackGrantCombatReward",
               "local function getDailyQuestBaseReward(dailyQuests)",
-              "local DAILY_QUEST_DIFFICULTIES = {
+              "local DAILY_QUEST_DIFFICULTIES = {\"easy\", \"medium\", \"hard\"}",
               "local buckets = {easy = {}, medium = {}, hard = {}}",
               "local selectedCategories = {}",
               "local baseReward = getDailyQuestBaseReward(session.dailyQuests)",
