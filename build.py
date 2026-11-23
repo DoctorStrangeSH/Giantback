@@ -241,6 +241,10 @@ prop(companion_activity, "ProtectedString", "Source",
 companion_follow = obj(storage, "ModuleScript", "CompanionFollow")
 prop(companion_follow, "ProtectedString", "Source",
      (root / "modules" / "CompanionFollow.luau").read_text(encoding="utf-8"))
+
+companion_interactions = obj(storage, "ModuleScript", "CompanionInteractions")
+prop(companion_interactions, "ProtectedString", "Source",
+     (root / "modules" / "CompanionInteractions.luau").read_text(encoding="utf-8"))
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
     if name == "Fox":
