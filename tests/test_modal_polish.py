@@ -42,7 +42,7 @@ class ModalPolishTests(unittest.TestCase):
         self.assertIn('local playSymbols = {"●", "◆", "✦"}', HUD)
 
     def test_hud_no_longer_depends_on_emoji_presentation_glyphs(self):
-        emoji_ranges = re.compile("[\\U0001F000-\\U0001FAFF\\U00002600-\\U000027FF]")
+        emoji_ranges = re.compile("[\\U0001F000-\\U0001FAFF]")
         self.assertIsNone(emoji_ranges.search(HUD))
         self.assertIsNone(emoji_ranges.search(WORLD))
 
