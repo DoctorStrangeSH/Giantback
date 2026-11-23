@@ -96,6 +96,7 @@ local sessions = {}
 local createPersonalCity
 local applyHomeBridgeState
 local placeIslandDecoration
+local removeIslandDecoration
 
 local function homeSlotCFrame(slotIndex)
     local angle = math.pi * 2 * (slotIndex - 1) / HOME_ISLAND_SLOT_COUNT
