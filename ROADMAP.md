@@ -1,5 +1,6 @@
 ## Asset Pipeline 1.0 — Studio import and asset staging
 
+- [x] Clarify post-bridge newcomer flow in the live objective HUD: find the Fox nest and use its friendship prompt, equip Fox from Pets if necessary, search the trail for the first lunar seed, follow an active golden-pawprint cache route, then proceed toward Moth. Add contract coverage for ordered hints; Studio UX acceptance still pending.
 - [x] Improve first-minute onboarding: show first bridge objective with live wood/stone counts and actual home-pile interaction hint; first owner-only home pile pickups provide 5 wood and 3 stone before bridge repair so the player can complete their first bridge without waiting for the 60-second cooldown. Normal post-bridge pickups remain 3/2 with 60-second cooldown; Studio UX playtest remains pending.
 - [x] Bundle a read-only Roblox Studio Edit/Play preflight and Russian 1.0 gameplay/multiplayer/mobile acceptance checklist with the downloadable Giantback.rbxlx artifact; no actual Studio playtest or imported MeshPart approval claimed.
 - [x] Extract level-driven companion growth scaling and cosmetic mutation tints/highlights/legendary aura into CompanionAppearance ModuleScript; preserve live rig animation recapture and server-owned mutation rolls.
