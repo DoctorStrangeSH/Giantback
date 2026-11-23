@@ -95,6 +95,7 @@ local resourceNodeIds = {
 local sessions = {}
 local createPersonalCity
 local applyHomeBridgeState
+local placeIslandDecoration
 
 local function homeSlotCFrame(slotIndex)
     local angle = math.pi * 2 * (slotIndex - 1) / HOME_ISLAND_SLOT_COUNT
@@ -196,6 +197,23 @@ local function normalizeCity(raw)
     city.level = math.clamp(math.floor(tonumber(raw.level) or 1), 1, 5)
     local rawBridges = type(raw.bridges) == "table" and raw.bridges or {}
     city.bridges.homeToGrove = rawBridges.homeToGrove == true
+    local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}
+    for _, saved in ipairs(rawBuildings) do
+        if #city.buildings >= 24 then break end
+        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed") then
+            local x = tonumber(saved.x)
+            local z = tonumber(saved.z)
+            local rotation = tonumber(saved.rotation) or 0
+            if x and z and x == x and z == z and math.abs(x) < 100 and math.abs(z) < 100 then
+                table.insert(city.buildings, {
+                    id = saved.id,
+                    x = math.clamp(math.floor(x / 4 + 0.5) * 4, 0, 12),
+                    z = math.clamp(math.floor(z / 4 + 0.5) * 4, -4, 4),
+                    rotation = (math.floor(rotation / 90 + 0.5) % 4) * 90,
+                })
+            end
+        end
+    end
     local rawFarm = type(raw.farm) == "table" and raw.farm or {}
     city.farm.level = math.clamp(math.floor(tonumber(rawFarm.level) or 1), 1, 3)
     city.farm.selectedCropId = isValidCropId(rawFarm.selectedCropId) and rawFarm.selectedCropId or defaultCropId
@@ -228,6 +246,7 @@ local function syncFarm(player)
 
     player:SetAttribute("City_Level", session.city.level)
     player:SetAttribute("Farm_Level", session.city.farm.level)
+    player:SetAttribute("City_DecorationCount", #session.city.buildings)
     player:SetAttribute("City_DecorationCount", #session.city.buildings)
     player:SetAttribute("Farm_SelectedCrop", session.selectedCropId or defaultCropId)
     for _, plotId in farmPlotIds do
@@ -984,9 +1003,7 @@ save = function(player)
                 savedIsland.farm = savedFarm
                 savedIsland.bridges = type(savedIsland.bridges) == "table" and savedIsland.bridges or {}
                 savedIsland.bridges.homeToGrove = citySnapshot.bridges.homeToGrove == true
-                if type(savedIsland.buildings) ~= "table" then
-                    savedIsland.buildings = {}
-                end
+                savedIsland.buildings = citySnapshot.buildings
                 old.island = savedIsland
                 old.city = nil
                 return old
@@ -1509,6 +1526,11 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "CollectFoxCache" then
         collectFoxCache(player, payload)
+        return
+    end
+
+    if action == "PlaceIslandDecoration" then
+        if placeIslandDecoration then placeIslandDecoration(player, payload) end
         return
     end
 
