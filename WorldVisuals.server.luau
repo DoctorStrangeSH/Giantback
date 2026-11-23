@@ -1502,6 +1502,8 @@ local function spawnMossling()
             if combatGlade.Parent then spawnMossling() end
         end)
     end)
+    -- Clone inherits Scout tags. Re-add after parenting so combat registration is guaranteed.
+    CollectionService:RemoveTag(mossling, "GiantbackEnemy")
     mossling.Parent = combatGlade
     if root and root:IsA("BasePart") then root:SetNetworkOwner(nil) end
     CollectionService:AddTag(mossling, "GiantbackEnemy")
