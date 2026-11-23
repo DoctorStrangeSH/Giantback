@@ -337,6 +337,7 @@ local function sellIslandHarvest(player, ownerUserId)
     end
 
     local remainingCredit = credited
+    totalItems = 0
     for cropId, amount in pairs(sold) do
         local price = cropSalePrices[cropId]
         local sellAmount = math.min(amount, math.floor(remainingCredit / price))
@@ -344,6 +345,7 @@ local function sellIslandHarvest(player, ownerUserId)
             session.inventory[cropId] -= sellAmount
             remainingCredit -= sellAmount * price
             sold[cropId] = sellAmount
+            totalItems += sellAmount
         else
             sold[cropId] = 0
         end
@@ -2322,7 +2324,7 @@ createPersonalCity = function(player, session)
         market:SetAttribute("OwnerUserId", ownerUserId)
         market.Parent = cityModel
         local marketFrame = meadow.CFrame * CFrame.new(-5, meadow.Size.Y / 2 + 0.18, -10)
-        local counter = makeFarmVisualPart(market, "MarketCounter", Vector3.new(4.2, 1.15, 1.35),
+        makeFarmVisualPart(market, "MarketCounter", Vector3.new(4.2, 1.15, 1.35),
             marketFrame * CFrame.new(0, 0.58, 0), Color3.fromRGB(139, 91, 55), Enum.PartType.Block, Enum.Material.WoodPlanks)
         makeFarmVisualPart(market, "MarketCounterTop", Vector3.new(4.5, 0.18, 1.55),
             marketFrame * CFrame.new(0, 1.25, 0), Color3.fromRGB(198, 151, 91), Enum.PartType.Block, Enum.Material.Wood)
@@ -2351,7 +2353,7 @@ createPersonalCity = function(player, session)
         for index, fruitColor in ipairs({
             Color3.fromRGB(231, 91, 74), Color3.fromRGB(242, 170, 72), Color3.fromRGB(137, 190, 103),
         }) do
-            local fruit = makeFarmVisualPart(market, "MarketProduce", Vector3.new(0.48, 0.48, 0.48),
+            makeFarmVisualPart(market, "MarketProduce", Vector3.new(0.48, 0.48, 0.48),
                 marketFrame * CFrame.new(-1.0 + (index - 1) * 0.9, 1.62, -0.08), fruitColor, Enum.PartType.Ball, Enum.Material.SmoothPlastic)
         end
         local marketAnchor = Instance.new("Part")
