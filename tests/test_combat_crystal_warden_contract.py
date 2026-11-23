@@ -59,5 +59,45 @@ class CrystalWardenEncounterTests(unittest.TestCase):
         self.assertIn('state == "CrystalFanTelegraph"', CLIENT)
 
 
+    def test_shardling_is_a_distinct_live_enemy_with_one_time_reward(self):
+        self.assertIn("CrystalGrottoShardling01 = true", COMBAT.split("local KNOWN_ENCOUNTERS", 1)[1].split("local REWARD_ENCOUNTERS", 1)[0])
+        self.assertIn("CrystalGrottoShardling01 = true", COMBAT.split("local REWARD_ENCOUNTERS", 1)[1].split("local remote", 1)[0])
+        self.assertIn('shardling.Name = "CrystalGrottoShardling01"', VISUALS)
+        self.assertIn('shardling:SetAttribute("ArchetypeId", "Shardling")', VISUALS)
+        self.assertIn('humanoid.DisplayName = "Осколочник"', VISUALS)
+        self.assertIn("humanoid.MaxHealth = 72", VISUALS)
+        self.assertIn("humanoid.WalkSpeed = 12", VISUALS)
+        self.assertIn("if crystalGrotto.Parent then spawnCrystalShardling() end", VISUALS)
+        self.assertIn('CrystalGrottoShardling01 = {itemId = "CrystalShard", amount = 1, coins = 8}', WORLD)
+
+    def test_shardling_feint_is_a_non_damaging_short_dash(self):
+        self.assertIn('local useShardlingFeint = enemy:GetAttribute("ArchetypeId") == "Shardling"', COMBAT)
+        feint = COMBAT.split("elseif useShardlingFeint then", 1)[1].split("elseif useShardlingDash then", 1)[0]
+        self.assertIn('enemy:SetAttribute("BossAttack", "ShardlingFeint")', feint)
+        self.assertIn('enemy:SetAttribute("CombatState", "ShardlingFeintTelegraph")', feint)
+        self.assertIn("root.AssemblyLinearVelocity = direction * 34", feint)
+        self.assertNotIn("TakeDamage", feint)
+
+    def test_shardling_real_dash_uses_a_server_checked_lane(self):
+        self.assertIn('local useShardlingDash = enemy:GetAttribute("ArchetypeId") == "Shardling"', COMBAT)
+        dash = COMBAT.split("elseif useShardlingDash then", 1)[1].split('\n                    else\n                        enemy:SetAttribute("CombatState", "Telegraph")', 1)[0]
+        self.assertIn('enemy:SetAttribute("BossAttack", "ShardlingDash")', dash)
+        self.assertIn('enemy:SetAttribute("CombatState", "ShardlingDashTelegraph")', dash)
+        self.assertIn("local projection = horizontalOffset:Dot(direction)", dash)
+        self.assertIn("local lateral = (horizontalOffset - direction * projection).Magnitude", dash)
+        self.assertIn("projection >= -1 and projection <= dashRange + 2 and lateral <= 3.25", dash)
+        self.assertIn("if not dodging then", dash)
+        self.assertIn("BLOCK_DAMAGE_MULTIPLIER", dash)
+        self.assertIn("currentHumanoid:TakeDamage(damage)", dash)
+
+    def test_shardling_has_readable_local_telegraph_and_windup_pose(self):
+        self.assertIn("local function showShardlingDashTelegraph(enemy, isFeint)", CLIENT)
+        self.assertIn('"ОБМАННЫЙ РЫВОК"', CLIENT)
+        self.assertIn('"РЫВОК!"', CLIENT)
+        self.assertIn('attack == "ShardlingFeint" and isShardling', CLIENT)
+        self.assertIn('attack == "ShardlingDash" and isShardling', CLIENT)
+        self.assertIn('state == "ShardlingFeintTelegraph" or state == "ShardlingDashTelegraph"', CLIENT)
+
+
 if __name__ == "__main__":
     unittest.main()
