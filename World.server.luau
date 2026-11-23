@@ -1093,41 +1093,134 @@ applyHomeBridgeState = function(slotIndex, built)
 end
 
 local DAILY_QUEST_REWARD = 40
+local DAILY_QUEST_COUNT = 3
 local DAILY_QUEST_DEFINITIONS = {
-    Gather = {goal = 3, title = "Собрать ресурсы", description = "Собери любые 3 ресурса в мире."},
+    Gather = {goal = 4, title = "Собиратель", description = "Собери любые 4 ресурса в мире."},
+    GatherWood = {goal = 4, title = "Запас древесины", description = "Добудь 4 единицы древесины."},
+    GatherStone = {goal = 4, title = "Каменный запас", description = "Добудь 4 единицы камня."},
+    Plant = {goal = 2, title = "Зелёные ростки", description = "Посади 2 культуры на своей ферме."},
+    Harvest = {goal = 3, title = "Пора урожая", description = "Собери 3 единицы урожая."},
     Sell = {goal = 3, title = "Торговый день", description = "Продай на рынке 3 единицы урожая."},
     Scout = {goal = 1, title = "Тайник разведчика", description = "Найди и забери один тайник с лисёнком."},
+    Feed = {goal = 1, title = "Вкусняшка для друга", description = "Угости одного из своих питомцев."},
+    Play = {goal = 1, title = "Время поиграть", description = "Успешно сыграй с питомцем в мини-игру."},
+    CraftSword = {goal = 1, title = "Оружейник", description = "Создай меч странника у верстака."},
+    UpgradeTool = {goal = 1, title = "Мастер инструментов", description = "Улучши топор или кирку у верстака."},
+    WinEncounter = {goal = 1, title = "Храбрый исследователь", description = "Победи противника или босса в приключении."},
 }
 
 local function currentDailyQuestDay()
     return os.date("!%Y-%m-%d")
 end
 
-local function normalizeDailyQuests(raw)
-    local today = currentDailyQuestDay()
-    if type(raw) ~= "table" or raw.day ~= today then
-        return {day = today, progress = {Gather = 0, Sell = 0, Scout = 0}, claimed = false}
+local function getEligibleDailyQuestIds(player, session)
+    local eligible = {"Gather", "Plant", "Harvest", "Sell"}
+    if player:GetAttribute("Fox") == true then table.insert(eligible, "Scout") end
+
+    local ownsCompanion = false
+    for _, companionId in COMPANION_IDS do
+        if player:GetAttribute(companionId) == true then
+            ownsCompanion = true
+            break
+        end
     end
-    local savedProgress = type(raw.progress) == "table" and raw.progress or {}
+    if ownsCompanion then
+        table.insert(eligible, "Feed")
+        table.insert(eligible, "Play")
+    end
+
+    if session.tools.Axe == true then
+        table.insert(eligible, "GatherWood")
+        if (session.toolLevels.Axe or 1) < 2 then table.insert(eligible, "UpgradeTool") end
+    end
+    if session.tools.Pickaxe == true then
+        table.insert(eligible, "GatherStone")
+        if (session.toolLevels.Pickaxe or 1) < 2 and not table.find(eligible, "UpgradeTool") then
+            table.insert(eligible, "UpgradeTool")
+        end
+    end
+    if session.tools.Sword == true then
+        for encounterId in combatRewardDefinitions do
+            if session.completedCombatEncounters[encounterId] ~= true then
+                table.insert(eligible, "WinEncounter")
+                break
+            end
+        end
+    else
+        table.insert(eligible, "CraftSword")
+    end
+    return eligible
+end
+
+local function rollDailyQuestIds(player, session, day)
+    local eligible = getEligibleDailyQuestIds(player, session)
+    local daySeed = tonumber(string.gsub(day, "%-", "")) or 0
+    local seed = (math.abs(player.UserId) % 1000003 + daySeed) % 2147483647
+    local random = Random.new(seed)
+    for index = #eligible, 2, -1 do
+        local swapIndex = random:NextInteger(1, index)
+        eligible[index], eligible[swapIndex] = eligible[swapIndex], eligible[index]
+    end
+
+    local selected = {}
+    for index = 1, math.min(DAILY_QUEST_COUNT, #eligible) do
+        selected[index] = eligible[index]
+    end
+    return selected
+end
+
+local function normalizeDailyQuests(raw, player, session)
+    local today = currentDailyQuestDay()
+    local sameDay = type(raw) == "table" and raw.day == today
+    local savedProgress = sameDay and type(raw.progress) == "table" and raw.progress or {}
+    local selected = {}
+
+    if sameDay and raw.version == 2 and type(raw.quests) == "table" then
+        local seen = {}
+        for _, questId in raw.quests do
+            if #selected >= DAILY_QUEST_COUNT then break end
+            if DAILY_QUEST_DEFINITIONS[questId] and not seen[questId] then
+                table.insert(selected, questId)
+                seen[questId] = true
+            end
+        end
+    end
+    if #selected ~= DAILY_QUEST_COUNT then
+        selected = rollDailyQuestIds(player, session, today)
+    end
+
     local progress = {}
-    for questId, definition in DAILY_QUEST_DEFINITIONS do
+    for _, questId in selected do
+        local definition = DAILY_QUEST_DEFINITIONS[questId]
         progress[questId] = math.clamp(math.floor(tonumber(savedProgress[questId]) or 0), 0, definition.goal)
     end
-    return {day = today, progress = progress, claimed = raw.claimed == true}
+    return {
+        version = 2,
+        day = today,
+        quests = selected,
+        progress = progress,
+        claimed = sameDay and raw.claimed == true or false,
+    }
 end
 
 local function syncDailyQuests(player)
     local session = sessions[player]
     if not session then return end
     local previousDay = session.dailyQuests and session.dailyQuests.day
-    session.dailyQuests = normalizeDailyQuests(session.dailyQuests)
+    session.dailyQuests = normalizeDailyQuests(session.dailyQuests, player, session)
     local dayChanged = previousDay ~= nil and previousDay ~= session.dailyQuests.day
     player:SetAttribute("DailyQuest_Day", session.dailyQuests.day)
     player:SetAttribute("DailyQuest_Reward", DAILY_QUEST_REWARD)
     player:SetAttribute("DailyQuest_Claimed", session.dailyQuests.claimed)
-    for questId, definition in DAILY_QUEST_DEFINITIONS do
-        player:SetAttribute("DailyQuest_" .. questId, session.dailyQuests.progress[questId] or 0)
-        player:SetAttribute("DailyQuest_" .. questId .. "_Goal", definition.goal)
+    player:SetAttribute("DailyQuest_Count", #session.dailyQuests.quests)
+    for index, questId in session.dailyQuests.quests do
+        local definition = DAILY_QUEST_DEFINITIONS[questId]
+        local prefix = "DailyQuest_" .. tostring(index) .. "_"
+        player:SetAttribute(prefix .. "Id", questId)
+        player:SetAttribute(prefix .. "Title", definition.title)
+        player:SetAttribute(prefix .. "Description", definition.description)
+        player:SetAttribute(prefix .. "Goal", definition.goal)
+        player:SetAttribute(prefix .. "Progress", session.dailyQuests.progress[questId] or 0)
     end
     if dayChanged and session.online and player:GetAttribute("Ready") then
         task.defer(function()
@@ -1141,7 +1234,7 @@ addDailyQuestProgress = function(player, questId, amount, saveProgress)
     local definition = DAILY_QUEST_DEFINITIONS[questId]
     if not session or not definition or not player:GetAttribute("Ready") then return end
     session.dailyQuests = normalizeDailyQuests(session.dailyQuests, player, session)
-    if session.dailyQuests.claimed then
+    if session.dailyQuests.claimed or not table.find(session.dailyQuests.quests, questId) then
         syncDailyQuests(player)
         return
     end
@@ -1173,7 +1266,8 @@ local function claimDailyQuestReward(player)
     if session.economyBusy then return tip(player, "Подожди завершения текущей операции с монетами.") end
     session.dailyQuests = normalizeDailyQuests(session.dailyQuests, player, session)
     if session.dailyQuests.claimed then return tip(player, "Награда за сегодня уже получена. Новые задания появятся после обновления дня.") end
-    for questId, definition in DAILY_QUEST_DEFINITIONS do
+    for _, questId in session.dailyQuests.quests do
+        local definition = DAILY_QUEST_DEFINITIONS[questId]
         if (session.dailyQuests.progress[questId] or 0) < definition.goal then
             return tip(player, "Сначала выполни все три ежедневных задания.")
         end
