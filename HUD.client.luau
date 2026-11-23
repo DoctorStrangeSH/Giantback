@@ -1541,6 +1541,11 @@ local function renderExpeditions()
         {id = "Moth", title = "Лунная моль", biome = "Сумеречная долина", glyph = "М", color = palette.lilac},
         {id = "CrystalWisp", title = "Кристальный светляк", biome = "Кристальная пещера", glyph = "К", color = palette.water},
         {id = "HarvestSprite", title = "Тыквик", biome = "Фестиваль урожая", glyph = "Т", color = palette.coral},
+        {id = "BrambleBun", title = "Колючка", biome = "Призовое яйцо Фестиваля урожая", glyph = "К", color = palette.gold},
+        {id = "MossTurtle", title = "Мохопанцирь", biome = "Призовое яйцо Фестиваля урожая", glyph = "М", color = palette.forest},
+        {id = "Glowcap", title = "Светошляп", biome = "Призовое яйцо Фестиваля урожая", glyph = "С", color = palette.lilac},
+        {id = "Dewdrop", title = "Росинка", biome = "Призовое яйцо Фестиваля урожая", glyph = "Р", color = palette.water},
+        {id = "Starling", title = "Звёздокрыл", biome = "Призовое яйцо Фестиваля урожая", glyph = "З", color = palette.lilac},
     }
     local discoveredMutations = 0
     for _, pet in mutationPets do
@@ -1550,7 +1555,7 @@ local function renderExpeditions()
             discoveredMutations += 1
         end
     end
-    addInfo("АЛЬБОМ РЕДКИХ ФОРМ", "Каждый найденный питомец получает свою особую форму. В дневнике видна только твоя настоящая находка, а не чужие варианты.", 80)
+    addInfo("АЛЬБОМ РЕДКИХ ФОРМ", "Каждый найденный питомец получает свою особую форму. В дневнике видны сохранённые формы девяти питомцев. Неизвестные формы раскрываются после получения питомца.", 80)
     local mutationHeader = card(body, "CompanionMutationCodexHeader", 62)
     mutationHeader.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
     label(mutationHeader, "CodexMark", "М", UDim2.fromOffset(36, 40), UDim2.fromOffset(12, 11), 23, palette.lilac, Enum.Font.GothamBlack)
