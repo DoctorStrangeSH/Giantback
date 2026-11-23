@@ -228,6 +228,7 @@ local function syncFarm(player)
 
     player:SetAttribute("City_Level", session.city.level)
     player:SetAttribute("Farm_Level", session.city.farm.level)
+    player:SetAttribute("City_DecorationCount", #session.city.buildings)
     player:SetAttribute("Farm_SelectedCrop", session.selectedCropId or defaultCropId)
     for _, plotId in farmPlotIds do
         local plot = session.city.farm.plots[plotId]
@@ -2234,8 +2235,13 @@ placeIslandDecoration = function(player, decorationId)
     end
 
     local localTarget = meadow.CFrame:PointToObjectSpace(root.Position + root.CFrame.LookVector * 5)
+    if localTarget.X < -2 or localTarget.X > 14 or localTarget.Z < -6 or localTarget.Z > 6 then
+        return tip(player, "Наведи площадку на свободную часть лужайки и попробуй снова.")
+    end
     local x = math.clamp(math.floor(localTarget.X / 4 + 0.5) * 4, 0, 12)
     local z = math.clamp(math.floor(localTarget.Z / 4 + 0.5) * 4, -4, 4)
+    local localLook = meadow.CFrame:VectorToObjectSpace(root.CFrame.LookVector)
+    local rotation = (math.floor(math.deg(math.atan2(-localLook.X, -localLook.Z)) / 90 + 0.5) % 4) * 90
     for _, existing in ipairs(session.city.buildings) do
         if existing.x == x and existing.z == z then
             return tip(player, "Это место уже занято. Отойди на соседнюю площадку и попробуй снова.")
@@ -2249,10 +2255,11 @@ placeIslandDecoration = function(player, decorationId)
 
     session.inventory.Wood -= cost.Wood
     session.inventory.Stone -= cost.Stone
-    local decoration = {id = decorationId, x = x, z = z, rotation = 0}
+    local decoration = {id = decorationId, x = x, z = z, rotation = rotation}
     table.insert(session.city.buildings, decoration)
     renderIslandDecoration(cityModel, meadow, decoration, #session.city.buildings, player.UserId)
     syncInventory(player)
+    syncFarm(player)
     tip(player, decorationId == "Path" and "Каменная дорожка построена!" or "Цветочная клумба украшает твой остров!")
     if session.online then save(player) end
 end
