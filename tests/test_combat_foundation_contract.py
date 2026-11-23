@@ -156,7 +156,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('task.wait(entry.telegraphSeconds)', COMBAT)
         self.assertIn('local bestDistance = entry.aggroRange', COMBAT)
         self.assertIn('if bestDistance > entry.attackRange then', COMBAT)
-        self.assertIn('GroveScout02 = {itemId = "SunPetal", amount = 2}', WORLD)
+        self.assertRegex(WORLD, r'GroveScout02 = \\{itemId = "SunPetal", amount = 2(?:, [^}]+)?\\}')
 
     def test_forest_scout_has_distinct_speed_health_telegraph_and_reward(self):
         self.assertIn('scout.Name = "GroveScout02"', VISUALS)
@@ -181,7 +181,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn("validTrialInteraction(player, gatePart)", WORLD)
         self.assertIn("validTrialInteraction(player, chestPart)", WORLD)
         self.assertIn("(root.Position - anchorPart.Position).Magnitude > 13", WORLD)
-        self.assertIn('GroveTrialChest01 = {itemId = "StarShard", amount = 1}', WORLD)
+        self.assertRegex(WORLD, r'GroveTrialChest01 = \\{itemId = "StarShard", amount = 1(?:, [^}]+)?\\}')
         self.assertIn('combatRewardFunction:Invoke(player, "GroveTrialChest01")', WORLD)
         self.assertIn("if trialBusy[player] then return end", WORLD)
         self.assertIn("if session.completedCombatEncounters.GroveTrialChest01 then", WORLD)
@@ -203,7 +203,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('runePrompt.HoldDuration = 0.25', VISUALS)
 
     def test_rootvault_is_gated_and_rewards_each_player_once(self):
-        self.assertIn('RootvaultChest01 = {itemId = "IronOre", amount = 3}', WORLD)
+        self.assertRegex(WORLD, r'RootvaultChest01 = \\{itemId = "IronOre", amount = 3(?:, [^}]+)?\\}')
         self.assertIn('session.completedCombatEncounters.GroveTrialChest01 ~= true', WORLD)
         self.assertIn('rootvaultInside[player] = true', WORLD)
         self.assertIn('player:SetAttribute("InRootvault", true)', WORLD)
@@ -226,7 +226,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('"RootvaultEntrance"', VISUALS)
 
     def test_rootvault_sentinel_drops_persistent_key_and_owns_its_combat_region(self):
-        self.assertIn('RootvaultSentinel01 = {itemId = "RootvaultKey", amount = 1}', WORLD)
+        self.assertRegex(WORLD, r'RootvaultSentinel01 = \\{itemId = "RootvaultKey", amount = 1(?:, [^}]+)?\\}')
         self.assertIn('"RootvaultKey"', WORLD)
         self.assertIn('RootvaultSentinel01 = true', COMBAT)
         self.assertIn('Rootvault = true', COMBAT)
@@ -239,7 +239,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('RootvaultKey', WORLD)
 
     def test_rootvault_stalker_is_a_distinct_fast_enemy_with_persistent_material_reward(self):
-        self.assertIn('RootvaultStalker01 = {itemId = "RootvaultEssence", amount = 1}', WORLD)
+        self.assertRegex(WORLD, r'RootvaultStalker01 = \\{itemId = "RootvaultEssence", amount = 1(?:, [^}]+)?\\}')
         self.assertIn('"RootvaultEssence"', WORLD)
         self.assertIn('RootvaultStalker01 = true', COMBAT)
         self.assertIn('EncounterId", "RootvaultStalker01"', VISUALS)
@@ -251,7 +251,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('CollectionService:AddTag(stalker, "GiantbackEnemy")', VISUALS)
 
     def test_rootvault_seal_keeper_has_three_server_driven_phases_and_gates_relic(self):
-        self.assertIn('RootvaultSealKeeper01 = {itemId = "RootvaultSigil", amount = 1}', WORLD)
+        self.assertRegex(WORLD, r'RootvaultSealKeeper01 = \\{itemId = "RootvaultSigil", amount = 1(?:, [^}]+)?\\}')
         self.assertIn('session.completedCombatEncounters.RootvaultSealKeeper01 ~= true', WORLD)
         self.assertIn('Страж печатей. Победи его, чтобы открыть сундук.', WORLD)
         self.assertIn('RootvaultSealKeeper01 = true', COMBAT)
