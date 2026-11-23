@@ -68,7 +68,7 @@ local foxCacheRewards = {
 local farmPlotIds = {"Plot01", "Plot02", "Plot03", "Plot04"}
 local warehouseItemIds = {"Wood", "Stone", "IronOre", "IronIngot", "Carrot", "Strawberry", "Pumpkin", "Cabbage"}
 local WAREHOUSE_CAPACITY = 120
-local cropSalePrices = {Carrot = 4, Strawberry = 7, Pumpkin = 12, Cabbage = 9}
+local cropSalePrices = {Carrot = 4, Strawberry = 3, Pumpkin = 18, Cabbage = 12}
 local seedShopOffers = {
     Carrot = {amount = 3, cost = 12},
     Strawberry = {amount = 3, cost = 21},
