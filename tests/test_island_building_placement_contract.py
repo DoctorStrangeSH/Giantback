@@ -18,7 +18,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
     def test_server_checks_ownership_location_bounds_capacity_and_cost(self):
         self.assertIn('if action == "PlaceIslandDecoration" then', WORLD)
         self.assertIn('decorationId ~= "Path" and decorationId ~= "FlowerBed"', WORLD)
-        self.assertIn('if #session.city.buildings >= 12 then', WORLD)
+        self.assertIn('if #session.city.buildings >= 12 and not moveIndex then', WORLD)
         self.assertIn('(root.Position - meadow.Position).Magnitude > 22', WORLD)
         self.assertIn('(root.Position - targetFrame.Position).Magnitude > 24', WORLD)
         self.assertIn('x % 1 ~= 0 or z % 1 ~= 0 or rotation % 1 ~= 0', WORLD)
