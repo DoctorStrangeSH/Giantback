@@ -13,7 +13,7 @@ VISUALS = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
 
 class FoxScoutContractTests(unittest.TestCase):
     def test_schema_v6_adds_the_persistent_fox_scout_profile(self):
-        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 12)", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 13)", WORLD)
         self.assertIn('local savedFoxScout = type(old.foxScout) == "table" and old.foxScout or {}', WORLD)
         self.assertIn("savedFoxScout.activeCacheId = foxScoutSnapshot.activeCacheId", WORLD)
         self.assertIn("savedFoxScout.readyAt", WORLD)
