@@ -1073,10 +1073,9 @@ local function bindBossTelegraph(enemy)
         end)
     end
 
-    local currentAttack = enemy:GetAttribute("BossAttack")
-    if currentAttack == "GroundSlam" and isBoss then
+    if enemy:GetAttribute("BossAttack") == "GroundSlam" and isBoss then
         showBossSlamTelegraph(enemy)
-    elseif currentAttack == "PollenBurst" and isMossling then
+    elseif enemy:GetAttribute("BossAttack") == "PollenBurst" and isMossling then
         showMosslingPollenTelegraph(enemy)
     end
 end
