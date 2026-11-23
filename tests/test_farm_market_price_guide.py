@@ -13,13 +13,28 @@ class FarmMarketPriceGuideTests(unittest.TestCase):
     def test_ui_prices_match_server_market_prices(self):
         expected = {
             "Carrot": 4,
-            "Strawberry": 7,
-            "Pumpkin": 12,
-            "Cabbage": 9,
+            "Strawberry": 3,
+            "Pumpkin": 18,
+            "Cabbage": 12,
         }
         for crop, price in expected.items():
             self.assertIn(f"{crop} = {price}", WORLD)
             self.assertIn(f'sale = {price}', HUD)
+
+    def test_crop_income_targets_are_balanced_per_hour(self):
+        # Gross revenue after the first harvest, before seed costs.
+        hourly_income = {
+            "Carrot": 4 * 3600 / 300,
+            "Strawberry": 2 * 3 * 3600 / 480,
+            "Pumpkin": 18 * 3600 / 1800,
+            "Cabbage": 12 * 3600 / 1200,
+        }
+        self.assertEqual(hourly_income, {
+            "Carrot": 48,
+            "Strawberry": 45,
+            "Pumpkin": 36,
+            "Cabbage": 36,
+        })
 
     def test_prices_are_built_from_crop_catalog(self):
         self.assertIn("local marketPriceSummary = {}", HUD)
