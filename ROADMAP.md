@@ -1,5 +1,6 @@
 ## Asset Pipeline 1.0 — Studio import and asset staging
 
+- [x] Extract level-driven companion growth scaling and cosmetic mutation tints/highlights/legendary aura into CompanionAppearance ModuleScript; preserve live rig animation recapture and server-owned mutation rolls.
 - [x] Extract Moth stardust attachment creation and bond/personality refresh into MothStardust ModuleScript; fix misplaced emitter lookup and missing lilacLight/moon palette keys.
 - [x] Extract local-only sleeping Z glyph effects and cancellation/cleanup into CompanionSleepVisuals ModuleScript; leave the 45-second idle threshold in CompanionActivity.
 - [x] Extract companion world petting prompts and friendship burst VFX to CompanionInteractions ModuleScript; fix missing CrystalWisp affection tint and retain server-validated rewards.
