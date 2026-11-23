@@ -742,7 +742,7 @@ getObjective = function()
         end
         return "Лисёнок нашёл тайник! Иди по золотым следам."
     end
-    if not player:GetAttribute("Seed") then return "Исследуй тропу с лисёнком и найди лунное семя." end
+    if not player:GetAttribute("Seed") then return "Попроси лисёнка искать: он найдёт лунное семя." end
     if not player:GetAttribute("Moth") then return "Перейди через лесной мост в Лунную рощу и найди моль." end
     if not player:GetAttribute("MoonBloom") then return "Позови лунную моль в Лунной роще — её сияние раскроет скрытый цветок." end
     if not player:GetAttribute("MoonGateTrace") then return "Позови лисёнка у древних корней в Лунной роще — он найдёт скрытый проход." end
