@@ -32,7 +32,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик", BrambleBun = "Колючка", MossTurtle = "Мохопанцирь", Glowcap = "Светошляп", Dewdrop = "Росинка", Starling = "Звёздокрыл"}
-local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Discovered_StarPrism", "Discovered_MoonGlass", "Discovered_VoidGeode", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
+local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Discovered_StarPrism", "Discovered_MoonGlass", "Discovered_VoidGeode", "CrystalRelicSetRewardClaimed", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed", "HarvestEgg", "StarPrism", "MoonGlass", "VoidGeode"}
 local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local swordRecipe = {IronIngot = 2, Wood = 6}
@@ -2737,8 +2737,53 @@ end
 event.OnServerEvent:Connect(function(player, action, payload)
     if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
 
+local function claimCrystalRelicSetReward(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Награда за коллекцию временно недоступна: сохранение профиля не работает.")
+    end
+    if session.economyBusy then
+        return tip(player, "Подожди завершения текущей операции с монетами.")
+    end
+    if player:GetAttribute("CrystalRelicSetRewardClaimed") == true then
+        return tip(player, "Награда за эту коллекцию уже получена.")
+    end
+    if player:GetAttribute("Discovered_StarPrism") ~= true
+        or player:GetAttribute("Discovered_MoonGlass") ~= true
+        or player:GetAttribute("Discovered_VoidGeode") ~= true then
+        return tip(player, "Сначала найди все три реликвии Эхо-камеры.")
+    end
+
+    local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    local reward = math.min(150, MAX_COINS - previousCoins)
+    if reward < 150 then
+        return tip(player, "Освободи место минимум для 150 монет, чтобы забрать награду.")
+    end
+
+    session.economyBusy = true
+    session.coins = previousCoins + reward
+    player:SetAttribute("CrystalRelicSetRewardClaimed", true)
+    syncFarm(player)
+    if not save(player) then
+        session.coins = previousCoins
+        player:SetAttribute("CrystalRelicSetRewardClaimed", false)
+        syncFarm(player)
+        session.economyBusy = false
+        return tip(player, "Награда не сохранилась. Монеты возвращены — попробуй ещё раз.")
+    end
+
+    session.economyBusy = false
+    tip(player, "Коллекция собрана! Ты получил 150 монет за три древние реликвии.")
+end
+
     if action == "ClaimDailyQuests" then
         claimDailyQuestReward(player)
+        return
+    end
+
+    if action == "ClaimCrystalRelicSet" then
+        claimCrystalRelicSetReward(player)
         return
     end
 
