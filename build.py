@@ -253,6 +253,10 @@ prop(companion_sleep_visuals, "ProtectedString", "Source",
 moth_stardust = obj(storage, "ModuleScript", "MothStardust")
 prop(moth_stardust, "ProtectedString", "Source",
      (root / "modules" / "MothStardust.luau").read_text(encoding="utf-8"))
+
+companion_appearance = obj(storage, "ModuleScript", "CompanionAppearance")
+prop(companion_appearance, "ProtectedString", "Source",
+     (root / "modules" / "CompanionAppearance.luau").read_text(encoding="utf-8"))
 for name in ("Fox", "Moth"):
     model = obj(storage, "Model", name)
     if name == "Fox":
