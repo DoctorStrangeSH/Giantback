@@ -1243,7 +1243,7 @@ local function syncDailyQuests(player)
     player:SetAttribute("DailyQuest_StreakAfterToday", streakAfterToday)
     player:SetAttribute("DailyQuest_StreakBonusToday", streakBonusToday)
     player:SetAttribute("DailyQuest_StreakNextMilestone", nextMilestone)
-    player:SetAttribute("DailyQuest_StreakNextBonus", nextMilestone == 3 and 20 or 60)
+    player:SetAttribute("DailyQuest_StreakNextBonus", nextMilestone == 3 and DAILY_STREAK_THREE_BONUS or DAILY_STREAK_WEEK_BONUS)
     for index, questId in session.dailyQuests.quests do
         local definition = DAILY_QUEST_DEFINITIONS[questId]
         local prefix = "DailyQuest_" .. tostring(index) .. "_"
