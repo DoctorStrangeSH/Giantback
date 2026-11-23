@@ -37,14 +37,15 @@ local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "Strawbe
 local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local swordRecipe = {IronIngot = 2, Wood = 6}
 local combatRewardDefinitions = {
-    GroveGrunt01 = {itemId = "Wood", amount = 3},
-    GroveScout02 = {itemId = "SunPetal", amount = 2},
-    GroveMossling01 = {itemId = "Stone", amount = 2},
-    GroveTrialChest01 = {itemId = "StarShard", amount = 1},
-    RootvaultChest01 = {itemId = "IronOre", amount = 3},
-    RootvaultSentinel01 = {itemId = "RootvaultKey", amount = 1},
-    RootvaultStalker01 = {itemId = "RootvaultEssence", amount = 1},
-    RootvaultSealKeeper01 = {itemId = "RootvaultSigil", amount = 1},
+    -- Coins are one-time bonuses: completed encounter IDs are persisted per player.
+    GroveGrunt01 = {itemId = "Wood", amount = 3, coins = 2},
+    GroveScout02 = {itemId = "SunPetal", amount = 2, coins = 3},
+    GroveMossling01 = {itemId = "Stone", amount = 2, coins = 3},
+    GroveTrialChest01 = {itemId = "StarShard", amount = 1, coins = 8},
+    RootvaultChest01 = {itemId = "IronOre", amount = 3, coins = 10},
+    RootvaultSentinel01 = {itemId = "RootvaultKey", amount = 1, coins = 12},
+    RootvaultStalker01 = {itemId = "RootvaultEssence", amount = 1, coins = 14},
+    RootvaultSealKeeper01 = {itemId = "RootvaultSigil", amount = 1, coins = 25},
 }
 local toolUpgradeCosts = {Axe = {Wood = 8, Stone = 6}, Pickaxe = {Wood = 6, Stone = 8}}
 local foxCacheIds = {"FoxCache01", "FoxCache02", "FoxCache03"}
@@ -1516,16 +1517,22 @@ combatRewardFunction.OnInvoke = function(player, encounterId)
     -- Repeated delivery is success: the reward was already persisted previously.
     if session.completedCombatEncounters[encounterId] then return true end
 
+    local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    local coinReward = math.clamp(math.floor(tonumber(reward.coins) or 0), 0, MAX_COINS - previousCoins)
     session.completedCombatEncounters[encounterId] = true
     session.inventory[reward.itemId] = (session.inventory[reward.itemId] or 0) + reward.amount
+    session.coins = previousCoins + coinReward
     syncInventory(player)
+    syncFarm(player)
     if session.online and not save(player) then
         session.completedCombatEncounters[encounterId] = nil
         session.inventory[reward.itemId] = math.max(0, (session.inventory[reward.itemId] or 0) - reward.amount)
+        session.coins = previousCoins
         syncInventory(player)
+        syncFarm(player)
         return false
     end
-    tip(player, "Победа! Получено: " .. reward.itemId .. " ×" .. tostring(reward.amount))
+    tip(player, "Победа! Получено: " .. reward.itemId .. " ×" .. tostring(reward.amount) .. " и " .. tostring(coinReward) .. " мон.")
     return true
 end
 
