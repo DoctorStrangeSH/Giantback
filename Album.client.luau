@@ -20,6 +20,8 @@ local palette = {
     coral = Color3.fromRGB(232, 146, 117),
     water = Color3.fromRGB(135, 211, 231),
     lilac = Color3.fromRGB(204, 181, 238),
+    lilacLight = Color3.fromRGB(230, 213, 252),
+    moon = Color3.fromRGB(255, 242, 190),
     shadow = Color3.fromRGB(19, 35, 32),
 }
 
@@ -783,69 +785,11 @@ local interactions = CompanionInteractions.new(player, event, names, palette)
 local playCompanionPettingBurst = interactions.playCompanionPettingBurst
 local attachWorldPetPrompt = interactions.attachWorldPetPrompt
 
--- Single source of truth for moth stardust personality and friendship intensity.
-local mothStardustRates = {
-    ["Любопытный"] = 9,
-    ["Озорной"] = 12,
-    ["Смелый"] = 7,
-    ["Застенчивый"] = 4,
-}
-
-local function mothStardustRate(personality, bondStage)
-    local stage = math.clamp(math.floor(tonumber(bondStage) or 0), 0, 4)
-    return math.min(16, (mothStardustRates[personality] or 7) + math.floor(stage / 2))
-end
-
-local function attachMothStardust(model)
-    if not model or not model.Parent then return end
-    local glow = model:FindFirstChild("Moonlight glow", true)
-    if not glow or not glow:IsA("BasePart") or glow:FindFirstChild("CompanionStardust") then return end
-
-    local attachment = Instance.new("Attachment")
-    attachment.Name = "CompanionStardustAttachment"
-    attachment.Parent = glow
-
-    local emitter = Instance.new("ParticleEmitter")
-    emitter.Name = "CompanionStardust"
-    emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-    emitter.Color = ColorSequence.new(palette.lilacLight, palette.moon)
-    emitter.LightEmission = 0.8
-    local personality = player:GetAttribute("Companion_Moth_Personality")
-    local bondStage = math.clamp(tonumber(player:GetAttribute("Companion_Moth_BondStage")) or 0, 0, 4)
-    emitter.Rate = mothStardustRate(personality, bondStage)
-    emitter.Lifetime = NumberRange.new(0.28, 0.55)
-    emitter.Speed = NumberRange.new(0.12, 0.42)
-    emitter.SpreadAngle = Vector2.new(150, 150)
-    emitter.Rotation = NumberRange.new(0, 360)
-    emitter.RotSpeed = NumberRange.new(-70, 70)
-    emitter.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.12),
-        NumberSequenceKeypoint.new(0.55, 0.075),
-        NumberSequenceKeypoint.new(1, 0),
-    })
-    emitter.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.12),
-        NumberSequenceKeypoint.new(1, 1),
-    })
-    emitter:SetAttribute("AppliedBondStage", bondStage)
-    emitter:SetAttribute("AppliedPersonality", personality or "")
-    emitter.Parent = attachment
-end
-
-local function updateMothStardust(model, owner)
-    local glow = model and model:FindFirstChild("Moonlight glow", true)
-    local emitter = glow and glow:FindFirstChild("CompanionStardust")
-    if not emitter or not emitter:IsA("ParticleEmitter") then return end
-
-    local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_Moth_BondStage")) or 0, 0, 4)
-    local personality = owner:GetAttribute("Companion_Moth_Personality")
-    if emitter:GetAttribute("AppliedBondStage") == bondStage
-        and emitter:GetAttribute("AppliedPersonality") == (personality or "") then return end
-
-    emitter.Rate = mothStardustRate(personality, bondStage)
-    emitter:SetAttribute("AppliedBondStage", bondStage)
-    emitter:SetAttribute("AppliedPersonality", personality or "")
-end
+-- The moth stardust appearance is a local presentation system.
+local MothStardust = require(storage:WaitForChild("MothStardust"))
+local mothStardust = MothStardust.new(player, palette)
+local attachMothStardust = mothStardust.attach
+local updateMothStardust = mothStardust.update
 
 local function companionGrowthForLevel(level)
     level = math.clamp(math.floor(tonumber(level) or 1), 1, 5)
