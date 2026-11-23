@@ -190,12 +190,25 @@ navLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 navLayout.Padding = UDim.new(0, 7)
 navLayout.Parent = nav
 
+local modalBackdrop = Instance.new("TextButton")
+modalBackdrop.Name = "ModalBackdrop"
+modalBackdrop.Size = UDim2.fromScale(1, 1)
+modalBackdrop.BackgroundColor3 = Color3.fromRGB(15, 25, 21)
+modalBackdrop.BackgroundTransparency = 0.42
+modalBackdrop.BorderSizePixel = 0
+modalBackdrop.Text = ""
+modalBackdrop.AutoButtonColor = false
+modalBackdrop.Visible = false
+modalBackdrop.ZIndex = 20
+modalBackdrop.Parent = gui
+
 local panel = Instance.new("Frame")
 panel.Name = "MainPanel"
 panel.AnchorPoint = Vector2.new(0.5, 0.5)
 panel.Position = UDim2.fromScale(0.5, 0.5)
 panel.Size = UDim2.fromOffset(470, 420)
 panel.BackgroundColor3 = palette.forest
+panel.ZIndex = 21
 panel.Visible = false
 panel.Parent = gui
 corner(panel, 22)
@@ -234,16 +247,20 @@ toast.AnchorPoint = Vector2.new(0.5, 1)
 toast.Position = UDim2.new(0.5, 0, 1, -96)
 toast.Size = UDim2.fromOffset(380, 48)
 toast.BackgroundColor3 = palette.ink
+toast.ZIndex = 40
 toast.Visible = false
 toast.Parent = gui
 corner(toast, 15)
 stroke(toast, palette.gold, 0.3, 1)
 local toastText = label(toast, "Text", "", UDim2.new(1, -24, 1, -8), UDim2.fromOffset(12, 4), 14, palette.white, Enum.Font.GothamBold)
 toastText.TextXAlignment = Enum.TextXAlignment.Center
+toastText.ZIndex = 41
 local toastGeneration = 0
 local toastTween = nil
 local navButtons = {}
 local navDefinitions = {}
+local closeActivePanel
+local applyPanelLayer
 
 local function updateResponsiveLayout()
     local camera = workspace.CurrentCamera
@@ -275,6 +292,10 @@ local function updateResponsiveLayout()
     nav.Position = UDim2.new(0.5, 0, 1, compact and -6 or -14)
     nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 54 or 68)
     navLayout.Padding = UDim.new(0, compact and 2 or 7)
+    panelTitle.TextSize = compact and 16 or 20
+    panelSubtitle.TextSize = compact and 10 or 12
+    closeButton.Size = UDim2.fromOffset(compact and 36 or 42, compact and 36 or 42)
+    closeButton.Position = UDim2.new(1, compact and -44 or -58, 0, compact and 8 or 12)
     for _, definition in navDefinitions do
         local navButton = navButtons[definition.id]
         if navButton then
@@ -287,6 +308,10 @@ local function updateResponsiveLayout()
     local panelWidth = math.max(240, math.min(470, viewport.X - (compact and 16 or 48)))
     local panelHeight = math.max(160, math.min(420, viewport.Y - (compact and 140 or 220)))
     panel.Size = UDim2.fromOffset(panelWidth, panelHeight)
+    panelTitle.TextSize = compact and 16 or 20
+    panelSubtitle.TextSize = compact and 10 or 12
+    closeButton.Size = UDim2.fromOffset(compact and 36 or 42, compact and 36 or 42)
+    closeButton.Position = UDim2.new(1, compact and -44 or -58, 0, compact and 8 or 12)
     panel.Position = UDim2.new(0.5, 0, 0.5, compact and -18 or 0)
     panelTitle.TextSize = compact and 16 or 20
     panelSubtitle.TextSize = compact and 10 or 12
@@ -384,15 +409,15 @@ local function renderCity()
     local ingots = tonumber(player:GetAttribute("Resource_IronIngot")) or 0
     local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
     local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
-    addInfo("Материалы для моста", "🪵 Дерево: " .. tostring(wood) .. " / 5    •    🪨 Камень: " .. tostring(stone) .. " / 3", 66)
+    addInfo("Материалы для моста", "Дерево: " .. tostring(wood) .. " / 5    •    Камень: " .. tostring(stone) .. " / 3", 66)
     local sunPetals = tonumber(player:GetAttribute("Resource_SunPetal")) or 0
     local moonPetals = tonumber(player:GetAttribute("Resource_MoonPetal")) or 0
     local moonSeeds = tonumber(player:GetAttribute("Resource_MoonSeed")) or 0
     local starShards = tonumber(player:GetAttribute("Resource_StarShard")) or 0
     local carrotSeeds = tonumber(player:GetAttribute("Resource_CarrotSeed")) or 0
     local carrots = tonumber(player:GetAttribute("Resource_Carrot")) or 0
-    addInfo("Находки и ферма", "🌙 Лунные семена: " .. tostring(moonSeeds) .. "   •   ✦ Звёздный осколок: " .. tostring(starShards)
-        .. "   •   🥕 Семена: " .. tostring(carrotSeeds) .. "   •   Урожай: " .. tostring(carrots)
+    addInfo("Находки и ферма", "Лунные семена: " .. tostring(moonSeeds) .. "   •   Звёздный осколок: " .. tostring(starShards)
+        .. "   •   Семена моркови: " .. tostring(carrotSeeds) .. "   •   Урожай: " .. tostring(carrots)
         .. "   •   ☀ Солнечные лепестки: " .. tostring(sunPetals) .. "   •   ☾ Лунные лепестки: " .. tostring(moonPetals), 98)
     addInfo("Ферма: уровень " .. tostring(farmLevel), "На острове четыре грядки. Открой раздел «Ферма», чтобы выбрать семена, посадить растения и собрать урожай.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
@@ -534,7 +559,7 @@ local function renderTools()
     local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
     local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
     addInfo("Инструменты путешественника", "Выбирай инструмент кнопкой или через панель быстрого доступа. Для добычи нужен правильный инструмент в руках.", 78)
-    addInfo("Материалы", "🪵 Дерево: " .. tostring(wood) .. "   •   🪨 Камень: " .. tostring(stone) .. "   •   ⛏ Руда: " .. tostring(ore) .. "   •   🔩 Слитки: " .. tostring(ingots), 72)
+    addInfo("Материалы", "Дерево: " .. tostring(wood) .. "   •   Камень: " .. tostring(stone) .. "   •   Железная руда: " .. tostring(ore) .. "   •   Слитки: " .. tostring(ingots), 72)
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
     local catalog = {
@@ -690,10 +715,33 @@ local panelTitles = {
 
 local activeTab = nil
 
+applyPanelLayer = function()
+    panel.ZIndex = 21
+    for _, descendant in panel:GetDescendants() do
+        if descendant:IsA("GuiObject") then
+            descendant.ZIndex = 22
+        end
+    end
+end
+
+closeActivePanel = function()
+    panel.Visible = false
+    modalBackdrop.Visible = false
+    activeTab = nil
+    for _, navButton in navButtons do
+        navButton.BackgroundColor3 = palette.forestLight
+        navButton.TextColor3 = palette.white
+    end
+end
+
+modalBackdrop.Activated:Connect(function()
+    if panel.Visible then closeActivePanel() end
+end)
+
 local function openTab(tabName)
+    if not panelTitles[tabName] or not renderers[tabName] then return end
     if activeTab == tabName and panel.Visible then
-        panel.Visible = false
-        activeTab = nil
+        closeActivePanel()
         return
     end
     activeTab = tabName
@@ -701,6 +749,8 @@ local function openTab(tabName)
     panelSubtitle.Text = panelTitles[tabName][2]
     clearBody()
     renderers[tabName]()
+    applyPanelLayer()
+    modalBackdrop.Visible = true
     panel.Visible = true
     for name, navButton in navButtons do
         navButton.BackgroundColor3 = name == tabName and palette.gold or palette.forestLight
@@ -739,8 +789,14 @@ workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
 end)
 
 closeButton.Activated:Connect(function()
-    panel.Visible = false
-    activeTab = nil
+    closeActivePanel()
+end)
+
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed or not panel.Visible then return end
+    if input.KeyCode == Enum.KeyCode.Escape or input.KeyCode == Enum.KeyCode.ButtonB then
+        closeActivePanel()
+    end
 end)
 
 showToast = function(message)
@@ -841,18 +897,18 @@ getObjective = function()
 end
 
 local function refresh()
-    woodLabel.Text = "🪵  Дерево  " .. tostring(player:GetAttribute("Resource_Wood") or 0)
-    stoneLabel.Text = "🪨  Камень  " .. tostring(player:GetAttribute("Resource_Stone") or 0)
+    woodLabel.Text = "ДЕРЕВО  " .. tostring(player:GetAttribute("Resource_Wood") or 0)
+    stoneLabel.Text = "КАМЕНЬ  " .. tostring(player:GetAttribute("Resource_Stone") or 0)
     objectiveText.Text = getObjective()
     local completed, total = getTutorialProgress()
     local bridgeBuilt = player:GetAttribute("Bridge_HomeToGrove") == true
     if player:GetAttribute("Ready") and not bridgeBuilt then
         local wood, stone = bridgeResourceProgress()
         objectiveEyebrow.Text = "НАЧНИ ЗДЕСЬ • ПЕРВЫЙ МОСТ"
-        objectiveGlyph.Text = "⚒"
+        objectiveGlyph.Text = "М"
         objectiveHint.Text = wood >= 5 and stone >= 3
             and "Подойди к мосту у края острова и нажми E или кнопку действия."
-            or ("🪵 " .. tostring(math.min(wood, 5)) .. "/5   🪨 " .. tostring(math.min(stone, 3)) .. "/3\nПодойди к кучам у дома и нажми кнопку сбора")
+            or ("Дерево " .. tostring(math.min(wood, 5)) .. "/5   Камень " .. tostring(math.min(stone, 3)) .. "/3\nПодойди к кучам у дома и нажми кнопку сбора")
         progressCount.Text = tostring(completed) .. " / " .. tostring(total)
     else
         objectiveEyebrow.Text = completed >= total
@@ -888,6 +944,7 @@ local function refresh()
     if panel.Visible and activeTab and renderers[activeTab] then
         clearBody()
         renderers[activeTab]()
+        applyPanelLayer()
     end
 end
 
@@ -911,7 +968,7 @@ local playHint = label(playOverlay, "Hint", "Запомни огоньки!", UD
 playHint.TextXAlignment = Enum.TextXAlignment.Center
 playHint.ZIndex = 51
 
-local playSymbols = {"🐾", "🍃", "✨"}
+local playSymbols = {"●", "◆", "✦"}
 local playButtons = {}
 local activePlay = nil
 local playNextIndex = 1

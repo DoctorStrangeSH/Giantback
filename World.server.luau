@@ -493,7 +493,7 @@ local companionFeedFoods = {
 }
 local companionFeedOrder = {"Pumpkin", "Strawberry", "Cabbage", "Carrot"}
 
-local companionPlaySymbols = {"🐾", "🍃", "✨"}
+local companionPlaySymbols = {"●", "◆", "✦"}
 local companionPlayCooldownSeconds = 25
 
 local function finishCompanionPlay(player, success, reason)
