@@ -107,6 +107,10 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn("local weeklyChanged = addWeeklyChallengeProgress(player, questId, amount)", WORLD)
         self.assertIn("syncWeeklyChallenges(player)", WORLD)
 
+    def test_weekly_progress_is_saved_even_when_daily_goal_is_already_complete(self):
+        self.assertIn("if nextValue == previous then", WORLD)
+        self.assertIn("if weeklyChanged and saveProgress ~= false and session.online and not save(player) then", WORLD)
+
     def test_weekly_reward_is_atomic_and_includes_star_shard(self):
         self.assertIn("local function claimWeeklyChallenges(player)", WORLD)
         self.assertIn('session.inventory.StarShard = previousStarShards + 1', WORLD)
