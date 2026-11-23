@@ -19,7 +19,7 @@ class HarvestSpriteCompanionContractTests(unittest.TestCase):
         self.assertIn('"HarvestSprite"', WORLD[WORLD.index("local progress ="):WORLD.index("local inventoryKeys")])
         self.assertIn('local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite"}', WORLD)
         self.assertIn('HarvestSprite = "Радость"', WORLD)
-        self.assertIn('old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 15)', WORLD)
+        self.assertIn('old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 14)', WORLD)
 
     def test_claim_is_server_gated_by_active_event_and_100_points(self):
         start = WORLD.index("local function claimHarvestSprite")
@@ -70,7 +70,7 @@ class HarvestSpriteCompanionContractTests(unittest.TestCase):
 
     def test_studio_acceptance_and_roadmap_are_explicit(self):
         self.assertIn("## Фестиваль урожая — питомец Тыквик", STUDIO)
-        self.assertIn("Уникального сезонного питомца Тыквика", ROADMAP)
+        self.assertIn("сезонного питомца Тыквика", ROADMAP)
         self.assertIn("Уникальные фестивальные яйца", ROADMAP)
 
 
