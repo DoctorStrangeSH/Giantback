@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+FOLLOW = (ROOT / "modules/CompanionFollow.luau").read_text(encoding="utf-8")
 ACTIVITY = (ROOT / "modules/CompanionActivity.luau").read_text(encoding="utf-8")
 ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 
@@ -53,8 +54,8 @@ class CompanionPettingContractTests(unittest.TestCase):
         self.assertIn("local function attachMothStardust(model)", ALBUM)
         self.assertIn('emitter.Name = "CompanionStardust"', ALBUM)
         self.assertIn("emitter.Rate = mothStardustRate(personality, bondStage)", ALBUM)
-        self.assertIn('id == "Moth" and owner == player', ALBUM)
-        self.assertIn("local orbitAngle = phase * (orbitSpeeds[personality] or 0.72)", ALBUM)
+        self.assertIn('id == "Moth" and isLocal', FOLLOW)
+        self.assertIn("local orbitAngle = phase * (orbitSpeeds[personality] or 0.72)", FOLLOW)
         self.assertIn("attachMothStardust(model)", ALBUM)
 
     def test_petting_feedback_visuals_scale_with_server_relationship_stage(self):
