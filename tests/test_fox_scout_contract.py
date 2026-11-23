@@ -133,7 +133,7 @@ class FoxScoutContractTests(unittest.TestCase):
         self.assertIn("for segmentIndex = 1, #routePoints - 1 do", ALBUM)
 
     def test_hud_guides_players_by_the_fox_pawprint_trail(self):
-        self.assertIn("Следуй по золотым следам лап", HUD)
+        self.assertIn("Иди по золотым следам.", HUD)
         self.assertIn("Лисёнок нашёл тайник! Иди по золотым следам.", HUD)
         self.assertIn("увидеть следы к тайнику", HUD)
 
