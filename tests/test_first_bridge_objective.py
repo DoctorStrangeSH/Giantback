@@ -14,7 +14,7 @@ class FirstBridgeObjectiveTests(unittest.TestCase):
         self.assertIn('player:GetAttribute("Resource_Stone")', HUD)
         self.assertIn('"🪵 " .. tostring(math.min(wood, 5)) .. "/5', HUD)
         self.assertIn('"🪨 " .. tostring(math.min(stone, 3)) .. "/3', HUD)
-        self.assertIn('Дерево — топор · Камень — кирка', HUD)
+        self.assertIn('Подойди к кучам у дома и нажми кнопку сбора', HUD)
         self.assertIn('НАЧНИ ЗДЕСЬ • ПЕРВЫЙ МОСТ', HUD)
         self.assertIn('if player:GetAttribute("Ready") and not bridgeBuilt then', HUD)
 
