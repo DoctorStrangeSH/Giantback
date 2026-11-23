@@ -1,5 +1,6 @@
 ## Asset Pipeline 1.0 — Studio import and asset staging
 
+- [x] Extract companion follow-position calculations (local Moth personality orbit, Fox offset, per-player bobbing and frame-rate-independent smoothing) to CompanionFollow ModuleScript; preserve follower ownership and lifecycle in Album.client.luau.
 - [x] Extract per-player companion curiosity timing, rest (12s) and sleep (45s) thresholds into client-only CompanionActivity ModuleScript; keep the follower loop, visual animation and server-owned progression unchanged.
 - [x] Extract Fox, Moth and CrystalWisp procedural body/wing/tail/ear/face animation into CompanionAnimation ModuleScript; retain follower lifecycle, growth/mutation states and ability clocks in Album.client.luau.
 - [x] Extract harvest hit progress, cracks, chips, reward pickups and final impact VFX into client-only HarvestFeedback ModuleScript; keep authoritative harvest events and node geometry orchestration in Album.client.luau.
