@@ -136,7 +136,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
 
 
     def test_crystal_wisp_is_a_persistent_third_companion_with_grotto_mutations(self):
-        self.assertIn('local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite"}', WORLD)
+        self.assertIn('local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}', WORLD)
         self.assertIn('CrystalWisp = "Кристальный светляк"', WORLD)
         self.assertIn('CrystalWisp = {', WORLD)
         self.assertIn('biome = "CrystalGrotto"', WORLD)
