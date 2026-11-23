@@ -44,6 +44,7 @@ class MosslingPollenBurstTests(unittest.TestCase):
         self.assertIn('Color3.fromRGB(155, 222, 112)', CLIENT)
         self.assertIn('showMosslingPollenTelegraph(enemy)', CLIENT)
         self.assertIn('attack == "PollenBurst" and isMossling', CLIENT)
+        self.assertIn('state == "Telegraph" or state == "PollenTelegraph"', CLIENT)
 
 
 if __name__ == "__main__":
