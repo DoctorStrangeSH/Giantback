@@ -260,6 +260,7 @@ local toastTween = nil
 local navButtons = {}
 local navDefinitions = {}
 local closeActivePanel
+local applyPanelLayer
 
 local function updateResponsiveLayout()
     local camera = workspace.CurrentCamera
@@ -714,7 +715,7 @@ local panelTitles = {
 
 local activeTab = nil
 
-local function applyPanelLayer()
+applyPanelLayer = function()
     panel.ZIndex = 21
     for _, descendant in panel:GetDescendants() do
         if descendant:IsA("GuiObject") then
@@ -943,6 +944,7 @@ local function refresh()
     if panel.Visible and activeTab and renderers[activeTab] then
         clearBody()
         renderers[activeTab]()
+        applyPanelLayer()
     end
 end
 
