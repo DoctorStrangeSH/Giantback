@@ -88,6 +88,40 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn('player:GetAttribute(prefix .. "Difficulty")', HUD)
         self.assertIn('difficultyNames = {easy = "ЛЕГКО", medium = "СРЕДНЕ", hard = "СЛОЖНО"}', HUD)
 
+    def test_weekly_challenges_rotate_and_persist_by_utc_week(self):
+        self.assertIn('os.date("!%Y-%W")', WORLD)
+        self.assertIn("local function normalizeWeeklyChallenges(raw, player, session)", WORLD)
+        self.assertIn("Random.new((math.abs(player.UserId) % 1000003 + weekSeed) % 2147483647)", WORLD)
+        self.assertIn("weeklyChallenges = nil", WORLD)
+        self.assertIn("session.weeklyChallenges = data.weeklyChallenges", WORLD)
+        self.assertIn("old.weeklyChallenges = weeklyChallengeSnapshot", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 13)", WORLD)
+
+    def test_weekly_progress_tracks_server_gameplay_events(self):
+        for marker in (
+            'Gather = "Gather"', 'Plant = "Farm"', 'Harvest = "Farm"',
+            'Sell = "Market"', 'Scout = "Explore"', 'Feed = "Companion"',
+            'Play = "Companion"', 'WinEncounter = "Combat"',
+        ):
+            self.assertIn(marker, WORLD)
+        self.assertIn("local weeklyChanged = addWeeklyChallengeProgress(player, questId, amount)", WORLD)
+        self.assertIn("syncWeeklyChallenges(player)", WORLD)
+
+    def test_weekly_reward_is_atomic_and_includes_star_shard(self):
+        self.assertIn("local function claimWeeklyChallenges(player)", WORLD)
+        self.assertIn('session.inventory.StarShard = previousStarShards + 1', WORLD)
+        self.assertIn('session.weeklyChallenges.claimed = true', WORLD)
+        self.assertIn('session.weeklyChallenges.claimed = false', WORLD)
+        self.assertIn('session.inventory.StarShard = previousStarShards', WORLD)
+        self.assertIn('if action == "ClaimWeeklyChallenges" then', WORLD)
+
+    def test_journal_displays_weekly_challenges_and_chest(self):
+        self.assertIn('player:GetAttribute("WeeklyChallenge_Week")', HUD)
+        self.assertIn('player:GetAttribute(prefix .. "Progress")', HUD)
+        self.assertIn('button(body, "ClaimWeeklyChallenges"', HUD)
+        self.assertIn('event:FireServer("ClaimWeeklyChallenges")', HUD)
+        self.assertIn('addInfo("НЕДЕЛЬНЫЕ ИСПЫТАНИЯ"', HUD)
+
     def test_streak_is_saved_across_daily_rollover(self):
         self.assertIn("streak = streak", WORLD)
         self.assertIn("bestStreak = bestStreak", WORLD)
