@@ -1462,7 +1462,12 @@ addDailyQuestProgress = function(player, questId, amount, saveProgress)
     end
     local previous = session.dailyQuests.progress[questId] or 0
     local nextValue = math.clamp(previous + math.max(0, math.floor(tonumber(amount) or 0)), 0, definition.goal)
-    if nextValue == previous then return end
+    if nextValue == previous then
+        if weeklyChanged and saveProgress ~= false and session.online and not save(player) then
+            warn("Weekly challenge progress save will be retried:", player.UserId, questId)
+        end
+        return
+    end
     session.dailyQuests.progress[questId] = nextValue
     syncDailyQuests(player)
     if saveProgress ~= false and session.online and not save(player) then
