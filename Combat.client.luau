@@ -113,7 +113,6 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 -- Keep touch combat buttons out of the way while exploring/building.
 -- Regions are the same tagged parts the authoritative server checks for attacks.
-local touchControlsVisible = nil
 local function insideCombatRegion()
     if player:GetAttribute("Ready") ~= true then return false end
     local character = player.Character
@@ -137,8 +136,6 @@ end
 local function updateTouchControls()
     if not UserInputService.TouchEnabled then return end
     local visible = insideCombatRegion()
-    if visible == touchControlsVisible then return end
-    touchControlsVisible = visible
     for i, actionName in TOUCH_ACTIONS do
         local touchButton = ContextActionService:GetButton(actionName)
         if touchButton then
