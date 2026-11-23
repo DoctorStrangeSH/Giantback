@@ -5,8 +5,9 @@ Source of truth: `PROJECT_SPEC.md`. Integration target: `main`. Working candidat
 ## Verified repository state
 
 - `main` still uses the legacy `build.py` layout with the moving Mossback, while the current product spec requires fixed home islands and a hub.
-- Candidate branch is 1416 commits ahead and 6 behind `main` (comparison at audit time), with 120 changed files.
-- GitHub marks PR #8 not mergeable at creation. Resolve conflicts first; do not force-update `main` or erase those six commits.
+- Initially, the candidate branch was 1416 commits ahead and 6 behind `main`, with 120 changed files.
+- **Resolved 2026-11-23:** two-parent merge commit `dbf583b931fa7c208cacb122970c658eb96613e8` preserves both `main` and the gameplay branch. The candidate now has 0 commits behind `main` and PR #8 reports `mergeable: true`.
+- Resolution retains the newer reboot specification and the refactored resource collection contract, rather than copying the older `main` variants; the old companion growth test removed from `main` is not restored—the newer modular contract on the feature branch remains. CI and Studio acceptance are still required.
 - Branch count: seven non-main branches.
 
 ## Branch delta compared with candidate
@@ -24,9 +25,9 @@ These figures represent GitHub's compare endpoint at audit time; `ahead` is not 
 
 ## Integration quality gate
 
-- [ ] Reconcile `main`'s six commits and resolve PR merge conflicts.
+- [x] Reconcile `main`'s six commits and resolve PR merge conflicts without rewriting either history (merge commit `dbf583b`).
 - [ ] Review unique commits of the four diverged branches and port only missing, tested functionality.
-- [ ] Verify Python tests and Roblox place export; check embedded scripts and asset manifests.
+- [ ] Verify Python tests and Roblox place export; check embedded scripts and asset manifests. GitHub Actions Validate Giantback place run #2210/#2211 initiated after merge; no successful outcome confirmed at time of update.
 - [ ] Studio Play: spawn on owned island, gather resources, repair bridge, discover Fox, follow scent trail, obtain MoonSeed, rejoin and verify persistence.
 - [ ] Studio Play: equip Moth, reveal MoonBloom and verify server-owned personal reward.
 - [ ] Two-player Studio Play: permissions, individual resource cooldowns and pet discoveries.
