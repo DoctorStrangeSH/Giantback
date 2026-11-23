@@ -26,7 +26,7 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn('addDailyQuestProgress(player, "Gather", 1, false)', WORLD)
         self.assertIn('addDailyQuestProgress(player, "Sell", totalItems)', WORLD)
         self.assertIn('addDailyQuestProgress(player, "Scout", 1)', WORLD)
-        self.assertIn("local function addDailyQuestProgress(player, questId, amount)", WORLD)
+        self.assertIn("addDailyQuestProgress = function(player, questId, amount, saveProgress)", WORLD)
         self.assertIn('if not session or not definition or not player:GetAttribute("Ready") then return end', WORLD)
 
     def test_daily_progress_is_saved_and_restored(self):
