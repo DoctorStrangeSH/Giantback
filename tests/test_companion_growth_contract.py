@@ -4,26 +4,27 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 ALBUM = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
+APPEARANCE = (ROOT / "modules/CompanionAppearance.luau").read_text(encoding="utf-8")
 ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 
 class CompanionGrowthContractTests(unittest.TestCase):
     def test_growth_stages_are_bounded_and_level_gated(self):
-        self.assertIn("local function companionGrowthForLevel(level)", ALBUM)
-        self.assertIn('return "Взрослый", 1.1, 3', ALBUM)
-        self.assertIn('return "Подросток", 1, 2', ALBUM)
-        self.assertIn('return "Малыш", 0.9, 1', ALBUM)
-        self.assertIn("level = math.clamp(math.floor(tonumber(level) or 1), 1, 5)", ALBUM)
+        self.assertIn("local function companionGrowthForLevel(level)", APPEARANCE)
+        self.assertIn('return "Взрослый", 1.1, 3', APPEARANCE)
+        self.assertIn('return "Подросток", 1, 2', APPEARANCE)
+        self.assertIn('return "Малыш", 0.9, 1', APPEARANCE)
+        self.assertIn("level = math.clamp(math.floor(tonumber(level) or 1), 1, 5)", APPEARANCE)
 
     def test_world_companion_models_apply_and_refresh_growth_scale(self):
-        self.assertIn("local function applyCompanionGrowth(model, owner, companionId)", ALBUM)
-        self.assertIn('model:GetAttribute("AppliedGrowthStage") == stageId', ALBUM)
-        self.assertIn("model:ScaleTo(scale)", ALBUM)
-        self.assertIn("local currentState = animationStates[model]", ALBUM)
-        self.assertIn("part.CFrame = pivot * offset", ALBUM)
-        self.assertIn('model:SetAttribute("GrowthStageName", stageName)', ALBUM)
-        self.assertIn("captureAnimation(model, companionId, false, owner == player)", ALBUM)
+        self.assertIn("local function applyCompanionGrowth(model, owner, companionId)", APPEARANCE)
+        self.assertIn('model:GetAttribute("AppliedGrowthStage") == stageId', APPEARANCE)
+        self.assertIn("model:ScaleTo(scale)", APPEARANCE)
+        self.assertIn("local currentState = animationStates[model]", APPEARANCE)
+        self.assertIn("part.CFrame = pivot * offset", APPEARANCE)
+        self.assertIn('model:SetAttribute("GrowthStageName", stageName)', APPEARANCE)
+        self.assertIn("captureAnimation(model, companionId, false, owner == player)", APPEARANCE)
         self.assertIn("applyCompanionGrowth(model, owner, id)", ALBUM)
 
     def test_growth_stage_changes_companion_motion_without_gameplay_effects(self):
