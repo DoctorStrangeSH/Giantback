@@ -1533,6 +1533,43 @@ local function renderExpeditions()
             event:FireServer("ClaimCrystalRelicSet")
         end
     end)
+
+    -- The pet mutation codex reads only server-replicated, saved companion discoveries.
+    -- A companion has one permanently rolled mutation, not sixteen collectible copies.
+    local mutationPets = {
+        {id = "Fox", title = "Лисёнок", biome = "Солнечная роща", glyph = "Л", color = palette.gold},
+        {id = "Moth", title = "Лунная моль", biome = "Сумеречная долина", glyph = "М", color = palette.lilac},
+        {id = "CrystalWisp", title = "Кристальный светляк", biome = "Кристальная пещера", glyph = "К", color = palette.water},
+        {id = "HarvestSprite", title = "Тыквик", biome = "Фестиваль урожая", glyph = "Т", color = palette.coral},
+    }
+    local discoveredMutations = 0
+    for _, pet in mutationPets do
+        local owned = player:GetAttribute(pet.id) == true
+        local mutationId = player:GetAttribute("Companion_" .. pet.id .. "_Mutation")
+        if owned and type(mutationId) == "string" and mutationId ~= "" then
+            discoveredMutations += 1
+        end
+    end
+    addInfo("АЛЬБОМ РЕДКИХ ФОРМ", "Каждый найденный питомец получает свою особую форму. В дневнике видна только твоя настоящая находка, а не чужие варианты.", 80)
+    local mutationHeader = card(body, "CompanionMutationCodexHeader", 62)
+    mutationHeader.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
+    label(mutationHeader, "CodexMark", "М", UDim2.fromOffset(36, 40), UDim2.fromOffset(12, 11), 23, palette.lilac, Enum.Font.GothamBlack)
+    label(mutationHeader, "CodexTitle", "ОТКРЫТЫЕ ФОРМЫ ПИТОМЦЕВ", UDim2.new(1, -126, 0, 32), UDim2.fromOffset(55, 13), 12, palette.ink, Enum.Font.GothamBlack)
+    label(mutationHeader, "CodexCount", tostring(discoveredMutations) .. "/" .. tostring(#mutationPets), UDim2.fromOffset(54, 28), UDim2.new(1, -62, 0.5, -14), 14, palette.forest, Enum.Font.GothamBlack)
+
+    for index, pet in mutationPets do
+        local owned = player:GetAttribute(pet.id) == true
+        local mutationId = player:GetAttribute("Companion_" .. pet.id .. "_Mutation")
+        local found = owned and type(mutationId) == "string" and mutationId ~= ""
+        local mutationName = player:GetAttribute("Companion_" .. pet.id .. "_MutationName")
+        local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
+        local item = card(body, "CompanionMutationCodex_" .. tostring(index), 76)
+        item.BackgroundColor3 = found and Color3.fromRGB(235, 242, 224) or palette.paper
+        label(item, "PetMark", found and pet.glyph or "?", UDim2.fromOffset(34, 38), UDim2.fromOffset(10, 17), 20, found and pet.color or palette.muted, Enum.Font.GothamBlack)
+        label(item, "MutationTitle", found and (pet.title .. " • " .. (mutationName or mutationId)) or "Неизвестная форма", UDim2.new(1, -64, 0, 24), UDim2.fromOffset(52, 6), 12, palette.ink, Enum.Font.GothamBold)
+        label(item, "MutationRarity", found and (mutationRarity or "Необычная") or "РЕДКОСТЬ НЕИЗВЕСТНА", UDim2.new(1, -64, 0, 18), UDim2.fromOffset(52, 30), 10, found and pet.color or palette.muted, Enum.Font.GothamBlack)
+        label(item, "MutationBiome", found and ("Обнаружен: " .. pet.biome) or ("Где искать: " .. pet.biome), UDim2.new(1, -64, 0, 20), UDim2.fromOffset(52, 50), 10, palette.muted)
+    end
 end
 
 local renderers = {
