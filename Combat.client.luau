@@ -607,6 +607,7 @@ local function updateBossHud(enemy)
     local maxHealth = math.max(1, tonumber(enemy:GetAttribute("CombatMaxHealth")) or (humanoid and humanoid.MaxHealth) or 1)
     local phase = math.clamp(tonumber(enemy:GetAttribute("BossPhase")) or 1, 1, 3)
     local ratio = math.clamp(health / maxHealth, 0, 1)
+    bossName.Text = string.upper((humanoid and humanoid.DisplayName) or tostring(enemy:GetAttribute("BossDisplayName") or "БОСС"))
     bossHealthFill.Size = UDim2.fromScale(ratio, 1)
     bossHealthFill.BackgroundColor3 = phase == 1 and Color3.fromRGB(170, 92, 194)
         or (phase == 2 and Color3.fromRGB(190, 104, 255) or Color3.fromRGB(226, 91, 77))
@@ -996,7 +997,7 @@ local function showBossPhaseTransition(enemy, phase)
     if phase <= 1 then return end
 
     local root = enemy:FindFirstChild("HumanoidRootPart")
-    local core = enemy:FindFirstChild("SealCore", true)
+    local core = enemy:FindFirstChild("SealCore", true) or enemy:FindFirstChild("PrismGuardianCore", true)
     if not root then return end
 
     local accent = phase == 2 and Color3.fromRGB(190, 104, 255) or Color3.fromRGB(255, 105, 91)
