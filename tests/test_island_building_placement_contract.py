@@ -95,7 +95,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('session.coins = math.clamp(math.floor(tonumber(data.coins) or 0), 0, MAX_COINS)', WORLD)
         self.assertIn('player:SetAttribute("Coins", math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS))', WORLD)
         self.assertIn('if not save(player) then', WORLD)
-        self.assertIn('session.marketBusy = true', WORLD)
+        self.assertIn('session.economyBusy = true', WORLD)
         self.assertIn('prompt(marketAnchor, "Фермерский рынок", "Продать весь урожай"', WORLD)
         self.assertIn('"MarketAwning"', WORLD)
         self.assertIn('"MarketSign"', WORLD)
