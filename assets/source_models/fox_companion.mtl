@@ -1,0 +1,47 @@
+newmtl fox_orange
+Ka 0.18 0.18 0.18
+Kd 0.91 0.36 0.13
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl cream
+Ka 0.18 0.18 0.18
+Kd 0.98 0.86 0.66
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl ear_pink
+Ka 0.18 0.18 0.18
+Kd 0.82 0.39 0.35
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl dark
+Ka 0.18 0.18 0.18
+Kd 0.08 0.06 0.05
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl white
+Ka 0.18 0.18 0.18
+Kd 1.0 0.98 0.87
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl nose
+Ka 0.18 0.18 0.18
+Kd 0.12 0.07 0.06
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2

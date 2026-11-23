@@ -38,6 +38,9 @@ Giantback должен быть понятен ребёнку, но давать
 - центральная площадь;
 - фермерский район;
 - место для питомцев;
+- отдельная декоративная зона отдыха компаньонов с тремя мягкими лежанками, лунным фонарём, каменной площадкой и подходной тропинкой; визуальная заготовка, не система размещения/назначения питомцев;
+- внешний природный пояс с несколькими крупными деревьями, низкими ягодными кустами, цветочными карманами и грибами; декор не должен перекрывать фермерские участки, точки сбора, входы и маршруты;
+- понятный каменный путь от дома к ферме и декоративная садовая арка как визуальный ориентир первого занятия;
 - мастерская и склад по мере развития;
 - свободные строительные площадки;
 - несколько направлений расширения.
@@ -53,6 +56,10 @@ Giantback должен быть понятен ребёнку, но давать
 - **Каменный кряж** — камень, руда, кузница и вход в шахту;
 - **Лунные руины** — магические растения, загадки и редкие материалы;
 - **Кристальная пещера** — короткое подземелье и первый босс.
+
+Первая исследовательская итерация Кристальной пещеры — необязательная боковая камера в Сумеречной долине, открываемая после получения звёздного осколка. Две люмен-жилы можно добывать киркой по 6 ударов; каждый узел имеет индивидуальное восстановление через 15 минут и выдаёт один `CrystalShard`. В отдельной головоломке игрок пробуждает руны в порядке Луна → Рассвет → Прилив; подсказка находится внутри зала. Последовательность индивидуальная и сбрасывается после 25 секунд бездействия или неверного шага. После открытия тайника игрок может предъявить сохранённую `CrystalSigil`, чтобы открыть скрытую Эхо-камеру. Внутри обитает третий коллекционный питомец Crystal Wisp. Для приручения необходимо получить `PrismSeed` и предложить его светляку; семя расходуется, владение и прогресс питомца сохраняются в профиле. У Crystal Wisp есть собственные мутации биома CrystalGrotto и стандартные системы дружбы/уровней. Его особая способность Prism Sense позволяет обнаружить две скрытые призменные жилы внутри пещеры. Способность доступна только при экипированном Crystal Wisp и нахождении игрока в Кристальной пещере; длительность зависит от уровня питомца (16–28 секунд), восстановление — 45 секунд. Добыча жил требует кирки и приносит дополнительные CrystalShard. Внутри находится уникальное призматическое семя `PrismSeed`, выдаваемое один раз и сохраняемое в инвентаре; открытие комнаты и получение семени отражаются в дневнике. Посадка и выращивание семени — отдельный будущий этап.
+
+Во время исследования может случайно начаться кристальный обвал: красная область предупреждает за 3 секунды, после чего падающий кристалл наносит 18 урона в радиусе 8 studs. Событие запускается только пока в пещере есть игроки; точки падения ограничены внутренней площадью зала. Завершение открывает тайник с разовой наградой `CrystalSigil`; `CrystalRunes`, `CrystalCache` и предмет сохраняются в профиле. Добыча разрешена только игроку, который сервером отмечен как находящийся внутри пещеры, и только при близком взаимодействии. В ней можно обнаружить постоянное сердце пещеры и получить один кристальный осколок. Это не считается завершённым биомом: враги, босс, дополнительные комнаты, добываемые жилы и случайные события остаются в плане.
 
 Каждый остров имеет собственный силуэт, цветовую палитру, растительность, звук и игровые занятия. Новые территории нельзя продавать за Robux вместо игрового прохождения.
 
@@ -108,7 +115,12 @@ Giantback должен быть понятен ребёнку, но давать
 
 Первая законченная фермерская система:
 - четыре культуры с разными сроками роста и применением;
+- каждая грядка имеет читаемые деревянные бортики и борозды; декоративные элементы не перекрывают взаимодействие с посадкой и сбором;
 - посадка, визуальные стадии роста и сбор;
+- пять читаемых стадий роста, привязанных к серверным временным меткам; у моркови, клубники, тыквы и капусты разные процедурные силуэты и отдельное появление зрелого урожая (текущие Parts — blockout, не финальные MeshPart-ассеты);
+- стартовый серверный реестр: морковь (5 мин), клубника (12 мин, повторный сбор каждые 8 мин), тыква (30 мин), капуста (20 мин); время и награды рассчитываются сервером;
+- вкладка «Ферма» показывает каталог четырёх культур, остаток семян, время роста, выбранную культуру и состояние каждой грядки; выбор проверяется сервером и сохраняется в профиле острова;
+- выбор культуры доступен только при наличии соответствующих семян; сервер отклоняет неизвестные культуры и повторные параллельные действия на одной грядке;
 - полив как приятное действие, а не наказание;
 - три уровня фермы с заметным изменением внешнего вида;
 - теплица на позднем уровне;
@@ -156,6 +168,18 @@ Giantback должен быть понятен ребёнку, но давать
 - сервер отдельно проверяет владение и экипировку нужного питомца, личные флаги этапов, точку взаимодействия и дистанцию;
 - флаги MoonGateTrace, MoonGateOpen и MoonRelic, а также StarShard сохраняются; повторная выдача реликвии невозможна.
 
+
+
+Первый боевой ability slice уже знакомых компаньонов (дополнение к исследовательским способностям):
+- Fox («Корешковый выпад») выбирает ближайшего живого зарегистрированного противника в текущей боевой зоне в радиусе 18 studs и наносит 24 серверного урона; успешное попадание учитывается для личной награды за вклад в бой;
+- Moth («Лунный импульс») лечит готовых союзников в той же боевой зоне в радиусе 14 studs максимум на 18 HP каждому, не превышая MaxHealth;
+- обе способности требуют владения и экипировки соответствующего питомца, имеют общий персональный cooldown 14 секунд, переживающий возрождение персонажа;
+- способность недоступна во время блока и зарядки оружия; клавиатура C, gamepad ButtonY и touch-кнопка вызывают одну серверную команду;
+- клиент не выбирает цель, урон, лечение или список союзников; сервер определяет всё сам;
+- способности усиливают команду, но не заменяют атаки игрока; мобильная читаемость, реальный equip-flow и кооперативное лечение требуют Studio-приёмки.
+- после подтверждённого сервером применения Fox показывает локальный янтарный импульс и искры на выбранном противнике; Moth показывает лунный импульс и искры только на союзниках, которых сервер действительно вылечил;
+- клиент получает targetId Fox и healedUserIds Moth только для визуального отображения; локальные эффекты не наносят урон, не лечат и не влияют на награды;
+
 У каждого вида:
 - оригинальная модель и узнаваемый силуэт; временные rig blockout-модели Fox/Moth должны быть заменены импортированными OBJ/MTL MeshPart после Studio-проверки;
 - лицо и эмоции;
@@ -170,18 +194,6 @@ Giantback должен быть понятен ребёнку, но давать
 
 ### Биомы
 В релизе нужны домашний остров и как минимум два законченных приключенческих биома. Каждый биом содержит ресурсы, секреты, одного-двух существ, небольшую задачу и заметную награду.
-
-#### Добыча и развитие инструментов — вертикальный срез
-- Солнечная роща содержит персональные точки сбора древесины; Лунная роща — персональные каменные жилы. Мир и узлы общие, но право на награду и cooldown индивидуальны для игрока.
-- Для дерева нужен топор, для камня — кирка. Сервер проверяет владение, реальную экипировку Tool в Character, расстояние, состояние узла и частоту ударов; клиент не определяет награду и не меняет инвентарь.
-- Базовый узел дерева требует 3 успешных удара, каменный — 4. Улучшение соответствующего инструмента уменьшает порог на один удар.
-- На домашнем острове есть персональный верстак. Первое улучшение топора стоит Wood ×8 и Stone ×6; улучшение кирки — Wood ×6 и Stone ×8. Уровни сохраняются в профиле; миграция старых профилей должна сохранять прежние данные.
-- Локальные эффекты попадания, разрушения и восстановления не меняют состояние геометрии для других игроков.
-
-#### Будущая ресурсная цепочка (не реализована)
-- Каменный кряж: отдельный законченный биом с железными месторождениями, опасностями, секретами и задачей экспедиции.
-- Железная руда → плавильня → слитки → железные инструменты. Рецепты и награды проверяются сервером, а добыча открывает новые строительные и исследовательские возможности.
-- Не добавлять железные инструменты до появления руды, плавки, рецептов и сохранения ресурсов как единого игрового цикла.
 
 ### Первое подземелье
 - прохождение на 1–4 игроков;
@@ -309,3 +321,77 @@ Giantback должен быть понятен ребёнку, но давать
 ## 17. Правило изменений
 
 PROJECT_SPEC.md — источник требований версии 1.0. ROADMAP.md — фактический статус. Новые идеи записываются в backlog и не увеличивают scope автоматически. В каждом PR обновляются статусы и проверки.
+
+
+## Harvesting 2.0 — current implementation status
+
+The canonical development branch includes persistent starter Axe/Pickaxe tools, a dedicated Tools panel, a personal owner-only workbench for upgrades, server-authoritative multi-hit gathering for forest wood and dusk stone, and two Dusk iron veins. Tool ownership, level and selected tool are persisted under profile schema v9 with monotonic migration writes. The personal owner-only furnace converts 3 IronOre + 2 Wood into one IronIngot after 60 seconds; pending output persists across reconnects. Harvesting swing/impact/crack/break/regrowth feedback and the server-owned Combat C1 loop are staged together in PR #7, not yet merged into the canonical branch. C1 includes generated training glade geometry, tagged R6 enemy, server-side sword hit detection, telegraphed enemy attacks, block/dodge and persistent one-time encounter rewards. Studio gameplay acceptance remains outstanding.
+
+
+## Ironworking 1.0 — implementation status
+
+The current working branch adds two Dusk-island iron veins requiring a Pickaxe and five hits, each yielding two IronOre with a 10-minute personal respawn. The personal island now has an owner-only furnace: 3 IronOre + 2 Wood produces one IronIngot after 60 seconds. The server persists the pending smelt and grants the ingot only when the owner returns to collect it after completion. The Tools panel displays ore, ingot and smelter status. Studio gameplay acceptance remains outstanding.
+
+
+### Companion progression 1.0
+
+- Each owned companion has its own persistent level (1–5) and XP bar. Existing profiles migrate safely from schema v10 to v11; profiles without companion data start at level 1 with 0 XP.
+- XP comes only from server-verified companion milestones: Fox cache collection (+30), Fox's Moon Gate trace (+20), Fox combat skill success (+12); Moth MoonBloom discovery (+35), Moon Gate rune reveal (+25), and successful combat healing (+6 per ally healed, capped at +24 per cast).
+- XP thresholds increase by level: 100, 175, 250 and 325 XP. Level 5 is the cap; excess XP is discarded rather than banked.
+- Fox's combat skill gains +3 damage per level (24 at level 1, 36 at level 5). Moth's healing gains +2 HP per level (18 at level 1, 26 at level 5). Server remains authoritative for all values.
+- Collection cards show level, current/required XP and a progress bar. No paid XP boosts or paid progression gates are required.
+- New companion species, cosmetic variants and visual evolution remain later expansion scope. Passive traits and basic feeding/friendship are now covered by the companion expansion slices.
+
+
+### Companion passive talents 1.0
+
+- Fox unlocks **Чуткий нюх** at level 3: Fox cache-search cooldown decreases from 120 to 90 seconds. At level 5, **Острый нюх** reduces it to 60 seconds.
+- Moth unlocks **Лунная аура** at level 3: healing radius grows from 14 to 16 studs. At level 5 it grows to 18 studs.
+- Passive effects are calculated by the server from saved companion levels. Client attributes are display-only and cannot select or amplify a passive.
+- The collection card explains the currently unlocked passive or the next level milestone.
+- This progression is deterministic and gameplay-earned. No hunger decay, missed-day penalties or paid stat boosts.
+
+
+### Companion friendship and feeding 1.0
+
+- Each owned companion stores an independent friendship score from 0 to 1000 inside its existing companion profile. Legacy profiles default to 0 without a destructive migration.
+- Feeding is available only for the currently equipped, owned companion. The server selects one harvested crop from inventory in this order: Pumpkin (+25 friendship), Strawberry (+20), Cabbage (+18), Carrot (+15).
+- One harvested food item is consumed per feed. A per-companion 8-second server cooldown prevents rapid remote spam. Inventory and friendship are saved together through the existing profile save path.
+- Friendship ranks: Знакомство (0–99), Знакомцы (100–299), Друзья (300–599), Лучшие друзья (600–899), Родственные души (900–1000).
+- Friendship never decays. No hunger meter, absence penalty, daily login requirement, paid friendship boost or paid food.
+- The Pets tab displays friendship and offers feeding when the companion is equipped and harvested food is available. This first slice does not yet include play interactions, mood simulation, pet animations or visual evolution.
+
+
+### Companion play: memory game 1.0
+
+- The Pets tab offers an optional three-symbol memory game for the currently equipped, owned companion.
+- The server creates a unique challenge token and sequence. The client shows the sequence briefly, then asks the player to repeat it using three large touch-friendly buttons.
+- Each input is validated server-side against the token, expected index and expected symbol. Incorrect inputs end the round without reducing friendship or XP.
+- A successful round grants +15 friendship and +8 companion XP. The sequence expands from 3 to 4 symbols at friendship 600.
+- A 25-second per-companion cooldown and an 18-second challenge timeout prevent remote spam and abandoned sessions.
+- No streaks, daily requirement, energy depletion, punishment for failure or paid retry. This is a short cooperative-feeling interaction, not an obligation.
+- This first pass uses shared symbol controls with pet-specific presentation. Unique animations, sound cues and richer play toys remain later polish.
+
+
+### Companion personality and mood 1.0
+
+- Fox has a curious explorer personality; Moth has a calm, light-guardian personality. The Pets tab shows both the companion's personality description and its current mood.
+- Mood is event-driven: Fox starts Curious, Moth starts Calm; successful feeding changes mood to Content; a completed play session changes mood to Happy; equipping a companion restores its personality baseline.
+- Mood is session flavor, not a survival or progression system. It does not decay, block abilities, consume resources, or punish the player for leaving. It resets to each companion's baseline on a fresh session.
+- The server owns mood state and synchronizes it through companion-specific player attributes. Petting adds a short local visual reaction; full animation/audio coverage remains NOT DONE.
+
+
+### Companion petting interaction 1.0
+
+- The Pets tab offers a voluntary Pet action for the currently equipped, owned companion. The server validates ownership/equipment and applies an independent 18-second per-companion cooldown.
+- A successful pet adds +5 friendship (capped at 1000), changes mood to Happy, synchronizes the album state and saves through the existing profile save path.
+- The owning client plays a short species-specific response: Fox swishes its tail and perks its ears; Moth flaps its wings faster and brightens its core. A small local heart/sparkle burst confirms the interaction.
+- Petting consumes no resources and has no decay, failure penalty, daily requirement or paid shortcut. The current action is an album button; direct world-touch interaction and hand/arm contact animation remain NOT DONE.
+
+
+### Companion ambient rest 1.0
+
+- When the owner remains still for 12 seconds, their equipped companion enters a visual-only resting state. Movement immediately returns the companion to its normal follow/idle animation.
+- Fox rests with subtle breathing, a relaxed tail sway and still paws. Moth slows and softens its wing beats, antenna movement and core glow.
+- Resting does not consume energy, change friendship or mood, disable abilities, affect XP, or impose any penalty. It is not an AFK detector and does not alter player rewards.
+- Activity state is client-local and is cleared when the owner leaves. This first pass does not include a dedicated sleep pose, Z particles, or hand-authored animation clips.

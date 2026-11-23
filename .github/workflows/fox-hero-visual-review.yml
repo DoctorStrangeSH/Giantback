@@ -1,0 +1,92 @@
+name: Fox Hero Blender visual acceptance
+
+on:
+  push:
+    branches: [feat/cozy-world-visual-pass]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: fox-hero-visual-review-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      EGL_PLATFORM: surfaceless
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Blender Python module
+        run: python -m pip install bpy==4.2.0
+      - name: Install headless rendering system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libxrender1 libxi6 libxkbcommon0 libsm6 libxext6
+      - name: Render Fox Hero
+        run: |
+          python -c "import runpy,sys; sys.path.insert(0,'tools/blender'); sys.argv=['build_fox_companion.py','--','--output-dir','build/fox_hero']; runpy.run_path('tools/blender/build_fox_companion.py',run_name='__main__')"
+      - name: Check review package
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          output = Path("build/fox_hero")
+          required = [
+              "fox_companion_hero_three_quarter.png",
+              "fox_companion_hero_front.png",
+              "fox_companion_hero_side.png",
+              "fox_companion_hero_back.png",
+              "fox_companion_hero.blend",
+              "fox_companion_hero.obj",
+              "fox_companion_hero_rig.json",
+              "fox_companion_hero_mesh_report.json",
+          ]
+          missing = [name for name in required if not (output / name).is_file()]
+          assert not missing, f"Missing review outputs: {missing}"
+
+          rig = json.loads((output / "fox_companion_hero_rig.json").read_text())
+          report = json.loads((output / "fox_companion_hero_mesh_report.json").read_text())
+          assert len(rig["parts"]) == 17, "Fox Hero rig must contain exactly 17 groups"
+          assert report["part_count"] == 17, "Mesh report must cover all 17 rig groups"
+          assert set(report["parts"]) == set(rig["parts"]), "Mesh report and rig groups differ"
+
+          for name, part in report["parts"].items():
+              assert part["vertices"] > 0 and part["faces"] > 0, f"{name}: empty mesh"
+              assert part["zero_area_faces"] == 0, f"{name}: zero-area faces detected"
+              assert part["non_manifold_edges"] == 0, f"{name}: non-manifold edges detected"
+              assert part["uv_layers"] >= 1, f"{name}: UV layer missing"
+              assert part["materials"], f"{name}: material assignment missing"
+              profiles = part["material_profiles"]
+              assert set(profiles) == set(part["materials"]), f"{name}: incomplete material profile metadata"
+              assert all(value in {"soft_fur", "smooth"} for value in profiles.values()), f"{name}: unknown surface profile"
+
+          fur_groups = {
+              "FoxBody", "FoxBelly", "FoxHead", "FoxMuzzle",
+              "FoxEarLeft", "FoxEarRight",
+              "FoxLegFrontLeft", "FoxLegFrontRight",
+              "FoxLegBackLeft", "FoxLegBackRight",
+              "FoxTail", "FoxTailTip",
+          }
+          for name in fur_groups:
+              profiles = report["parts"][name]["material_profiles"].values()
+              assert "soft_fur" in profiles, f"{name}: soft-fur material profile missing"
+
+          print("Fox Hero review package passed: 17 rig groups, mesh/UV/material checks, soft-fur profiles, four renders.")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fox-Hero-Blender-Visual-Review
+          path: build/fox_hero/
+          if-no-files-found: error
+          retention-days: 14

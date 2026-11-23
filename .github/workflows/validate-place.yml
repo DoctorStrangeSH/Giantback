@@ -1,0 +1,459 @@
+name: Validate Giantback place
+
+on:
+  push:
+    branches:
+      - main
+      - feat/cozy-world-visual-pass
+  pull_request:
+    branches:
+      - main
+      - feat/cozy-world-visual-pass
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run gameplay and world contract tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Validate source asset library
+        run: python tools/validate_asset_library.py
+
+      - name: Build Roblox place
+        run: python build.py
+
+      - name: Validate generated place and embedded scripts
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse("Giantback.rbxlx").getroot()
+          names = set()
+          for item in root.findall(".//Item"):
+              name = item.find("./Properties/string[@name='Name']")
+              if name is not None and name.text:
+                  names.add(name.text)
+
+          required = {
+              "HomeIslandTemplate",
+              "ServerStorage",
+              "Grove",
+              "Dusk",
+              "ReplicatedStorage",
+              "World",
+              "WorldVisuals",
+              "Combat",
+              "Album",
+              "GiantbackHUD",
+              "PublicSpawn",
+              "HomeBridge01",
+              "HomeBridge02",
+              "HomeBridge03",
+              "HomeBridge04",
+              "HomeBridge05",
+              "HomeBridge06",
+              "HomeBridge07",
+              "HomeBridge08",
+              "WoodPile",
+              "StonePile",
+              "FoxCache01",
+              "FoxCache02",
+              "FoxCache03",
+              "MoonBloom",
+              "MoonGateTracks",
+              "MoonGateRune",
+              "MoonRelic",
+          }
+          missing = required - names
+          if missing:
+              raise SystemExit(f"Missing instances in generated place: {sorted(missing)}")
+
+          def item_name(item):
+              return item.findtext("./Properties/string[@name='Name']", default="")
+
+          services = {item_name(item): item for item in root.findall("./Item")}
+          for service_name, categories in (
+              ("ServerStorage", {"Buildings", "Environment"}),
+              ("ReplicatedStorage", {"Companions"}),
+          ):
+              service = services[service_name]
+              library = next((item for item in service.findall("./Item") if item_name(item) == "AssetLibrary"), None)
+              if library is None:
+                  raise SystemExit(f"Missing {service_name}/AssetLibrary")
+              models = next((item for item in library.findall("./Item") if item_name(item) == "Models"), None)
+              if models is None:
+                  raise SystemExit(f"Missing {service_name}/AssetLibrary/Models")
+              category_names = {item_name(item) for item in models.findall("./Item")}
+              if not categories <= category_names:
+                  raise SystemExit(f"Missing asset categories under {service_name}: {sorted(categories - category_names)}")
+
+          sources = [
+              node.text or ""
+              for node in root.findall(".//ProtectedString[@name='Source']")
+          ]
+          if len(sources) < 4:
+              raise SystemExit(f"Expected at least 4 embedded scripts, found {len(sources)}")
+
+          required_markers = [
+              "local function renderPets()",
+              'player:GetAttribute("Companion_" .. pet.id .. "_XPToNext")',
+              "GiantbackAtmosphere",
+              "AlbumAction",
+              "CombatAction",
+              "GiantbackAttack",
+              "GiantbackBlock",
+              "GiantbackDodge",
+              "GiantbackGrantCombatReward",
+              "GiantbackGrantCompanionXP",
+              "COMPANION_MAX_LEVEL = 5",
+              "normalizeCompanionProgress",
+              "Companion_Fox_Level",
+              "Companion_Moth_Level",
+              "FOX_SKILL_DAMAGE_PER_LEVEL = 3",
+              "MOTH_HEAL_PER_LEVEL = 2",
+              "foxScoutCooldownForLevel",
+              "local healRadius = MOTH_HEAL_RADIUS",
+              "Чуткий нюх: поиск каждые 90 сек.",
+              "Лунная аура: радиус лечения +2.",
+              "local function feedCompanion(player, companionId)",
+              "local companionFeedOrder = {\"Pumpkin\", \"Strawberry\", \"Cabbage\", \"Carrot\"}",
+              'player:SetAttribute("Companion_" .. id .. "_Bond"',
+              "Дружба ",
+              "FeedCompanion",
+              "StartCompanionPlay",
+              "CompanionPlayInput",
+              "local function startCompanionPlay(player, companionId)",
+              "HttpService:GenerateGUID(false)",
+              "companionPlayCooldownSeconds = 25",
+              "CompanionPlayStarted",
+              "CompanionPlayFinished",
+              "local function submitCompanionPlayInput(player, payload)",
+              "local function beginCompanionPlay(payload)",
+              "local function setCompanionMood(player, companionId, mood)",
+              'player:SetAttribute("Companion_" .. companionId .. "_Mood", mood)',
+              'Fox = "Любопытство"',
+              'Moth = "Спокойствие"',
+              'setCompanionMood(player, challenge.companionId, "Радость")',
+              'setCompanionMood(player, companionId, "Довольство")',
+              "Любопытный исследователь",
+              "Нежная хранительница света",
+              "local function petCompanion(player, companionId)",
+              "PetCompanion",
+              "companionPetReadyAt",
+              "CompanionPetted",
+              "CompanionPettingBurstLocal",
+              "local companionActivity = setmetatable({}, {__mode = \"k\"})",
+              "activity.idleSince = now",
+              "flapSpeed = 3.2",
+              "resting and 0.38",
+              "playCompanionPettingBurst(model, id, bondStage)",
+              'button(item, "Pet"',
+              "УР. 5 · МАКСИМУМ",
+              "FoxEncounter",
+              "CrystalWispEncounter",
+              "CrystalWispNest",
+              "CrystalWisp",
+              "CrystalGrottoPrismVein01",
+              "CrystalGrottoPrismVein02",
+              "PrismSenseHidden",
+              "^OrbitCrystal",
+              'local prismSenseActive = state.id == "CrystalWisp"',
+              "CrystalWisp = companionMoodDefaults.CrystalWisp",
+              "PrismSenseUntil",
+              "Призменное чутьё",
+              "LocalTransparencyModifier",
+              "animateModelParts",
+              "Tail tip",
+              "Wing tip",
+              "ResourceNodes",
+              "SunPetal",
+              "MoonPetal",
+              "respawnSeconds = 300",
+              "Resource_SunPetal",
+              "Resource_MoonPetal",
+              "Vector3.new(0.95, 0.14, 0.14)",
+              "resourceCooldowns",
+              "collectedNodes",
+              "RequestResourceState",
+              "ResourceState",
+              "ResourcePicked",
+              "p.MaxActivationDistance + 1",
+              "kind = \"renewable\"",
+              "old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 11)",
+              "old.resourceCooldowns = savedCooldowns",
+              "old.collectedNodes = savedCollected",
+              "LocalTransparencyModifier = visible and 0 or 1",
+              "local function normalizeCity(raw)",
+              "PlayerIslands",
+              "HomeIsland_",
+              "HOME_ISLAND_SLOT_COUNT = 8",
+              "HomeIslandSlot",
+              "homeIslandTemplate:Clone()",
+              "old.island = savedIsland",
+              "old.city = nil",
+              "HomeSpawn",
+              "OwnerUserId",
+              "savedFarm.plots = citySnapshot.farm.plots",
+              'type(data.island) == "table" and data.island or data.city',
+              "player.RespawnLocation = homeSpawn",
+              "occupiedHomeSlots[session.homeSlot] = nil",
+              "Bridge_HomeToGrove",
+              "homeMaterialCooldowns",
+              "gatherHomeMaterial",
+              "repairHomeBridge",
+              "woodCost, stoneCost = 5, 3",
+              "savedIsland.bridges.homeToGrove = citySnapshot.bridges.homeToGrove == true",
+              "Resource_Wood",
+              "local toolIds = {Axe = true, Pickaxe = true}",
+              "local function createHarvestTool(toolId, level)",
+              "local function renderTools()",
+              "LocalHarvestProgress",
+              "message == \"ResourceHit\"",
+              "workshop.Name = \"Workshop\"",
+              "session.resourceHitCooldowns[def.key]",
+              "GroveWood01",
+              "DuskStone01",
+              "DuskIron01",
+              "itemId = \"IronOre\"",
+              "local function useHomeSmelter(player, ownerUserId, smelterAnchor)",
+              "smelter.Name = \"Smelter\"",
+              "old.smelting = smeltingSnapshot",
+              "local rewardAmount = math.max(1, math.floor(tonumber(def.amount) or 1))",
+              "if action == \"UpgradeTool\" then",
+              "Resource_Stone",
+              "FOX_SCOUT_COOLDOWN_SECONDS",
+              "foxCacheActiveId",
+              "foxSearchReadyAt",
+              "foxSearchCount",
+              "FoxCacheSpot",
+              "FoxSearchReadyAt",
+              "CollectFoxCache",
+              "FoxCacheLocalPrompt",
+              "FoxCacheHighlight",
+              "FoxCacheVisuals",
+              "MoonBloomVisuals",
+              "MoonBloomVisual",
+              "MothAbilityBurstLocal",
+              "LunarSpark",
+              "local function playMothAbilityBurst",
+              "mothAbility and 21 or 11.5",
+              "light.Range = mothAbility and 14 or 9",
+              "Chest bib",
+              "Cheek fluff",
+              "Paw toe",
+              "Moth head",
+              "Wing lower",
+              "Wing lower tip",
+              "Wing spot",
+              "Antenna tip",
+              "local function aroundPoint(point, rotation)",
+              "part.CFrame = pivot * transform * offset",
+              "local tailHinge = rigOrigin + Vector3.new(0, 0.25, 0.95)",
+              "local wingHinge = rigOrigin + Vector3.new(side * 0.42, 0.28, 0)",
+              "MoonGateVisuals",
+              "MoonGateLocalBarrier",
+              "updateMoonGateBarrier",
+              "gateJustOpened",
+              "TweenService:Create(",
+              "task.delay(0.8, function()",
+              "MoonGateTracksVisual",
+              "MoonGateShell",
+              "MoonGateSeal",
+              "MoonGateRunesVisual",
+              "MoonGateClearingVisual",
+              "MoonRelicGem",
+              "MoonBloomLocalPrompt",
+              "MoonBloomHighlight",
+              "CollectMoonBloom",
+              "SearchMoonGate",
+              "RevealMoonGate",
+              "CollectMoonRelic",
+              "MoonGateTrace",
+              "MoonGateOpen",
+              'if not player:GetAttribute("Moth") or not player:GetAttribute("MoonBloom") then',
+              'foxEquipped and player:GetAttribute("MoonBloom") == true and not traceFound',
+              "floorY + 2.55",
+              "MoonRelic",
+              "StarShard",
+              "Resource_StarShard",
+              "local function updateMoonGatePuzzle",
+              "Звёздный осколок",
+              "local function updateMothBloomReveal",
+              "Лунная моль раскрыла тайный цветок",
+              "FoxScentTrailLocal",
+              'not bank or not bank:IsA("BasePart")',
+              "FoxScentPaw",
+              "updateFoxScentTrail",
+              "scentRouteOffsets",
+              "routePoints",
+              "FoxCache02 = {",
+              "FoxCache03 = {",
+              "ScentMote",
+              "Лисёнок нашёл тайник! Иди по золотым следам.",
+              "foxSniffUntil",
+              "sniffing and 9 or 4.2",
+              "MoonSeed",
+              'itemId = "MoonSeed"',
+              "FoxCache01",
+              "FoxCache02",
+              "FoxCache03",
+              "Нюх следопыта готов",
+              "Лисёнок учуял тайник",
+              "CarrotSeed",
+              "Carrot",
+              "growthSeconds = 180",
+              "Farm_Level",
+              "GiantbackAlbum_Studio_v1",
+              "BridgeToGrove",
+              "BridgeToDusk",
+              "GiantbackHUD",
+              "МОЙ ОСТРОВ",
+              "МОЯ ФЕРМА",
+              "МОИ ПИТОМЦЫ",
+              "КАРТА МИРА",
+              "ТВОЙ МИР",
+              "BridgeDeck",
+              "BridgeRail",
+              "BridgePost",
+              "MAX_ACTIONS_PER_WINDOW = 10",
+              "local COMBO_DAMAGE = {18, 22, 32}",
+              "local CHARGE_DAMAGE_MAX = 52",
+              "local FOX_SKILL_DAMAGE = 24",
+              "local MOTH_HEAL_AMOUNT = 18",
+              "GiantbackEnemy",
+              "GiantbackCombatRegion",
+              "Enum.KeyCode.ButtonR2",
+              "Enum.KeyCode.ButtonL2",
+              "Enum.KeyCode.ButtonB",
+              "ContextActionService:BindAction(",
+              "ENEMY_TELEGRAPH_SECONDS = 0.85",
+              "PathfindingService:CreatePath(ENEMY_PATH_AGENT)",
+              "ENEMY_PATH_REFRESH_SECONDS = 1.15",
+              "GiantbackGrantCombatReward",
+              "old.completedCombatEncounters = savedCombatEncounters",
+              "CombatRegionRequired",
+              "local COMBO_DAMAGE = {18, 22, 32}",
+              "local FOX_SKILL_DAMAGE = 24",
+              "local FOX_SKILL_RANGE = 18",
+              "local MOTH_HEAL_AMOUNT = 18",
+              "local MOTH_HEAL_RADIUS = 14",
+              "healedUserIds = healedPlayers",
+              "local function showCompanionImpact(root, accent, radius)",
+              "local function findEnemyRoot(enemyId)",
+              '"LocalCompanionSkillPulse"',
+              "showCompanionImpact(targetRoot, Color3.fromRGB(244, 178, 94), 7)",
+              "Players:GetPlayerByUserId(userId)",
+              "local COMPANION_SKILL_COOLDOWN = 14",
+              'action == "CompanionSkill"',
+              'remote:FireServer("CompanionSkill")',
+              '"GiantbackCompanion"',
+              'showFeedback("ЛИСЁНОК · "',
+              'CompanionRequired = "Сначала выбери питомца-компаньона"',
+              'CompanionSkillCooldown = "Способность питомца восстанавливается"',
+              'CompanionNoTarget = "Лисёнок не видит противника рядом"',
+              'CompanionNoOneToHeal = "Рядом никому не требуется лечение"',
+              'showFeedback("ЛУННАЯ МОЛЬ · ЛЕЧЕНИЕ ×"',
+              "local CHARGE_MIN_SECONDS = 0.45",
+              "local CHARGE_MAX_SECONDS = 1.6",
+              "local CHARGE_DAMAGE_MAX = 52",
+              'action == "ChargeStart"',
+              'action == "ChargeRelease"',
+              'remote:FireServer("ChargeStart")',
+              'remote:FireServer("ChargeRelease")',
+              '"GiantbackCharge"',
+              "local COMBO_WINDOW_SECONDS = 1.15",
+              "PLAYER_FINISHER_BOX",
+              "local resistance = entry.isBoss and 0.28 or 1",
+              "entry.root:ApplyImpulse(impulse)",
+              "comboStep = comboStep",
+              "showFeedback(\"ФИНИШЕР!\"",
+              "R6 joint names contain spaces",
+              "R15 names do not",
+              "joints.rightshoulder",
+              "joints.lefthip",
+              "joints.rootjoint or joints.root",
+              "joints.waist",
+              "completedCombatEncounters",
+              "GroveGrunt01",
+              "GroveScout02",
+              "GroveTrialChest01",
+              "ForestTrialGate",
+              "ForestTrialChamber",
+              "ForestTrialChest",
+              "RootvaultDungeon",
+              "RootvaultEntryRoom",
+              "RootvaultTrapPassage",
+              "RootvaultPressurePlate",
+              "RootvaultMechanismRoom",
+              "RootvaultLeverBase",
+              "RootvaultSealedDoor",
+              "RootvaultRewardRoom",
+              "RootvaultRewardChest",
+              "RootvaultChest01",
+              "RootvaultSentinel01",
+              "RootvaultStalker01",
+              "RootvaultSealKeeper01",
+              "RootvaultSigil",
+              "Страж печатей",
+              "BossPhase",
+              "Phase2WalkSpeed",
+              "Phase3WalkSpeed",
+              "RootvaultEssence",
+              "Корневой охотник",
+              "RootvaultKey",
+              "RootvaultCombatRegion",
+              "Страж хранилища",
+              "Rootvault = true",
+              "InRootvault",
+              "humanoid:TakeDamage",
+              "ForestTrialRuneMoon",
+              "ForestTrialRuneDawn",
+              "ForestTrialRuneTide",
+              "TRIAL_RUNE_SEQUENCE",
+              "trialPuzzleComplete[player]",
+              "Луна → Рассвет → Прилив",
+              "hasCompletedForestTrial(session)",
+              "Мшистый разведчик",
+              "TelegraphSeconds",
+              "CombatTrainingGlade",
+              "GroveTrainingRegion",
+              "Корневой страж",
+              "Training stone platform",
+              "CombatTelegraphWarning",
+              "БЕРЕГИСЬ!",
+              "CombatTelegraphHighlight",
+              "GiantbackCombatFeedback",
+              "ПОПАЛ!",
+              "Войди на тренировочную арену",
+          ]
+          combined = "\n".join(sources)
+          missing_markers = [marker for marker in required_markers if marker not in combined]
+          if missing_markers:
+              raise SystemExit(f"Missing expected script content: {missing_markers}")
+
+          print(f"Validated Giantback.rbxlx: {len(names)} named instances, {len(sources)} scripts.")
+          PY
+
+      - name: Upload generated Roblox place and original model sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: Giantback-visual-build
+          path: |
+            Giantback.rbxlx
+            assets/
+            docs/STUDIO_PLAYTEST.md
+            tools/roblox/studio_playtest_preflight.luau
+          if-no-files-found: error
+          retention-days: 14

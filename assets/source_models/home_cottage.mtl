@@ -1,0 +1,71 @@
+newmtl stone
+Ka 0.18 0.18 0.18
+Kd 0.40 0.36 0.29
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl plaster
+Ka 0.18 0.18 0.18
+Kd 0.91 0.82 0.66
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl roof_terracotta
+Ka 0.18 0.18 0.18
+Kd 0.64 0.20 0.15
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl wood_dark
+Ka 0.18 0.18 0.18
+Kd 0.25 0.14 0.09
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl wood
+Ka 0.18 0.18 0.18
+Kd 0.40 0.23 0.13
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl glass_blue
+Ka 0.18 0.18 0.18
+Kd 0.34 0.68 0.78
+Ks 0.4 0.4 0.4
+Ns 24
+d 1
+illum 2
+
+newmtl brick
+Ka 0.18 0.18 0.18
+Kd 0.54 0.26 0.18
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl wood_light
+Ka 0.18 0.18 0.18
+Kd 0.58 0.37 0.20
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2
+
+newmtl leaf_green
+Ka 0.18 0.18 0.18
+Kd 0.25 0.52 0.27
+Ks 0.08 0.08 0.08
+Ns 24
+d 1
+illum 2

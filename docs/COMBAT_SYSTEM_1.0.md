@@ -1,0 +1,291 @@
+# Giantback — Combat System 1.0
+
+**Status:** C0 contract and C1 server combat loop plus generated training arena/enemy are implemented; Roblox Studio gameplay acceptance remains NOT DONE; C2–C4 planned.  
+**Owner:** gameplay/server systems.  
+**Scope:** first reliable combat loop for the 1.0 adventure release.
+
+This document translates sections 8–9 of `PROJECT_SPEC.md` and the combat requirements in `docs/PROGRESSION_AND_COMBAT.md` into an implementable, testable sequence. It does not authorize expanding the 1.0 release scope.
+
+## 1. Player-facing goal
+
+Combat should be readable and forgiving: the player sees an enemy telegraph, understands the safe response, performs an attack/block/dodge, and receives clear feedback. A companion may help, but must never be required to win.
+
+The first playable slice is deliberately small: one weapon (sword + shield), one compact encounter arena, two readable enemy archetypes, and guaranteed first-clear rewards. Add weapon classes only after this loop is stable.
+
+## 2. Non-negotiable authority rules
+
+- The server owns enemy health, player combat state, attack cooldowns, hit validation, damage, death, encounter completion and rewards.
+- A client request may express intent only. It must never supply authoritative damage, cooldown, reward amount, enemy health, hit result or arbitrary target position.
+- The server validates that the player is alive, loaded, allowed to fight in the current region, and not currently stunned/dead.
+- The server enforces per-action cooldowns and a bounded request rate. Rejected requests do not mutate health or inventory.
+- Melee hit detection is calculated by the server from the character's current root/forward direction and a bounded hit volume. Ranged attacks use server raycasts/projectiles with server-owned origin and limits.
+- Targets must belong to a server-registered encounter and be alive. Never accept an arbitrary Instance supplied by the client without resolving it against the server registry.
+- Reward grants are server-only and idempotent per player + encounter completion ID.
+- Visual effects, animation cues, hit markers and camera feedback may be client-side, but are presentation only.
+
+## 3. Remote contract
+
+Create a dedicated `CombatAction` RemoteEvent in a server-owned initialization path. Keep it separate from the general album/economy action protocol.
+
+Allowed initial intents:
+- `Attack` — weapon ID is inferred from server-owned equipped state; no client damage values.
+- `BlockStart` / `BlockEnd` — server records block state and validates allowed weapon.
+- `Dodge` — server applies cooldown, short invulnerability window and bounded movement impulse.
+- `RequestCombatState` — server returns a sanitized state snapshot for UI recovery.
+
+Payloads are small, typed and allow-listed. Unknown actions, oversized payloads, NaN/infinite numbers, arbitrary Instances and unknown IDs are rejected. The server derives all timing and damage values from server configuration.
+
+## 4. First weapon: sword + shield
+
+- Light attack: short wind-up, active hit window, recovery and server cooldown.
+- Block: reduces or negates eligible frontal damage while held; does not protect from clearly telegraphed unblockable attacks.
+- Dodge: short, readable movement burst with a small server-controlled invulnerability window and cooldown.
+- No client-side damage prediction that changes authoritative health.
+- Input must work with keyboard/mouse, touch and gamepad. Mobile controls must have large, separated attack/block/dodge targets and must not cover navigation.
+
+## 5. First enemy
+
+Implement one readable melee enemy with a small state machine:
+1. `Idle` — waits until a valid player enters aggro range.
+2. `Approach` — moves toward the target using server-owned logic.
+3. `Telegraph` — announces a bounded attack and its danger area before impact.
+4. `Attack` — applies server-calculated damage only if the target remains in the danger area.
+5. `Recover` — pauses briefly before returning to approach.
+6. `Defeated` — stops attacking, disables hit handling and triggers exactly one reward resolution.
+
+The first enemy needs one basic attack and one clearly signaled heavy attack. The telegraph must be understandable without relying on color alone (shape, motion, sound and short text/icon cue).
+
+## 6. Health, death and recovery
+
+- Health and damage are clamped to server-configured bounds.
+- Invulnerability frames are server-timed and cannot be extended by repeated client calls.
+- Player death/respawn must clear transient combat state (blocking, active attack, stun, temporary buffs) without deleting persistent inventory.
+- Enemy death and encounter completion must be atomic from the reward system's perspective.
+- Disconnect/rejoin cannot duplicate a completed encounter reward.
+
+## 7. Future weapon classes (after the first slice)
+
+| Class | First ability | Server validation |
+|---|---|---|
+| Bow | charged shot / weak-point hit | server raycast or server-owned projectile, bounded range and fire rate |
+| Staff | elemental bolt | server-owned projectile, bounded speed/range and cooldown |
+| Sword + shield | frontal block / counter window | server-held block state and server-calculated frontal angle |
+
+Weapon stats, upgrade tiers and armor modifiers live in server configuration/profile state. Cosmetics never alter damage or defense.
+
+## 8. Test and acceptance gates
+
+Automated contract tests must cover:
+- unknown action and unknown weapon rejection;
+- client-supplied damage/reward/health values are ignored;
+- attack spam and block/dodge spam are rate-limited;
+- melee range and facing are validated server-side;
+- a dead, unready or out-of-region player cannot damage an enemy;
+- an enemy outside the encounter registry cannot be targeted;
+- damage cannot exceed configured caps;
+- block only affects eligible frontal attacks;
+- dodge invulnerability starts/ends on server time;
+- enemy defeat and reward resolution happen once;
+- reconnect/retry cannot duplicate encounter rewards;
+- respawn clears transient combat state.
+
+Roblox Studio acceptance must additionally verify animation timing, hitbox alignment, telegraph readability, touch/gamepad controls, 1–4 player behavior and low-end mobile performance. A passing Python source-contract suite is not a substitute for Studio playtesting.
+
+## 9. Delivery sequence
+
+1. **C0 — Combat contract:** remote creation, server config, state cleanup, rate limiting and automated negative tests. No public enemies yet.
+2. **C1 — First playable loop:** sword/shield, block, dodge, one enemy, one arena, one guaranteed reward.
+3. **C2 — Weapon variety:** bow and staff, each with distinct server validation.
+4. **C3 — Progression:** armor slots, stats, smithing upgrades and readable equipment UI.
+5. **C4 — Expedition:** one 5–10 minute dungeon, puzzle, boss and co-op scaling for 1–4 players.
+
+Do not start C1 until C0 tests pass. Do not mark any combat milestone DONE until Roblox Studio acceptance is recorded.
+
+
+## 10. C0 implementation record
+
+Implemented in `Combat.server.luau`:
+- Dedicated server-owned `CombatAction` RemoteEvent, recreated safely if a conflicting instance type exists.
+- Strict action allow-list and empty payload contract; the client cannot provide damage, target, reward or health values.
+- Global per-player request rate limit (10 requests per one-second window).
+- Ready/alive, server-owned region ID and server-owned equipped-weapon gates for gameplay intents.
+- Sanitized C0 state snapshot; no mutable server state tables are sent to clients.
+- Transient combat state cleanup on death, respawn and disconnect.
+- C0 security contract remains the foundation for C1; the current server accepts the allow-listed combat actions and performs server-owned damage and reward resolution.
+
+Automated contract coverage lives in `tests/test_combat_foundation_contract.py`. The place builder embeds the new server script and CI validates its presence. C0 is not a playable combat milestone; no enemy, hitbox, damage or reward implementation is claimed.
+
+
+### C0 security hardening
+
+The server callback now captures all RemoteEvent trailing arguments with varargs and rejects any nonzero argument count. This also rejects an explicitly supplied `nil` and arguments beyond the former third parameter; checking only a single optional payload parameter would silently ignore later arguments.
+
+
+## 11. C1 server implementation record
+
+Implemented in `Combat.server.luau`:
+- Server-tagged combat volumes (`GiantbackCombatRegion`) with allow-listed `RegionId` values; the player must physically be inside the volume.
+- Server-tagged enemy Models (`GiantbackEnemy`) must contain a Humanoid and HumanoidRootPart and declare an allow-listed `EncounterId` and `RegionId`. Each enemy may define bounded server-read attributes for aggro range, attack range, damage, cooldown, telegraph duration and path refresh; clients cannot change these values.
+- Server-owned sword hitbox, range, facing check, damage and attack cooldown. Client requests contain only the action name.
+- Enemy AI loop with idle/approach/telegraph/recover states, a telegraphed melee attack, and server-side range revalidation before damage.
+- Server-held block state reduces only frontal enemy damage; server-timed dodge grants a short invulnerability window and bounded impulse.
+- Enemy death resolves the reward through the profile-owned BindableFunction. The profile stores completed encounter IDs and inventory rewards idempotently (schema v10); failed profile saves roll back the in-session grant. Every player who lands at least one server-validated hit is recorded as a contributor and receives their own first-clear reward on defeat; disconnected players are skipped.
+- `Combat.client.luau` binds mouse/keyboard, gamepad and ContextActionService touch buttons for attack, held block and dodge; it sends action names only.
+- Leaving the tagged arena automatically clears held block; `BlockEnd` is always accepted for a ready player so a lost focus/input release cannot leave a stale guard state.
+- `WorldVisuals.server.luau` now generates a connected training glade beyond the Grove, tags its combat volume, and creates two R6-style enemies: a 100-health `Корневой страж` guardian and a faster 65-health `Мшистый разведчик` with a shorter warning window, lighter damage and a distinct mint-green telegraph. The approach bridge, stone ring, lanterns and arena are generated in a fresh place build; no manual Studio tagging or placeholder rig import is required.
+- A visible `БЕРЕГИСЬ!` warning, temporary highlight and raised club pose appear during the server's 0.85-second enemy telegraph; the swing pose plays during recovery. The NPC is oriented toward the arena entrance and keeps server network ownership.
+- The client displays concise Russian feedback for successful hits and rejected actions (cooldowns, arena boundary, load state and request rate) without exposing server-owned values.
+- Studio acceptance is still required: verify that the NPC walks and attacks reliably, the hitbox aligns, rewards persist after reconnect, and two or more players cannot duplicate the reward.
+
+## 12. Первый лесной тайник после боя — staged
+
+После серверно подтверждённых побед над Корневым стражем и Мшистым разведчиком игрок получает доступ к небольшой скрытой комнате `ForestTrialChamber`. Портал на тренировочной арене выполняет проверку готовности, состояния персонажа, дистанции до взаимодействия и двух отметок победы непосредственно на сервере.
+
+Внутри находится сундук, который один раз за профиль выдаёт `StarShard ×1` через существующий механизм `GiantbackGrantCombatReward`. Повторная выдача блокируется сохранённой отметкой `GroveTrialChest01`, а конкурентные обращения к сундуку в рамках сессии дополнительно защищены `trialBusy`. Выход ведёт назад к арене. Оба портала и комната создаются `WorldVisuals.server.luau`.
+
+**Статус:** серверный функционал и сборка добавлены в PR #7. Это короткая наградная комната, а **не** полноценное процедурное подземелье, головоломка или босс. Проверка геометрии, коллизий, выхода и сохранения в Roblox Studio остаётся NOT DONE.
+
+## 13. Rune memory puzzle — staged
+
+The forest trial chamber contains three interactable runes. The visible clue gives the sequence **Moon → Dawn → Tide**. The server tracks progress independently per player, rejects incorrect order, resets an abandoned sequence after 20 seconds, and only enables the chest after all three runes are activated in order. Puzzle progress is session-scoped; the final chest reward remains profile-persistent and idempotent.
+
+Roblox Studio acceptance remains required for prompt reachability, label readability, room layout and multiplayer isolation.
+
+## 14. Rootvault expedition — staged
+
+A compact three-room dungeon is generated beyond the first forest trial chamber: an entry room, a connected pressure-plate passage, a mechanism room with a per-player lever and sealed door, and a reward vault. The entrance requires the player's saved first-trial chest completion. The server owns the in-dungeon state, lever progression, prompt distance checks, trap damage cooldown, and one-time reward claim. Pressure plates deal bounded damage with a per-player cooldown; the vault chest grants **IronOre ×3** once per profile via the existing idempotent reward function.
+
+This is the first traversal slice, not yet the final dungeon: enemy encounters, a boss, a key-drop loop, room randomization and Studio playtesting remain NOT DONE.
+
+## 15. Rootvault sentinel and key gate — staged
+
+Rootvault now has its own tagged combat region (`RegionId = Rootvault`), so combat validation works while the player is inside the dungeon rather than requiring the Grove training ring. A dedicated 145-HP R6 sentinel guards the mechanism room. Its server-registered encounter is `RootvaultSentinel01`; each contributing player receives one persistent `RootvaultKey` on first clear through the existing reward/save path. The sealed-door prompt requires both that player's key and their own activated lever state. The key is retained after opening, while the final reward chest remains separately one-time.
+
+Roblox Studio acceptance remains required for sentinel navigation, pathfinding through the room openings, key persistence after reconnect, multiplayer contribution rewards and door progression.
+
+## 16. Rootvault prowler — staged
+
+The entry chamber now contains a distinct fast enemy, `RootvaultStalker01` (display name Корневой охотник): 75 HP, WalkSpeed 15, 8 damage, 1.8-second attack cooldown and 0.55-second telegraph. It uses the existing server-owned pursuit, attack validation and contributor tracking. Each player who contributes to its first defeat receives one persistent `RootvaultEssence` through the same idempotent reward/save pipeline. The sentinel continues to guard the mechanism room and award the separate RootvaultKey.
+
+Studio acceptance remains required for rig animation, navigation around the arrival point, combat balance and multiplayer reward persistence.
+
+## 17. Rootvault Seal Keeper boss — staged
+
+The reward chamber now contains `RootvaultSealKeeper01`, a 360-HP boss with a server-driven three-phase progression. Phase 1 uses 14 damage / 3.1s cooldown / 1.15s telegraph. At 60% health it advances once to phase 2 (9 speed, 18 damage, 2.5s cooldown, 0.9s telegraph); at 25% it advances once to phase 3 (12 speed, 22 damage, 1.9s cooldown, 0.65s telegraph). The server changes movement and attack values from Humanoid.HealthChanged; clients cannot select or trigger phases.
+
+Each contributor receives a persistent `RootvaultSigil` on first defeat. The Rootvault chest now refuses claims until that player's own saved `RootvaultSealKeeper01` encounter is complete. This is a first boss slice using the existing telegraphed melee pattern; unique area attacks, animations, and visual phase effects remain NOT DONE pending later iterations and Studio review.
+
+## 18. Rootvault Seal Keeper ground slam
+
+In phases 2 and 3, every second boss attack becomes a server-authoritative area ground slam. The boss publishes `BossAttack=GroundSlam` and `CombatState=BossSlamTelegraph` during the warning window, then checks every ready player inside the Rootvault combat region. Players outside the configured radius are safe; a correctly timed dodge avoids the hit; facing the boss while blocking applies the existing block reduction. Phase 2 uses radius 15 and 16 damage; phase 3 uses radius 19 and 22 damage. The client cannot provide target, radius, damage, or timing values.
+
+The server exposes the slam state through replicated attributes. The client now renders a local expanding neon floor warning ring, raycast-aligned to the arena floor. Impact animation, phase-specific boss animations, and Studio balance pass remain NOT DONE.
+
+## 19. Seal Keeper phase-three summons
+
+At the 25% health transition, the server awakens two prebuilt dormant Seal Fragments in the Rootvault reward chamber. They are registered into the existing server combat loop only once, have 52 HP, 13 movement speed, 6 damage and a 0.55-second attack warning. The minions use a known encounter ID but are deliberately excluded from the reward allowlist: defeating them cannot grant the boss sigil or any duplicate first-clear reward. The boss records the number activated in its replicated `SummonedMinions` attribute.
+
+The dormant rigs are authored as part of the generated place; they do not pursue or attack before phase three. Studio testing is still required for their spawn clearance, rig movement, and multi-target combat balance.
+
+## 20. Client-side boss phase transformation pulse
+
+The client listens for the server-replicated `BossPhase` attribute. On phases 2 and 3 it plays a short local-only transformation cue: an occluded Highlight flash, an expanding neon floor pulse raycast-aligned to the arena floor, and a brief SealCore size/color pulse. Phase 2 uses violet; phase 3 uses ember red. The effect does not modify boss health, movement, attacks, or damage and cannot be invoked by client input. Full rig animation, persistent armor geometry changes, and audio remain NOT DONE.
+
+## 21. Enemy health UI
+
+The client now creates local-only BillboardGui health/name bars for regular enemies and summoned minions, with distance culling at 90 studs and health color bands. The Seal Keeper receives a dedicated top-center boss panel with localized phase label, numeric HP and phase-colored health bar. UI follows replicated server health attributes and Humanoid.HealthChanged; it does not accept client-supplied health. Bars are cleaned up when an enemy dies or leaves Workspace. Studio review is still needed for mobile readability, overlap in co-op, and camera positioning.
+
+## 22. Seal Fragment awakening cue
+
+When a Seal Fragment is activated and enters the tagged enemy collection, each client plays a local-only awakening cue: violet Highlight flash, a short spark particle burst, and an expanding floor ring aligned by raycast. The cue is guarded per client per minion and does not affect combat or enemy visibility/authority. The same collection-added callback binds its local health bar. Studio acceptance must confirm particle readability, floor alignment and performance with both minions and multiple players.
+
+## 23. Client procedural enemy animation layer
+
+Tagged custom enemy rigs now receive a lightweight local animation layer driven by replicated `CombatState` and Humanoid movement. It supplies idle breathing/head motion, alternating arm/leg locomotion, single-attack wind-up, two-arm ground-slam wind-up, recovery and phase-transition poses. Motor6D.Transform is applied client-side only; the server still owns movement, hit timing and damage. Joint transforms are reset when the rig leaves Workspace. This is a procedural placeholder animation layer, not authored animation assets or a substitute for final animation polish. Studio validation is required for joint orientation, replication timing, and visual quality on every enemy rig.
+
+
+## 24. Reward persistence retry hardening
+
+The C1 reward resolver now retries a failed profile reward callback up to five times with exponential backoff (0.75s, 1.5s, 3s, 6s). The profile callback treats an encounter already present in the persisted completion ledger as successful idempotent delivery. A failed save still rolls back the in-session inventory and completion flag before returning failure, so a later retry can safely attempt the grant again.
+
+Contract tests cover retry count/backoff, disconnect cancellation, duplicate delivery success, and rollback markers. These source-contract checks do not prove DataStore reliability under live Roblox throttling; Studio acceptance must still exercise first-clear rewards, reconnects, and transient save failures.
+
+
+## 25. R6/R15 procedural rig joint compatibility
+
+The client procedural pose layer now normalizes Motor6D names by lowercasing and removing whitespace. This maps both classic R6 names such as `Right Shoulder` and R15 names such as `RightShoulder` to the same canonical joint keys. The same normalization is used for shoulders, hips, neck and root joint.
+
+A contract test checks the normalized mapping and the generated-place workflow now verifies that the compatibility markers are embedded in the published client script. This is source/build validation only: Roblox Studio acceptance must still confirm the actual joint orientations and pose quality on representative R6 and R15 enemy rigs.
+
+
+## 26. R15 torso-chain pose support
+
+The procedural pose binder now maps the R15 `Root` joint as the canonical root fallback and applies subtle torso lean through the R15 `Waist` joint. Classic R6 `RootJoint` remains supported. Wind-up, recovery, phase-transition, locomotion and idle poses now update the waist when present, without requiring it on R6 rigs. Contract tests and generated-place validation markers cover the aliases. Final orientation and animation blending still require Studio playtests on real R6 and R15 rigs.
+
+
+## 27. Three-strike sword combo
+
+The C1 sword now has a server-timed three-strike chain. The first two strikes deal 18 and 22 damage with 0.48s recovery; the third is a 32-damage finisher with 0.72s recovery, a slightly larger hit volume and reach. The next strike must arrive within 1.15 seconds or the chain restarts at strike one. The server selects combo step and damage; clients cannot submit a step, damage value or target. Character respawn clears the combo state. Hit-confirm feedback displays the server-confirmed combo number or finisher callout.
+
+This is a first-pass PvE tuning baseline, not final balance. Contract tests and generated-place source markers cover the combo rules. Studio acceptance must validate hit feel, animation timing, mobile touch controls, gamepad input, latency and whether the finisher's larger volume feels fair.
+
+
+## 28. Finisher impact response
+
+The third sword strike now applies a server-authoritative impulse to each enemy hit. Standard enemies receive the full push; bosses receive 28% of the impulse to preserve encounter positioning and phase mechanics. The impulse is derived from the attacker's server-observed facing direction and the enemy assembly mass. Clients cannot request knockback or choose its strength.
+
+A source-contract test and generated-place validation markers cover the behavior. Studio acceptance must tune the impulse against each enemy rig, check collisions/ledge safety, verify boss positioning and confirm that repeated hits do not create physics instability.
+
+
+## 29. Charged sword attack
+
+The sword supports a hold-and-release charged strike. The server records the start timestamp; clients send only `ChargeStart` and `ChargeRelease`, never charge duration, damage or target data. A valid charge lasts at least 0.45s and caps at 1.6s. Server-calculated damage scales linearly from 30 to 52, with a 1.35s attack recovery and a larger forward hit volume (8×6×7, 9-stud reach). Successful hits apply a stronger server-owned impulse; bosses receive 20% of that impulse to preserve encounter positioning.
+
+The action is available on keyboard (R), gamepad (ButtonX) and ContextActionService touch controls. A charge expires after four seconds if abandoned, and blocking, dodging, respawning or starting a normal attack cannot preserve or bypass the charge state. A too-short charge is rejected. Contract tests and generated-place markers cover the server timing, input mapping and cancellation rules.
+
+This is a first tuning pass. Roblox Studio playtests must validate the touch button's hold behavior, charge readability, latency, hit volume, boss displacement, animation/VFX timing and whether the risk/reward feels fair.
+
+
+## 30. First companion combat abilities (Fox / Moth)
+
+The first combat companion slice adds one active ability for each currently implemented companion. The player sends only the `CompanionSkill` action; the server reads the equipped `Companion` attribute and verifies the corresponding ownership attribute. Clients cannot choose the skill, target, damage, healing amount or affected players.
+
+- **Fox — Корешковый выпад:** selects the nearest living registered enemy in the player's current combat region within 18 studs and deals 24 damage. A successful hit records the player as an encounter contributor for reward eligibility.
+- **Moth — Лунный импульс:** heals ready allies in the same combat region within 14 studs for up to 18 HP each, capped at each target's MaxHealth. It fails without consuming cooldown when nobody nearby needs healing.
+- Both skills share a 14-second per-player cooldown. The cooldown is session state and survives character respawn. Skill use is unavailable while blocking or charging.
+- Keyboard C, gamepad ButtonY and a ContextActionService touch button trigger the same server action. The client only displays server-confirmed feedback.
+
+The skills are intentionally supportive: Fox adds a modest damage assist and Moth improves co-op sustain, but neither replaces player combat. Contract tests and generated-place markers cover ownership, region filtering, server damage/healing, cooldown and input mapping. Studio acceptance must verify real companion ownership/equip flows, multiplayer healing boundaries, hit feedback, mobile button layout and balance.
+
+
+## 31. Companion combat presentation
+
+Combat ability outcomes remain server-authoritative; the client receives only presentation identifiers after a successful action.
+
+- Fox success includes the server-selected `targetId`. The client resolves that ID against registered `GiantbackEnemy` models, then emits a short amber sparkle burst and expanding ground pulse at the target. If the target is no longer locally available, the effect safely falls back to the player's character.
+- Moth success includes `healedUserIds`, populated only from allies the server actually healed. Each matching character receives a violet/lunar sparkle burst and ground pulse. The client never chooses who was healed.
+- Effects are local-only, short-lived, non-colliding, and have no hitbox, damage, healing, or reward authority. They are omitted if the corresponding character/root is not streamed in.
+- The current implementation is a readable first VFX pass; Studio review should tune particle density, pulse size, readability on mobile, streaming edge cases, and visual overlap in co-op.
+
+
+## 32. Companion progression and combat scaling
+
+The first companion progression slice is server-owned and persisted in profile schema v11.
+
+- Fox and Moth each have independent levels 1–5 and XP. Profiles without the new `companions` object safely start at level 1 with 0 XP. Existing profile fields are preserved during the migration.
+- XP thresholds per level are 100, 175, 250 and 325. Level 5 is the cap; no overflow XP is banked.
+- Verified exploration rewards: Fox +30 for a collected cache and +20 for finding the Moon Gate trace; Moth +35 for awakening MoonBloom and +25 for revealing the Moon Gate.
+- Verified combat rewards: Fox +12 XP for a successful skill hit; Moth +6 XP per ally actually healed, capped at +24 per cast. The server-only `GiantbackGrantCompanionXP` BindableFunction validates player readiness, companion ownership, known IDs and bounded XP amounts.
+- Fox skill damage is 24 + 3 per level (maximum 36). Moth healing is 18 + 2 per level (maximum 26 HP per ally). The server reads level attributes and calculates the actual effect; clients cannot supply XP, level, damage or healing.
+- Collection cards show the companion's level, XP/threshold and progress bar. Level-up notifications are server-generated.
+- Combat cooldown is committed before the asynchronous XP persistence call, preventing a yielding DataStore write from opening a repeat-skill window.
+- Contract tests cover schema migration, normalization, server validation, milestone rewards, scaling and UI binding. Studio acceptance must still verify persistence/reconnect, combat balance, mobile readability and co-op behavior.
+
+
+## 33. Level-gated companion passive talents
+
+- Fox cache scouting cooldown is now level-aware: 120 seconds at levels 1–2, 90 seconds at levels 3–4, and 60 seconds at level 5. The server calculates the cooldown when a cache is successfully collected.
+- Moth healing radius is 14 studs at levels 1–2, 16 studs at levels 3–4, and 18 studs at level 5. Healing still targets only ready, living allies in the same combat region who are missing health.
+- The server derives both passive effects from the saved companion-level attributes. The client only displays the unlocked talent description in the album.
+- No passive effect decays over time and no player is punished for taking a break.
+- Contract coverage checks both level thresholds, server calculations and the album descriptions. Roblox Studio balance and co-op acceptance remain outstanding.
