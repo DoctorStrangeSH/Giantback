@@ -57,8 +57,8 @@ class CompanionPersonalityContractTests(unittest.TestCase):
         self.assertIn('["Смелый"] = 0.78', FOLLOW)
         self.assertIn('["Застенчивый"] = 0.52', FOLLOW)
         self.assertIn('owner:GetAttribute("Companion_Moth_Personality")', FOLLOW)
-        self.assertIn('["Озорной"] = 12', ALBUM)
-        self.assertIn('["Застенчивый"] = 4', ALBUM)
+        self.assertIn('["Озорной"] = 12', STARDUST)
+        self.assertIn('["Застенчивый"] = 4', STARDUST)
 
 
 if __name__ == "__main__":
