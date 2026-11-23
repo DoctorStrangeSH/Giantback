@@ -48,6 +48,22 @@ class ExplorationDiscoveryRewardTests(unittest.TestCase):
             self.assertIn(f'player:SetAttribute("{milestone}", true)', WORLD)
             self.assertIn(f'grantExplorationCoins(player, "{milestone}")', WORLD)
 
+    def test_each_reward_is_gated_by_the_preexisting_discovery_flag(self):
+        milestones = [
+            "MoonGateTrace", "MoonGateOpen", "MoonRelic",
+            "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes",
+            "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound",
+        ]
+        for milestone in milestones:
+            self.assertIn(
+                f'local firstDiscovery = player:GetAttribute("{milestone}") ~= true',
+                WORLD,
+            )
+            self.assertIn(
+                f'local coinBonus = firstDiscovery and grantExplorationCoins(player, "{milestone}") or 0',
+                WORLD,
+            )
+
     def test_existing_repeat_guards_remain_in_place(self):
         guards = [
             'if player:GetAttribute("MoonGateTrace") then',
