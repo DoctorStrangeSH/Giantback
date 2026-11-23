@@ -32,7 +32,7 @@ if not Storage:WaitForChild("GiantbackVisualsReady", 12) then
     warn("Giantback visual layer did not finish in time; continuing with base models.")
 end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик"}
-local progress = {"Fox", "Moth", "CrystalWisp", "HarvestSprite", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit"}
+local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed"}
 local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local swordRecipe = {IronIngot = 2, Wood = 6}
