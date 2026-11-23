@@ -66,6 +66,8 @@ local foxCacheRewards = {
     FoxCache03 = {itemId = "CarrotSeed", amount = 1},
 }
 local farmPlotIds = {"Plot01", "Plot02", "Plot03", "Plot04"}
+local warehouseItemIds = {"Wood", "Stone", "IronOre", "IronIngot", "Carrot", "Strawberry", "Pumpkin", "Cabbage"}
+local WAREHOUSE_CAPACITY = 120
 local cropDefinitions = {
     Carrot = {seedItemId = "CarrotSeed", harvestItemId = "Carrot", growthSeconds = 300, reward = 1, displayName = "Морковь"},
     Strawberry = {seedItemId = "StrawberrySeed", harvestItemId = "Strawberry", growthSeconds = 720, regrowSeconds = 480, reward = 2, displayName = "Клубника"},
@@ -169,6 +171,7 @@ local function defaultCity()
             homeToGrove = false,
         },
         buildings = {},
+        storage = {},
     }
 end
 
@@ -196,12 +199,16 @@ local function normalizeCity(raw)
     if type(raw) ~= "table" then return city end
 
     city.level = math.clamp(math.floor(tonumber(raw.level) or 1), 1, 5)
+    local rawStorage = type(raw.storage) == "table" and raw.storage or {}
+    for _, itemId in ipairs(warehouseItemIds) do
+        city.storage[itemId] = math.clamp(math.floor(tonumber(rawStorage[itemId]) or 0), 0, WAREHOUSE_CAPACITY)
+    end
     local rawBridges = type(raw.bridges) == "table" and raw.bridges or {}
     city.bridges.homeToGrove = rawBridges.homeToGrove == true
     local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}
     for _, saved in ipairs(rawBuildings) do
         if #city.buildings >= 24 then break end
-        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage") then
+        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse") then
             local x = tonumber(saved.x)
             local z = tonumber(saved.z)
             local rotation = tonumber(saved.rotation) or 0
@@ -247,6 +254,19 @@ local function syncFarm(player)
 
     player:SetAttribute("City_Level", session.city.level)
     player:SetAttribute("Farm_Level", session.city.farm.level)
+    local storedTotal = 0
+    for _, itemId in ipairs(warehouseItemIds) do
+        local amount = session.city.storage[itemId] or 0
+        storedTotal += amount
+        player:SetAttribute("Warehouse_" .. itemId, amount)
+    end
+    player:SetAttribute("Warehouse_Used", storedTotal)
+    player:SetAttribute("Warehouse_Capacity", WAREHOUSE_CAPACITY)
+    player:SetAttribute("Warehouse_Built", table.find((function()
+        local ids = {}
+        for _, building in ipairs(session.city.buildings) do table.insert(ids, building.id) end
+        return ids
+    end)(), "Warehouse") ~= nil)
     player:SetAttribute("City_DecorationCount", #session.city.buildings)
     local occupiedCells = {}
     for _, decoration in ipairs(session.city.buildings) do
@@ -281,6 +301,53 @@ local function syncInventory(player)
 end
 
 local save
+
+local function useWarehouse(player, ownerUserId, action)
+    if player.UserId ~= ownerUserId then return tip(player, "Этот склад принадлежит другому игроку.") end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    local warehouseBuilt = false
+    for _, building in ipairs(session.city.buildings) do
+        if building.id == "Warehouse" then warehouseBuilt = true; break end
+    end
+    if not warehouseBuilt then return tip(player, "Сначала построй склад на своём острове.") end
+    local storage = session.city.storage
+    local changed = 0
+    if action == "Deposit" then
+        local used = 0
+        for _, itemId in ipairs(warehouseItemIds) do used += storage[itemId] or 0 end
+        local remaining = WAREHOUSE_CAPACITY - used
+        for _, itemId in ipairs(warehouseItemIds) do
+            if remaining <= 0 then break end
+            local available = math.max(0, math.floor(session.inventory[itemId] or 0))
+            local amount = math.min(available, remaining)
+            if amount > 0 then
+                session.inventory[itemId] -= amount
+                storage[itemId] = (storage[itemId] or 0) + amount
+                remaining -= amount
+                changed += amount
+            end
+        end
+        if changed == 0 then return tip(player, used >= WAREHOUSE_CAPACITY and "Склад заполнен." or "Нет материалов для хранения.") end
+        tip(player, "На склад помещено предметов: " .. tostring(changed) .. ".")
+    elseif action == "Withdraw" then
+        for _, itemId in ipairs(warehouseItemIds) do
+            local amount = math.max(0, math.floor(storage[itemId] or 0))
+            if amount > 0 then
+                session.inventory[itemId] = (session.inventory[itemId] or 0) + amount
+                storage[itemId] = 0
+                changed += amount
+            end
+        end
+        if changed == 0 then return tip(player, "Склад пока пуст.") end
+        tip(player, "Со склада забрано предметов: " .. tostring(changed) .. ".")
+    else
+        return
+    end
+    syncInventory(player)
+    syncFarm(player)
+    if session.online then save(player) end
+end
 
 local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp"}
 local COMPANION_MAX_LEVEL = 5
@@ -1016,6 +1083,7 @@ save = function(player)
                 savedIsland.bridges = type(savedIsland.bridges) == "table" and savedIsland.bridges or {}
                 savedIsland.bridges.homeToGrove = citySnapshot.bridges.homeToGrove == true
                 savedIsland.buildings = citySnapshot.buildings
+                savedIsland.storage = citySnapshot.storage
                 old.island = savedIsland
                 old.city = nil
                 return old
@@ -1693,7 +1761,7 @@ end
 local function renderIslandDecoration(cityModel, meadow, decoration, index, ownerUserId)
     if not cityModel or not meadow or type(decoration) ~= "table" then return end
     local id = decoration.id
-    if id ~= "Path" and id ~= "FlowerBed" and id ~= "Cottage" then return end
+    if id ~= "Path" and id ~= "FlowerBed" and id ~= "Cottage" and id ~= "Warehouse" then return end
 
     local x = math.clamp(tonumber(decoration.x) or 0, 0, 12)
     local z = math.clamp(tonumber(decoration.z) or 0, -4, 4)
@@ -1743,7 +1811,7 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
                 frame * CFrame.new(offset + Vector3.new(0, 0.54, 0)),
                 flowerColors[flowerIndex], Enum.PartType.Ball, Enum.Material.SmoothPlastic)
         end
-    else
+    elseif id == "Cottage" then
         local wall = Color3.fromRGB(226, 190, 139)
         local timber = Color3.fromRGB(104, 67, 47)
         local roof = Color3.fromRGB(139, 66, 53)
@@ -1772,6 +1840,65 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
         makeFarmVisualPart(model, "CottageChimney", Vector3.new(0.62, 1.55, 0.62), frame * CFrame.new(1.18, 3.2, 0.82), Color3.fromRGB(143, 91, 73), Enum.PartType.Block, Enum.Material.Brick)
         makeFarmVisualPart(model, "CottageChimneyCap", Vector3.new(0.82, 0.18, 0.82), frame * CFrame.new(1.18, 4.0, 0.82), timber, Enum.PartType.Block, Enum.Material.Slate)
         makeFarmVisualPart(model, "CottageStep", Vector3.new(1.3, 0.18, 0.65), front * CFrame.new(0, 0.12, -0.3), Color3.fromRGB(145, 139, 122), Enum.PartType.Block, Enum.Material.Slate)
+    else
+        local wood = Color3.fromRGB(128, 88, 56)
+        local stone = Color3.fromRGB(119, 124, 119)
+        makeFarmVisualPart(model, "WarehouseFoundation", Vector3.new(3.8, 0.28, 3.8),
+            frame * CFrame.new(0, 0.14, 0), stone, Enum.PartType.Block, Enum.Material.Slate)
+        makeFarmVisualPart(model, "WarehouseBody", Vector3.new(3.35, 2.5, 3.25),
+            frame * CFrame.new(0, 1.5, 0), Color3.fromRGB(155, 112, 72), Enum.PartType.Block, Enum.Material.WoodPlanks)
+        local front = frame * CFrame.new(0, 0, -1.7)
+        makeFarmVisualPart(model, "WarehouseDoor", Vector3.new(1.15, 2.05, 0.16),
+            front * CFrame.new(0, 1.08, 0), wood, Enum.PartType.Block, Enum.Material.Wood)
+        for _, side in {-1, 1} do
+            makeFarmVisualPart(model, "WarehouseBeam", Vector3.new(0.22, 2.7, 0.24),
+                front * CFrame.new(side * 1.55, 1.4, -0.06), wood, Enum.PartType.Block, Enum.Material.Wood)
+        end
+        local roof = makeFarmVisualPart(model, "WarehouseRoof", Vector3.new(3.95, 0.3, 3.9),
+            frame * CFrame.new(0, 2.95, 0), Color3.fromRGB(104, 65, 48), Enum.PartType.Block, Enum.Material.Slate)
+        roof.CFrame *= CFrame.Angles(0, 0, math.rad(0))
+        makeFarmVisualPart(model, "WarehouseSign", Vector3.new(1.7, 0.58, 0.14),
+            front * CFrame.new(0, 2.25, -0.08), Color3.fromRGB(229, 194, 125), Enum.PartType.Block, Enum.Material.Wood)
+        local signText = Instance.new("SurfaceGui")
+        signText.Name = "WarehouseSignGui"
+        signText.Face = Enum.NormalId.Front
+        signText.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+        signText.PixelsPerStud = 40
+        signText.Parent = model:FindFirstChild("WarehouseSign")
+        local signLabel = Instance.new("TextLabel")
+        signLabel.Size = UDim2.fromScale(1, 1)
+        signLabel.BackgroundTransparency = 1
+        signLabel.Text = "СКЛАД"
+        signLabel.TextColor3 = Color3.fromRGB(73, 51, 35)
+        signLabel.Font = Enum.Font.GothamBold
+        signLabel.TextScaled = true
+        signLabel.Parent = signText
+        local anchor = Instance.new("Part")
+        anchor.Name = "WarehousePromptAnchor"
+        anchor.Size = Vector3.new(0.5, 0.5, 0.5)
+        anchor.Transparency = 1
+        anchor.Anchored = true
+        anchor.CanCollide = false
+        anchor.CanTouch = false
+        anchor.CanQuery = true
+        anchor.CFrame = front * CFrame.new(0, 1.3, -1.0)
+        anchor.Parent = model
+        prompt(anchor, "Склад", "Сложить материалы", function(visitor)
+            useWarehouse(visitor, ownerUserId, "Deposit")
+        end)
+        local withdrawAnchor = Instance.new("Part")
+        withdrawAnchor.Name = "WarehouseWithdrawAnchor"
+        withdrawAnchor.Size = Vector3.new(0.5, 0.5, 0.5)
+        withdrawAnchor.Transparency = 1
+        withdrawAnchor.Anchored = true
+        withdrawAnchor.CanCollide = false
+        withdrawAnchor.CanTouch = false
+        withdrawAnchor.CanQuery = true
+        withdrawAnchor.CFrame = front * CFrame.new(1.5, 1.3, -1.0)
+        withdrawAnchor.Parent = model
+        prompt(withdrawAnchor, "Склад", "Забрать материалы", function(visitor)
+            useWarehouse(visitor, ownerUserId, "Withdraw")
+        end)
     end
 end
 
@@ -2300,9 +2427,16 @@ removeIslandDecoration = function(player, payload)
         return tip(player, "Подойди ближе к постройке на своём острове.")
     end
 
+    if decoration.id == "Warehouse" then
+        for _, itemId in ipairs(warehouseItemIds) do
+            if (session.city.storage[itemId] or 0) > 0 then
+                return tip(player, "Перед разборкой склада сначала забери все материалы.")
+            end
+        end
+    end
     local model = cityModel:FindFirstChild("Decoration_" .. tostring(index))
     if model then model:Destroy() end
-    local refunds = {Path = {Wood = 1, Stone = 0}, FlowerBed = {Wood = 2, Stone = 1}, Cottage = {Wood = 4, Stone = 3}}
+    local refunds = {Path = {Wood = 1, Stone = 0}, FlowerBed = {Wood = 2, Stone = 1}, Cottage = {Wood = 4, Stone = 3}, Warehouse = {Wood = 5, Stone = 4}}
     local refund = refunds[decoration.id]
     if not refund then return tip(player, "Этот объект пока нельзя разобрать.") end
     table.remove(session.city.buildings, index)
@@ -2329,7 +2463,7 @@ placeIslandDecoration = function(player, payload)
     if type(payload) ~= "table" then return tip(player, "Не удалось прочитать место постройки.") end
 
     local decorationId = payload.id
-    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" then
+    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" then
         return tip(player, "Такого предмета пока нет в каталоге строительства.")
     end
     local x = tonumber(payload.x)
@@ -2386,7 +2520,7 @@ placeIslandDecoration = function(player, payload)
         syncFarm(player)
         tip(player, "Постройка перемещена!")
     else
-        local costs = {Path = {Wood = 2, Stone = 0}, FlowerBed = {Wood = 4, Stone = 2}, Cottage = {Wood = 8, Stone = 6}}
+        local costs = {Path = {Wood = 2, Stone = 0}, FlowerBed = {Wood = 4, Stone = 2}, Cottage = {Wood = 8, Stone = 6}, Warehouse = {Wood = 10, Stone = 8}}
         local cost = costs[decorationId]
         if (session.inventory.Wood or 0) < cost.Wood or (session.inventory.Stone or 0) < cost.Stone then
             return tip(player, "Не хватает материалов: дерево ×" .. tostring(cost.Wood) .. ", камень ×" .. tostring(cost.Stone) .. ".")
@@ -2398,7 +2532,7 @@ placeIslandDecoration = function(player, payload)
         renderIslandDecoration(cityModel, meadow, decoration, #session.city.buildings, player.UserId)
         syncInventory(player)
         syncFarm(player)
-        local placedMessages = {Path = "Каменная дорожка построена!", FlowerBed = "Цветочная клумба украшает твой остров!", Cottage = "Уютный домик построен! На острове стало ещё уютнее."}
+        local placedMessages = {Path = "Каменная дорожка построена!", FlowerBed = "Цветочная клумба украшает твой остров!", Cottage = "Уютный домик построен! На острове стало ещё уютнее.", Warehouse = "Склад построен! Теперь можно хранить материалы."}
     tip(player, placedMessages[decorationId])
     end
     if session.online then save(player) end
