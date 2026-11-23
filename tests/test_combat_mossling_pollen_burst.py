@@ -15,6 +15,8 @@ class MosslingPollenBurstTests(unittest.TestCase):
         self.assertIn('mossling:SetAttribute("PollenRadius", 9)', mossling)
         self.assertIn('mossling:SetAttribute("PollenDamage", 8)', mossling)
         self.assertIn('mossling:SetAttribute("TelegraphSeconds", 1.15)', mossling)
+        self.assertIn('state == "Telegraph" or state == "PollenTelegraph"', WORLD)
+        self.assertIn('telegraphing and "УКЛОНЯЙСЯ!" or "АТАКА!"', WORLD)
 
     def test_pollen_burst_is_an_alternating_mossling_only_attack(self):
         self.assertIn('local usePollenBurst = enemy:GetAttribute("ArchetypeId") == "Mossling"', COMBAT)
