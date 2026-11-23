@@ -190,12 +190,25 @@ navLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 navLayout.Padding = UDim.new(0, 7)
 navLayout.Parent = nav
 
+local modalBackdrop = Instance.new("TextButton")
+modalBackdrop.Name = "ModalBackdrop"
+modalBackdrop.Size = UDim2.fromScale(1, 1)
+modalBackdrop.BackgroundColor3 = Color3.fromRGB(15, 25, 21)
+modalBackdrop.BackgroundTransparency = 0.42
+modalBackdrop.BorderSizePixel = 0
+modalBackdrop.Text = ""
+modalBackdrop.AutoButtonColor = false
+modalBackdrop.Visible = false
+modalBackdrop.ZIndex = 20
+modalBackdrop.Parent = gui
+
 local panel = Instance.new("Frame")
 panel.Name = "MainPanel"
 panel.AnchorPoint = Vector2.new(0.5, 0.5)
 panel.Position = UDim2.fromScale(0.5, 0.5)
 panel.Size = UDim2.fromOffset(470, 420)
 panel.BackgroundColor3 = palette.forest
+panel.ZIndex = 21
 panel.Visible = false
 panel.Parent = gui
 corner(panel, 22)
@@ -244,6 +257,7 @@ local toastGeneration = 0
 local toastTween = nil
 local navButtons = {}
 local navDefinitions = {}
+local closeActivePanel
 
 local function updateResponsiveLayout()
     local camera = workspace.CurrentCamera
@@ -275,6 +289,10 @@ local function updateResponsiveLayout()
     nav.Position = UDim2.new(0.5, 0, 1, compact and -6 or -14)
     nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 54 or 68)
     navLayout.Padding = UDim.new(0, compact and 2 or 7)
+    panelTitle.TextSize = compact and 16 or 20
+    panelSubtitle.TextSize = compact and 10 or 12
+    closeButton.Size = UDim2.fromOffset(compact and 36 or 42, compact and 36 or 42)
+    closeButton.Position = UDim2.new(1, compact and -44 or -58, 0, compact and 8 or 12)
     for _, definition in navDefinitions do
         local navButton = navButtons[definition.id]
         if navButton then
@@ -287,6 +305,10 @@ local function updateResponsiveLayout()
     local panelWidth = math.max(240, math.min(470, viewport.X - (compact and 16 or 48)))
     local panelHeight = math.max(160, math.min(420, viewport.Y - (compact and 140 or 220)))
     panel.Size = UDim2.fromOffset(panelWidth, panelHeight)
+    panelTitle.TextSize = compact and 16 or 20
+    panelSubtitle.TextSize = compact and 10 or 12
+    closeButton.Size = UDim2.fromOffset(compact and 36 or 42, compact and 36 or 42)
+    closeButton.Position = UDim2.new(1, compact and -44 or -58, 0, compact and 8 or 12)
     panel.Position = UDim2.new(0.5, 0, 0.5, compact and -18 or 0)
     panelTitle.TextSize = compact and 16 or 20
     panelSubtitle.TextSize = compact and 10 or 12
@@ -690,10 +712,31 @@ local panelTitles = {
 
 local activeTab = nil
 
+local function applyPanelLayer()
+    panel.ZIndex = 21
+    for _, descendant in panel:GetDescendants() do
+        descendant.ZIndex = 22
+    end
+end
+
+closeActivePanel = function()
+    panel.Visible = false
+    modalBackdrop.Visible = false
+    activeTab = nil
+    for _, navButton in navButtons do
+        navButton.BackgroundColor3 = palette.forestLight
+        navButton.TextColor3 = palette.white
+    end
+end
+
+modalBackdrop.Activated:Connect(function()
+    if panel.Visible then closeActivePanel() end
+end)
+
 local function openTab(tabName)
+    if not panelTitles[tabName] or not renderers[tabName] then return end
     if activeTab == tabName and panel.Visible then
-        panel.Visible = false
-        activeTab = nil
+        closeActivePanel()
         return
     end
     activeTab = tabName
@@ -701,6 +744,8 @@ local function openTab(tabName)
     panelSubtitle.Text = panelTitles[tabName][2]
     clearBody()
     renderers[tabName]()
+    applyPanelLayer()
+    modalBackdrop.Visible = true
     panel.Visible = true
     for name, navButton in navButtons do
         navButton.BackgroundColor3 = name == tabName and palette.gold or palette.forestLight
@@ -739,8 +784,7 @@ workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
 end)
 
 closeButton.Activated:Connect(function()
-    panel.Visible = false
-    activeTab = nil
+    closeActivePanel()
 end)
 
 showToast = function(message)
