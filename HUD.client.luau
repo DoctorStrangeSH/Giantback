@@ -882,7 +882,7 @@ navDefinitions = {
     {id = "City", title = "ОСТРОВ", glyph = "О"},
     {id = "Farm", title = "ФЕРМА", glyph = "Ф"},
     {id = "Pets", title = "ПИТОМЦЫ", glyph = "П"},
-    {id = "Tools", title = "РЮКЗАК", glyph = "Р"},
+    {id = "Tools", title = "РЮКЗАК", glyph = "И"},
     {id = "World", title = "КАРТА", glyph = "М"},
     {id = "Expeditions", title = "ДНЕВНИК", glyph = "Д"},
 }
