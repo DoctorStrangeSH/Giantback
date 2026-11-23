@@ -4121,21 +4121,21 @@ local resourceDefinitions = {
     },
     {
         key = "CrystalEchoStarPrism01", amount = 1, requiredTool = "Pickaxe", hitsRequired = 7,
-        verb = "Извлечь реликвию", itemId = "StarPrism", displayName = "Звёздная призма",, discoveryAttribute = "Discovered_StarPrism"
+        verb = "Извлечь реликвию", itemId = "StarPrism", displayName = "Звёздная призма", discoveryAttribute = "Discovered_StarPrism",
         area = "CrystalEchoChamber", offset = Vector3.new(10, 0, -2), visual = "crystal",
         crystalColor = Color3.fromRGB(255, 218, 125), crystalAccent = Color3.fromRGB(255, 242, 190),
         crystalHighlight = Color3.fromRGB(255, 170, 90), kind = "unique",
     },
     {
         key = "CrystalEchoMoonGlass01", amount = 1, requiredTool = "Pickaxe", hitsRequired = 7,
-        verb = "Извлечь реликвию", itemId = "MoonGlass", displayName = "Лунное стекло",, discoveryAttribute = "Discovered_MoonGlass"
+        verb = "Извлечь реликвию", itemId = "MoonGlass", displayName = "Лунное стекло", discoveryAttribute = "Discovered_MoonGlass",
         area = "CrystalEchoChamber", offset = Vector3.new(10, 0, 8), visual = "crystal",
         crystalColor = Color3.fromRGB(133, 218, 255), crystalAccent = Color3.fromRGB(207, 245, 255),
         crystalHighlight = Color3.fromRGB(169, 166, 255), kind = "unique",
     },
     {
         key = "CrystalEchoVoidGeode01", amount = 1, requiredTool = "Pickaxe", hitsRequired = 7,
-        verb = "Извлечь реликвию", itemId = "VoidGeode", displayName = "Пустотная жеода",, discoveryAttribute = "Discovered_VoidGeode"
+        verb = "Извлечь реликвию", itemId = "VoidGeode", displayName = "Пустотная жеода", discoveryAttribute = "Discovered_VoidGeode",
         area = "CrystalEchoChamber", offset = Vector3.new(-10, 0, 9), visual = "crystal",
         crystalColor = Color3.fromRGB(179, 118, 226), crystalAccent = Color3.fromRGB(100, 72, 156),
         crystalHighlight = Color3.fromRGB(229, 174, 255), kind = "unique",
