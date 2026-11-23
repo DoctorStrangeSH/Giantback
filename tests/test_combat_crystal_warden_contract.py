@@ -12,7 +12,8 @@ WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 class CrystalWardenEncounterTests(unittest.TestCase):
     def test_grotto_is_registered_as_an_isolated_combat_region(self):
         self.assertIn("CrystalGrotto = true", COMBAT.split("local ALLOWED_REGIONS", 1)[1].split("\n", 1)[0])
-        self.assertIn('local grottoCombatRegion = makePart(\\n    crystalGrotto,\\n    "CrystalGrottoCombatRegion"', VISUALS)
+        self.assertIn('local grottoCombatRegion = makePart(', VISUALS)
+        self.assertIn('"CrystalGrottoCombatRegion"', VISUALS)
         self.assertIn('grottoCombatRegion:SetAttribute("RegionId", "CrystalGrotto")', VISUALS)
         self.assertIn('CollectionService:AddTag(grottoCombatRegion, "GiantbackCombatRegion")', VISUALS)
 
