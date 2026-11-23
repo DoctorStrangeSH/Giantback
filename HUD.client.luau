@@ -625,7 +625,9 @@ local function beginIslandPlacement(decorationId, moveIndex)
     finishPlacement()
     placementState = decorationId
     placementMoveIndex = moveIndex
-    placementRotation = 0
+    placementRotation = moveIndex
+        and (tonumber(player:GetAttribute("City_Decoration_" .. tostring(moveIndex) .. "_Rotation")) or 0)
+        or 0
     createPlacementGhost(decorationId)
     closeActivePanel()
     placementOverlay = Instance.new("Frame")
