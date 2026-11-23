@@ -2682,6 +2682,81 @@ local spriteBerry = orb(
     Enum.Material.SmoothPlastic
 )
 
+
+-- Five original Harvest Festival hatchlings. Each has a distinct silhouette and a
+-- named Body anchor so the shared follower, friendship and growth systems can use it.
+local function beginFestivalHatchling(id, bodyColor, bodySize)
+    local existing = ReplicatedStorage:FindFirstChild(id)
+    if existing then existing:Destroy() end
+    local model = Instance.new("Model")
+    model.Name = id
+    model:SetAttribute("CompanionId", id)
+    model:SetAttribute("GiantbackSeasonalCompanion", true)
+    model.Parent = ReplicatedStorage
+    local body = orb(model, "Body", Vector3.new(0, 0, 0), bodySize, bodyColor, Enum.Material.SmoothPlastic)
+    model.PrimaryPart = body
+    return model, body
+end
+
+local brambleBun = beginFestivalHatchling("BrambleBun", Color3.fromRGB(178, 130, 91), Vector3.new(1.65, 1.35, 1.65))
+orb(brambleBun, "Head", Vector3.new(0, 0.28, -0.67), Vector3.new(1.0, 0.92, 0.82), Color3.fromRGB(205, 163, 119), Enum.Material.SmoothPlastic)
+for index = 1, 7 do
+    local angle = index * math.pi * 2 / 7
+    local spike = orb(brambleBun, "Bramble quill", Vector3.new(math.cos(angle) * 0.62, 0.38 + (index % 2) * 0.2, math.sin(angle) * 0.58), Vector3.new(0.28, 0.42, 0.28), Color3.fromRGB(112, 91, 70), Enum.Material.Wood)
+    spike.CFrame *= CFrame.Angles(0, 0, math.cos(angle) * 0.45)
+end
+orb(brambleBun, "Ear left", Vector3.new(-0.34, 0.83, -0.78), Vector3.new(0.25, 0.68, 0.28), Color3.fromRGB(194, 137, 121), Enum.Material.SmoothPlastic)
+orb(brambleBun, "Ear right", Vector3.new(0.34, 0.83, -0.78), Vector3.new(0.25, 0.68, 0.28), Color3.fromRGB(194, 137, 121), Enum.Material.SmoothPlastic)
+for _, x in {-0.22, 0.22} do orb(brambleBun, "Eye", Vector3.new(x, 0.34, -1.03), Vector3.new(0.13, 0.16, 0.08), Color3.fromRGB(45, 48, 42), Enum.Material.SmoothPlastic) end
+orb(brambleBun, "Acorn cap", Vector3.new(0, 0.94, -0.28), Vector3.new(0.54, 0.3, 0.5), Color3.fromRGB(126, 83, 54), Enum.Material.Wood)
+orb(brambleBun, "Acorn leaf", Vector3.new(0.3, 1.08, -0.24), Vector3.new(0.48, 0.12, 0.26), Color3.fromRGB(132, 181, 105), Enum.Material.Grass)
+
+local mossTurtle = beginFestivalHatchling("MossTurtle", Color3.fromRGB(124, 171, 123), Vector3.new(1.9, 0.95, 1.6))
+orb(mossTurtle, "Shell", Vector3.new(0, 0.45, 0.06), Vector3.new(1.8, 1.12, 1.56), Color3.fromRGB(89, 127, 91), Enum.Material.Slate)
+for index = 1, 5 do
+    local angle = index * math.pi * 2 / 5
+    orb(mossTurtle, "Shell moss", Vector3.new(math.cos(angle) * 0.55, 0.83, math.sin(angle) * 0.48), Vector3.new(0.35, 0.12, 0.32), Color3.fromRGB(155, 190, 116), Enum.Material.Grass)
+end
+orb(mossTurtle, "Head", Vector3.new(0, 0.12, -0.98), Vector3.new(0.82, 0.72, 0.78), Color3.fromRGB(149, 190, 137), Enum.Material.SmoothPlastic)
+for _, x in {-0.24, 0.24} do orb(mossTurtle, "Eye", Vector3.new(x, 0.28, -1.34), Vector3.new(0.12, 0.14, 0.08), Color3.fromRGB(44, 58, 45), Enum.Material.SmoothPlastic) end
+for _, x in {-0.72, 0.72} do
+    for _, z in {-0.48, 0.48} do
+        orb(mossTurtle, "Foot", Vector3.new(x, -0.34, z), Vector3.new(0.54, 0.34, 0.5), Color3.fromRGB(130, 171, 122), Enum.Material.SmoothPlastic)
+    end
+end
+orb(mossTurtle, "Tail", Vector3.new(0, -0.12, 0.94), Vector3.new(0.34, 0.26, 0.48), Color3.fromRGB(114, 157, 110), Enum.Material.SmoothPlastic)
+
+local glowcap = beginFestivalHatchling("Glowcap", Color3.fromRGB(232, 220, 187), Vector3.new(1.12, 1.28, 1.12))
+cylinder(glowcap, "Mushroom stalk", Vector3.new(0, 0.62, 0), 1.0, 0.72, Color3.fromRGB(240, 225, 193), Enum.Material.SmoothPlastic)
+orb(glowcap, "Mushroom cap", Vector3.new(0, 1.24, 0), Vector3.new(1.9, 0.78, 1.9), Color3.fromRGB(139, 105, 191), Enum.Material.SmoothPlastic)
+for index = 1, 6 do
+    local angle = index * math.pi * 2 / 6
+    orb(glowcap, "Glowcap spot", Vector3.new(math.cos(angle) * 0.56, 1.53, math.sin(angle) * 0.56), Vector3.new(0.22, 0.1, 0.22), Color3.fromRGB(255, 231, 171), Enum.Material.Neon)
+end
+for _, x in {-0.22, 0.22} do orb(glowcap, "Eye", Vector3.new(x, 0.38, -0.49), Vector3.new(0.12, 0.15, 0.08), Color3.fromRGB(57, 54, 68), Enum.Material.SmoothPlastic) end
+local glowcapCore = orb(glowcap, "Glow core", Vector3.new(0, 0.05, -0.54), Vector3.new(0.25, 0.25, 0.12), Color3.fromRGB(205, 238, 169), Enum.Material.Neon)
+addLight(glowcapCore, Color3.fromRGB(188, 240, 159), 8, 0.7)
+
+local dewdrop = beginFestivalHatchling("Dewdrop", Color3.fromRGB(117, 195, 205), Vector3.new(1.85, 1.08, 1.28))
+orb(dewdrop, "Head", Vector3.new(0, 0.2, -0.54), Vector3.new(1.15, 0.98, 1.0), Color3.fromRGB(145, 218, 220), Enum.Material.SmoothPlastic)
+orb(dewdrop, "Fin left", Vector3.new(-0.83, 0.15, 0.08), Vector3.new(0.52, 0.2, 0.56), Color3.fromRGB(94, 177, 192), Enum.Material.SmoothPlastic)
+orb(dewdrop, "Fin right", Vector3.new(0.83, 0.15, 0.08), Vector3.new(0.52, 0.2, 0.56), Color3.fromRGB(94, 177, 192), Enum.Material.SmoothPlastic)
+for _, x in {-0.25, 0.25} do orb(dewdrop, "Eye", Vector3.new(x, 0.36, -0.98), Vector3.new(0.13, 0.17, 0.08), Color3.fromRGB(42, 73, 83), Enum.Material.SmoothPlastic) end
+orb(dewdrop, "Water jewel", Vector3.new(0, 0.84, -0.32), Vector3.new(0.34, 0.42, 0.28), Color3.fromRGB(202, 248, 244), Enum.Material.Neon)
+local dewLight = dewdrop:FindFirstChild("Water jewel")
+if dewLight then addLight(dewLight, Color3.fromRGB(153, 231, 239), 7, 0.45) end
+orb(dewdrop, "Tail fin", Vector3.new(0, 0.12, 0.76), Vector3.new(0.48, 0.22, 0.66), Color3.fromRGB(105, 184, 197), Enum.Material.SmoothPlastic)
+
+local starling = beginFestivalHatchling("Starling", Color3.fromRGB(83, 103, 151), Vector3.new(1.42, 1.62, 1.32))
+orb(starling, "Head", Vector3.new(0, 0.78, -0.16), Vector3.new(1.14, 1.0, 1.05), Color3.fromRGB(116, 135, 184), Enum.Material.SmoothPlastic)
+orb(starling, "Wing left", Vector3.new(-0.86, 0.05, 0.08), Vector3.new(0.54, 0.94, 0.3), Color3.fromRGB(65, 83, 132), Enum.Material.SmoothPlastic)
+orb(starling, "Wing right", Vector3.new(0.86, 0.05, 0.08), Vector3.new(0.54, 0.94, 0.3), Color3.fromRGB(65, 83, 132), Enum.Material.SmoothPlastic)
+for _, x in {-0.25, 0.25} do orb(starling, "Eye", Vector3.new(x, 0.88, -0.62), Vector3.new(0.17, 0.2, 0.1), Color3.fromRGB(34, 38, 58), Enum.Material.SmoothPlastic) end
+orb(starling, "Beak", Vector3.new(0, 0.57, -0.72), Vector3.new(0.25, 0.25, 0.28), Color3.fromRGB(248, 190, 99), Enum.Material.SmoothPlastic)
+orb(starling, "Crest", Vector3.new(0, 1.37, -0.12), Vector3.new(0.34, 0.48, 0.28), Color3.fromRGB(239, 203, 135), Enum.Material.SmoothPlastic)
+local starHalo = orb(starling, "Star halo", Vector3.new(0, 1.45, 0.18), Vector3.new(0.16, 0.16, 0.16), Color3.fromRGB(255, 221, 144), Enum.Material.Neon)
+addLight(starHalo, Color3.fromRGB(255, 213, 133), 7, 0.5)
+
 -- Let the gameplay bootstrap wait until the collectible models are fully decorated.
 local ready = ReplicatedStorage:FindFirstChild("GiantbackVisualsReady") or Instance.new("BoolValue")
 ready.Name = "GiantbackVisualsReady"
