@@ -25,7 +25,7 @@ class CardTextLayoutTests(unittest.TestCase):
     def test_player_instructions_use_clear_action_language(self):
         self.assertIn('Выбери культуру — её можно будет посадить на любой свободной грядке.', HUD)
         self.assertIn('Когда урожай созреет, возвращайся за ним.', HUD)
-        self.assertIn('Для каждого ресурса нужен подходящий инструмент.', HUD)
+        self.assertIn('Инструменты можно взять в руки прямо из этого раздела.', HUD)
         self.assertIn('Записывай новые находки и выполненные задания.', HUD)
         self.assertNotIn('Твой дом и ферма не накладываются на чужие участки.', HUD)
 
