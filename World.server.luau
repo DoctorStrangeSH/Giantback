@@ -1769,16 +1769,21 @@ local function gatherHomeMaterial(player, ownerUserId, materialId)
     local definition = definitions[materialId]
     if not definition then return end
 
+    -- The very first bridge must be accessible after one wood and one stone pickup.
+    -- Once repaired, the normal per-node amounts and cooldowns apply unchanged.
+    local amount = session.city.bridges.homeToGrove and definition.amount
+        or (materialId == "Wood" and 5 or 3)
+
     local now = os.time()
     local readyAt = session.homeMaterialCooldowns[materialId] or 0
     if readyAt > now then
         return tip(player, definition.title .. " снова появится через " .. tostring(math.ceil((readyAt - now) / 60)) .. " мин.")
     end
 
-    session.inventory[materialId] = (session.inventory[materialId] or 0) + definition.amount
+    session.inventory[materialId] = (session.inventory[materialId] or 0) + amount
     session.homeMaterialCooldowns[materialId] = now + definition.cooldown
     syncInventory(player)
-    tip(player, "Собрано: " .. definition.title .. " ×" .. tostring(definition.amount))
+    tip(player, "Собрано: " .. definition.title .. " ×" .. tostring(amount))
     if session.online then save(player) end
 end
 
