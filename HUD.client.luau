@@ -406,15 +406,15 @@ local function renderCity()
     local ingots = tonumber(player:GetAttribute("Resource_IronIngot")) or 0
     local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
     local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
-    addInfo("Материалы для моста", "🪵 Дерево: " .. tostring(wood) .. " / 5    •    🪨 Камень: " .. tostring(stone) .. " / 3", 66)
+    addInfo("Материалы для моста", "Дерево: " .. tostring(wood) .. " / 5    •    Камень: " .. tostring(stone) .. " / 3", 66)
     local sunPetals = tonumber(player:GetAttribute("Resource_SunPetal")) or 0
     local moonPetals = tonumber(player:GetAttribute("Resource_MoonPetal")) or 0
     local moonSeeds = tonumber(player:GetAttribute("Resource_MoonSeed")) or 0
     local starShards = tonumber(player:GetAttribute("Resource_StarShard")) or 0
     local carrotSeeds = tonumber(player:GetAttribute("Resource_CarrotSeed")) or 0
     local carrots = tonumber(player:GetAttribute("Resource_Carrot")) or 0
-    addInfo("Находки и ферма", "🌙 Лунные семена: " .. tostring(moonSeeds) .. "   •   ✦ Звёздный осколок: " .. tostring(starShards)
-        .. "   •   🥕 Семена: " .. tostring(carrotSeeds) .. "   •   Урожай: " .. tostring(carrots)
+    addInfo("Находки и ферма", "Лунные семена: " .. tostring(moonSeeds) .. "   •   Звёздный осколок: " .. tostring(starShards)
+        .. "   •   Семена моркови: " .. tostring(carrotSeeds) .. "   •   Урожай: " .. tostring(carrots)
         .. "   •   ☀ Солнечные лепестки: " .. tostring(sunPetals) .. "   •   ☾ Лунные лепестки: " .. tostring(moonPetals), 98)
     addInfo("Ферма: уровень " .. tostring(farmLevel), "На острове четыре грядки. Открой раздел «Ферма», чтобы выбрать семена, посадить растения и собрать урожай.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
@@ -556,7 +556,7 @@ local function renderTools()
     local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
     local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
     addInfo("Инструменты путешественника", "Выбирай инструмент кнопкой или через панель быстрого доступа. Для добычи нужен правильный инструмент в руках.", 78)
-    addInfo("Материалы", "🪵 Дерево: " .. tostring(wood) .. "   •   🪨 Камень: " .. tostring(stone) .. "   •   ⛏ Руда: " .. tostring(ore) .. "   •   🔩 Слитки: " .. tostring(ingots), 72)
+    addInfo("Материалы", "Дерево: " .. tostring(wood) .. "   •   Камень: " .. tostring(stone) .. "   •   Железная руда: " .. tostring(ore) .. "   •   Слитки: " .. tostring(ingots), 72)
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
     local catalog = {
@@ -894,18 +894,18 @@ getObjective = function()
 end
 
 local function refresh()
-    woodLabel.Text = "🪵  Дерево  " .. tostring(player:GetAttribute("Resource_Wood") or 0)
-    stoneLabel.Text = "🪨  Камень  " .. tostring(player:GetAttribute("Resource_Stone") or 0)
+    woodLabel.Text = "ДЕРЕВО  " .. tostring(player:GetAttribute("Resource_Wood") or 0)
+    stoneLabel.Text = "КАМЕНЬ  " .. tostring(player:GetAttribute("Resource_Stone") or 0)
     objectiveText.Text = getObjective()
     local completed, total = getTutorialProgress()
     local bridgeBuilt = player:GetAttribute("Bridge_HomeToGrove") == true
     if player:GetAttribute("Ready") and not bridgeBuilt then
         local wood, stone = bridgeResourceProgress()
         objectiveEyebrow.Text = "НАЧНИ ЗДЕСЬ • ПЕРВЫЙ МОСТ"
-        objectiveGlyph.Text = "⚒"
+        objectiveGlyph.Text = "М"
         objectiveHint.Text = wood >= 5 and stone >= 3
             and "Подойди к мосту у края острова и нажми E или кнопку действия."
-            or ("🪵 " .. tostring(math.min(wood, 5)) .. "/5   🪨 " .. tostring(math.min(stone, 3)) .. "/3\nПодойди к кучам у дома и нажми кнопку сбора")
+            or ("Дерево " .. tostring(math.min(wood, 5)) .. "/5   Камень " .. tostring(math.min(stone, 3)) .. "/3\nПодойди к кучам у дома и нажми кнопку сбора")
         progressCount.Text = tostring(completed) .. " / " .. tostring(total)
     else
         objectiveEyebrow.Text = completed >= total
@@ -964,7 +964,7 @@ local playHint = label(playOverlay, "Hint", "Запомни огоньки!", UD
 playHint.TextXAlignment = Enum.TextXAlignment.Center
 playHint.ZIndex = 51
 
-local playSymbols = {"🐾", "🍃", "✨"}
+local playSymbols = {"●", "◆", "✦"}
 local playButtons = {}
 local activePlay = nil
 local playNextIndex = 1
