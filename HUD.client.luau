@@ -383,6 +383,8 @@ local cropCatalog = {
 local cropById = {}
 for _, crop in cropCatalog do cropById[crop.id] = crop end
 
+local farmUpgradeCosts = {[2] = 60, [3] = 150}
+
 local seedShopOffers = {
     Carrot = {amount = 3, cost = 12},
     Strawberry = {amount = 3, cost = 21},
@@ -839,6 +841,34 @@ local function renderCity()
     end
 end
 
+local function addFarmUpgrade(farmLevel)
+    local coins = tonumber(player:GetAttribute("Coins")) or 0
+    local nextLevel = farmLevel + 1
+    local cost = farmUpgradeCosts[nextLevel]
+    local item = card(body, "FarmUpgrade", 82)
+    local title = farmLevel >= 3 and "Ферма • максимальный уровень" or ("Улучшение фермы → уровень " .. tostring(nextLevel))
+    label(item, "Name", title, UDim2.new(1, -142, 0, 24), UDim2.fromOffset(12, 8), 14, palette.ink, Enum.Font.GothamBold)
+    local description = farmLevel == 1 and "Откроет две дополнительные грядки" or "Откроет последнюю грядку"
+    label(item, "Details", farmLevel >= 3 and "Все четыре грядки доступны" or description,
+        UDim2.new(1, -142, 0, 30), UDim2.fromOffset(12, 36), 10, palette.muted)
+    local action = button(item, "UpgradeFarm",
+        farmLevel >= 3 and "МАКС." or (tostring(cost) .. " МОН."),
+        UDim2.fromOffset(112, 38), UDim2.new(1, -122, 0.5, -19),
+        farmLevel >= 3 and palette.paperDark or (coins >= cost and palette.gold or palette.paperDark))
+    action.TextColor3 = farmLevel >= 3 or coins < cost and palette.muted or palette.ink
+    action.TextSize = 10
+    action.Active = farmLevel < 3
+    action.AutoButtonColor = farmLevel < 3 and coins >= cost
+    action.Activated:Connect(function()
+        if farmLevel >= 3 then return end
+        if coins < cost then
+            showToast("Нужно ещё " .. tostring(cost - coins) .. " монет. Продай собранный урожай на рынке.")
+            return
+        end
+        event:FireServer("UpgradeFarm")
+    end)
+end
+
 local function renderFarm()
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
     local selectedCrop = player:GetAttribute("Farm_SelectedCrop") or "Carrot"
@@ -850,9 +880,11 @@ local function renderFarm()
         if amount > 0 then table.insert(harvestSummary, crop.name .. " ×" .. tostring(amount)) end
     end
     addInfo("Ферма • уровень " .. tostring(farmLevel), "Семян всего: " .. tostring(totalSeeds) .. ( #harvestSummary > 0 and "   •   Урожай: " .. table.concat(harvestSummary, ", ") or "   •   Урожай пока не собран"), 78)
-    addInfo("1. Семена и магазин", "Монеты: " .. tostring(tonumber(player:GetAttribute("Coins")) or 0) .. ". Выбери культуру для посадки или купи набор семян. Покупка сохраняется в рюкзаке.", 76)
+    addInfo("1. Развитие фермы", "Улучшай ферму за монеты, чтобы открывать новые грядки. Сейчас доступно: " .. tostring(farmLevel == 1 and 1 or (farmLevel == 2 and 3 or 4)) .. " из 4.", 68)
+    addFarmUpgrade(farmLevel)
+    addInfo("2. Семена и магазин", "Монеты: " .. tostring(tonumber(player:GetAttribute("Coins")) or 0) .. ". Выбери культуру для посадки или купи набор семян. Покупка сохраняется в рюкзаке.", 76)
     for _, crop in cropCatalog do addSeedChoice(crop, selectedCrop) end
-    addInfo("2. Посади и собери", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
+    addInfo("3. Посади и собери", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
     for index = 1, 4 do
         addPlot(string.format("Plot%02d", index), index)
     end
