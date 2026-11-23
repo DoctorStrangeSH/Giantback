@@ -453,5 +453,7 @@ jobs:
           path: |
             Giantback.rbxlx
             assets/
+            docs/STUDIO_PLAYTEST.md
+            tools/roblox/studio_playtest_preflight.luau
           if-no-files-found: error
           retention-days: 14
