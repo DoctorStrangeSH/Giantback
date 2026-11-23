@@ -406,6 +406,8 @@ local function registerEnemy(enemy)
                     entry.nextAttackAt = os.clock() + entry.attackCooldown
                     entry.attackSequence = (entry.attackSequence or 0) + 1
                     local useGroundSlam = entry.isBoss and entry.bossPhase >= 2 and entry.attackSequence % 2 == 0
+                    local usePollenBurst = enemy:GetAttribute("ArchetypeId") == "Mossling"
+                        and entry.attackSequence % 2 == 0
 
                     if useGroundSlam then
                         local phasePrefix = "Phase" .. tostring(entry.bossPhase)
@@ -429,6 +431,37 @@ local function registerEnemy(enemy)
                                                 local towardBoss = root.Position - currentRoot.Position
                                                 if towardBoss.Magnitude > 0
                                                     and currentRoot.CFrame.LookVector:Dot(towardBoss.Unit) >= 0.35 then
+                                                    damage = math.max(1, math.floor(damage * BLOCK_DAMAGE_MULTIPLIER))
+                                                end
+                                            end
+                                            currentHumanoid:TakeDamage(damage)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        enemy:SetAttribute("BossAttack", "")
+                    elseif usePollenBurst then
+                        local pollenRadius = math.clamp(tonumber(enemy:GetAttribute("PollenRadius")) or 9, 6, 14)
+                        local pollenDamage = math.clamp(math.floor(tonumber(enemy:GetAttribute("PollenDamage")) or 8), 1, 16)
+                        enemy:SetAttribute("BossAttack", "PollenBurst")
+                        enemy:SetAttribute("CombatState", "PollenTelegraph")
+                        task.wait(math.max(entry.telegraphSeconds, 1.1))
+
+                        if isEnemyAlive(enemy) then
+                            for _, player in Players:GetPlayers() do
+                                if player:GetAttribute("Ready") == true and getPlayerRegion(player) == entry.regionId then
+                                    local currentHumanoid, currentRoot = getCharacterParts(player)
+                                    if currentHumanoid and currentRoot
+                                        and (currentRoot.Position - root.Position).Magnitude <= pollenRadius then
+                                        local playerState = playerStates[player]
+                                        local dodging = playerState and playerState.dodgingUntil > os.clock()
+                                        if not dodging then
+                                            local damage = pollenDamage
+                                            if playerState and playerState.blocking then
+                                                local towardMossling = root.Position - currentRoot.Position
+                                                if towardMossling.Magnitude > 0
+                                                    and currentRoot.CFrame.LookVector:Dot(towardMossling.Unit) >= 0.35 then
                                                     damage = math.max(1, math.floor(damage * BLOCK_DAMAGE_MULTIPLIER))
                                                 end
                                             end
