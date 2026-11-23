@@ -1650,6 +1650,62 @@ local function makeFarmVisualPart(parent, name, size, frame, color, shape, mater
     return part
 end
 
+local function renderIslandDecoration(cityModel, meadow, decoration, index, ownerUserId)
+    if not cityModel or not meadow or type(decoration) ~= "table" then return end
+    local id = decoration.id
+    if id ~= "Path" and id ~= "FlowerBed" then return end
+
+    local x = math.clamp(tonumber(decoration.x) or 0, 0, 12)
+    local z = math.clamp(tonumber(decoration.z) or 0, -4, 4)
+    local rotation = (math.floor((tonumber(decoration.rotation) or 0) / 90 + 0.5) % 4) * 90
+    local frame = meadow.CFrame * CFrame.new(x, meadow.Size.Y / 2 + 0.16, z) * CFrame.Angles(0, math.rad(rotation), 0)
+    local model = Instance.new("Model")
+    model.Name = "Decoration_" .. tostring(index)
+    model:SetAttribute("OwnerUserId", ownerUserId)
+    model:SetAttribute("DecorationId", id)
+    model.Parent = cityModel
+
+    if id == "Path" then
+        local stoneColor = Color3.fromRGB(137, 143, 133)
+        for row = 1, 2 do
+            for column = 1, 2 do
+                local offset = Vector3.new((column - 1.5) * 1.72, 0.08, (row - 1.5) * 1.72)
+                local stone = makeFarmVisualPart(model, "PavingStone", Vector3.new(1.62, 0.24, 1.62),
+                    frame * CFrame.new(offset), stoneColor, Enum.PartType.Block, Enum.Material.Slate)
+                stone.CanCollide = true
+            end
+        end
+    else
+        local wood = Color3.fromRGB(133, 91, 59)
+        makeFarmVisualPart(model, "FlowerBedSoil", Vector3.new(3.35, 0.28, 3.35),
+            frame * CFrame.new(0, 0.12, 0), Color3.fromRGB(91, 65, 47), Enum.PartType.Block, Enum.Material.Ground)
+        for _, edge in {
+            {Vector3.new(3.8, 0.42, 0.28), Vector3.new(0, 0.34, -1.78)},
+            {Vector3.new(3.8, 0.42, 0.28), Vector3.new(0, 0.34, 1.78)},
+            {Vector3.new(0.28, 0.42, 3.35), Vector3.new(-1.78, 0.34, 0)},
+            {Vector3.new(0.28, 0.42, 3.35), Vector3.new(1.78, 0.34, 0)},
+        } do
+            makeFarmVisualPart(model, "TimberEdge", edge[1], frame * CFrame.new(edge[2]), wood,
+                Enum.PartType.Block, Enum.Material.WoodPlanks)
+        end
+        local flowerColors = {
+            Color3.fromRGB(246, 190, 105), Color3.fromRGB(232, 143, 153),
+            Color3.fromRGB(195, 164, 224), Color3.fromRGB(246, 224, 157),
+        }
+        for flowerIndex = 1, 4 do
+            local column = (flowerIndex - 1) % 2
+            local row = math.floor((flowerIndex - 1) / 2)
+            local offset = Vector3.new((column - 0.5) * 1.55, 0.48, (row - 0.5) * 1.55)
+            makeFarmVisualPart(model, "FlowerStem", Vector3.new(0.12, 0.52, 0.12),
+                frame * CFrame.new(offset + Vector3.new(0, 0.22, 0)),
+                Color3.fromRGB(86, 139, 78), Enum.PartType.Block, Enum.Material.Grass)
+            makeFarmVisualPart(model, "FlowerBloom", Vector3.new(0.62, 0.42, 0.62),
+                frame * CFrame.new(offset + Vector3.new(0, 0.54, 0)),
+                flowerColors[flowerIndex], Enum.PartType.Ball, Enum.Material.SmoothPlastic)
+        end
+    end
+end
+
 local function refreshFarmPlotVisual(cityModel, plotId, farm, selectedCropId)
     local plotModel = cityModel and cityModel:FindFirstChild(plotId)
     if not plotModel then return end
@@ -2148,7 +2204,57 @@ createPersonalCity = function(player, session)
     end
 
     session.cityModel = cityModel
+    local decorationMeadow = homeIsland:FindFirstChild("Meadow")
+    if decorationMeadow then
+        for index, decoration in ipairs(session.city.buildings) do
+            renderIslandDecoration(cityModel, decorationMeadow, decoration, index, ownerUserId)
+        end
+    end
     refreshFarmCity(player, cityModel)
+end
+
+placeIslandDecoration = function(player, decorationId)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if decorationId ~= "Path" and decorationId ~= "FlowerBed" then
+        return tip(player, "Такого предмета пока нет в каталоге строительства.")
+    end
+    if #session.city.buildings >= 12 then
+        return tip(player, "На площадке пока нет свободных мест. Максимум — 12 украшений.")
+    end
+
+    local homeIsland = session.homeIsland
+    local cityModel = session.cityModel
+    local meadow = homeIsland and homeIsland:FindFirstChild("Meadow")
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not meadow or not cityModel or not root then return end
+    if (root.Position - meadow.Position).Magnitude > 22 then
+        return tip(player, "Строить декор можно только на лужайке своего острова.")
+    end
+
+    local localTarget = meadow.CFrame:PointToObjectSpace(root.Position + root.CFrame.LookVector * 5)
+    local x = math.clamp(math.floor(localTarget.X / 4 + 0.5) * 4, 0, 12)
+    local z = math.clamp(math.floor(localTarget.Z / 4 + 0.5) * 4, -4, 4)
+    for _, existing in ipairs(session.city.buildings) do
+        if existing.x == x and existing.z == z then
+            return tip(player, "Это место уже занято. Отойди на соседнюю площадку и попробуй снова.")
+        end
+    end
+
+    local cost = decorationId == "Path" and {Wood = 2, Stone = 0} or {Wood = 4, Stone = 2}
+    if (session.inventory.Wood or 0) < cost.Wood or (session.inventory.Stone or 0) < cost.Stone then
+        return tip(player, "Не хватает материалов: дерево ×" .. tostring(cost.Wood) .. ", камень ×" .. tostring(cost.Stone) .. ".")
+    end
+
+    session.inventory.Wood -= cost.Wood
+    session.inventory.Stone -= cost.Stone
+    local decoration = {id = decorationId, x = x, z = z, rotation = 0}
+    table.insert(session.city.buildings, decoration)
+    renderIslandDecoration(cityModel, meadow, decoration, #session.city.buildings, player.UserId)
+    syncInventory(player)
+    tip(player, decorationId == "Path" and "Каменная дорожка построена!" or "Цветочная клумба украшает твой остров!")
+    if session.online then save(player) end
 end
 
 
