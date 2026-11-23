@@ -135,7 +135,7 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn("weeklyChallenges = nil", WORLD)
         self.assertIn("session.weeklyChallenges = data.weeklyChallenges", WORLD)
         self.assertIn("old.weeklyChallenges = weeklyChallengeSnapshot", WORLD)
-        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 13)", WORLD)
+        self.assertIn("old.schemaVersion = math.max(tonumber(old.schemaVersion) or 0, 14)", WORLD)
 
     def test_weekly_progress_tracks_server_gameplay_events(self):
         for marker in (
