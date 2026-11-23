@@ -38,6 +38,15 @@ class BridgeRepairContractTests(unittest.TestCase):
         self.assertIn("old.homeMaterialCooldowns = savedHomeCooldowns", WORLD)
         self.assertIn("data.homeMaterialCooldowns", WORLD)
 
+    def test_first_home_pickups_are_enough_to_repair_bridge_without_waiting(self):
+        self.assertIn('Wood = {amount = 3, cooldown = 60', WORLD)
+        self.assertIn('Stone = {amount = 2, cooldown = 60', WORLD)
+        self.assertIn('local amount = session.city.bridges.homeToGrove and definition.amount', WORLD)
+        self.assertIn('or (materialId == "Wood" and 5 or 3)', WORLD)
+        self.assertIn('session.inventory[materialId] = (session.inventory[materialId] or 0) + amount', WORLD)
+        self.assertIn('session.homeMaterialCooldowns[materialId] = now + definition.cooldown', WORLD)
+        self.assertIn('tip(player, "Собрано: " .. definition.title .. " ×" .. tostring(amount))', WORLD)
+
     def test_home_bridge_starts_as_a_non_collidable_blueprint(self):
         self.assertIn('built=False)', BUILD)
         self.assertIn('prop(piece, "float", "Transparency", 0.62)', BUILD)
