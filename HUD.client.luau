@@ -242,6 +242,8 @@ local toastText = label(toast, "Text", "", UDim2.new(1, -24, 1, -8), UDim2.fromO
 toastText.TextXAlignment = Enum.TextXAlignment.Center
 local toastGeneration = 0
 local toastTween = nil
+local navButtons = {}
+local navDefinitions = {}
 
 local function updateResponsiveLayout()
     local camera = workspace.CurrentCamera
@@ -294,15 +296,6 @@ local function updateResponsiveLayout()
     toast.Position = UDim2.new(0.5, 0, 1, compact and -68 or -96)
 end
 
-updateResponsiveLayout()
-if workspace.CurrentCamera then
-    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateResponsiveLayout)
-end
-workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
-    local camera = workspace.CurrentCamera
-    if camera then camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateResponsiveLayout) end
-    task.defer(updateResponsiveLayout)
-end)
 
 local function clearBody()
     for _, child in body:GetChildren() do
@@ -696,7 +689,6 @@ local panelTitles = {
 }
 
 local activeTab = nil
-local navButtons = {}
 
 local function openTab(tabName)
     if activeTab == tabName and panel.Visible then
@@ -716,7 +708,7 @@ local function openTab(tabName)
     end
 end
 
-local navDefinitions = {
+navDefinitions = {
     {id = "City", title = "ОСТРОВ", glyph = "⌂"},
     {id = "Farm", title = "ФЕРМА", glyph = "♧"},
     {id = "Pets", title = "ПИТОМЦЫ", glyph = "♡"},
@@ -734,6 +726,16 @@ for _, definition in navDefinitions do
     end)
     navButtons[definition.id] = navButton
 end
+
+updateResponsiveLayout()
+local function watchCamera(camera)
+    if camera then camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateResponsiveLayout) end
+    task.defer(updateResponsiveLayout)
+end
+watchCamera(workspace.CurrentCamera)
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+    watchCamera(workspace.CurrentCamera)
+end)
 
 closeButton.Activated:Connect(function()
     panel.Visible = false
