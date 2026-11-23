@@ -1131,6 +1131,17 @@ local SEASONAL_EVENT_MILESTONES = {
     {points = 50, coins = 0, starShards = 1},
     {points = 100, coins = 80, starShards = 2},
 }
+
+-- One Leaf Token is earned for every five festival points. Tokens are derived
+-- from the saved point total; only spending and purchase limits need persistence.
+local FESTIVAL_SHOP_OFFERS = {
+    HarvestEgg = {itemId = "HarvestEgg", amount = 1, cost = 10, limit = 1, name = "Призовое яйцо"},
+    StarShard = {itemId = "StarShard", amount = 1, cost = 4, limit = 2, name = "Звёздный осколок"},
+    MoonPetal = {itemId = "MoonPetal", amount = 3, cost = 2, limit = 3, name = "Лунные лепестки"},
+    PumpkinSeed = {itemId = "PumpkinSeed", amount = 5, cost = 1, limit = 3, name = "Семена тыквы"},
+}
+local FESTIVAL_SHOP_ORDER = {"HarvestEgg", "StarShard", "MoonPetal", "PumpkinSeed"}
+local FESTIVAL_TOKEN_CAP = 20
 local SEASONAL_EVENT_POINT_VALUES = {
     Gather = 1,
     GatherWood = 2,
@@ -1176,6 +1187,15 @@ local function normalizeSeasonalEvent(raw)
             claimed[key] = saved.claimedMilestones[key] == true
         end
     end
+    local purchases = {}
+    if sameEvent and type(saved.shopPurchases) == "table" then
+        for _, offerId in FESTIVAL_SHOP_ORDER do
+            local offer = FESTIVAL_SHOP_OFFERS[offerId]
+            purchases[offerId] = math.clamp(math.floor(tonumber(saved.shopPurchases[offerId]) or 0), 0, offer.limit)
+        end
+    else
+        for _, offerId in FESTIVAL_SHOP_ORDER do purchases[offerId] = 0 end
+    end
     return {
         version = 1,
         eventId = window.id,
@@ -1183,6 +1203,8 @@ local function normalizeSeasonalEvent(raw)
         claimedMilestones = claimed,
         harvestSpriteClaimed = sameEvent and saved.harvestSpriteClaimed == true or false,
         festivalEggClaimed = sameEvent and saved.festivalEggClaimed == true or false,
+        shopSpent = sameEvent and math.clamp(math.floor(tonumber(saved.shopSpent) or 0), 0, FESTIVAL_TOKEN_CAP) or 0,
+        shopPurchases = purchases,
     }
 end
 
@@ -1219,6 +1241,11 @@ local function syncSeasonalEvent(player)
     player:SetAttribute("SeasonalEvent_ClaimableCount", available)
     player:SetAttribute("SeasonalEvent_HarvestSpriteClaimed", session.seasonalEvent.harvestSpriteClaimed == true)
     player:SetAttribute("SeasonalEvent_FestivalEggClaimed", session.seasonalEvent.festivalEggClaimed == true)
+    local earnedTokens = math.clamp(math.floor(session.seasonalEvent.points / 5), 0, FESTIVAL_TOKEN_CAP)
+    player:SetAttribute("SeasonalEvent_ShopTokens", math.max(0, earnedTokens - session.seasonalEvent.shopSpent))
+    for _, offerId in FESTIVAL_SHOP_ORDER do
+        player:SetAttribute("SeasonalEvent_ShopPurchase_" .. offerId, session.seasonalEvent.shopPurchases[offerId] or 0)
+    end
     for _, milestone in SEASONAL_EVENT_MILESTONES do
         local key = tostring(milestone.points)
         player:SetAttribute("SeasonalEvent_Milestone_" .. key .. "_Claimed", session.seasonalEvent.claimedMilestones[key] == true)
@@ -1943,6 +1970,79 @@ local function hatchFestivalEgg(player)
     tip(player, "Ура! Из яйца вылупился " .. (pets[companionId] or "новый питомец") .. "! Он уже следует за тобой.")
 end
 
+
+local function buyFestivalShopItem(player, offerId)
+    local session = sessions[player]
+    local offer = FESTIVAL_SHOP_OFFERS[offerId]
+    if not session or not offer or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Лавка фестиваля временно недоступна: сохранение профиля не работает.")
+    end
+    if session.economyBusy then
+        return tip(player, "Подожди завершения текущей операции.")
+    end
+
+    local window = getHarvestFestivalWindow()
+    if not window.active then
+        return tip(player, "Лавка Фестиваля урожая сейчас закрыта.")
+    end
+
+    session.seasonalEvent = normalizeSeasonalEvent(session.seasonalEvent)
+    local eventData = session.seasonalEvent
+    local purchased = eventData.shopPurchases[offerId] or 0
+    if purchased >= offer.limit then
+        return tip(player, "Этот товар уже куплен максимально возможное число раз.")
+    end
+    if offerId == "HarvestEgg" then
+        local allOwned = true
+        for _, definition in FESTIVAL_EGG_PETS do
+            if player:GetAttribute(definition.id) ~= true then
+                allOwned = false
+                break
+            end
+        end
+        if allOwned then
+            return tip(player, "Ты уже собрал всех фестивальных питомцев — яйцо больше не понадобится.")
+        end
+    end
+
+    local earnedTokens = math.clamp(math.floor(eventData.points / 5), 0, FESTIVAL_TOKEN_CAP)
+    local availableTokens = math.max(0, earnedTokens - eventData.shopSpent)
+    if availableTokens < offer.cost then
+        return tip(player, "Не хватает листочков: нужно " .. tostring(offer.cost) .. ", у тебя " .. tostring(availableTokens) .. ".")
+    end
+
+    local currentAmount = math.max(0, math.floor(tonumber(session.inventory[offer.itemId]) or 0))
+    local maxStack = string.find(offer.itemId, "Seed") and MAX_SEED_STACK
+        or offer.itemId == "HarvestEgg" and 99
+        or 1000000
+    if currentAmount + offer.amount > maxStack then
+        return tip(player, "В рюкзаке недостаточно места для этой покупки.")
+    end
+
+    local previousSpent = eventData.shopSpent
+    local previousPurchases = purchased
+    session.economyBusy = true
+    eventData.shopSpent += offer.cost
+    eventData.shopPurchases[offerId] = purchased + 1
+    session.inventory[offer.itemId] = currentAmount + offer.amount
+    syncInventory(player)
+    syncSeasonalEvent(player)
+
+    if not save(player) then
+        eventData.shopSpent = previousSpent
+        eventData.shopPurchases[offerId] = previousPurchases
+        session.inventory[offer.itemId] = currentAmount
+        syncInventory(player)
+        syncSeasonalEvent(player)
+        session.economyBusy = false
+        return tip(player, "Покупка не сохранилась. Листочки и предмет возвращены — попробуй ещё раз.")
+    end
+
+    session.economyBusy = false
+    tip(player, "Куплено: " .. offer.name .. " ×" .. tostring(offer.amount) .. ".")
+end
+
 save = function(player)
     local session = sessions[player]
     if not session or not session.online or not store then return false end
@@ -2657,6 +2757,12 @@ event.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "HatchFestivalEgg" then
         hatchFestivalEgg(player)
+        return
+    end
+
+    if action == "BuyFestivalShopItem" then
+        if type(payload) ~= "string" then return end
+        buyFestivalShopItem(player, payload)
         return
     end
 

@@ -392,6 +392,13 @@ local seedShopOffers = {
     Cabbage = {amount = 2, cost = 16},
 }
 
+local festivalShopOffers = {
+    {id = "HarvestEgg", name = "Призовое яйцо", description = "Ещё одна попытка открыть нового питомца", amount = 1, cost = 10, limit = 1, glyph = "◉"},
+    {id = "StarShard", name = "Звёздный осколок", description = "Редкий материал для магических открытий", amount = 1, cost = 4, limit = 2, glyph = "✦"},
+    {id = "MoonPetal", name = "Лунные лепестки", description = "Три лепестка для особых находок", amount = 3, cost = 2, limit = 3, glyph = "✿"},
+    {id = "PumpkinSeed", name = "Семена тыквы", description = "Пять семян для осеннего урожая", amount = 5, cost = 1, limit = 3, glyph = "●"},
+}
+
 local function addSeedChoice(crop, selectedCrop)
     local seeds = tonumber(player:GetAttribute("Resource_" .. crop.seed)) or 0
     local coins = tonumber(player:GetAttribute("Coins")) or 0
@@ -1403,6 +1410,50 @@ local function renderDailyQuests()
         end
     end)
     addInfo("ПРИЗОВОЕ ЯЙЦО • ШАНСЫ", "Колючка — 40% • Мохопанцирь — 32% • Светошляп — 18% • Росинка — 8% • Звёздокрыл — 2%. Шансы указаны для полного набора; уже открытые виды исключаются, их вес перераспределяется между оставшимися.", 76)
+
+    local shopTokens = math.max(0, math.floor(tonumber(player:GetAttribute("SeasonalEvent_ShopTokens")) or 0))
+    addInfo("ЛАВКА ФЕСТИВАЛЯ", "За каждые 5 очков события ты получаешь 1 листочек. Листочки не списывают очки прогресса и сохраняются до конца фестиваля.", 68)
+    local tokenCard = card(body, "FestivalTokenWallet", 56)
+    tokenCard.BackgroundColor3 = Color3.fromRGB(232, 240, 218)
+    label(tokenCard, "TokenGlyph", "✿", UDim2.fromOffset(38, 38), UDim2.fromOffset(12, 9), 24, palette.forest, Enum.Font.GothamBlack)
+    label(tokenCard, "TokenTitle", "ЛИСТОЧКИ", UDim2.new(1, -120, 0, 20), UDim2.fromOffset(58, 6), 11, palette.forest, Enum.Font.GothamBold)
+    label(tokenCard, "TokenCount", tostring(shopTokens) .. " доступно", UDim2.new(1, -120, 0, 22), UDim2.fromOffset(58, 27), 14, palette.ink, Enum.Font.GothamBlack)
+    for _, offer in festivalShopOffers do
+        local purchased = math.max(0, math.floor(tonumber(player:GetAttribute("SeasonalEvent_ShopPurchase_" .. offer.id)) or 0))
+        local soldOut = purchased >= offer.limit
+        local allPetsOwned = player:GetAttribute("BrambleBun") == true
+            and player:GetAttribute("MossTurtle") == true
+            and player:GetAttribute("Glowcap") == true
+            and player:GetAttribute("Dewdrop") == true
+            and player:GetAttribute("Starling") == true
+        local unavailable = offer.id == "HarvestEgg" and allPetsOwned
+        local canBuy = eventActive and not soldOut and not unavailable and shopTokens >= offer.cost
+        local item = card(body, "FestivalShop_" .. offer.id, 82)
+        item.BackgroundColor3 = canBuy and Color3.fromRGB(250, 241, 218) or Color3.fromRGB(239, 234, 218)
+        local glyph = label(item, "Glyph", offer.glyph, UDim2.fromOffset(38, 42), UDim2.fromOffset(10, 18), 23, offer.id == "HarvestEgg" and palette.gold or palette.forest, Enum.Font.GothamBlack)
+        glyph.TextXAlignment = Enum.TextXAlignment.Center
+        label(item, "Name", offer.name .. " ×" .. tostring(offer.amount), UDim2.new(1, -154, 0, 22), UDim2.fromOffset(54, 8), 12, palette.ink, Enum.Font.GothamBold)
+        label(item, "Details", offer.description .. " · " .. tostring(purchased) .. "/" .. tostring(offer.limit), UDim2.new(1, -154, 0, 36), UDim2.fromOffset(54, 34), 9, palette.muted)
+        local buyText = soldOut and "ЛИМИТ" or unavailable and "НЕ НУЖНО" or ("КУПИТЬ · " .. tostring(offer.cost) .. " ✿")
+        local buy = button(item, "Buy", buyText, UDim2.fromOffset(112, 34), UDim2.new(1, -120, 0.5, -17), canBuy and palette.gold or palette.paperDark)
+        buy.TextColor3 = canBuy and palette.ink or palette.muted
+        buy.TextSize = 9
+        buy.AutoButtonColor = canBuy
+        buy.Activated:Connect(function()
+            if soldOut then
+                showToast("Лимит этой покупки на фестиваль уже исчерпан.")
+            elseif unavailable then
+                showToast("Ты уже собрал всех пяти питомцев.")
+            elseif not eventActive then
+                showToast("Лавка работает только во время Фестиваля урожая.")
+            elseif shopTokens < offer.cost then
+                showToast("Нужно ещё " .. tostring(offer.cost - shopTokens) .. " листочков.")
+            else
+                event:FireServer("BuyFestivalShopItem", offer.id)
+            end
+        end)
+    end
+    addInfo("ПРАВИЛА ЛАВКИ", "Лимиты покупок действуют на один фестиваль. При ошибке сохранения покупка и листочки автоматически возвращаются.", 58)
     addInfo("ПРАЗДНИЧНЫЕ НАГРАДЫ", tostring(eventPoints) .. "/100 очков • доступно рубежей: " .. tostring(eventClaimable) .. " • " .. tostring(eventCoins) .. " Coins + " .. tostring(eventShards) .. " осколков", 48)
 end
 
