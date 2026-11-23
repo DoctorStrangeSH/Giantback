@@ -1722,10 +1722,11 @@ local function spawnMossling()
     mossling:GetAttributeChangedSignal("CombatState"):Connect(function()
         if not mossling.Parent then return end
         local state = mossling:GetAttribute("CombatState")
-        if highlight then highlight.Enabled = state == "Telegraph" end
-        if warning then warning.Enabled = state == "Telegraph" or state == "Recover" end
+        local telegraphing = state == "Telegraph" or state == "PollenTelegraph"
+        if highlight then highlight.Enabled = telegraphing end
+        if warning then warning.Enabled = telegraphing or state == "Recover" end
         if warningText then
-            warningText.Text = state == "Telegraph" and "УКЛОНЯЙСЯ!" or "АТАКА!"
+            warningText.Text = telegraphing and "УКЛОНЯЙСЯ!" or "АТАКА!"
         end
     end)
     humanoid.Died:Connect(function()
