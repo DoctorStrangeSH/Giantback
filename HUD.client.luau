@@ -131,7 +131,7 @@ local stoneLabel = label(resources, "Stone", "🪨  Камень  0", UDim2.new(
 local objective = Instance.new("Frame")
 objective.Name = "ObjectiveCard"
 objective.Position = UDim2.fromOffset(16, 84)
-objective.Size = UDim2.fromOffset(352, 120)
+objective.Size = UDim2.fromOffset(352, 138)
 objective.BackgroundColor3 = palette.paper
 objective.Parent = gui
 corner(objective, 18)
@@ -147,7 +147,7 @@ local objectiveGlyph = label(objectiveIcon, "Glyph", "✦", UDim2.fromScale(1, 1
 objectiveGlyph.TextXAlignment = Enum.TextXAlignment.Center
 
 local objectiveEyebrow = label(objective, "Eyebrow", "ТВОЯ СЛЕДУЮЩАЯ ЦЕЛЬ", UDim2.new(1, -82, 0, 18), UDim2.fromOffset(76, 10), 10, palette.forestLight, Enum.Font.GothamBold)
-local objectiveText = label(objective, "Objective", "Загружаем твой остров…", UDim2.new(1, -86, 0, 46), UDim2.fromOffset(76, 29), 14, palette.ink, Enum.Font.GothamBold)
+local objectiveText = label(objective, "Objective", "Загружаем твой остров…", UDim2.new(1, -86, 0, 34), UDim2.fromOffset(76, 29), 14, palette.ink, Enum.Font.GothamBold)
 objectiveText.TextYAlignment = Enum.TextYAlignment.Top
 local objectiveHint = label(objective, "Hint", "", UDim2.new(1, -88, 0, 32), UDim2.fromOffset(76, 66), 11, palette.forestLight, Enum.Font.GothamBold)
 objectiveHint.TextYAlignment = Enum.TextYAlignment.Top
@@ -920,7 +920,7 @@ local function updateLayout()
         resources.Size = UDim2.fromOffset(resourcesWidth, 58)
         woodLabel.TextSize = 10
         stoneLabel.TextSize = 10
-        objective.Size = UDim2.new(1, -32, 0, 120)
+        objective.Size = UDim2.new(1, -32, 0, 138)
         objective.Position = UDim2.fromOffset(16, 84)
         panel.Size = UDim2.new(1, -24, 0, math.max(180, math.min(430, height - 150)))
         panel.Position = UDim2.new(0.5, 0, 0.5, -8)
@@ -934,7 +934,7 @@ local function updateLayout()
         brandTitle.TextSize = 18
         brandSubtitle.TextSize = 9
         resources.Size = UDim2.fromOffset(214, 58)
-        objective.Size = UDim2.fromOffset(352, 120)
+        objective.Size = UDim2.fromOffset(352, 138)
         objective.Position = UDim2.fromOffset(16, 84)
         panel.Size = UDim2.fromOffset(470, 420)
         nav.Size = UDim2.fromOffset(560, 68)
