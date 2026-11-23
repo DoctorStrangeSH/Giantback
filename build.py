@@ -168,26 +168,26 @@ def add_radial_bridge(parent, name, angle, start_radius, end_radius, built=True)
     for index in range(segments):
         t = (index + 0.5) / segments
         x, z = start_x + dx * t, start_z + dz * t
-        piece = part(bridge, "BridgeDeck", (x, 12.0, z), (5.2, 0.48, plank_length), "A87950", yaw=yaw)
+        piece = part(bridge, "BridgeDeck", (x, 12.0, z), (8.2, 0.55, plank_length), "A87950", yaw=yaw)
         set_bridge_piece_state(piece, built)
     midpoint_x, midpoint_z = (start_x + end_x) / 2, (start_z + end_z) / 2
     local_x = (math.cos(math.radians(yaw)), -math.sin(math.radians(yaw)))
     for side in (-1, 1):
-        rx = midpoint_x + local_x[0] * side * 2.65
-        rz = midpoint_z + local_x[1] * side * 2.65
+        rx = midpoint_x + local_x[0] * side * 4.15
+        rz = midpoint_z + local_x[1] * side * 4.15
         rail = part(bridge, "BridgeRail", (rx, 13.0, rz), (0.35, 1.55, length), "79583F", yaw=yaw)
         set_bridge_piece_state(rail, built)
         for index in range(0, segments + 1, max(1, math.ceil(segments / 7))):
             t = index / segments
             x, z = start_x + dx * t, start_z + dz * t
-            px = x + local_x[0] * side * 2.65
-            pz = z + local_x[1] * side * 2.65
+            px = x + local_x[0] * side * 4.15
+            pz = z + local_x[1] * side * 4.15
             post = part(bridge, "BridgePost", (px, 13.1, pz), (0.55, 2.0, 0.55), "936847")
             set_bridge_piece_state(post, built)
     for t in (0.28, 0.72):
         for side in (-1, 1):
-            x = start_x + dx * t + local_x[0] * side * 2.05
-            z = start_z + dz * t + local_x[1] * side * 2.05
+            x = start_x + dx * t + local_x[0] * side * 3.35
+            z = start_z + dz * t + local_x[1] * side * 3.35
             lamp = part(bridge, "BridgeLamp", (x, 14.0, z), (0.55, 2.6, 0.55), "CE9661")
             set_bridge_piece_state(lamp, built)
 
