@@ -383,7 +383,7 @@ local function showDamageNumber(enemyId, damage, finisher, charged)
     billboard.AlwaysOnTop = true
     billboard.LightInfluence = 0
     billboard.MaxDistance = 90
-    billboard.Size = UDim2.fromOffset(finisher or charged and 116 or 88, 42)
+    billboard.Size = UDim2.fromOffset((finisher or charged) and 116 or 88, 42)
     billboard.StudsOffsetWorldSpace = Vector3.new(math.random(-8, 8) / 10, 3.1, 0)
     billboard.Parent = playerGui
 
