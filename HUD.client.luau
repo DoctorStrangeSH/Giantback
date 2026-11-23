@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local TextService = game:GetService("TextService")
 
 local player = Players.LocalPlayer
 local event = ReplicatedStorage:WaitForChild("AlbumAction")
@@ -331,9 +332,36 @@ local function clearBody()
 end
 
 local function addInfo(titleText, description, height)
-    local item = card(body, "InfoCard", height or 82)
-    label(item, "Title", titleText, UDim2.new(1, -28, 0, 24), UDim2.fromOffset(14, 10), 16, palette.ink, Enum.Font.GothamBold)
-    local detail = label(item, "Description", description, UDim2.new(1, -28, 0, (height or 82) - 38), UDim2.fromOffset(14, 36), 13, palette.muted)
+    local availableWidth = math.max(180, body.AbsoluteSize.X - 28)
+    local compact = gui.AbsoluteSize.X < 620
+    local titleSize = compact and 14 or 15
+    local detailSize = compact and 12 or 13
+    local titleBounds = TextService:GetTextSize(
+        titleText, titleSize, Enum.Font.GothamBold, Vector2.new(availableWidth, 1000)
+    )
+    local detailBounds = TextService:GetTextSize(
+        description, detailSize, Enum.Font.GothamMedium, Vector2.new(availableWidth, 1000)
+    )
+    local titleHeight = math.max(22, math.ceil(titleBounds.Y))
+    local detailHeight = math.max(18, math.ceil(detailBounds.Y))
+    local contentHeight = titleHeight + detailHeight + 34
+    local finalHeight = math.max(height or 82, contentHeight)
+
+    local item = card(body, "InfoCard", finalHeight)
+    local accent = Instance.new("Frame")
+    accent.Name = "Accent"
+    accent.Size = UDim2.new(0, 4, 1, -20)
+    accent.Position = UDim2.fromOffset(0, 10)
+    accent.BackgroundColor3 = palette.gold
+    accent.BorderSizePixel = 0
+    accent.Parent = item
+    corner(accent, 4)
+
+    label(item, "Title", titleText, UDim2.new(1, -32, 0, titleHeight),
+        UDim2.fromOffset(14, 10), titleSize, palette.ink, Enum.Font.GothamBold)
+    local detail = label(item, "Description", description,
+        UDim2.new(1, -32, 0, detailHeight),
+        UDim2.fromOffset(14, 10 + titleHeight + 4), detailSize, palette.muted, Enum.Font.GothamMedium)
     detail.TextYAlignment = Enum.TextYAlignment.Top
     return item
 end
@@ -401,8 +429,8 @@ local function renderCity()
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
     local homeSlot = tonumber(player:GetAttribute("HomeIslandSlot")) or 0
     addInfo("Добро пожаловать домой!", "Это твой личный остров. Друзья могут приходить в гости, но строить и менять что-либо здесь можешь только ты.", 84)
-    addInfo("Домашний остров №" .. tostring(homeSlot), "На сервере восемь отдельных островов. Твой дом и ферма не накладываются на чужие участки.", 76)
-    addInfo("Уровень города: " .. tostring(cityLevel), "Развивай остров, собирай материалы и открывай новые территории мостами.", 76)
+    addInfo("Домашний остров №" .. tostring(homeSlot), "На сервере восемь личных островов. Дом и ферма на твоём участке принадлежат только тебе.", 76)
+    addInfo("Уровень города: " .. tostring(cityLevel), "Строй и улучшай свой остров, собирай материалы и открывай новые места.", 76)
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
     local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
     local ore = tonumber(player:GetAttribute("Resource_IronOre")) or 0
@@ -434,9 +462,9 @@ local function renderFarm()
         if amount > 0 then table.insert(harvestSummary, crop.name .. " ×" .. tostring(amount)) end
     end
     addInfo("Ферма • уровень " .. tostring(farmLevel), "Семян всего: " .. tostring(totalSeeds) .. ( #harvestSummary > 0 and "   •   Урожай: " .. table.concat(harvestSummary, ", ") or "   •   Урожай пока не собран"), 78)
-    addInfo("1. Выбери семена", "Нажми «Выбрать» у культуры. Выбор применяется ко всем свободным грядкам.", 64)
+    addInfo("1. Выбери семена", "Выбери культуру — её можно будет посадить на любой свободной грядке.", 64)
     for _, crop in cropCatalog do addSeedChoice(crop, selectedCrop) end
-    addInfo("2. Посади и собери", "Подойди к свободной грядке и нажми «Посадить». Вернись после созревания и нажми «Собрать». Рост продолжается, даже когда ты вышел из игры.", 86)
+    addInfo("2. Посади и собери", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
     for index = 1, 4 do
         addPlot(string.format("Plot%02d", index), index)
     end
@@ -558,7 +586,7 @@ local function renderTools()
     local ingots = tonumber(player:GetAttribute("Resource_IronIngot")) or 0
     local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
     local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
-    addInfo("Инструменты путешественника", "Выбирай инструмент кнопкой или через панель быстрого доступа. Для добычи нужен правильный инструмент в руках.", 78)
+    addInfo("Инструменты путешественника", "Выбери инструмент в этом меню или на панели быстрого доступа. Для каждого ресурса нужен подходящий инструмент.", 78)
     addInfo("Материалы", "Дерево: " .. tostring(wood) .. "   •   Камень: " .. tostring(stone) .. "   •   Железная руда: " .. tostring(ore) .. "   •   Слитки: " .. tostring(ingots), 72)
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
@@ -610,11 +638,11 @@ local function renderTools()
             if not canCraftSword then showToast("Нужно 2 слитка и 6 дерева. Меч создаётся у своего верстака.") end
         end
     end)
-    addInfo("Как добывать", "Собирай дерево и камень инструментами. Железную руду переплавляй в слитки, затем создай меч у верстака. На боевой арене используй обычную атаку и комбо.", 90)
+    addInfo("Как добывать", "Добывай дерево, камень и железную руду. Переплавь руду в слитки и создай меч у верстака. На арене попробуй обычные удары и комбо.", 90)
 end
 
 local function renderWorld()
-    addInfo("Твой архипелаг", "Все острова остаются на своих местах. Восемь домашних островов соединены мостами с общей Солнечной рощей.", 84)
+    addInfo("Твой архипелаг", "Восемь домашних островов соединены мостами с общей Солнечной рощей. Все острова остаются на своих местах.", 84)
     local bridgeHome = workspace:FindFirstChild("BridgeToGrove")
     local bridgeForest = workspace:FindFirstChild("BridgeToDusk")
     addInfo("Домашний остров", "Твой отдельный дом и ферма. Соседи могут прийти в гости, но не могут менять твои вещи.", 68)
@@ -662,7 +690,7 @@ local function isExpeditionStepComplete(step)
 end
 
 local function renderExpeditions()
-    addInfo("ДНЕВНИК ЭКСПЕДИЦИЙ", "Собирай открытия по всему архипелагу. Каждая отметка сохраняется вместе с твоим приключением.", 78)
+    addInfo("ДНЕВНИК ЭКСПЕДИЦИЙ", "Записывай новые находки и выполненные задания. Все открытия сохраняются в твоём дневнике.", 78)
     local totalCompleted = 0
     local totalSteps = 0
     for _, track in expeditionTracks do
