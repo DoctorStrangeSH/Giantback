@@ -374,6 +374,7 @@ local function sellIslandHarvest(player, ownerUserId)
     end
 
     session.economyBusy = false
+    addDailyQuestProgress(player, "Sell", totalItems)
     tip(player, "Продано урожая: " .. tostring(totalItems) .. " шт. Получено " .. tostring(credited) .. " монет.")
 end
 
@@ -1087,6 +1088,96 @@ applyHomeBridgeState = function(slotIndex, built)
     return true
 end
 
+local DAILY_QUEST_REWARD = 40
+local DAILY_QUEST_DEFINITIONS = {
+    Gather = {goal = 3, title = "Собрать ресурсы", description = "Собери любые 3 ресурса в мире."},
+    Sell = {goal = 3, title = "Торговый день", description = "Продай на рынке 3 единицы урожая."},
+    Scout = {goal = 1, title = "Тайник разведчика", description = "Найди и забери один тайник с лисёнком."},
+}
+
+local function currentDailyQuestDay()
+    return os.date("!%Y-%m-%d")
+end
+
+local function normalizeDailyQuests(raw)
+    local today = currentDailyQuestDay()
+    if type(raw) ~= "table" or raw.day ~= today then
+        return {day = today, progress = {Gather = 0, Sell = 0, Scout = 0}, claimed = false}
+    end
+    local savedProgress = type(raw.progress) == "table" and raw.progress or {}
+    local progress = {}
+    for questId, definition in DAILY_QUEST_DEFINITIONS do
+        progress[questId] = math.clamp(math.floor(tonumber(savedProgress[questId]) or 0), 0, definition.goal)
+    end
+    return {day = today, progress = progress, claimed = raw.claimed == true}
+end
+
+local function syncDailyQuests(player)
+    local session = sessions[player]
+    if not session then return end
+    session.dailyQuests = normalizeDailyQuests(session.dailyQuests)
+    player:SetAttribute("DailyQuest_Day", session.dailyQuests.day)
+    player:SetAttribute("DailyQuest_Reward", DAILY_QUEST_REWARD)
+    player:SetAttribute("DailyQuest_Claimed", session.dailyQuests.claimed)
+    for questId, definition in DAILY_QUEST_DEFINITIONS do
+        player:SetAttribute("DailyQuest_" .. questId, session.dailyQuests.progress[questId] or 0)
+        player:SetAttribute("DailyQuest_" .. questId .. "_Goal", definition.goal)
+    end
+end
+
+local function addDailyQuestProgress(player, questId, amount)
+    local session = sessions[player]
+    local definition = DAILY_QUEST_DEFINITIONS[questId]
+    if not session or not definition or not player:GetAttribute("Ready") then return end
+    session.dailyQuests = normalizeDailyQuests(session.dailyQuests)
+    if session.dailyQuests.claimed then
+        syncDailyQuests(player)
+        return
+    end
+    local previous = session.dailyQuests.progress[questId] or 0
+    local nextValue = math.clamp(previous + math.max(0, math.floor(tonumber(amount) or 0)), 0, definition.goal)
+    if nextValue == previous then return end
+    session.dailyQuests.progress[questId] = nextValue
+    syncDailyQuests(player)
+    if session.online and not save(player) then
+        warn("Daily quest progress save will be retried:", player.UserId, questId)
+    end
+end
+
+local function claimDailyQuestReward(player)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Ежедневные задания временно недоступны: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции с монетами.") end
+    session.dailyQuests = normalizeDailyQuests(session.dailyQuests)
+    if session.dailyQuests.claimed then return tip(player, "Награда за сегодня уже получена. Новые задания появятся после обновления дня.") end
+    for questId, definition in DAILY_QUEST_DEFINITIONS do
+        if (session.dailyQuests.progress[questId] or 0) < definition.goal then
+            return tip(player, "Сначала выполни все три ежедневных задания.")
+        end
+    end
+    local previousCoins = math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS)
+    local credited = math.min(DAILY_QUEST_REWARD, MAX_COINS - previousCoins)
+    if credited <= 0 then return tip(player, "Кошелёк полон. Потрать немного монет и забери награду.") end
+    session.economyBusy = true
+    session.coins = previousCoins + credited
+    session.dailyQuests.claimed = true
+    syncFarm(player)
+    syncDailyQuests(player)
+    if not save(player) then
+        session.coins = previousCoins
+        session.dailyQuests.claimed = false
+        syncFarm(player)
+        syncDailyQuests(player)
+        session.economyBusy = false
+        return tip(player, "Не удалось сохранить награду. Попробуй забрать её ещё раз.")
+    end
+    session.economyBusy = false
+    tip(player, "Все ежедневные задания выполнены! Получено " .. tostring(credited) .. " монет.")
+end
+
 save = function(player)
     local session = sessions[player]
     if not session or not session.online or not store then return false end
@@ -1150,6 +1241,7 @@ save = function(player)
             readyAt = math.max(0, math.floor(tonumber(session.foxSearchReadyAt) or 0)),
             searchCount = math.max(0, math.floor(tonumber(session.foxSearchCount) or 0)),
         }
+        local dailyQuestSnapshot = normalizeDailyQuests(session.dailyQuests)
         local completedCombatSnapshot = {}
         for encounterId, completed in session.completedCombatEncounters do
             if type(encounterId) == "string" and #encounterId <= 64 and completed == true then
@@ -1213,6 +1305,7 @@ save = function(player)
                     if completed then savedCombatEncounters[encounterId] = true end
                 end
                 old.completedCombatEncounters = savedCombatEncounters
+                old.dailyQuests = dailyQuestSnapshot
 
                 local savedCompanions = type(old.companions) == "table" and old.companions or {}
                 for _, companionId in COMPANION_IDS do
@@ -1279,6 +1372,7 @@ local function init(player)
         foxSearchReadyAt = 0,
         foxSearchCount = 0,
         completedCombatEncounters = {},
+        dailyQuests = normalizeDailyQuests(nil),
         companionProgress = normalizeCompanionProgress(nil),
         companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth, CrystalWisp = companionMoodDefaults.CrystalWisp},
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
@@ -1442,6 +1536,7 @@ local function init(player)
                     session.completedCombatEncounters[encounterId] = true
                 end
             end
+            session.dailyQuests = normalizeDailyQuests(data.dailyQuests)
 
             session.companionProgress = normalizeCompanionProgress(data.companions)
             local savedCompanions = type(data.companions) == "table" and data.companions or {}
@@ -1496,6 +1591,7 @@ local function init(player)
     end
     player:SetAttribute("Ready", true)
     syncTools(player)
+    syncDailyQuests(player)
 end
 local combatRewardFunction = ServerStorage:FindFirstChild("GiantbackGrantCombatReward")
 if combatRewardFunction and not combatRewardFunction:IsA("BindableFunction") then
@@ -1573,6 +1669,7 @@ local function collectFoxCache(player, cacheId)
     if session.online and not save(player) then
         warn("Fox cache reward save will be retried:", player.UserId, cacheId)
     end
+    addDailyQuestProgress(player, "Scout", 1)
     awardCompanionXp(player, "Fox", 30)
 end
 
@@ -1750,6 +1847,11 @@ end
 
 event.OnServerEvent:Connect(function(player, action, payload)
     if typeof(action) ~= "string" or not player:GetAttribute("Ready") then return end
+
+    if action == "ClaimDailyQuests" then
+        claimDailyQuestReward(player)
+        return
+    end
 
     if action == "PetCompanion" then
         petCompanion(player, payload)
@@ -3148,6 +3250,7 @@ local function spawnResource(def)
             readyAt = nextReadyAt,
         })
         tip(player, "Получено: " .. def.displayName .. " ×" .. tostring(rewardAmount))
+        addDailyQuestProgress(player, "Gather", 1)
 
         if session.online and not save(player) then
             warn("Resource pickup save will be retried:", player.UserId, def.key)
