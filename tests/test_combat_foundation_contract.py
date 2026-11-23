@@ -51,7 +51,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('reject(player, "NoServerEquippedWeapon")', COMBAT)
 
     def test_c1_uses_server_owned_enemy_damage_and_never_client_values(self):
-        self.assertIn("entry.humanoid:TakeDamage(COMBO_DAMAGE[comboStep])", COMBAT)
+        self.assertIn("dealEnemyDamage(enemy, entry, COMBO_DAMAGE[comboStep])", COMBAT)
         self.assertIn("currentHumanoid:TakeDamage(damage)", COMBAT)
         self.assertNotIn("payload.damage", COMBAT.lower())
         self.assertNotIn("payload.reward", COMBAT.lower())
@@ -390,7 +390,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn("if now > state.comboExpiresAt then", COMBAT)
         self.assertIn("state.comboStep = state.comboStep % #COMBO_DAMAGE + 1", COMBAT)
         self.assertIn("local isFinisher = comboStep == #COMBO_DAMAGE", COMBAT)
-        self.assertIn("entry.humanoid:TakeDamage(COMBO_DAMAGE[comboStep])", COMBAT)
+        self.assertIn("dealEnemyDamage(enemy, entry, COMBO_DAMAGE[comboStep])", COMBAT)
         self.assertIn("PLAYER_FINISHER_BOX", COMBAT)
         self.assertIn("PLAYER_FINISHER_RANGE", COMBAT)
         self.assertIn('player:SetAttribute("CombatComboStep", 0)', COMBAT)
@@ -407,7 +407,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn("CHARGE_DAMAGE_MAX = 52", COMBAT)
         self.assertIn("local chargeSeconds = math.clamp(now - startedAt, 0, CHARGE_MAX_SECONDS)", COMBAT)
         self.assertIn("local chargeRatio =", COMBAT)
-        self.assertIn("entry.humanoid:TakeDamage(damage)", COMBAT)
+        self.assertIn("dealEnemyDamage(enemy, entry, damage)", COMBAT)
         self.assertIn('player:SetAttribute("CombatCharging", true)', COMBAT)
         self.assertIn('player:SetAttribute("CombatCharging", false)', COMBAT)
         self.assertIn('reject(player, "ChargeTooShort")', COMBAT)
@@ -437,7 +437,7 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('player:GetAttribute(companionId) ~= true', COMBAT)
         self.assertIn('if entry.regionId == regionId and isEnemyAlive(enemy) then', COMBAT)
         self.assertIn("local damage = FOX_SKILL_DAMAGE + (companionLevel - 1) * FOX_SKILL_DAMAGE_PER_LEVEL", COMBAT)
-        self.assertIn("targetEntry.humanoid:TakeDamage(damage)", COMBAT)
+        self.assertIn("dealEnemyDamage(target, targetEntry, damage)", COMBAT)
         self.assertIn("targetEntry.contributors[player] = true", COMBAT)
 
     def test_moth_companion_skill_heals_nearby_ready_allies_in_same_region(self):
@@ -482,10 +482,10 @@ class CombatFoundationContractTests(unittest.TestCase):
         self.assertIn('"LocalCompanionSkillPulse"', CLIENT)
 
     def test_finisher_applies_server_authoritative_enemy_knockback(self):
-        self.assertIn("if isFinisher and entry.root.Parent then", COMBAT)
+        self.assertIn("if isFinisher and entry.root.Parent and not entry.isTrainingDummy then", COMBAT)
         self.assertIn("local resistance = entry.isBoss and 0.28 or 1", COMBAT)
         self.assertIn("entry.root:ApplyImpulse(impulse)", COMBAT)
-        self.assertIn("entry.humanoid:TakeDamage(COMBO_DAMAGE[comboStep])", COMBAT)
+        self.assertIn("dealEnemyDamage(enemy, entry, COMBO_DAMAGE[comboStep])", COMBAT)
 
     def test_combo_feedback_uses_server_confirmed_hit_data(self):
         self.assertIn('remote:FireClient(player, "CombatHit", {', COMBAT)
