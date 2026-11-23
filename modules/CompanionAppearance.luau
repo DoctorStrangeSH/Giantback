@@ -48,6 +48,10 @@ function CompanionAppearance.new(player, animationStates, captureAnimation)
         EchoSpark = {color = Color3.fromRGB(99, 204, 219), outline = Color3.fromRGB(191, 248, 255)},
         Starseed = {color = Color3.fromRGB(255, 204, 124), outline = Color3.fromRGB(255, 238, 190)},
         HeartOfPrism = {color = Color3.fromRGB(143, 91, 230), outline = Color3.fromRGB(255, 224, 255), legendary = true},
+        AmberGlow = {color = Color3.fromRGB(226, 142, 66), outline = Color3.fromRGB(255, 220, 145)},
+        CloverCrown = {color = Color3.fromRGB(116, 176, 105), outline = Color3.fromRGB(196, 238, 156)},
+        GoldenHarvest = {color = Color3.fromRGB(255, 193, 86), outline = Color3.fromRGB(255, 236, 166)},
+        AutumnHeart = {color = Color3.fromRGB(193, 93, 74), outline = Color3.fromRGB(255, 214, 160), legendary = true},
     }
     local mutationOriginalColors = setmetatable({}, {__mode = "k"})
 
