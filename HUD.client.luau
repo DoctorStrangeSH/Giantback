@@ -745,7 +745,19 @@ local function renderCity()
     addInfo("Ферма: уровень " .. tostring(farmLevel), "На острове четыре грядки. Открой раздел «Ферма», чтобы выбрать семена, посадить растения и собрать урожай.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
     local decorationCount = tonumber(player:GetAttribute("City_DecorationCount")) or 0
-    addInfo("Свободное строительство", "Построено украшений: " .. tostring(decorationCount) .. "/12. Встань на свободное место лужайки, повернись к площадке и выбери предмет.", 82)
+    addInfo("Свободное строительство", "Построек: " .. tostring(decorationCount) .. "/12. Выбери объект, найди свободную клетку и подтверди размещение.", 82)
+    local warehouseUsed = tonumber(player:GetAttribute("Warehouse_Used")) or 0
+    local warehouseCapacity = tonumber(player:GetAttribute("Warehouse_Capacity")) or 120
+    if player:GetAttribute("Warehouse_Built") then
+        addInfo("Склад • " .. tostring(warehouseUsed) .. " / " .. tostring(warehouseCapacity),
+            "Дерево: " .. tostring(player:GetAttribute("Warehouse_Wood") or 0)
+            .. " • Камень: " .. tostring(player:GetAttribute("Warehouse_Stone") or 0)
+            .. " • Руда: " .. tostring(player:GetAttribute("Warehouse_IronOre") or 0)
+            .. " • Слитки: " .. tostring(player:GetAttribute("Warehouse_IronIngot") or 0)
+            .. ". У склада можно сложить или забрать материалы.", 78)
+    else
+        addInfo("Склад ещё не построен", "Построй склад, чтобы хранить до 120 единиц дерева, камня, руды, слитков и урожая.", 66)
+    end
     local compact = gui.AbsoluteSize.X < 620
     local catalog = {
         {id = "Path", title = "Каменная дорожка", description = "Четыре каменные плиты. Цена: 2 дерева.", cost = "2 ДЕРЕВА", glyph = "Д"},
