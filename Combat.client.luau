@@ -372,6 +372,71 @@ end
 
 player.CharacterRemoving:Connect(clearSwordSwing)
 
+-- Per-hit damage is displayed from server-confirmed values only.
+local function showDamageNumber(enemyId, damage, finisher, charged)
+    local root = findEnemyRoot(enemyId)
+    if not root or not root:IsA("BasePart") then return end
+    local amount = math.max(0, math.floor(tonumber(damage) or 0))
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "LocalCombatDamage"
+    billboard.Adornee = root
+    billboard.AlwaysOnTop = true
+    billboard.LightInfluence = 0
+    billboard.MaxDistance = 90
+    billboard.Size = UDim2.fromOffset(finisher or charged and 116 or 88, 42)
+    billboard.StudsOffsetWorldSpace = Vector3.new(math.random(-8, 8) / 10, 3.1, 0)
+    billboard.Parent = playerGui
+
+    local text = Instance.new("TextLabel")
+    text.Name = "Damage"
+    text.BackgroundTransparency = 1
+    text.Size = UDim2.fromScale(1, 1)
+    text.Font = Enum.Font.GothamBlack
+    text.Text = amount > 0 and ("-" .. tostring(amount)) or "УДАР"
+    text.TextColor3 = finisher and Color3.fromRGB(255, 184, 104)
+        or (charged and Color3.fromRGB(255, 220, 137) or Color3.fromRGB(255, 246, 221))
+    text.TextStrokeColor3 = Color3.fromRGB(35, 28, 24)
+    text.TextStrokeTransparency = 0.18
+    text.TextScaled = true
+    text.Parent = billboard
+
+    local scale = Instance.new("UIScale")
+    scale.Scale = 0.72
+    scale.Parent = text
+    TweenService:Create(scale, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
+    TweenService:Create(billboard, TweenInfo.new(0.62, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        StudsOffsetWorldSpace = billboard.StudsOffsetWorldSpace + Vector3.new(0, 1.35, 0),
+    }):Play()
+    TweenService:Create(text, TweenInfo.new(0.62, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
+        TextTransparency = 1,
+        TextStrokeTransparency = 1,
+    }):Play()
+    task.delay(0.68, function()
+        if billboard.Parent then billboard:Destroy() end
+    end)
+
+    local enemy = root.Parent
+    if enemy and enemy:IsA("Model") then
+        local flash = Instance.new("Highlight")
+        flash.Name = "LocalCombatHitFlash"
+        flash.Adornee = enemy
+        flash.DepthMode = Enum.HighlightDepthMode.Occluded
+        flash.FillColor = finisher and Color3.fromRGB(255, 167, 85)
+            or Color3.fromRGB(255, 231, 180)
+        flash.OutlineColor = Color3.fromRGB(255, 250, 226)
+        flash.FillTransparency = 0.48
+        flash.OutlineTransparency = 0.16
+        flash.Parent = enemy
+        TweenService:Create(flash, TweenInfo.new(0.2), {
+            FillTransparency = 1,
+            OutlineTransparency = 1,
+        }):Play()
+        task.delay(0.24, function()
+            if flash.Parent then flash:Destroy() end
+        end)
+    end
+end
+
 remote.OnClientEvent:Connect(function(message, data)
     if message == "CombatSwing" then
         playSwordSwing(data)
@@ -402,6 +467,9 @@ remote.OnClientEvent:Connect(function(message, data)
             end
         end
     elseif message == "CombatHit" then
+        if type(data) == "table" then
+            showDamageNumber(data.enemyId, data.damage, data.finisher == true, data.charged == true)
+        end
         if type(data) == "table" and data.charged == true then
             showFeedback("ЗАРЯЖЕННЫЙ УДАР · " .. tostring(data.damage or ""), Color3.fromRGB(255, 185, 102))
         elseif type(data) == "table" and data.finisher == true then
