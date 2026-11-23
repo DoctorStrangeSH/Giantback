@@ -433,6 +433,7 @@ local showToast
 local getObjective
 
 local placementState = nil
+local placementMoveIndex = nil
 local placementGhost = nil
 local placementOverlay = nil
 local placementStatus = nil
@@ -508,6 +509,7 @@ local function finishPlacement()
     if placementOverlay then placementOverlay:Destroy(); placementOverlay = nil end
     clearPlacementGhost()
     placementState = nil
+    placementMoveIndex = nil
     placementTarget = nil
     placementPointer = nil
     placementValid = false
@@ -520,12 +522,14 @@ local function getPlacementMeadow()
     return island and island:FindFirstChild("Meadow")
 end
 
-local function getOccupiedPlacementCells()
+local function getOccupiedPlacementCells(excludedIndex)
     local result = {}
     local encoded = player:GetAttribute("City_BuildingCells")
     if type(encoded) ~= "string" then return result end
+    local index = 0
     for cell in string.gmatch(encoded, "[^;]+") do
-        result[cell] = true
+        index += 1
+        if index ~= excludedIndex then result[cell] = true end
     end
     return result
 end
@@ -578,13 +582,13 @@ local function updatePlacementGhost()
     local inBounds = localPoint.X >= -2 and localPoint.X <= 14
         and localPoint.Z >= -6 and localPoint.Z <= 6
     local cellKey = tostring(x) .. "," .. tostring(z)
-    local occupied = getOccupiedPlacementCells()[cellKey] == true
+    local occupied = getOccupiedPlacementCells(placementMoveIndex)[cellKey] == true
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
     local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
-    local enough = placementState == "Path" and wood >= 2
-        or placementState == "FlowerBed" and wood >= 4 and stone >= 2
+    local enough = placementMoveIndex ~= nil or (placementState == "Path" and wood >= 2
+        or placementState == "FlowerBed" and wood >= 4 and stone >= 2)
     local count = tonumber(player:GetAttribute("City_DecorationCount")) or 0
-    local hasSpace = count < 12
+    local hasSpace = placementMoveIndex ~= nil or count < 12
     placementValid = inBounds and not occupied and enough and hasSpace
     placementTarget = {x = x, z = z, rotation = placementRotation}
 
@@ -616,11 +620,14 @@ local function updatePlacementGhost()
     placementButtons.Confirm.BackgroundColor3 = placementValid and palette.forest or palette.muted
 end
 
-local function beginIslandPlacement(decorationId)
+local function beginIslandPlacement(decorationId, moveIndex)
     if decorationId ~= "Path" and decorationId ~= "FlowerBed" then return end
     finishPlacement()
     placementState = decorationId
-    placementRotation = 0
+    placementMoveIndex = moveIndex
+    placementRotation = moveIndex
+        and (tonumber(player:GetAttribute("City_Decoration_" .. tostring(moveIndex) .. "_Rotation")) or 0)
+        or 0
     createPlacementGhost(decorationId)
     closeActivePanel()
     placementOverlay = Instance.new("Frame")
@@ -667,6 +674,7 @@ local function beginIslandPlacement(decorationId)
             x = placementTarget.x,
             z = placementTarget.z,
             rotation = placementTarget.rotation,
+            moveIndex = placementMoveIndex,
         })
         finishPlacement()
     end)
@@ -727,6 +735,34 @@ local function renderCity()
         {id = "Path", title = "Каменная дорожка", description = "Четыре каменные плиты. Цена: 2 дерева.", cost = "2 ДЕРЕВА", glyph = "Д"},
         {id = "FlowerBed", title = "Цветочная клумба", description = "Деревянная рамка и четыре цветка. Цена: 4 дерева и 2 камня.", cost = "4 ДЕРЕВА · 2 КАМНЯ", glyph = "Ц"},
     }
+    for index = 1, decorationCount do
+        local decorationId = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Id")
+        local x = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_X")
+        local z = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Z")
+        local rotation = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Rotation")
+        if decorationId == "Path" or decorationId == "FlowerBed" then
+            local title = decorationId == "Path" and "Каменная дорожка" or "Цветочная клумба"
+            local item = card(body, "PlacedDecoration_" .. tostring(index), compact and 112 or 86)
+            label(item, "Title", title .. " №" .. tostring(index),
+                UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 7), 13, palette.ink, Enum.Font.GothamBold)
+            label(item, "Position", "Клетка: " .. tostring(x) .. ", " .. tostring(z)
+                .. " • Поворот: " .. tostring(rotation) .. "°",
+                UDim2.new(1, -20, 0, 18), UDim2.fromOffset(12, 29), 10, palette.muted)
+            local move = button(item, "Move", compact and "ПЕРЕМЕСТИТЬ" or "ПЕРЕМЕСТИТЬ",
+                UDim2.new(0.48, -16, 0, 30), UDim2.new(0, 10, 1, -38), palette.forestLight)
+            local remove = button(item, "Remove", "РАЗОБРАТЬ",
+                UDim2.new(0.48, -16, 0, 30), UDim2.new(0.52, 6, 1, -38), palette.coral)
+            move.TextSize = 10
+            remove.TextSize = 10
+            move.Activated:Connect(function()
+                beginIslandPlacement(decorationId, index)
+            end)
+            remove.Activated:Connect(function()
+                event:FireServer("RemoveIslandDecoration", index)
+            end)
+        end
+    end
+    addInfo("Управление постройками", "Перемещай предметы без повторной оплаты или разбирай их. При разборе возвращается половина материалов.", 68)
     for _, definition in catalog do
         local item = card(body, "Build_" .. definition.id, compact and 116 or 86)
         local glyph = label(item, "Glyph", definition.glyph, UDim2.fromOffset(42, 42),

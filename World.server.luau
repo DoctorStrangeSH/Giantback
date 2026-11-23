@@ -96,6 +96,7 @@ local sessions = {}
 local createPersonalCity
 local applyHomeBridgeState
 local placeIslandDecoration
+local removeIslandDecoration
 
 local function homeSlotCFrame(slotIndex)
     local angle = math.pi * 2 * (slotIndex - 1) / HOME_ISLAND_SLOT_COUNT
@@ -252,6 +253,13 @@ local function syncFarm(player)
         table.insert(occupiedCells, tostring(decoration.x) .. "," .. tostring(decoration.z))
     end
     player:SetAttribute("City_BuildingCells", table.concat(occupiedCells, ";"))
+    for index = 1, 12 do
+        local decoration = session.city.buildings[index]
+        player:SetAttribute("City_Decoration_" .. tostring(index) .. "_Id", decoration and decoration.id or "")
+        player:SetAttribute("City_Decoration_" .. tostring(index) .. "_X", decoration and decoration.x or 0)
+        player:SetAttribute("City_Decoration_" .. tostring(index) .. "_Z", decoration and decoration.z or 0)
+        player:SetAttribute("City_Decoration_" .. tostring(index) .. "_Rotation", decoration and decoration.rotation or 0)
+    end
     player:SetAttribute("Farm_SelectedCrop", session.selectedCropId or defaultCropId)
     for _, plotId in farmPlotIds do
         local plot = session.city.farm.plots[plotId]
@@ -1538,6 +1546,11 @@ event.OnServerEvent:Connect(function(player, action, payload)
         return
     end
 
+    if action == "RemoveIslandDecoration" then
+        if removeIslandDecoration then removeIslandDecoration(player, payload) end
+        return
+    end
+
     if action == "CraftSword" then
         local session = sessions[player]
         if not session then return end
@@ -2240,6 +2253,45 @@ createPersonalCity = function(player, session)
     refreshFarmCity(player, cityModel)
 end
 
+removeIslandDecoration = function(player, payload)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    local index = tonumber(payload)
+    if not index or index % 1 ~= 0 or index < 1 or index > #session.city.buildings then
+        return tip(player, "Эту постройку уже нельзя найти.")
+    end
+    local homeIsland = session.homeIsland
+    local cityModel = session.cityModel
+    local meadow = homeIsland and homeIsland:FindFirstChild("Meadow")
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    local decoration = session.city.buildings[index]
+    if not meadow or not cityModel or not root or not decoration then return end
+    local target = meadow.CFrame * CFrame.new(decoration.x, meadow.Size.Y / 2, decoration.z)
+    if (root.Position - meadow.Position).Magnitude > 22 or (root.Position - target.Position).Magnitude > 24 then
+        return tip(player, "Подойди ближе к постройке на своём острове.")
+    end
+
+    local model = cityModel:FindFirstChild("Decoration_" .. tostring(index))
+    if model then model:Destroy() end
+    local refund = decoration.id == "Path" and {Wood = 1, Stone = 0} or {Wood = 2, Stone = 1}
+    table.remove(session.city.buildings, index)
+    for nextIndex = index, #session.city.buildings do
+        local shifted = cityModel:FindFirstChild("Decoration_" .. tostring(nextIndex + 1))
+        if shifted then shifted.Name = "Decoration_" .. tostring(nextIndex) end
+    end
+    session.inventory.Wood = (session.inventory.Wood or 0) + refund.Wood
+    session.inventory.Stone = (session.inventory.Stone or 0) + refund.Stone
+    syncInventory(player)
+    syncFarm(player)
+    for currentIndex, current in ipairs(session.city.buildings) do
+        local currentModel = cityModel:FindFirstChild("Decoration_" .. tostring(currentIndex))
+        if currentModel then currentModel:Destroy() end
+        renderIslandDecoration(cityModel, meadow, current, currentIndex, player.UserId)
+    end
+    tip(player, "Постройка разобрана. Возвращено: дерево ×" .. tostring(refund.Wood) .. ", камень ×" .. tostring(refund.Stone) .. ".")
+    if session.online then save(player) end
+end
+
 placeIslandDecoration = function(player, payload)
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
@@ -2252,6 +2304,14 @@ placeIslandDecoration = function(player, payload)
     local x = tonumber(payload.x)
     local z = tonumber(payload.z)
     local rotation = tonumber(payload.rotation)
+    local moveIndex = tonumber(payload.moveIndex)
+    if moveIndex and (moveIndex % 1 ~= 0 or moveIndex < 1 or moveIndex > #session.city.buildings) then
+        return tip(player, "Не удалось найти постройку для перемещения.")
+    end
+    local movingDecoration = moveIndex and session.city.buildings[moveIndex] or nil
+    if moveIndex and (not movingDecoration or movingDecoration.id ~= decorationId) then
+        return tip(player, "Эта постройка больше не доступна для перемещения.")
+    end
     if not x or not z or not rotation
         or x ~= x or z ~= z or rotation ~= rotation
         or math.abs(x) == math.huge or math.abs(z) == math.huge or math.abs(rotation) == math.huge
@@ -2262,7 +2322,7 @@ placeIslandDecoration = function(player, payload)
         or rotation < 0 or rotation >= 360 or rotation % 90 ~= 0 then
         return tip(player, "Это место нельзя использовать для строительства.")
     end
-    if #session.city.buildings >= 12 then
+    if #session.city.buildings >= 12 and not moveIndex then
         return tip(player, "На площадке пока нет свободных мест. Максимум — 12 украшений.")
     end
 
@@ -2280,25 +2340,34 @@ placeIslandDecoration = function(player, payload)
     if (root.Position - targetFrame.Position).Magnitude > 24 then
         return tip(player, "Подойди ближе к выбранному месту строительства.")
     end
-    for _, existing in ipairs(session.city.buildings) do
-        if existing.x == x and existing.z == z then
+    for index, existing in ipairs(session.city.buildings) do
+        if index ~= moveIndex and existing.x == x and existing.z == z then
             return tip(player, "Это место уже занято. Выбери другую клетку.")
         end
     end
 
-    local cost = decorationId == "Path" and {Wood = 2, Stone = 0} or {Wood = 4, Stone = 2}
-    if (session.inventory.Wood or 0) < cost.Wood or (session.inventory.Stone or 0) < cost.Stone then
-        return tip(player, "Не хватает материалов: дерево ×" .. tostring(cost.Wood) .. ", камень ×" .. tostring(cost.Stone) .. ".")
+    if moveIndex then
+        local oldModel = cityModel:FindFirstChild("Decoration_" .. tostring(moveIndex))
+        if oldModel then oldModel:Destroy() end
+        local decoration = {id = decorationId, x = x, z = z, rotation = rotation}
+        session.city.buildings[moveIndex] = decoration
+        renderIslandDecoration(cityModel, meadow, decoration, moveIndex, player.UserId)
+        syncFarm(player)
+        tip(player, "Постройка перемещена!")
+    else
+        local cost = decorationId == "Path" and {Wood = 2, Stone = 0} or {Wood = 4, Stone = 2}
+        if (session.inventory.Wood or 0) < cost.Wood or (session.inventory.Stone or 0) < cost.Stone then
+            return tip(player, "Не хватает материалов: дерево ×" .. tostring(cost.Wood) .. ", камень ×" .. tostring(cost.Stone) .. ".")
+        end
+        session.inventory.Wood -= cost.Wood
+        session.inventory.Stone -= cost.Stone
+        local decoration = {id = decorationId, x = x, z = z, rotation = rotation}
+        table.insert(session.city.buildings, decoration)
+        renderIslandDecoration(cityModel, meadow, decoration, #session.city.buildings, player.UserId)
+        syncInventory(player)
+        syncFarm(player)
+        tip(player, decorationId == "Path" and "Каменная дорожка построена!" or "Цветочная клумба украшает твой остров!")
     end
-
-    session.inventory.Wood -= cost.Wood
-    session.inventory.Stone -= cost.Stone
-    local decoration = {id = decorationId, x = x, z = z, rotation = rotation}
-    table.insert(session.city.buildings, decoration)
-    renderIslandDecoration(cityModel, meadow, decoration, #session.city.buildings, player.UserId)
-    syncInventory(player)
-    syncFarm(player)
-    tip(player, decorationId == "Path" and "Каменная дорожка построена!" or "Цветочная клумба украшает твой остров!")
     if session.online then save(player) end
 end
 
