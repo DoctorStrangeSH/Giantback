@@ -523,7 +523,7 @@ local function getOccupiedPlacementCells()
 end
 
 local function updatePlacementGhost()
-    if not placementState or not placementGhost then return end
+    if not placementState then return end
     local meadow = getPlacementMeadow()
     local camera = workspace.CurrentCamera
     if not meadow or not camera then
@@ -534,7 +534,7 @@ local function updatePlacementGhost()
     end
 
     local pointer = placementPointer or UserInputService:GetMouseLocation()
-    local ray = camera:ViewportPointToRay(pointer.X, pointer.Y)
+    local ray = camera:ScreenPointToRay(pointer.X, pointer.Y)
     local params = RaycastParams.new()
     params.FilterType = Enum.RaycastFilterType.Include
     params.FilterDescendantsInstances = {meadow}
@@ -630,6 +630,9 @@ local function beginIslandPlacement(decorationId)
         control.TextSize = 11
     end
     placementButtons.Confirm = confirm
+    confirm.Active = false
+    confirm.AutoButtonColor = false
+    confirm.BackgroundColor3 = palette.muted
 
     rotate.Activated:Connect(function()
         placementRotation = (placementRotation + 90) % 360
