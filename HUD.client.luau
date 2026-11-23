@@ -762,7 +762,7 @@ local function refresh()
         objectiveGlyph.Text = "⚒"
         objectiveHint.Text = wood >= 5 and stone >= 3
             and "Подойди к мосту у края острова и нажми E или кнопку действия."
-            or ("🪵 " .. tostring(math.min(wood, 5)) .. "/5   🪨 " .. tostring(math.min(stone, 3)) .. "/3\nДерево — топор · Камень — кирка")
+            or ("🪵 " .. tostring(math.min(wood, 5)) .. "/5   🪨 " .. tostring(math.min(stone, 3)) .. "/3\nПодойди к кучам у дома и нажми кнопку сбора")
         progressCount.Text = tostring(completed) .. " / " .. tostring(total)
     else
         objectiveEyebrow.Text = completed >= total
