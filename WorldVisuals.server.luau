@@ -1659,7 +1659,9 @@ local function spawnMossling()
     mossling:SetAttribute("AttackRange", 4.5)
     mossling:SetAttribute("AttackDamage", 6)
     mossling:SetAttribute("AttackCooldown", 2.8)
-    mossling:SetAttribute("TelegraphSeconds", 1.05)
+    mossling:SetAttribute("TelegraphSeconds", 1.15)
+    mossling:SetAttribute("PollenRadius", 9)
+    mossling:SetAttribute("PollenDamage", 8)
     mossling:SetAttribute("PathRefreshSeconds", 1.0)
     mossling:PivotTo(CFrame.lookAt(mosslingSpawn, arenaCenter + Vector3.new(0, 3, 0)))
 
@@ -1720,10 +1722,11 @@ local function spawnMossling()
     mossling:GetAttributeChangedSignal("CombatState"):Connect(function()
         if not mossling.Parent then return end
         local state = mossling:GetAttribute("CombatState")
-        if highlight then highlight.Enabled = state == "Telegraph" end
-        if warning then warning.Enabled = state == "Telegraph" or state == "Recover" end
+        local telegraphing = state == "Telegraph" or state == "PollenTelegraph"
+        if highlight then highlight.Enabled = telegraphing end
+        if warning then warning.Enabled = telegraphing or state == "Recover" end
         if warningText then
-            warningText.Text = state == "Telegraph" and "УКЛОНЯЙСЯ!" or "АТАКА!"
+            warningText.Text = telegraphing and "УКЛОНЯЙСЯ!" or "АТАКА!"
         end
     end)
     humanoid.Died:Connect(function()
