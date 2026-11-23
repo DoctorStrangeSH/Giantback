@@ -622,14 +622,34 @@ local function renderPets()
 end
 
 local function renderTools()
+    local compact = gui.AbsoluteSize.X < 620
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
     local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
     local ore = tonumber(player:GetAttribute("Resource_IronOre")) or 0
     local ingots = tonumber(player:GetAttribute("Resource_IronIngot")) or 0
     local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
     local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
-    addInfo("Инструменты путешественника", "Выбери инструмент в этом меню или на панели быстрого доступа. Для каждого ресурса нужен подходящий инструмент.", 78)
+    addInfo("Твой рюкзак", "Здесь собраны ресурсы, находки и снаряжение. Инструменты можно взять в руки прямо из этого раздела.", 78)
     addInfo("Материалы", "Дерево: " .. tostring(wood) .. "   •   Камень: " .. tostring(stone) .. "   •   Железная руда: " .. tostring(ore) .. "   •   Слитки: " .. tostring(ingots), 72)
+    local seedSummary = {}
+    local harvestSummary = {}
+    for _, crop in cropCatalog do
+        local seeds = tonumber(player:GetAttribute("Resource_" .. crop.seed)) or 0
+        local harvest = tonumber(player:GetAttribute("Resource_" .. crop.id)) or 0
+        if seeds > 0 then table.insert(seedSummary, crop.name .. " ×" .. tostring(seeds)) end
+        if harvest > 0 then table.insert(harvestSummary, crop.name .. " ×" .. tostring(harvest)) end
+    end
+    addInfo("Семена и урожай",
+        (#seedSummary > 0 and "Семена: " .. table.concat(seedSummary, ", ") or "Семян пока нет")
+        .. "   •   "
+        .. (#harvestSummary > 0 and "Урожай: " .. table.concat(harvestSummary, ", ") or "Урожай не собран"),
+        72)
+    local moonSeeds = tonumber(player:GetAttribute("Resource_MoonSeed")) or 0
+    local starShards = tonumber(player:GetAttribute("Resource_StarShard")) or 0
+    local sunPetals = tonumber(player:GetAttribute("Resource_SunPetal")) or 0
+    local moonPetals = tonumber(player:GetAttribute("Resource_MoonPetal")) or 0
+    addInfo("Редкие находки", "Лунные семена: " .. tostring(moonSeeds) .. "   •   Звёздные осколки: " .. tostring(starShards)
+        .. "   •   Солнечные лепестки: " .. tostring(sunPetals) .. "   •   Лунные лепестки: " .. tostring(moonPetals), 76)
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
     local catalog = {
@@ -640,18 +660,28 @@ local function renderTools()
         local level = tonumber(player:GetAttribute("Tool_" .. definition.id .. "Level")) or 1
         local owned = player:GetAttribute("Tool_" .. definition.id .. "Owned") == true
         local equipped = player:GetAttribute("Tool_Equipped") == definition.id
-        local item = card(body, "Tool_" .. definition.id, 106)
-        local icon = label(item, "Icon", definition.glyph, UDim2.fromOffset(44, 48), UDim2.fromOffset(10, 22), 28, palette.gold)
+        local item = card(body, "Tool_" .. definition.id, compact and 132 or 106)
+        local icon = label(item, "Icon", definition.glyph, UDim2.fromOffset(44, 48),
+            UDim2.fromOffset(10, compact and 8 or 22), 28, palette.gold)
         icon.TextXAlignment = Enum.TextXAlignment.Center
-        label(item, "Name", definition.name, UDim2.new(1, -156, 0, 22), UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
-        label(item, "Details", definition.purpose .. " · уровень " .. tostring(level), UDim2.new(1, -156, 0, 25), UDim2.fromOffset(62, 33), 11, palette.muted)
-        local equip = button(item, "Equip", equipped and "В РУКАХ" or "ВЗЯТЬ", UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 8), equipped and palette.gold or palette.forest)
+        local nameLabel = label(item, "Name", definition.name,
+            compact and UDim2.new(1, -72, 0, 24) or UDim2.new(1, -156, 0, 22),
+            UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
+        nameLabel.TextWrapped = true
+        local detailsLabel = label(item, "Details", definition.purpose .. " · уровень " .. tostring(level),
+            compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, -156, 0, 25),
+            UDim2.fromOffset(compact and 14 or 62, compact and 58 or 33), 11, palette.muted)
+        detailsLabel.TextWrapped = true
+        local actionSize = compact and UDim2.new(0.5, -18, 0, 28) or UDim2.fromOffset(102, 30)
+        local equipPosition = compact and UDim2.fromOffset(12, 94) or UDim2.new(1, -114, 0, 8)
+        local equip = button(item, "Equip", equipped and "В РУКАХ" or "ВЗЯТЬ", actionSize, equipPosition, equipped and palette.gold or palette.forest)
         equip.TextSize = 10
         equip.Activated:Connect(function()
             if owned then event:FireServer("EquipTool", definition.id) end
         end)
         local upgradeText = level >= 2 and "МАКС. УРОВЕНЬ" or "УЛУЧШИТЬ"
-        local upgrade = button(item, "Upgrade", upgradeText, UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 52), level >= 2 and palette.muted or palette.coral)
+        local upgrade = button(item, "Upgrade", upgradeText, actionSize,
+            compact and UDim2.new(0.5, 6, 0, 94) or UDim2.new(1, -114, 0, 52), level >= 2 and palette.muted or palette.coral)
         upgrade.TextSize = 10
         upgrade.Activated:Connect(function()
             if level < 2 then
@@ -662,17 +692,30 @@ local function renderTools()
     end
     local swordOwned = player:GetAttribute("Tool_SwordOwned") == true
     local swordEquipped = player:GetAttribute("Tool_Equipped") == "Sword"
-    local swordCard = card(body, "Tool_Sword", 124)
-    label(swordCard, "SwordIcon", "М", UDim2.fromOffset(44, 48), UDim2.fromOffset(10, 22), 28, palette.gold)
-    label(swordCard, "SwordName", "Меч странника", UDim2.new(1, -156, 0, 24), UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
-    label(swordCard, "SwordStatus", swordOwned and "Создан · можно сражаться на арене" or "Рецепт: 2 слитка + 6 дерева · свой верстак", UDim2.new(1, -156, 0, 46), UDim2.fromOffset(62, 35), 11, palette.muted)
-    local swordEquip = button(swordCard, "SwordEquip", swordEquipped and "В РУКАХ" or "ВЗЯТЬ", UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 8), swordEquipped and palette.gold or palette.forest)
+    local swordCard = card(body, "Tool_Sword", compact and 148 or 124)
+    label(swordCard, "SwordIcon", "М", UDim2.fromOffset(44, 48),
+        UDim2.fromOffset(10, compact and 8 or 22), 28, palette.gold)
+    local swordName = label(swordCard, "SwordName", "Меч странника",
+        compact and UDim2.new(1, -72, 0, 24) or UDim2.new(1, -156, 0, 24),
+        UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
+    swordName.TextWrapped = true
+    local swordStatus = label(swordCard, "SwordStatus",
+        swordOwned and "Создан · можно сражаться на арене" or "Рецепт: 2 слитка + 6 дерева · свой верстак",
+        compact and UDim2.new(1, -28, 0, 30) or UDim2.new(1, -156, 0, 46),
+        UDim2.fromOffset(compact and 14 or 62, compact and 54 or 35), 11, palette.muted)
+    swordStatus.TextWrapped = true
+    local swordActionSize = compact and UDim2.new(0.5, -18, 0, 28) or UDim2.fromOffset(102, 30)
+    local swordEquip = button(swordCard, "SwordEquip", swordEquipped and "В РУКАХ" or "ВЗЯТЬ",
+        swordActionSize, compact and UDim2.fromOffset(12, 108) or UDim2.new(1, -114, 0, 8),
+        swordEquipped and palette.gold or palette.forest)
     swordEquip.TextSize = 10
     swordEquip.Activated:Connect(function()
         if swordOwned then event:FireServer("EquipTool", "Sword") end
     end)
     local canCraftSword = not swordOwned and ingots >= 2 and wood >= 6
-    local swordCraft = button(swordCard, "SwordCraft", swordOwned and "СОЗДАН" or "СОЗДАТЬ", UDim2.fromOffset(102, 30), UDim2.new(1, -114, 0, 52), canCraftSword and palette.coral or palette.muted)
+    local swordCraft = button(swordCard, "SwordCraft", swordOwned and "СОЗДАН" or "СОЗДАТЬ",
+        swordActionSize, compact and UDim2.new(0.5, 6, 0, 108) or UDim2.new(1, -114, 0, 52),
+        canCraftSword and palette.coral or palette.muted)
     swordCraft.TextSize = 10
     swordCraft.Activated:Connect(function()
         if not swordOwned then
@@ -778,7 +821,7 @@ local panelTitles = {
     City = {"МОЙ ОСТРОВ", "Твой дом и будущий город"},
     Farm = {"МОЯ ФЕРМА", "Сажай, выращивай и собирай урожай"},
     Pets = {"МОИ ПИТОМЦЫ", "Друзья, которые помогают в приключениях"},
-    Tools = {"ИНСТРУМЕНТЫ", "Добывай материалы и готовься к путешествиям"},
+    Tools = {"МОЙ РЮКЗАК", "Ресурсы, находки и снаряжение путешественника"},
     World = {"КАРТА МИРА", "Исследуй архипелаг и открывай новые земли"},
     Expeditions = {"ДНЕВНИК", "Твои открытия в Солнечной роще и Сумеречной долине"},
 }
@@ -839,7 +882,7 @@ navDefinitions = {
     {id = "City", title = "ОСТРОВ", glyph = "О"},
     {id = "Farm", title = "ФЕРМА", glyph = "Ф"},
     {id = "Pets", title = "ПИТОМЦЫ", glyph = "П"},
-    {id = "Tools", title = "ИНСТРУМЕНТЫ", glyph = "И"},
+    {id = "Tools", title = "РЮКЗАК", glyph = "Р"},
     {id = "World", title = "КАРТА", glyph = "М"},
     {id = "Expeditions", title = "ДНЕВНИК", glyph = "Д"},
 }
