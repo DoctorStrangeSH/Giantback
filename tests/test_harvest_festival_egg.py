@@ -57,7 +57,7 @@ class HarvestFestivalEggContractTests(unittest.TestCase):
         self.assertIn('if action == "HatchFestivalEgg" then', WORLD)
 
     def test_egg_inventory_and_event_claim_persist(self):
-        self.assertIn('"HarvestEgg"}', WORLD)
+        self.assertIn('"VoidGeode"}', WORLD.split("local inventoryKeys", 1)[1].split("local toolIds", 1)[0])
         self.assertIn("festivalEggClaimed = sameEvent and saved.festivalEggClaimed == true or false", WORLD)
         self.assertIn('player:SetAttribute("SeasonalEvent_FestivalEggClaimed"', WORLD)
         self.assertIn('player:GetAttribute("Resource_HarvestEgg")', HUD)
