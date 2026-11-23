@@ -51,14 +51,16 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('respawnSeconds = 900', WORLD)
 
     def test_grotto_resource_nodes_spawn_inside_the_cave_model(self):
-        self.assertIn('if def.area == "CrystalGrotto" then', WORLD)
+        self.assertIn('if def.area == "CrystalGrotto" or def.area == "CrystalEchoChamber" then', WORLD)
         self.assertIn('island = glade and glade:FindFirstChild("CrystalGrotto")', WORLD)
         self.assertIn('origin = island and island:FindFirstChild("CrystalGrottoFloor")', WORLD)
+        self.assertIn('origin = echo and echo:FindFirstChild("CrystalEchoFloor")', WORLD)
         self.assertIn('local crystalGrotto = Instance.new("Model")', VISUALS)
         self.assertIn('def.visual == "crystal"', WORLD)
 
     def test_crystal_mining_requires_cave_membership_and_nearby_interaction(self):
-        self.assertIn('player:GetAttribute("InCrystalGrotto") ~= true', WORLD)
+        self.assertIn('player:GetAttribute("InCrystalGrotto") == true', WORLD)
+        self.assertIn('player:GetAttribute("InCrystalEcho") == true', WORLD)
         self.assertIn('(root.Position - anchor.Position).Magnitude > 13', WORLD)
         self.assertIn('session.equippedTool ~= def.requiredTool', WORLD)
 
@@ -77,7 +79,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('if player:GetAttribute("CrystalCache") then', WORLD)
         self.assertIn('player:SetAttribute("CrystalCache", true)', WORLD)
         self.assertIn('session.inventory.CrystalSigil = (session.inventory.CrystalSigil or 0) + 1', WORLD)
-        self.assertIn('"CrystalSigil", "PrismSeed", "HarvestEgg"}', WORLD.split("local toolIds")[0])
+        self.assertIn('"CrystalSigil", "PrismSeed", "HarvestEgg", "StarPrism", "MoonGlass", "VoidGeode"}', WORLD.split("local toolIds")[0])
 
     def test_rune_puzzle_and_cache_are_real_visual_interactions(self):
         self.assertIn('name = "CrystalRuneMoon"', VISUALS)
@@ -121,7 +123,7 @@ class CrystalGrottoContractTests(unittest.TestCase):
         self.assertIn('crystalEchoInside[player] = nil', WORLD)
 
     def test_prism_seed_is_a_unique_persistent_server_reward(self):
-        self.assertIn('"PrismSeed", "HarvestEgg"}', WORLD.split("local toolIds")[0])
+        self.assertIn('"PrismSeed", "HarvestEgg", "StarPrism", "MoonGlass", "VoidGeode"}', WORLD.split("local toolIds")[0])
         self.assertIn('if player:GetAttribute("PrismSeedFound") then', WORLD)
         self.assertIn('player:SetAttribute("PrismSeedFound", true)', WORLD)
         self.assertIn('session.inventory.PrismSeed = (session.inventory.PrismSeed or 0) + 1', WORLD)
