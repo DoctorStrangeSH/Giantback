@@ -480,6 +480,14 @@ local function createPlacementGhost(decorationId)
         end
     else
         makePlacementPart("FlowerBedPreviewSoil", Vector3.new(3.35, 0.28, 3.35), Vector3.new(0, 0.18, 0))
+        for _, edge in {
+            {Vector3.new(3.8, 0.42, 0.28), Vector3.new(0, 0.34, -1.78)},
+            {Vector3.new(3.8, 0.42, 0.28), Vector3.new(0, 0.34, 1.78)},
+            {Vector3.new(0.28, 0.42, 3.35), Vector3.new(-1.78, 0.34, 0)},
+            {Vector3.new(0.28, 0.42, 3.35), Vector3.new(1.78, 0.34, 0)},
+        } do
+            makePlacementPart("FlowerBedPreviewEdge", edge[1], edge[2])
+        end
         local colors = {
             Color3.fromRGB(246, 190, 105), Color3.fromRGB(232, 143, 153),
             Color3.fromRGB(195, 164, 224), Color3.fromRGB(246, 224, 157),
@@ -530,6 +538,14 @@ local function updatePlacementGhost()
         placementValid = false
         placementTarget = nil
         placementStatus.Text = "Не удалось найти лужайку твоего острова"
+        for _, entry in ipairs(placementParts) do
+            if entry.part and entry.part.Parent then entry.part.Transparency = 1 end
+        end
+        if placementButtons.Confirm then
+            placementButtons.Confirm.Active = false
+            placementButtons.Confirm.AutoButtonColor = false
+            placementButtons.Confirm.BackgroundColor3 = palette.muted
+        end
         return
     end
 
@@ -547,6 +563,11 @@ local function updatePlacementGhost()
             or "Наведи курсор на лужайку"
         for _, entry in ipairs(placementParts) do
             if entry.part and entry.part.Parent then entry.part.Transparency = 1 end
+        end
+        if placementButtons.Confirm then
+            placementButtons.Confirm.Active = false
+            placementButtons.Confirm.AutoButtonColor = false
+            placementButtons.Confirm.BackgroundColor3 = palette.muted
         end
         return
     end
