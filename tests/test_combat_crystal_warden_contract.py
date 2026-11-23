@@ -119,6 +119,7 @@ class CrystalWardenEncounterTests(unittest.TestCase):
         self.assertIn('boss:SetAttribute("IsBoss", true)', VISUALS)
         self.assertIn('humanoid.DisplayName = "Хранитель Призмы"', VISUALS)
         self.assertIn("humanoid.MaxHealth = 480", VISUALS)
+        self.assertIn("root.Transparency = 1", VISUALS.split("local function spawnCrystalEchoPrismGuardian()", 1)[1])
         self.assertIn('boss:SetAttribute("Phase2SlamRadius", 15)', VISUALS)
         self.assertIn('boss:SetAttribute("Phase3SlamRadius", 19)', VISUALS)
         self.assertIn("if echoChamber.Parent then spawnCrystalEchoPrismGuardian() end", VISUALS)
