@@ -51,6 +51,7 @@ local BLOCK_DAMAGE_MULTIPLIER = 0.25
 local ALLOWED_REGIONS = { GroveTraining = true, DuskTraining = true, Rootvault = true }
 local ALLOWED_WEAPONS = { SwordShield = true }
 local KNOWN_ENCOUNTERS = {
+    GroveTrainingDummy01 = true,
     GroveGrunt01 = true,
     GroveScout02 = true,
     RootvaultSentinel01 = true,
@@ -206,7 +207,28 @@ local function isEnemyAlive(enemy)
         and entry.humanoid.Health > 0
 end
 
+-- Training targets use authoritative hitboxes but grant no rewards.
+local function dealEnemyDamage(enemy, entry, amount)
+    if not entry.isTrainingDummy then
+        entry.humanoid:TakeDamage(amount)
+        return
+    end
+    local safeDamage = math.min(math.max(0, amount), math.max(0, entry.humanoid.Health - 1))
+    entry.humanoid:TakeDamage(safeDamage)
+    enemy:SetAttribute("TrainingHitCount", (enemy:GetAttribute("TrainingHitCount") or 0) + 1)
+    enemy:SetAttribute("CombatHealth", entry.humanoid.Health)
+    entry.trainingGeneration = (entry.trainingGeneration or 0) + 1
+    local generation = entry.trainingGeneration
+    task.delay(2.5, function()
+        if enemies[enemy] ~= entry or not enemy.Parent or entry.trainingGeneration ~= generation then return end
+        entry.humanoid.Health = entry.humanoid.MaxHealth
+        enemy:SetAttribute("CombatHealth", entry.humanoid.Health)
+        enemy:SetAttribute("CombatState", "Ready")
+    end)
+end
+
 local function resolveEnemyReward(enemy, entry)
+    if entry.isTrainingDummy then return end
     if entry.rewardResolved then return end
     entry.rewardResolved = true
     if not rewardFunction or not REWARD_ENCOUNTERS[entry.encounterId] then return end
@@ -284,6 +306,7 @@ local function registerEnemy(enemy)
         regionId = regionId,
         contributors = {},
         rewardResolved = false,
+        isTrainingDummy = enemy:GetAttribute("IsTrainingDummy") == true and encounterId == "GroveTrainingDummy01",
         attacking = false,
         nextAttackAt = 0,
         nextPathAt = 0,
@@ -333,7 +356,7 @@ local function registerEnemy(enemy)
     enemy:SetAttribute("CombatMaxHealth", humanoid.MaxHealth)
 
     task.spawn(function()
-        while enemy.Parent and isEnemyAlive(enemy) do
+        while enemy.Parent and isEnemyAlive(enemy) and not entry.isTrainingDummy do
             local targetPlayer, targetRoot, targetHumanoid
             local bestDistance = entry.aggroRange
             for _, player in Players:GetPlayers() do
@@ -497,8 +520,8 @@ local function performAttack(player, state, now)
                 if offset.Magnitude <= attackRange and root.CFrame.LookVector:Dot(offset.Unit) >= 0.25 then
                     hitThisSwing[enemy] = true
                     entry.contributors[player] = true
-                    entry.humanoid:TakeDamage(COMBO_DAMAGE[comboStep])
-                    if isFinisher and entry.root.Parent then
+                    dealEnemyDamage(enemy, entry, COMBO_DAMAGE[comboStep])
+                    if isFinisher and entry.root.Parent and not entry.isTrainingDummy then
                         -- Server-owned impact push: ordinary enemies are displaced clearly;
                         -- bosses resist the launch so the finisher never skips their phase loop.
                         local pushDirection = Vector3.new(forward.X, 0, forward.Z)
@@ -570,8 +593,8 @@ local function performChargedAttack(player, state, now)
                     and root.CFrame.LookVector:Dot(offset.Unit) >= 0.2 then
                     hitThisSwing[enemy] = true
                     entry.contributors[player] = true
-                    entry.humanoid:TakeDamage(damage)
-                    if entry.root.Parent then
+                    dealEnemyDamage(enemy, entry, damage)
+                    if entry.root.Parent and not entry.isTrainingDummy then
                         local pushDirection = Vector3.new(forward.X, 0, forward.Z)
                         if pushDirection.Magnitude > 0 then
                             local resistance = entry.isBoss and 0.2 or 1
@@ -709,7 +732,7 @@ local function performCompanionSkill(player, state, now)
         targetEntry.contributors[player] = true
         local companionLevel = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_Fox_Level")) or 1), 1, 5)
         local damage = FOX_SKILL_DAMAGE + (companionLevel - 1) * FOX_SKILL_DAMAGE_PER_LEVEL
-        targetEntry.humanoid:TakeDamage(damage)
+        dealEnemyDamage(target, targetEntry, damage)
         target:SetAttribute("CombatHealth", math.max(0, targetEntry.humanoid.Health))
         if companionXpFunction then
             task.spawn(function()
