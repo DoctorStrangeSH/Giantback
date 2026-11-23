@@ -82,7 +82,7 @@ class FoxScoutContractTests(unittest.TestCase):
         self.assertIn('highlight.Name = "FoxCacheHighlight"', ALBUM)
         self.assertIn('highlight.Enabled = activeCacheId == cacheId', ALBUM)
         self.assertIn('player:GetAttributeChangedSignal("FoxCacheSpot")', ALBUM)
-        self.assertIn("Следуй по золотым следам лап в Солнечной роще", HUD)
+        self.assertIn("Лисёнок нашёл тайник! Иди по золотым следам.", HUD)
 
     def test_album_displays_moon_seed_and_fox_scout_readiness(self):
         self.assertIn('"Resource_MoonSeed"', HUD)
@@ -134,12 +134,12 @@ class FoxScoutContractTests(unittest.TestCase):
 
     def test_hud_guides_players_by_the_fox_pawprint_trail(self):
         self.assertIn("Следуй по золотым следам лап", HUD)
-        self.assertIn("Следуй по золотым следам лап в Солнечной роще", HUD)
+        self.assertIn("Лисёнок нашёл тайник! Иди по золотым следам.", HUD)
         self.assertIn("увидеть золотые следы", HUD)
 
     def test_hud_explains_the_fox_scout_ability_and_active_find(self):
         self.assertIn("Находит тайники и древние следы скрытых проходов", HUD)
-        self.assertIn("Следуй по золотым следам лап в Солнечной роще", HUD)
+        self.assertIn("Лисёнок нашёл тайник! Иди по золотым следам.", HUD)
         self.assertIn("найдёт лунное семя", HUD)
 
 
