@@ -1140,8 +1140,8 @@ local function getEligibleDailyQuestIds(player, session)
         end
     end
     if session.tools.Sword == true then
-        for encounterId in combatRewardDefinitions do
-            if session.completedCombatEncounters[encounterId] ~= true then
+        for _, encounterId in {"GroveGrunt01", "GroveScout02", "GroveMossling01"} do
+            if combatRewardDefinitions[encounterId] and session.completedCombatEncounters[encounterId] ~= true then
                 table.insert(eligible, "WinEncounter")
                 break
             end
