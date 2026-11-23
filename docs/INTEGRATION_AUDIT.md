@@ -38,3 +38,12 @@ These figures represent GitHub's compare endpoint at audit time; `ahead` is not 
 - [ ] Reconcile `ROADMAP.md` statuses with Studio-verified scope before release.
 
 **Never mark 1.0 DONE from CI alone.** The user must be able to launch the integrated place in Roblox Studio and test each new gameplay slice.
+
+## Post-merge source reconciliation — 2026-11-23
+
+- Verified against `main` after PR #8: `World.server.luau` does not contain `Mossling`, `SwordOfTheWanderer`, or `TrainingDummy`; `HUD.client.luau` does not contain those identifiers either. These V2 features must **not** be marked integrated.
+- Verified `Album.client.luau` requires the `HarvestMotion` and `ResourceNodeVisibility` modules and `build.py` embeds both modules. Harvest feedback refactoring is in the main build path.
+- Verified schema writer uses `math.max(tonumber(old.schemaVersion) or 0, 11)`; do not downgrade this when porting older V2 logic.
+- GitHub compare after PR #8: `feat/combat-c0-contract`, `feat/cozy-world-visual-pass`, and `feat/harvesting-feedback-on-latest` are ancestors of `main`. Other four refs have unique history and must not be bulk-merged.
+- Priority recovery order: Sword recipe/equipment + training dummy; Mossling opponent; tier-three tools; optional V2 harvest presentation only if missing. Each must be ported to current modules with server checks, profile migration tests and Studio playtest.
+- **Do not delete historical recovery branches until that checklist is closed.**
