@@ -1093,6 +1093,8 @@ applyHomeBridgeState = function(slotIndex, built)
 end
 
 local DAILY_QUEST_REWARD = 40
+local DAILY_STREAK_THREE_BONUS = 20
+local DAILY_STREAK_WEEK_BONUS = 60
 local DAILY_QUEST_COUNT = 3
 local DAILY_QUEST_DEFINITIONS = {
     Gather = {goal = 4, title = "Собиратель", description = "Собери любые 4 ресурса в мире."},
@@ -1176,7 +1178,7 @@ local function getDailyStreakReward(dailyQuests, today)
 
     local yesterday = os.date("!%Y-%m-%d", os.time() - 86400)
     local nextStreak = lastCompletedDay == yesterday and currentStreak + 1 or 1
-    local bonus = nextStreak == 3 and 20 or (nextStreak > 0 and nextStreak % 7 == 0 and 60 or 0)
+    local bonus = nextStreak == 3 and DAILY_STREAK_THREE_BONUS or (nextStreak > 0 and nextStreak % 7 == 0 and DAILY_STREAK_WEEK_BONUS or 0)
     return nextStreak, bonus
 end
 
