@@ -23,7 +23,7 @@ class DailyQuestContractTests(unittest.TestCase):
         self.assertIn("syncDailyQuests(player)", WORLD)
 
     def test_progress_is_server_granted_by_valid_gameplay_actions(self):
-        self.assertIn('addDailyQuestProgress(player, "Gather", 1)', WORLD)
+        self.assertIn('addDailyQuestProgress(player, "Gather", 1, false)', WORLD)
         self.assertIn('addDailyQuestProgress(player, "Sell", totalItems)', WORLD)
         self.assertIn('addDailyQuestProgress(player, "Scout", 1)', WORLD)
         self.assertIn("local function addDailyQuestProgress(player, questId, amount)", WORLD)
