@@ -9,7 +9,7 @@ HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 class IslandBuildingPlacementContractTests(unittest.TestCase):
     def test_only_known_decorations_are_normalized_and_saved(self):
-        self.assertIn('saved.id == "Path" or saved.id == "FlowerBed"', WORLD)
+        self.assertIn('saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage"', WORLD)
         self.assertIn('local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}', WORLD)
         self.assertIn('if #city.buildings >= 24 then break end', WORLD)
         self.assertIn('savedIsland.buildings = citySnapshot.buildings', WORLD)
@@ -17,7 +17,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
 
     def test_server_checks_ownership_location_bounds_capacity_and_cost(self):
         self.assertIn('if action == "PlaceIslandDecoration" then', WORLD)
-        self.assertIn('decorationId ~= "Path" and decorationId ~= "FlowerBed"', WORLD)
+        self.assertIn('decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage"', WORLD)
         self.assertIn('if #session.city.buildings >= 12 and not moveIndex then', WORLD)
         self.assertIn('(root.Position - meadow.Position).Magnitude > 22', WORLD)
         self.assertIn('(root.Position - targetFrame.Position).Magnitude > 24', WORLD)
@@ -26,7 +26,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('z < -4 or z > 4 or z % 4 ~= 0', WORLD)
         self.assertIn('rotation < 0 or rotation >= 360 or rotation % 90 ~= 0', WORLD)
         self.assertIn('if index ~= moveIndex and existing.x == x and existing.z == z then', WORLD)
-        self.assertIn('decorationId == "Path" and {Wood = 2, Stone = 0} or {Wood = 4, Stone = 2}', WORLD)
+        self.assertIn('Cottage = {Wood = 8, Stone = 6}', WORLD)
 
     def test_client_ghost_preview_and_manual_placement_controls(self):
         self.assertIn('local function createPlacementGhost(decorationId)', HUD)
@@ -49,7 +49,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('local movingDecoration = moveIndex and session.city.buildings[moveIndex] or nil', WORLD)
         self.assertIn('session.city.buildings[moveIndex] = decoration', WORLD)
         self.assertIn('if index ~= moveIndex and existing.x == x and existing.z == z then', WORLD)
-        self.assertIn('local refund = decoration.id == "Path" and {Wood = 1, Stone = 0}', WORLD)
+        self.assertIn('local refunds = {Path = {Wood = 1, Stone = 0}, FlowerBed = {Wood = 2, Stone = 1}, Cottage = {Wood = 4, Stone = 3}}', WORLD)
         self.assertIn('session.inventory.Wood = (session.inventory.Wood or 0) + refund.Wood', WORLD)
         self.assertIn('session.inventory.Stone = (session.inventory.Stone or 0) + refund.Stone', WORLD)
         self.assertIn('if session.online then save(player) end', WORLD)
@@ -66,6 +66,8 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
     def test_rotation_and_visuals_are_server_generated(self):
         self.assertIn('local rotation = (math.floor((tonumber(decoration.rotation) or 0) / 90 + 0.5) % 4) * 90', WORLD)
         self.assertIn('local function renderIslandDecoration(', WORLD)
+        self.assertIn('"CottageRoof"', WORLD)
+        self.assertIn('"CottageWalls"', WORLD)
         self.assertIn('"PavingStone"', WORLD)
         self.assertIn('"FlowerBedSoil"', WORLD)
         self.assertIn('"FlowerBloom"', WORLD)
@@ -75,6 +77,13 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('local decorationCount = tonumber(player:GetAttribute("City_DecorationCount")) or 0', HUD)
         self.assertIn('{id = "Path", title = "Каменная дорожка"', HUD)
         self.assertIn('{id = "FlowerBed", title = "Цветочная клумба"', HUD)
+        self.assertIn('{id = "Cottage", title = "Уютный домик"', HUD)
+        self.assertIn('placementState == "Cottage" and wood >= 8 and stone >= 6', HUD)
+        self.assertIn('CottagePreviewWalls', HUD)
+        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" then return end', HUD)
+        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" then', WORLD)
+        self.assertIn('placedMessages[decorationId]', WORLD)
+        self.assertIn('Cottage = {Wood = 4, Stone = 3}', WORLD)
         self.assertIn('beginIslandPlacement(definition.id)', HUD)
         self.assertIn('action.TextSize = compact and 9 or 10', HUD)
 

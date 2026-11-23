@@ -201,7 +201,7 @@ local function normalizeCity(raw)
     local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}
     for _, saved in ipairs(rawBuildings) do
         if #city.buildings >= 24 then break end
-        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed") then
+        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage") then
             local x = tonumber(saved.x)
             local z = tonumber(saved.z)
             local rotation = tonumber(saved.rotation) or 0
@@ -1693,7 +1693,7 @@ end
 local function renderIslandDecoration(cityModel, meadow, decoration, index, ownerUserId)
     if not cityModel or not meadow or type(decoration) ~= "table" then return end
     local id = decoration.id
-    if id ~= "Path" and id ~= "FlowerBed" then return end
+    if id ~= "Path" and id ~= "FlowerBed" and id ~= "Cottage" then return end
 
     local x = math.clamp(tonumber(decoration.x) or 0, 0, 12)
     local z = math.clamp(tonumber(decoration.z) or 0, -4, 4)
@@ -1715,7 +1715,7 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
                 stone.CanCollide = true
             end
         end
-    else
+    elseif id == "FlowerBed" then
         local wood = Color3.fromRGB(133, 91, 59)
         makeFarmVisualPart(model, "FlowerBedSoil", Vector3.new(3.35, 0.28, 3.35),
             frame * CFrame.new(0, 0.12, 0), Color3.fromRGB(91, 65, 47), Enum.PartType.Block, Enum.Material.Ground)
@@ -1743,6 +1743,35 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
                 frame * CFrame.new(offset + Vector3.new(0, 0.54, 0)),
                 flowerColors[flowerIndex], Enum.PartType.Ball, Enum.Material.SmoothPlastic)
         end
+    else
+        local wall = Color3.fromRGB(226, 190, 139)
+        local timber = Color3.fromRGB(104, 67, 47)
+        local roof = Color3.fromRGB(139, 66, 53)
+        local front = frame * CFrame.new(0, 0, -1.72)
+        makeFarmVisualPart(model, "CottageFoundation", Vector3.new(3.8, 0.24, 3.8), frame * CFrame.new(0, 0.12, 0), Color3.fromRGB(116, 112, 100), Enum.PartType.Block, Enum.Material.Slate)
+        makeFarmVisualPart(model, "CottageWalls", Vector3.new(3.35, 2.25, 3.25), frame * CFrame.new(0, 1.28, 0), wall, Enum.PartType.Block, Enum.Material.WoodPlanks)
+        makeFarmVisualPart(model, "CottageFrontDoor", Vector3.new(0.92, 1.72, 0.12), front * CFrame.new(0, 0.98, -0.02), timber, Enum.PartType.Block, Enum.Material.Wood)
+        makeFarmVisualPart(model, "CottageDoorHandle", Vector3.new(0.09, 0.09, 0.08), front * CFrame.new(0.29, 0.98, -0.11), Color3.fromRGB(236, 190, 91), Enum.PartType.Ball, Enum.Material.Metal)
+        for _, side in {-1, 1} do
+            makeFarmVisualPart(model, "CottageWindowFrame", Vector3.new(0.86, 0.82, 0.14), front * CFrame.new(side * 1.12, 1.52, -0.03), timber, Enum.PartType.Block, Enum.Material.Wood)
+            makeFarmVisualPart(model, "CottageWindowGlass", Vector3.new(0.62, 0.58, 0.08), front * CFrame.new(side * 1.12, 1.52, -0.12), Color3.fromRGB(144, 205, 215), Enum.PartType.Block, Enum.Material.Glass)
+        end
+        for _, side in {-1, 1} do
+            local roofWedge = Instance.new("WedgePart")
+            roofWedge.Name = "CottageRoof"
+            roofWedge.Size = Vector3.new(2.15, 1.35, 4.05)
+            roofWedge.CFrame = frame * CFrame.new(side * 0.95, 3.05, 0) * CFrame.Angles(0, side == 1 and math.rad(180) or 0, 0)
+            roofWedge.Color = roof
+            roofWedge.Material = Enum.Material.Slate
+            roofWedge.Anchored = true
+            roofWedge.CanCollide = true
+            roofWedge.CanTouch = false
+            roofWedge.CanQuery = false
+            roofWedge.Parent = model
+        end
+        makeFarmVisualPart(model, "CottageChimney", Vector3.new(0.62, 1.55, 0.62), frame * CFrame.new(1.18, 3.2, 0.82), Color3.fromRGB(143, 91, 73), Enum.PartType.Block, Enum.Material.Brick)
+        makeFarmVisualPart(model, "CottageChimneyCap", Vector3.new(0.82, 0.18, 0.82), frame * CFrame.new(1.18, 4.0, 0.82), timber, Enum.PartType.Block, Enum.Material.Slate)
+        makeFarmVisualPart(model, "CottageStep", Vector3.new(1.3, 0.18, 0.65), front * CFrame.new(0, 0.12, -0.3), Color3.fromRGB(145, 139, 122), Enum.PartType.Block, Enum.Material.Slate)
     end
 end
 
@@ -2273,7 +2302,9 @@ removeIslandDecoration = function(player, payload)
 
     local model = cityModel:FindFirstChild("Decoration_" .. tostring(index))
     if model then model:Destroy() end
-    local refund = decoration.id == "Path" and {Wood = 1, Stone = 0} or {Wood = 2, Stone = 1}
+    local refunds = {Path = {Wood = 1, Stone = 0}, FlowerBed = {Wood = 2, Stone = 1}, Cottage = {Wood = 4, Stone = 3}}
+    local refund = refunds[decoration.id]
+    if not refund then return tip(player, "Этот объект пока нельзя разобрать.") end
     table.remove(session.city.buildings, index)
     for nextIndex = index, #session.city.buildings do
         local shifted = cityModel:FindFirstChild("Decoration_" .. tostring(nextIndex + 1))
@@ -2298,7 +2329,7 @@ placeIslandDecoration = function(player, payload)
     if type(payload) ~= "table" then return tip(player, "Не удалось прочитать место постройки.") end
 
     local decorationId = payload.id
-    if decorationId ~= "Path" and decorationId ~= "FlowerBed" then
+    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" then
         return tip(player, "Такого предмета пока нет в каталоге строительства.")
     end
     local x = tonumber(payload.x)
@@ -2355,7 +2386,8 @@ placeIslandDecoration = function(player, payload)
         syncFarm(player)
         tip(player, "Постройка перемещена!")
     else
-        local cost = decorationId == "Path" and {Wood = 2, Stone = 0} or {Wood = 4, Stone = 2}
+        local costs = {Path = {Wood = 2, Stone = 0}, FlowerBed = {Wood = 4, Stone = 2}, Cottage = {Wood = 8, Stone = 6}}
+        local cost = costs[decorationId]
         if (session.inventory.Wood or 0) < cost.Wood or (session.inventory.Stone or 0) < cost.Stone then
             return tip(player, "Не хватает материалов: дерево ×" .. tostring(cost.Wood) .. ", камень ×" .. tostring(cost.Stone) .. ".")
         end
@@ -2366,7 +2398,8 @@ placeIslandDecoration = function(player, payload)
         renderIslandDecoration(cityModel, meadow, decoration, #session.city.buildings, player.UserId)
         syncInventory(player)
         syncFarm(player)
-        tip(player, decorationId == "Path" and "Каменная дорожка построена!" or "Цветочная клумба украшает твой остров!")
+        local placedMessages = {Path = "Каменная дорожка построена!", FlowerBed = "Цветочная клумба украшает твой остров!", Cottage = "Уютный домик построен! На острове стало ещё уютнее."}
+    tip(player, placedMessages[decorationId])
     end
     if session.online then save(player) end
 end
