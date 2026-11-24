@@ -34,7 +34,8 @@ class UIWorldQualityContracts(unittest.TestCase):
         for icon_kind in ('house', 'farm', 'paw', 'backpack', 'map', 'journal',
                           'wood', 'stone', 'fox', 'moth', 'crystal', 'carrot',
                           'berry', 'pumpkin', 'cabbage', 'flower', 'greenhouse',
-                          'lamp', 'fence', 'bench', 'tree', 'birdbath'):
+                          'lamp', 'fence', 'bench', 'tree', 'birdbath', 'axe',
+                          'pickaxe', 'sword', 'egg', 'owl', 'turtle'):
             self.assertIn(f'"{icon_kind}"', HUD)
         self.assertNotIn('glyph = "О"', HUD)
         self.assertNotIn('icon = "Л"', HUD)
