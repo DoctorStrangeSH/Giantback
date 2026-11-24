@@ -1978,12 +1978,30 @@ local function renderExpeditions()
             discoveredMutations += 1
         end
     end
-    addInfo("АЛЬБОМ РЕДКИХ ФОРМ", "Каждый найденный питомец получает свою особую форму. В дневнике видны сохранённые формы девяти питомцев. Неизвестные формы раскрываются после получения питомца.", 80)
-    local mutationHeader = card(body, "CompanionMutationCodexHeader", 62)
+    addInfo("АЛЬБОМ РЕДКИХ ФОРМ", "У каждого питомца есть собственная особая форма. Находи друзей, открывай их мутации и заполняй альбом. Неизвестные записи подскажут, где искать следующего питомца.", 76)
+    local compactAlbum = gui.AbsoluteSize.X < 620
+    local mutationHeader = card(body, "CompanionMutationCodexHeader", 82)
     mutationHeader.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
-    createPictogram(mutationHeader, "CodexMark", "paw", 28, palette.lilac).Position = UDim2.fromOffset(16, 17)
-    label(mutationHeader, "CodexTitle", "ОТКРЫТЫЕ ФОРМЫ ПИТОМЦЕВ", UDim2.new(1, -126, 0, 32), UDim2.fromOffset(55, 13), 12, palette.ink, Enum.Font.GothamBlack)
-    label(mutationHeader, "CodexCount", tostring(discoveredMutations) .. "/" .. tostring(#mutationPets), UDim2.fromOffset(54, 28), UDim2.new(1, -62, 0.5, -14), 14, palette.forest, Enum.Font.GothamBlack)
+    createPictogram(mutationHeader, "CodexMark", "paw", 34, palette.lilac).Position = UDim2.fromOffset(14, 12)
+    label(mutationHeader, "CodexTitle", "АЛЬБОМ РЕДКИХ ФОРМ", UDim2.new(1, -126, 0, 22), UDim2.fromOffset(58, 9), 12, palette.ink, Enum.Font.GothamBlack)
+    label(mutationHeader, "CodexSubtitle", "Открыто особых форм", UDim2.new(1, -126, 0, 18), UDim2.fromOffset(58, 34), 10, palette.muted)
+    local codexCount = label(mutationHeader, "CodexCount", tostring(discoveredMutations) .. "/" .. tostring(#mutationPets), UDim2.fromOffset(54, 28), UDim2.new(1, -62, 0, 10), 14, palette.forest, Enum.Font.GothamBlack)
+    codexCount.TextXAlignment = Enum.TextXAlignment.Center
+    local codexTrack = Instance.new("Frame")
+    codexTrack.Name = "CodexProgressTrack"
+    codexTrack.Position = UDim2.fromOffset(14, 67)
+    codexTrack.Size = UDim2.new(1, -28, 0, 5)
+    codexTrack.BackgroundColor3 = palette.paperDark
+    codexTrack.BorderSizePixel = 0
+    codexTrack.Parent = mutationHeader
+    corner(codexTrack, 4)
+    local codexFill = Instance.new("Frame")
+    codexFill.Name = "CodexProgressFill"
+    codexFill.Size = UDim2.fromScale(discoveredMutations / #mutationPets, 1)
+    codexFill.BackgroundColor3 = palette.forestLight
+    codexFill.BorderSizePixel = 0
+    codexFill.Parent = codexTrack
+    corner(codexFill, 4)
 
     for index, pet in mutationPets do
         local owned = player:GetAttribute(pet.id) == true
@@ -1991,12 +2009,39 @@ local function renderExpeditions()
         local found = owned and type(mutationId) == "string" and mutationId ~= ""
         local mutationName = player:GetAttribute("Companion_" .. pet.id .. "_MutationName")
         local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
-        local item = card(body, "CompanionMutationCodex_" .. tostring(index), 76)
-        item.BackgroundColor3 = found and Color3.fromRGB(235, 242, 224) or palette.paper
-        createPictogram(item, "PetMark", found and pet.icon or "paw", 28, found and pet.color or palette.muted).Position = UDim2.fromOffset(13, 23)
-        label(item, "MutationTitle", found and (pet.title .. " • " .. (mutationName or mutationId)) or "Неизвестная форма", UDim2.new(1, -64, 0, 24), UDim2.fromOffset(52, 6), 12, palette.ink, Enum.Font.GothamBold)
-        label(item, "MutationRarity", found and (mutationRarity or "Необычная") or "РЕДКОСТЬ НЕИЗВЕСТНА", UDim2.new(1, -64, 0, 18), UDim2.fromOffset(52, 30), 10, found and pet.color or palette.muted, Enum.Font.GothamBlack)
-        label(item, "MutationBiome", found and ("Обнаружен: " .. pet.biome) or ("Где искать: " .. pet.biome), UDim2.new(1, -64, 0, 20), UDim2.fromOffset(52, 50), 10, palette.muted)
+        local item = card(body, "CompanionMutationCodex_" .. tostring(index), compactAlbum and 92 or 82)
+        item.BackgroundColor3 = found and Color3.fromRGB(235, 242, 224) or Color3.fromRGB(242, 237, 222)
+        local iconPlate = Instance.new("Frame")
+        iconPlate.Name = "MutationIconPlate"
+        iconPlate.Size = UDim2.fromOffset(48, 48)
+        iconPlate.Position = UDim2.fromOffset(10, compactAlbum and 10 or 17)
+        iconPlate.BackgroundColor3 = found and pet.color or palette.paperDark
+        iconPlate.BackgroundTransparency = found and 0.72 or 0.12
+        iconPlate.BorderSizePixel = 0
+        iconPlate.Parent = item
+        corner(iconPlate, 15)
+        stroke(iconPlate, found and pet.color or palette.muted, 0.58, 1)
+        createPictogram(iconPlate, "PetMark", found and pet.icon or "lock", 32,
+            found and pet.color or palette.muted).Position = UDim2.fromOffset(8, 8)
+        local titleText = found and (pet.title .. " • " .. (type(mutationName) == "string" and mutationName ~= "" and mutationName or mutationId))
+            or (pet.title .. " • Неизвестная форма")
+        local titleLabel = label(item, "MutationTitle", titleText,
+            UDim2.new(1, -116, 0, compactAlbum and 38 or 24), UDim2.fromOffset(68, 7),
+            12, palette.ink, Enum.Font.GothamBold)
+        titleLabel.TextWrapped = true
+        titleLabel.TextYAlignment = Enum.TextYAlignment.Top
+        local rarityText = found and (string.upper(tostring(mutationRarity or "Необычная")) .. " ФОРМА") or "ЕЩЁ НЕ ОТКРЫТО"
+        label(item, "MutationRarity", rarityText, UDim2.new(1, -116, 0, 17),
+            UDim2.fromOffset(68, compactAlbum and 47 or 34), 9,
+            found and pet.color or palette.muted, Enum.Font.GothamBlack)
+        local hintText = found and ("Найдено: " .. pet.biome) or ("Место поиска: " .. pet.biome)
+        local hintLabel = label(item, "MutationBiome", hintText,
+            UDim2.new(1, -82, 0, 20), UDim2.fromOffset(68, compactAlbum and 67 or 55), 9, palette.muted)
+        hintLabel.TextWrapped = true
+        local state = label(item, "MutationState", found and "ОТКРЫТО" or "ИСКАТЬ",
+            UDim2.fromOffset(64, 20), UDim2.new(1, -72, 0, compactAlbum and 8 or 12),
+            8, found and palette.forest or palette.muted, Enum.Font.GothamBlack)
+        state.TextXAlignment = Enum.TextXAlignment.Center
     end
     local codexClaimed = player:GetAttribute("CompanionCodexRewardClaimed") == true
     local codexComplete = discoveredMutations == #mutationPets
