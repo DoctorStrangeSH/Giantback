@@ -23,7 +23,7 @@ class HomeIslandCapacityContractTests(unittest.TestCase):
 
     def test_rejected_ninth_player_is_kicked_and_listener_connections_are_disconnected(self):
         init = WORLD.split("local function init(player)", 1)[1].split("local combatRewardFunction", 1)[0]
-        capacity = init.split("if not allocateHomeIsland(player, session) then", 1)[1].split("\\n    if createPersonalCity then", 1)[0]
+        capacity = init.split("if not allocateHomeIsland(player, session) then", 1)[1].split("if createPersonalCity then", 1)[0]
         self.assertIn("connection:Disconnect()", capacity)
         self.assertIn("session.companionOwnershipConnections = nil", capacity)
         self.assertIn("sessions[player] = nil", capacity)
