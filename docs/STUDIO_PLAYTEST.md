@@ -5,7 +5,7 @@
 **Автоматическая проверка HEAD `899aec04a59fc955b6030462de39514f5bde141f`: PASS.**
 - 585 Python unittest пройдены.
 - Roblox place собран и структурно проверен: 88 именованных объектов, 18 скриптов.
-- Проверки Fox Hero и Lunar Moth завершились успешно.
+- Визуальные workflow Fox Hero (#614) и Lunar Moth (#395) для этого HEAD были запущены отдельно; ожидают завершения и не включены в PASS этого build gate.
 - Сборка: [Giantback-visual-build](https://github.com/DoctorStrangeSH/Giantback/actions/runs/45375628268).
 
 **Важно:** CI не запускает полноценную игровую сессию. До ручной приёмки нельзя считать строительство, DataStore, сохранение острова или адаптивный HUD проверенными в игре.
