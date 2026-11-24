@@ -34,7 +34,7 @@ class RebootContractTests(unittest.TestCase):
 
     def test_compact_topbar_reserves_a_gap_without_overlapping_brand_and_resources(self):
         self.assertIn('brand.Size = UDim2.fromOffset(compact and (narrow and 104 or 132) or 178, compact and 48 or 58)', HUD)
-        self.assertIn('resources.Size = UDim2.fromOffset(compact and (narrow and 144 or 174) or 214, compact and 48 or 58)', HUD)
+        self.assertIn('resources.Size = UDim2.fromOffset(compact and (narrow and 150 or 174) or 214, compact and 48 or 58)', HUD)
         self.assertIn('topBar.Position = UDim2.fromOffset(compact and 8 or 16, compact and 8 or 16)', HUD)
         self.assertIn('local narrow = viewport.X < 480', HUD)
 
