@@ -3992,9 +3992,49 @@ createPersonalCity = function(player, session)
     refreshFarmCity(player, cityModel)
 end
 
+local function copyCityBuildings(buildings)
+    local snapshot = {}
+    for index, building in ipairs(buildings) do
+        snapshot[index] = {
+            id = building.id,
+            x = building.x,
+            z = building.z,
+            rotation = building.rotation,
+        }
+    end
+    return snapshot
+end
+
+local function rebuildCityDecorations(player, session, cityModel, meadow)
+    for _, child in ipairs(cityModel:GetChildren()) do
+        if string.match(child.Name, "^Decoration_%d+$") then
+            child:Destroy()
+        end
+    end
+    for index, building in ipairs(session.city.buildings) do
+        renderIslandDecoration(cityModel, meadow, building, index, player.UserId)
+    end
+end
+
+local function rollbackCityBuildingOperation(player, session, cityModel, meadow, buildings, wood, stone)
+    session.city.buildings = buildings
+    session.inventory.Wood = wood
+    session.inventory.Stone = stone
+    rebuildCityDecorations(player, session, cityModel, meadow)
+    syncInventory(player)
+    syncFarm(player)
+end
+
 removeIslandDecoration = function(player, payload)
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Разборка временно недоступна: сохранение профиля не работает.")
+    end
+    if session.economyBusy then
+        return tip(player, "Подожди завершения текущей операции.")
+    end
+
     local index = tonumber(payload)
     if not index or index % 1 ~= 0 or index < 1 or index > #session.city.buildings then
         return tip(player, "Эту постройку уже нельзя найти.")
@@ -4017,32 +4057,48 @@ removeIslandDecoration = function(player, payload)
             end
         end
     end
-    local model = cityModel:FindFirstChild("Decoration_" .. tostring(index))
-    if model then model:Destroy() end
-    local refunds = {Path = {Wood = 1, Stone = 0}, FlowerBed = {Wood = 2, Stone = 1}, Cottage = {Wood = 4, Stone = 3}, Warehouse = {Wood = 5, Stone = 4}, Greenhouse = {Wood = 9, Stone = 6}}
+
+    local refunds = {
+        Path = {Wood = 1, Stone = 0},
+        FlowerBed = {Wood = 2, Stone = 1},
+        Cottage = {Wood = 4, Stone = 3},
+        Warehouse = {Wood = 5, Stone = 4},
+        Greenhouse = {Wood = 9, Stone = 6},
+    }
     local refund = refunds[decoration.id]
     if not refund then return tip(player, "Этот объект пока нельзя разобрать.") end
+
+    local previousBuildings = copyCityBuildings(session.city.buildings)
+    local previousWood = session.inventory.Wood or 0
+    local previousStone = session.inventory.Stone or 0
+    session.economyBusy = true
+
     table.remove(session.city.buildings, index)
-    for nextIndex = index, #session.city.buildings do
-        local shifted = cityModel:FindFirstChild("Decoration_" .. tostring(nextIndex + 1))
-        if shifted then shifted.Name = "Decoration_" .. tostring(nextIndex) end
-    end
-    session.inventory.Wood = (session.inventory.Wood or 0) + refund.Wood
-    session.inventory.Stone = (session.inventory.Stone or 0) + refund.Stone
+    session.inventory.Wood = previousWood + refund.Wood
+    session.inventory.Stone = previousStone + refund.Stone
+    rebuildCityDecorations(player, session, cityModel, meadow)
     syncInventory(player)
     syncFarm(player)
-    for currentIndex, current in ipairs(session.city.buildings) do
-        local currentModel = cityModel:FindFirstChild("Decoration_" .. tostring(currentIndex))
-        if currentModel then currentModel:Destroy() end
-        renderIslandDecoration(cityModel, meadow, current, currentIndex, player.UserId)
+
+    if not save(player) then
+        rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, previousWood, previousStone)
+        session.economyBusy = false
+        return tip(player, "Сохранение не удалось. Постройка и материалы восстановлены.")
     end
+
+    session.economyBusy = false
     tip(player, "Постройка разобрана. Возвращено: дерево ×" .. tostring(refund.Wood) .. ", камень ×" .. tostring(refund.Stone) .. ".")
-    if session.online then save(player) end
 end
 
 placeIslandDecoration = function(player, payload)
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Строительство временно недоступно: сохранение профиля не работает.")
+    end
+    if session.economyBusy then
+        return tip(player, "Подожди завершения текущей операции.")
+    end
     if type(payload) ~= "table" then return tip(player, "Не удалось прочитать место постройки.") end
 
     local decorationId = payload.id
@@ -4052,9 +4108,13 @@ placeIslandDecoration = function(player, payload)
     if decorationId == "Greenhouse" and session.city.farm.level < 3 then
         return tip(player, "Теплица откроется после улучшения фермы до 3 уровня.")
     end
+
     local x = tonumber(payload.x)
     local z = tonumber(payload.z)
     local rotation = tonumber(payload.rotation)
+    if payload.moveIndex ~= nil and tonumber(payload.moveIndex) == nil then
+        return tip(player, "Не удалось найти постройку для перемещения.")
+    end
     local moveIndex = tonumber(payload.moveIndex)
     if moveIndex and (moveIndex % 1 ~= 0 or moveIndex < 1 or moveIndex > #session.city.buildings) then
         return tip(player, "Не удалось найти постройку для перемещения.")
@@ -4104,33 +4164,53 @@ placeIslandDecoration = function(player, payload)
         end
     end
 
+    local costs = {
+        Path = {Wood = 2, Stone = 0},
+        FlowerBed = {Wood = 4, Stone = 2},
+        Cottage = {Wood = 8, Stone = 6},
+        Warehouse = {Wood = 10, Stone = 8},
+        Greenhouse = {Wood = 18, Stone = 12},
+    }
+    local cost = costs[decorationId]
+    local previousBuildings = copyCityBuildings(session.city.buildings)
+    local previousWood = session.inventory.Wood or 0
+    local previousStone = session.inventory.Stone or 0
+    if not moveIndex and (previousWood < cost.Wood or previousStone < cost.Stone) then
+        return tip(player, "Не хватает материалов: дерево ×" .. tostring(cost.Wood) .. ", камень ×" .. tostring(cost.Stone) .. ".")
+    end
+
+    session.economyBusy = true
     if moveIndex then
-        local oldModel = cityModel:FindFirstChild("Decoration_" .. tostring(moveIndex))
-        if oldModel then oldModel:Destroy() end
-        local decoration = {id = decorationId, x = x, z = z, rotation = rotation}
-        session.city.buildings[moveIndex] = decoration
-        renderIslandDecoration(cityModel, meadow, decoration, moveIndex, player.UserId)
-        syncFarm(player)
+        session.city.buildings[moveIndex] = {id = decorationId, x = x, z = z, rotation = rotation}
+    else
+        session.inventory.Wood = previousWood - cost.Wood
+        session.inventory.Stone = previousStone - cost.Stone
+        table.insert(session.city.buildings, {id = decorationId, x = x, z = z, rotation = rotation})
+    end
+    rebuildCityDecorations(player, session, cityModel, meadow)
+    syncInventory(player)
+    syncFarm(player)
+
+    if not save(player) then
+        rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, previousWood, previousStone)
+        session.economyBusy = false
+        return tip(player, "Сохранение не удалось. Постройка и материалы восстановлены.")
+    end
+
+    session.economyBusy = false
+    if moveIndex then
         tip(player, "Постройка перемещена!")
     else
-        local costs = {Path = {Wood = 2, Stone = 0}, FlowerBed = {Wood = 4, Stone = 2}, Cottage = {Wood = 8, Stone = 6}, Warehouse = {Wood = 10, Stone = 8}, Greenhouse = {Wood = 18, Stone = 12}}
-        local cost = costs[decorationId]
-        if (session.inventory.Wood or 0) < cost.Wood or (session.inventory.Stone or 0) < cost.Stone then
-            return tip(player, "Не хватает материалов: дерево ×" .. tostring(cost.Wood) .. ", камень ×" .. tostring(cost.Stone) .. ".")
-        end
-        session.inventory.Wood -= cost.Wood
-        session.inventory.Stone -= cost.Stone
-        local decoration = {id = decorationId, x = x, z = z, rotation = rotation}
-        table.insert(session.city.buildings, decoration)
-        renderIslandDecoration(cityModel, meadow, decoration, #session.city.buildings, player.UserId)
-        syncInventory(player)
-        syncFarm(player)
-        local placedMessages = {Path = "Каменная дорожка построена!", FlowerBed = "Цветочная клумба украшает твой остров!", Cottage = "Уютный домик построен! На острове стало ещё уютнее.", Warehouse = "Склад построен! Теперь можно хранить материалы.", Greenhouse = "Теплица готова! Новые посадки и повторный рост клубники ускорены на 15%."}
-    tip(player, placedMessages[decorationId])
+        local placedMessages = {
+            Path = "Каменная дорожка построена!",
+            FlowerBed = "Цветочная клумба украшает твой остров!",
+            Cottage = "Уютный домик построен! На острове стало ещё уютнее.",
+            Warehouse = "Склад построен! Теперь можно хранить материалы.",
+            Greenhouse = "Теплица готова! Новые посадки и повторный рост клубники ускорены на 15%.",
+        }
+        tip(player, placedMessages[decorationId])
     end
-    if session.online then save(player) end
 end
-
 
 local function encounter(id, island, height)
     local nest = island.Nest
