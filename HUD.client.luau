@@ -1123,7 +1123,7 @@ local function renderCity()
     local carrots = tonumber(player:GetAttribute("Resource_Carrot")) or 0
     addInfo("Находки и ферма", "Лунные семена: " .. tostring(moonSeeds) .. "   •   Звёздный осколок: " .. tostring(starShards)
         .. "   •   Семена моркови: " .. tostring(carrotSeeds) .. "   •   Урожай: " .. tostring(carrots)
-        .. "   •   ☀ Солнечные лепестки: " .. tostring(sunPetals) .. "   •   ☾ Лунные лепестки: " .. tostring(moonPetals), 98)
+        .. "   •   Солнечные лепестки: " .. tostring(sunPetals) .. "   •   Лунные лепестки: " .. tostring(moonPetals), 98)
     addInfo("Ферма: уровень " .. tostring(farmLevel), "На острове четыре грядки. Открой раздел «Ферма», чтобы выбрать семена, посадить растения и собрать урожай.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
     local decorationCount = tonumber(player:GetAttribute("City_DecorationCount")) or 0
@@ -1380,7 +1380,7 @@ local function renderPets()
         local levelText = companionLevel >= 5 and "УР. 5 · МАКСИМУМ"
             or ("УР. " .. tostring(companionLevel) .. " · " .. tostring(companionXP) .. "/" .. tostring(companionXPToNext) .. " XP")
         local mutationText = owned and type(mutationName) == "string" and mutationName ~= ""
-            and (" · ✦ " .. mutationName .. " (" .. tostring(mutationRarity or "Необычный") .. ")") or ""
+            and (" · Особая форма: " .. mutationName .. " (" .. tostring(mutationRarity or "Необычный") .. ")") or ""
         local progressionLabel = label(item, "Progression", owned and (growthStage .. " · " .. levelText .. mutationText) or "Уровень и мутация откроются при знакомстве",
             UDim2.new(1, -28, 0, compact and 34 or 20),
             UDim2.fromOffset(16, compact and 162 or 151), compact and 10 or 11, palette.ink, Enum.Font.GothamBold)
@@ -1714,7 +1714,7 @@ local function renderDailyQuests()
 
         local item = card(body, "WeeklyChallenge_" .. tostring(index), 72)
         item.BackgroundColor3 = done and Color3.fromRGB(235, 242, 224) or palette.paper
-        label(item, "Number", "★", UDim2.fromOffset(36, 42), UDim2.fromOffset(10, 12), 18, done and palette.forestLight or palette.gold, Enum.Font.GothamBlack)
+        label(item, "Number", "1", UDim2.fromOffset(36, 42), UDim2.fromOffset(10, 12), 18, done and palette.forestLight or palette.gold, Enum.Font.GothamBlack)
         label(item, "Title", title, UDim2.new(1, -118, 0, 22), UDim2.fromOffset(54, 7), 13, palette.ink, Enum.Font.GothamBold)
         label(item, "Hint", done and "Испытание выполнено!" or description, UDim2.new(1, -118, 0, 20), UDim2.fromOffset(54, 29), 10, palette.muted)
         label(item, "Reward", "+" .. tostring(challengeReward) .. " Coins", UDim2.new(1, -118, 0, 16), UDim2.fromOffset(54, 51), 9, palette.gold, Enum.Font.GothamBold)
@@ -2302,7 +2302,7 @@ local playHint = label(playOverlay, "Hint", "Запомни огоньки!", UD
 playHint.TextXAlignment = Enum.TextXAlignment.Center
 playHint.ZIndex = 51
 
-local playSymbols = {"●", "◆", "✦"}
+local playSymbols = {"1", "2", "3"}
 local playButtons = {}
 local activePlay = nil
 local playNextIndex = 1
