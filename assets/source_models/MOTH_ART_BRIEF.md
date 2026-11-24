@@ -246,3 +246,10 @@ Eighth corrective source pass: place small gold crescents on the camera-facing w
 All four renders were manually inspected. The moth now has a recognizable friendly face and four readable wings, and the old gold abdomen rings are gone. Remaining defects: six legs still read as chunky white tubes with bulb feet; the head could be softer and rounder; side profile shows the wing shells as overly thin stacked plates. This is a partial pass, not production approval.
 
 Ninth corrective source pass: reduce leg bevel and foot volume, move the leg endpoints closer to the thorax, and slightly round the head. Next pass must improve wing thickness/curvature and add a small authored face detail; keep four independent wing groups and the 10-group report contract.
+
+
+## Tenth review — render set 14931327067 (2026-11-24)
+
+Manual review of all four renders: the moth now reads as a friendly companion and the moon marks are visible, but the six legs still resemble short side spikes. The cyan glow below the face is visually misread as a mouth, and the wings remain thin in profile.
+
+Tenth corrective source pass: make the legs curve down and outward with slimmer stems and smaller feet; add a deliberate smile and subtle cheek accents; move the cyan glow to the chest; increase wing camber and shell depth. The render must confirm these changes in all four views. Still not production-approved.
