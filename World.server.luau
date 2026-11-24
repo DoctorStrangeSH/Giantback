@@ -179,6 +179,7 @@ local function defaultCity()
     end
     return {
         level = 1,
+        homeLevel = 1,
         farm = {
             level = 1,
             selectedCropId = defaultCropId,
@@ -216,6 +217,7 @@ local function normalizeCity(raw)
     if type(raw) ~= "table" then return city end
 
     city.level = math.clamp(math.floor(tonumber(raw.level) or 1), 1, 5)
+    city.homeLevel = math.clamp(math.floor(tonumber(raw.homeLevel) or 1), 1, 3)
     local rawStorage = type(raw.storage) == "table" and raw.storage or {}
     for _, itemId in ipairs(warehouseItemIds) do
         city.storage[itemId] = math.clamp(math.floor(tonumber(rawStorage[itemId]) or 0), 0, WAREHOUSE_CAPACITY)
@@ -271,6 +273,7 @@ local function syncFarm(player)
     if not session or not session.city then return end
 
     player:SetAttribute("City_Level", session.city.level)
+    player:SetAttribute("Home_Level", session.city.homeLevel or 1)
     player:SetAttribute("Farm_Level", session.city.farm.level)
     player:SetAttribute("Coins", math.clamp(math.floor(tonumber(session.coins) or 0), 0, MAX_COINS))
     local storedTotal = 0
@@ -2267,6 +2270,7 @@ save = function(player)
                 local savedIsland = type(old.island) == "table" and old.island
                     or (type(old.city) == "table" and old.city or {})
                 savedIsland.level = citySnapshot.level
+                savedIsland.homeLevel = citySnapshot.homeLevel
                 local savedFarm = type(savedIsland.farm) == "table" and savedIsland.farm or {}
                 savedFarm.level = citySnapshot.farm.level
                 savedFarm.selectedCropId = citySnapshot.farm.selectedCropId
@@ -3863,6 +3867,148 @@ local function repairHomeBridge(player, ownerUserId)
     if session.online then save(player) end
 end
 
+local function applyHomeHouseVisuals(homeIsland, houseLevel)
+    local cottage = homeIsland and homeIsland:FindFirstChild("Cottage")
+    if not cottage or not cottage:IsA("BasePart") then return false end
+
+    local previous = homeIsland:FindFirstChild("HomeHouseVisuals")
+    if previous then previous:Destroy() end
+    for _, legacyName in {"Cottage", "Roof", "Window"} do
+        local legacy = homeIsland:FindFirstChild(legacyName)
+        if legacy and legacy:IsA("BasePart") then
+            legacy.Transparency = 1
+            legacy.CanCollide = false
+            legacy.CanTouch = false
+            legacy.CanQuery = false
+        end
+    end
+
+    local level = math.clamp(math.floor(tonumber(houseLevel) or 1), 1, 3)
+    local frame = cottage.CFrame
+    local visuals = Instance.new("Model")
+    visuals.Name = "HomeHouseVisuals"
+    visuals:SetAttribute("HouseLevel", level)
+    visuals.Parent = homeIsland
+
+    local wood = Color3.fromRGB(116, 75, 52)
+    local cream = Color3.fromRGB(244, 218, 169)
+    local stone = Color3.fromRGB(133, 137, 125)
+    local roof = level == 1 and Color3.fromRGB(166, 83, 65)
+        or (level == 2 and Color3.fromRGB(93, 111, 126) or Color3.fromRGB(75, 83, 112))
+    local function add(name, size, offset, color, material, shape)
+        return makeFarmVisualPart(visuals, name, size, frame * CFrame.new(offset), color,
+            shape or Enum.PartType.Block, material or Enum.Material.WoodPlanks)
+    end
+
+    add("Foundation", Vector3.new(10.2, 0.75, 8.6), Vector3.new(0, -2.55, 0), stone, Enum.Material.Slate)
+    add("MainWalls", Vector3.new(8.8, 4.9, 7.2), Vector3.new(0, 0, 0), cream)
+    add("FrontDoor", Vector3.new(1.35, 2.8, 0.18), Vector3.new(0, -1.05, -3.72), wood, Enum.Material.Wood)
+    add("DoorKnob", Vector3.new(0.12, 0.12, 0.12), Vector3.new(0.42, -1.05, -3.84), Color3.fromRGB(244, 193, 88), Enum.Material.Metal, Enum.PartType.Ball)
+    for _, side in {-1, 1} do
+        add("WindowFrame", Vector3.new(1.55, 1.35, 0.2), Vector3.new(side * 2.55, 0.35, -3.72), wood)
+        add("WindowGlass", Vector3.new(1.2, 1.0, 0.1), Vector3.new(side * 2.55, 0.35, -3.84), Color3.fromRGB(140, 207, 220), Enum.Material.Glass)
+        add("WindowSill", Vector3.new(1.8, 0.18, 0.42), Vector3.new(side * 2.55, -0.45, -3.9), wood, Enum.Material.Wood)
+        add("CornerTimber", Vector3.new(0.22, 4.8, 0.24), Vector3.new(side * 4.28, 0, -3.68), wood, Enum.Material.Wood)
+    end
+    for _, side in {-1, 1} do
+        local roofPart = Instance.new("WedgePart")
+        roofPart.Name = "RoofSlope"
+        roofPart.Size = Vector3.new(4.8, 2.6, 8.3)
+        roofPart.CFrame = frame * CFrame.new(side * 2.05, 3.05, 0)
+            * CFrame.Angles(0, side == 1 and math.rad(180) or 0, 0)
+        roofPart.Color = roof
+        roofPart.Material = Enum.Material.Slate
+        roofPart.Anchored = true
+        roofPart.CanCollide = false
+        roofPart.CanTouch = false
+        roofPart.CanQuery = false
+        roofPart.Parent = visuals
+    end
+    add("Chimney", Vector3.new(0.85, 2.1, 0.85), Vector3.new(2.75, 3.35, 1.65), stone, Enum.Material.Brick)
+    add("ChimneyCap", Vector3.new(1.15, 0.2, 1.15), Vector3.new(2.75, 4.5, 1.65), wood, Enum.Material.Wood)
+
+    if level >= 2 then
+        add("UpperFloor", Vector3.new(6.4, 3.1, 5.8), Vector3.new(0, 3.75, 0.15), cream)
+        add("UpperFrontBeam", Vector3.new(7.2, 0.28, 0.3), Vector3.new(0, 2.25, -2.9), wood, Enum.Material.Wood)
+        add("BalconyFloor", Vector3.new(7.5, 0.28, 1.55), Vector3.new(0, 1.75, -4.05), wood, Enum.Material.Wood)
+        add("BalconyRail", Vector3.new(7.5, 0.22, 0.22), Vector3.new(0, 2.35, -4.72), wood, Enum.Material.Wood)
+        for _, side in {-1, 1} do
+            add("BalconyPost", Vector3.new(0.22, 1.0, 0.22), Vector3.new(side * 3.45, 2.25, -4.72), cream)
+            add("UpperWindow", Vector3.new(1.2, 1.3, 0.12), Vector3.new(side * 1.65, 3.9, -2.82), Color3.fromRGB(140, 207, 220), Enum.Material.Glass)
+        end
+        add("SideExtension", Vector3.new(2.5, 2.8, 3.5), Vector3.new(5.25, -0.75, 0.8), cream)
+        add("SideExtensionRoof", Vector3.new(3.2, 0.3, 4.2), Vector3.new(5.25, 0.85, 0.8), roof, Enum.Material.Slate)
+    end
+
+    if level >= 3 then
+        add("ManorUpper", Vector3.new(8.0, 3.4, 6.8), Vector3.new(0, 6.95, 0.15), cream)
+        add("ManorGable", Vector3.new(8.6, 0.5, 7.3), Vector3.new(0, 8.85, 0.15), roof, Enum.Material.Slate)
+        add("GrandBalcony", Vector3.new(9.0, 0.3, 2.0), Vector3.new(0, 5.2, -4.15), wood, Enum.Material.Wood)
+        add("GrandRail", Vector3.new(9.0, 0.25, 0.25), Vector3.new(0, 5.85, -4.95), Color3.fromRGB(220, 190, 128), Enum.Material.Metal)
+        for _, side in {-1, 1} do
+            add("Tower", Vector3.new(1.7, 5.0, 1.7), Vector3.new(side * 4.45, 6.2, 1.9), cream)
+            add("TowerRoof", Vector3.new(2.1, 0.55, 2.1), Vector3.new(side * 4.45, 8.95, 1.9), roof, Enum.Material.Slate)
+            add("GoldTrim", Vector3.new(0.18, 3.1, 0.18), Vector3.new(side * 4.45, 6.2, -2.0), Color3.fromRGB(222, 183, 104), Enum.Material.Metal)
+        end
+        add("FrontCanopy", Vector3.new(3.8, 0.28, 1.6), Vector3.new(0, 1.1, -4.9), roof, Enum.Material.Slate)
+    end
+
+    local upgradeAnchor = add("UpgradeAnchor", Vector3.new(2, 2, 1), Vector3.new(0, -0.6, -6.0), Color3.new(1, 1, 1))
+    upgradeAnchor.Name = "HomeUpgradeAnchor"
+    upgradeAnchor.Transparency = 1
+    upgradeAnchor.CanQuery = true
+    return true
+end
+
+local function upgradeHome(player, ownerUserId)
+    if player.UserId ~= ownerUserId then return tip(player, "Этот дом принадлежит другому игроку.") end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Улучшение дома недоступно: сохранение профиля не работает.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+
+    local currentLevel = math.clamp(math.floor(tonumber(session.city.homeLevel) or 1), 1, 3)
+    if currentLevel >= 3 then return tip(player, "Твой дом уже достиг максимального уровня!") end
+    local nextLevel = currentLevel + 1
+    local costs = {
+        [2] = {Wood = 20, Stone = 12},
+        [3] = {Wood = 45, Stone = 30},
+    }
+    local cost = costs[nextLevel]
+    local wood = math.max(0, math.floor(tonumber(session.inventory.Wood) or 0))
+    local stone = math.max(0, math.floor(tonumber(session.inventory.Stone) or 0))
+    if wood < cost.Wood or stone < cost.Stone then
+        return tip(player, "Для улучшения нужно дерево ×" .. tostring(cost.Wood)
+            .. " и камень ×" .. tostring(cost.Stone) .. ".")
+    end
+
+    session.economyBusy = true
+    session.inventory.Wood = wood - cost.Wood
+    session.inventory.Stone = stone - cost.Stone
+    session.city.homeLevel = nextLevel
+    syncInventory(player)
+    syncFarm(player)
+    applyHomeHouseVisuals(session.homeIsland, nextLevel)
+    if not save(player) then
+        session.inventory.Wood = wood
+        session.inventory.Stone = stone
+        session.city.homeLevel = currentLevel
+        syncInventory(player)
+        syncFarm(player)
+        applyHomeHouseVisuals(session.homeIsland, currentLevel)
+        session.economyBusy = false
+        return tip(player, "Дом не удалось сохранить. Материалы возвращены, улучшение отменено.")
+    end
+
+    session.economyBusy = false
+    local reward = nextLevel == 2
+        and "Появились второй этаж, балкон и боковая пристройка!"
+        or "Дом превратился в большую сказочную усадьбу с башенками!"
+    tip(player, "Дом улучшен до уровня " .. tostring(nextLevel) .. ". " .. reward)
+end
+
 createPersonalCity = function(player, session)
     local ownerUserId = player.UserId
     local homeIsland = session.homeIsland
@@ -3876,7 +4022,9 @@ createPersonalCity = function(player, session)
     cityModel:SetAttribute("OwnerUserId", ownerUserId)
     cityModel:SetAttribute("CityLevel", session.city.level)
     cityModel:SetAttribute("FarmLevel", session.city.farm.level)
+    cityModel:SetAttribute("HomeLevel", session.city.homeLevel or 1)
     cityModel.Parent = homeIsland
+    applyHomeHouseVisuals(homeIsland, session.city.homeLevel or 1)
 
     -- The cloned island already owns its cottage, garden and lantern pad.
     -- Only player-specific quest interactions and farm plots are created here.
@@ -3885,6 +4033,13 @@ createPersonalCity = function(player, session)
     local woodPile = homeIsland:FindFirstChild("WoodPile")
     local stonePile = homeIsland:FindFirstChild("StonePile")
     local gangway = homeIsland:FindFirstChild("Gangway")
+    local houseUpgradeAnchor = homeIsland:FindFirstChild("HomeUpgradeAnchor", true)
+
+    if houseUpgradeAnchor then
+        prompt(houseUpgradeAnchor, "Твой дом", "Улучшить дом", function(visitor)
+            upgradeHome(visitor, ownerUserId)
+        end)
+    end
 
     if woodPile then
         prompt(woodPile, "Сухие ветви", "Собрать дерево ×3", function(visitor)
