@@ -3953,9 +3953,21 @@ local function applyHomeHouseVisuals(homeIsland, houseLevel)
         add("FrontCanopy", Vector3.new(3.8, 0.28, 1.6), Vector3.new(0, 1.1, -4.9), roof, Enum.Material.Slate)
     end
 
+    local solidParts = {
+        Foundation = true, MainWalls = true, FrontDoor = true,
+        RoofSlope = true, UpperFloor = true, SideExtension = true,
+        ManorUpper = true, Tower = true,
+    }
+    for _, item in ipairs(visuals:GetChildren()) do
+        if item:IsA("BasePart") and solidParts[item.Name] then
+            item.CanCollide = true
+        end
+    end
+
     local upgradeAnchor = add("UpgradeAnchor", Vector3.new(2, 2, 1), Vector3.new(0, -0.6, -6.0), Color3.new(1, 1, 1))
     upgradeAnchor.Name = "HomeUpgradeAnchor"
     upgradeAnchor.Transparency = 1
+    upgradeAnchor.CanCollide = false
     upgradeAnchor.CanQuery = true
     return true
 end
