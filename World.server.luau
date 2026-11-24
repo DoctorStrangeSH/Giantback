@@ -4046,7 +4046,10 @@ local function applyHomeHouseVisuals(homeIsland, houseLevel)
     ensureAnchor("HomeEntranceAnchor", Vector3.new(0, -0.6, -6.0))
     ensureAnchor("HomeExitAnchor", Vector3.new(0, -0.6, -2.55))
     ensureAnchor("HomeInteriorSpawn", Vector3.new(0, 0.25, -1.45))
-    ensureAnchor("HomePetRestAnchor", Vector3.new(2.25, -0.6, -2.55))
+    for bedIndex = 1, 3 do
+        local bedX = 1.0 + (bedIndex - 1) * 1.22
+        ensureAnchor("HomePetRestAnchor" .. string.format("%02d", bedIndex), Vector3.new(bedX, -0.6, -1.8))
+    end
     return true
 end
 
@@ -4127,7 +4130,14 @@ createPersonalCity = function(player, session)
     local homeEntranceAnchor = homeIsland:FindFirstChild("HomeEntranceAnchor", true)
     local homeExitAnchor = homeIsland:FindFirstChild("HomeExitAnchor", true)
     local homeInteriorSpawn = homeIsland:FindFirstChild("HomeInteriorSpawn", true)
-    local homePetRestAnchor = homeIsland:FindFirstChild("HomePetRestAnchor", true)
+    local homePetRestAnchors = {}
+    for bedIndex = 1, 3 do
+        local anchorName = "HomePetRestAnchor" .. string.format("%02d", bedIndex)
+        local anchor = homeIsland:FindFirstChild(anchorName, true)
+        if anchor and anchor:IsA("BasePart") then
+            table.insert(homePetRestAnchors, {anchor = anchor, index = bedIndex})
+        end
+    end
 
     if houseUpgradeAnchor then
         prompt(houseUpgradeAnchor, "Твой дом", "Улучшить дом", function(visitor)
@@ -4153,37 +4163,42 @@ createPersonalCity = function(player, session)
         end)
     end
 
-    if homePetRestAnchor then
-        prompt(homePetRestAnchor, "Уголок питомцев", "Отдохнуть с компаньоном", function(visitor)
-            if visitor.UserId ~= ownerUserId then
-                return tip(visitor, "Это личный уголок питомцев хозяина острова.")
-            end
-            local visitorSession = sessions[visitor]
-            if not visitorSession or not visitor:GetAttribute("Ready") then return end
-            if visitor:GetAttribute("HomeInteriorActive") ~= true or visitorSession.homeInteriorIsland ~= homeIsland then
-                return tip(visitor, "Сначала войди в дом, чтобы позвать питомца на отдых.")
-            end
-            local companionId = visitor:GetAttribute("Companion")
-            if type(companionId) ~= "string" or table.find(COMPANION_IDS, companionId) == nil
-                or visitor:GetAttribute(companionId) ~= true then
-                return tip(visitor, "Сначала выбери своего питомца в альбоме.")
-            end
-            visitorSession.companionRestReadyAt = visitorSession.companionRestReadyAt or {}
-            local now = os.clock()
-            local readyAt = visitorSession.companionRestReadyAt[companionId] or 0
-            if now < readyAt then
-                return tip(visitor, "Питомец ещё отдыхает. Загляните сюда немного позже.")
-            end
-            visitorSession.companionRestReadyAt[companionId] = now + 45
-            local progressData = visitorSession.companionProgress[companionId]
-            progressData.bond = math.clamp((progressData.bond or 0) + 4, 0, 1000)
-            setCompanionMood(visitor, companionId, "Спокойствие")
-            syncCompanionProgress(visitor)
-            tip(visitor, pets[companionId] .. " уютно устроился в уголке отдыха. Дружба +4.")
-            if visitorSession.online and not save(visitor) then
-                warn("Companion rest save will be retried:", visitor.UserId, companionId)
-            end
+    local function restWithCompanion(visitor, bedIndex)
+        if visitor.UserId ~= ownerUserId then
+            return tip(visitor, "Это личный уголок питомцев хозяина острова.")
+        end
+        local visitorSession = sessions[visitor]
+        if not visitorSession or not visitor:GetAttribute("Ready") then return end
+        if visitor:GetAttribute("HomeInteriorActive") ~= true or visitorSession.homeInteriorIsland ~= homeIsland then
+            return tip(visitor, "Сначала войди в дом, чтобы позвать питомца на отдых.")
+        end
+        local companionId = visitor:GetAttribute("Companion")
+        if type(companionId) ~= "string" or table.find(COMPANION_IDS, companionId) == nil
+            or visitor:GetAttribute(companionId) ~= true then
+            return tip(visitor, "Сначала выбери своего питомца в альбоме.")
+        end
+        visitorSession.companionRestReadyAt = visitorSession.companionRestReadyAt or {}
+        local now = os.clock()
+        local readyAt = visitorSession.companionRestReadyAt[companionId] or 0
+        if now < readyAt then
+            return tip(visitor, "Питомец ещё отдыхает. Загляните сюда немного позже.")
+        end
+        visitorSession.companionRestReadyAt[companionId] = now + 45
+        local progressData = visitorSession.companionProgress[companionId]
+        progressData.bond = math.clamp((progressData.bond or 0) + 4, 0, 1000)
+        setCompanionMood(visitor, companionId, "Спокойствие")
+        syncCompanionProgress(visitor)
+        tip(visitor, pets[companionId] .. " уютно устроился на лежанке №" .. tostring(bedIndex) .. ". Дружба +4.")
+        if visitorSession.online and not save(visitor) then
+            warn("Companion rest save will be retried:", visitor.UserId, companionId)
+        end
+    end
+
+    for _, bedEntry in ipairs(homePetRestAnchors) do
+        local restPrompt = prompt(bedEntry.anchor, "Лежанка " .. tostring(bedEntry.index), "Отдохнуть здесь", function(visitor)
+            restWithCompanion(visitor, bedEntry.index)
         end)
+        restPrompt.MaxActivationDistance = 4
     end
 
     if homeExitAnchor then
