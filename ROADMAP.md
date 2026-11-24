@@ -2,10 +2,10 @@
 
 - [x] Проверять в шаблоне острова HomeSpawn, IslandPivot и Meadow.
 - [x] Проверять, что шаблон содержит не менее 8 геометрических BasePart, а не пустую модель.
-- [x] В Play проверять владельца клона острова, HomeSpawn, Meadow и созданную сервером модель PersonalCity.
+- [x] В Play проверять владельца клона острова, HomeSpawn, Meadow и созданную сервером модель PersonalCity; общий экземпляр острова у двух игроков считается FAIL.
 - [x] Проверять синхронизацию City_Level, Farm_Level, City_DecorationCount, City_BuildingCells и Warehouse_Capacity.
 - [x] Сохранить preflight строго read-only: без изменения атрибутов, удаления объектов и RemoteEvent-запросов.
-- [x] Добавить 5 контрактных тестов для проверок preflight.
+- [x] Добавить 6 контрактных тестов для проверок preflight, включая жёсткий FAIL при совпадении экземпляра острова у двух игроков.
 - [ ] Выполнить preflight в Roblox Studio в Edit и Play Server; приложить PASS/FAIL/BLOCKED и ошибки Output.
 
 ## Адаптивность HUD — контрактные проверки (24.11.2026)
