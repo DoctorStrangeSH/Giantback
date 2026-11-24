@@ -652,13 +652,20 @@ local function addSeedChoice(crop, selectedCrop)
     local coins = tonumber(player:GetAttribute("Coins")) or 0
     local offer = seedShopOffers[crop.id]
     local selected = selectedCrop == crop.id
-    local item = card(body, "Seed_" .. crop.id, 82)
+    local compact = gui.AbsoluteSize.X < 620
+    local item = card(body, "Seed_" .. crop.id, compact and 122 or 82)
     item.BackgroundColor3 = selected and Color3.fromRGB(235, 241, 218) or palette.paper
-    createPictogram(item, "CropIcon", crop.icon, 38, crop.color).Position = UDim2.fromOffset(12, 21)
-    label(item, "Name", crop.name, UDim2.new(1, -174, 0, 22), UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
-    label(item, "Details", crop.grow .. "  •  семян: " .. tostring(seeds), UDim2.new(1, -174, 0, 38), UDim2.fromOffset(60, 32), 10, palette.muted)
+    createPictogram(item, "CropIcon", crop.icon, 38, crop.color).Position = UDim2.fromOffset(12, compact and 10 or 21)
+    label(item, "Name", crop.name,
+        compact and UDim2.new(1, -68, 0, 24) or UDim2.new(1, -174, 0, 22),
+        UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
+    label(item, "Details", crop.grow .. "  •  семян: " .. tostring(seeds),
+        compact and UDim2.new(1, -68, 0, 22) or UDim2.new(1, -174, 0, 38),
+        UDim2.fromOffset(60, 33), 10, palette.muted)
+    local chooseSize = compact and UDim2.new(0.5, -18, 0, 34) or UDim2.fromOffset(102, 29)
+    local choosePosition = compact and UDim2.fromOffset(12, 78) or UDim2.new(1, -112, 0, 7)
     local choose = button(item, "Choose", selected and "ВЫБРАНО" or "ВЫБРАТЬ",
-        UDim2.fromOffset(102, 29), UDim2.new(1, -112, 0, 7), selected and palette.gold or palette.forest)
+        chooseSize, choosePosition, selected and palette.gold or palette.forest)
     choose.TextSize = 10
     choose.Activated:Connect(function()
         if seeds < 1 then
@@ -668,7 +675,9 @@ local function addSeedChoice(crop, selectedCrop)
         event:FireServer("SelectCrop", crop.id)
     end)
     local buy = button(item, "BuySeeds", "КУПИТЬ ×" .. tostring(offer.amount) .. " · " .. tostring(offer.cost) .. " мон.",
-        UDim2.fromOffset(102, 29), UDim2.new(1, -112, 0, 44), coins >= offer.cost and palette.gold or palette.paperDark)
+        compact and UDim2.new(0.5, -18, 0, 34) or UDim2.fromOffset(102, 29),
+        compact and UDim2.new(0.5, 6, 0, 78) or UDim2.new(1, -112, 0, 44),
+        coins >= offer.cost and palette.gold or palette.paperDark)
     buy.TextColor3 = coins >= offer.cost and palette.ink or palette.muted
     buy.TextSize = 8
     buy.Activated:Connect(function()
@@ -695,10 +704,15 @@ local function addPlot(plotId, index)
         local seconds = remaining % 60
         stateText = string.format("%s растёт — осталось %02d:%02d", crop and crop.name or "Растение", minutes, seconds)
     end
-    local item = card(body, "Plot" .. tostring(index), 66)
-    createPictogram(item, "PlotIcon", not unlocked and "lock" or (crop and crop.icon or "farm"), 34, palette.forest).Position = UDim2.fromOffset(14, 16)
-    label(item, "Title", "Грядка " .. tostring(index), UDim2.new(1, -72, 0, 22), UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
-    label(item, "State", stateText, UDim2.new(1, -72, 0, 30), UDim2.fromOffset(60, 31), 12, palette.muted)
+    local compact = gui.AbsoluteSize.X < 620
+    local item = card(body, "Plot" .. tostring(index), compact and 88 or 66)
+    createPictogram(item, "PlotIcon", not unlocked and "lock" or (crop and crop.icon or "farm"), 34, palette.forest)
+        .Position = UDim2.fromOffset(14, compact and 26 or 16)
+    label(item, "Title", "Грядка " .. tostring(index),
+        UDim2.new(1, -72, 0, 22), UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
+    local state = label(item, "State", stateText,
+        UDim2.new(1, -72, 0, compact and 46 or 30), UDim2.fromOffset(60, 31), compact and 11 or 12, palette.muted)
+    state.TextYAlignment = Enum.TextYAlignment.Top
 end
 
 local showToast
@@ -1202,7 +1216,7 @@ local function renderCity()
             UDim2.fromOffset(compact and 14 or 60, compact and 34 or 34), 10, palette.muted)
         description.TextWrapped = true
         description.TextYAlignment = Enum.TextYAlignment.Top
-        local action = button(item, "Place", compact and "ПОСТРОИТЬ · " .. definition.cost or "ПОСТРОИТЬ",
+        local action = button(item, "Place", compact and "ВЫБРАТЬ МЕСТО" or "ПОСТРОИТЬ",
             compact and UDim2.new(1, -24, 0, 28) or UDim2.fromOffset(124, 32),
             compact and UDim2.fromOffset(12, 78) or UDim2.new(1, -136, 0, 26),
             palette.forest)
@@ -1632,14 +1646,24 @@ local function renderDailyQuests()
         local done = progress >= goal
         if done then completed += 1 end
 
-        local item = card(body, "DailyQuest_" .. tostring(index), 78)
+        local compact = gui.AbsoluteSize.X < 620
+        local item = card(body, "DailyQuest_" .. tostring(index), compact and 112 or 78)
         item.BackgroundColor3 = done and Color3.fromRGB(235, 242, 224) or palette.paper
-        label(item, "Number", tostring(index), UDim2.fromOffset(36, 42), UDim2.fromOffset(10, 14), 19, done and palette.forestLight or palette.gold, Enum.Font.GothamBlack)
-        label(item, "Title", title, UDim2.new(1, -118, 0, 22), UDim2.fromOffset(54, 8), 13, palette.ink, Enum.Font.GothamBold)
-        label(item, "Hint", done and "Задание выполнено!" or description, UDim2.new(1, -118, 0, 20), UDim2.fromOffset(54, 30), 10, palette.muted)
+        label(item, "Number", tostring(index), UDim2.fromOffset(36, 42),
+            UDim2.fromOffset(10, compact and 8 or 14), 19, done and palette.forestLight or palette.gold, Enum.Font.GothamBlack)
+        label(item, "Title", title,
+            compact and UDim2.new(1, -126, 0, 36) or UDim2.new(1, -118, 0, 22),
+            UDim2.fromOffset(54, 8), 13, palette.ink, Enum.Font.GothamBold)
+        local hint = label(item, "Hint", done and "Задание выполнено!" or description,
+            compact and UDim2.new(1, -28, 0, 30) or UDim2.new(1, -118, 0, 20),
+            UDim2.fromOffset(compact and 14 or 54, compact and 48 or 30), 10, palette.muted)
+        hint.TextYAlignment = Enum.TextYAlignment.Top
         local difficultyNames = {easy = "ЛЕГКО", medium = "СРЕДНЕ", hard = "СЛОЖНО"}
-        local rewardText = label(item, "Reward", (difficultyNames[difficulty] or "СРЕДНЕ") .. "  •  +" .. tostring(questReward) .. " Coins", UDim2.new(1, -118, 0, 16), UDim2.fromOffset(54, 53), 9, difficulty == "hard" and palette.gold or palette.muted, Enum.Font.GothamBold)
-        local countLabel = label(item, "Progress", tostring(math.min(progress, goal)) .. "/" .. tostring(goal), UDim2.fromOffset(56, 24), UDim2.new(1, -66, 0.5, -12), 13, done and palette.forest or palette.ink, Enum.Font.GothamBlack)
+        local rewardText = label(item, "Reward", (difficultyNames[difficulty] or "СРЕДНЕ") .. "  •  +" .. tostring(questReward) .. " монет",
+            compact and UDim2.new(1, -90, 0, 18) or UDim2.new(1, -118, 0, 16),
+            UDim2.fromOffset(compact and 14 or 54, compact and 86 or 53), 9, difficulty == "hard" and palette.gold or palette.muted, Enum.Font.GothamBold)
+        local countLabel = label(item, "Progress", tostring(math.min(progress, goal)) .. "/" .. tostring(goal),
+            UDim2.fromOffset(56, 24), UDim2.new(1, -66, 0, compact and 8 or 27), 13, done and palette.forest or palette.ink, Enum.Font.GothamBlack)
         countLabel.TextXAlignment = Enum.TextXAlignment.Center
     end
 
