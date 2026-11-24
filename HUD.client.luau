@@ -1,3 +1,19 @@
+updatePlayOverlayLayout = function()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+    local viewport = camera.ViewportSize
+    local width = math.max(240, math.min(340, viewport.X - 24))
+    local height = math.max(180, math.min(210, viewport.Y - 24))
+    playOverlay.Size = UDim2.fromOffset(width, height)
+    playOverlay.Position = UDim2.fromScale(0.5, 0.5)
+    local buttonWidth = math.min(88, math.floor((width - 56) / 3))
+    local gap = (width - buttonWidth * 3) / 4
+    for index, item in playButtons do
+        item.Size = UDim2.fromOffset(buttonWidth, 58)
+        item.Position = UDim2.fromOffset(gap + (index - 1) * (buttonWidth + gap), height - 72)
+    end
+end
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -449,6 +465,7 @@ local closeActivePanel
 local applyPanelLayer
 local refreshActiveTab
 local lastCompactLayout
+local updatePlayOverlayLayout
 
 local function updateResponsiveLayout()
     local camera = workspace.CurrentCamera
@@ -522,6 +539,7 @@ local function updateResponsiveLayout()
     body.Size = UDim2.new(1, -24, 1, compact and -78 or -88)
     toast.Size = UDim2.fromOffset(math.min(380, math.max(190, viewport.X - 24)), 48)
     toast.Position = UDim2.new(0.5, 0, 1, compact and -68 or -96)
+    if updatePlayOverlayLayout then updatePlayOverlayLayout() end
 
     if lastCompactLayout ~= nil and lastCompactLayout ~= compact and refreshActiveTab then
         refreshActiveTab()
@@ -2268,6 +2286,8 @@ for index, symbol in playSymbols do
         end
     end)
 end
+
+updatePlayOverlayLayout()
 
 local function beginCompanionPlay(payload)
     if type(payload) ~= "table" or type(payload.token) ~= "string"
