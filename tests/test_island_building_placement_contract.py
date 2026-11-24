@@ -97,6 +97,8 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
             self.assertIn('"' + visual + '"', WORLD)
         self.assertIn('local placementCosts = {', HUD)
         self.assertIn('local requiredCost = placementCosts[placementState]', HUD)
+        self.assertIn('rotation = rotation', HUD)
+        self.assertIn('entry.rotation or CFrame.new()', HUD)
 
     def test_rotation_and_visuals_are_server_generated(self):
         self.assertIn('local rotation = (math.floor((tonumber(decoration.rotation) or 0) / 90 + 0.5) % 4) * 90', WORLD)
