@@ -1345,7 +1345,8 @@ local function renderPets()
         descriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
         local mood = player:GetAttribute("Companion_" .. pet.id .. "_Mood") or (pet.id == "Fox" and "Любопытство" or pet.id == "Moth" and "Спокойствие" or "Сияние")
         local moodLine = pet.id == "Fox" and "Любопытный исследователь" or pet.id == "Moth" and "Нежная хранительница света" or pet.id == "HarvestSprite" and "Добрый хранитель урожая" or pet.id == "BrambleBun" and "Осторожный собиратель" or pet.id == "MossTurtle" and "Спокойный защитник" or pet.id == "Glowcap" and "Светлый мечтатель" or pet.id == "Dewdrop" and "Весёлый непоседа" or pet.id == "Starling" and "Звёздный наблюдатель" or "Кристальный проводник"
-        local moodLabel = label(item, "Mood", owned and (moodLine .. " · " .. mood) or "Характер откроется при знакомстве",
+        local moodText = mood == "Довольство" and "Довольство" or mood == "Радость" and "Радость" or mood
+        local moodLabel = label(item, "Mood", owned and (moodLine .. " · " .. moodText) or "Характер откроется при знакомстве",
             compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, -220, 0, 18),
             UDim2.fromOffset(compact and 14 or 76, compact and 114 or 60), 10, palette.forest, Enum.Font.GothamBold)
         moodLabel.TextWrapped = true
