@@ -23,7 +23,7 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn('uv=mesh.uv_layers.new(name="WingUV")', source)
         self.assertIn("span = 1.30 if upper else 0.92", source)
         self.assertIn("outer_radius, inner_radius, inner_offset = 0.17, 0.132, 0.070", source)
-        self.assertIn("curve.bevel_depth = 0.045", source)
+        self.assertIn("curve.bevel_depth = 0.026", source)
         self.assertIn("length = 0.64 if upper else 0.50", source)
         self.assertIn("0.08 * (1.0 - t) + 0.24 * t + 0.86 * (math.sin", source)
         self.assertIn("width = (0.08 * (1.0 - t) + 0.24 * t + 0.86 * (math.sin(math.pi * t) ** 0.78)) * span * 1.08", source)
