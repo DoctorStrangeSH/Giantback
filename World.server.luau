@@ -225,7 +225,7 @@ local function normalizeCity(raw)
     local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}
     for _, saved in ipairs(rawBuildings) do
         if #city.buildings >= 24 then break end
-        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse" or saved.id == "GardenLamp") then
+        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse" or saved.id == "GardenLamp" or saved.id == "Fence" or saved.id == "WhiteFence" or saved.id == "StoneFence" or saved.id == "HedgeFence" or saved.id == "Bench" or saved.id == "DecorativeTree" or saved.id == "WoodenPath" or saved.id == "GardenArch" or saved.id == "BirdBath") then
             local x = tonumber(saved.x)
             local z = tonumber(saved.z)
             local rotation = tonumber(saved.rotation) or 0
@@ -3231,7 +3231,7 @@ end
 local function renderIslandDecoration(cityModel, meadow, decoration, index, ownerUserId)
     if not cityModel or not meadow or type(decoration) ~= "table" then return end
     local id = decoration.id
-    if id ~= "Path" and id ~= "FlowerBed" and id ~= "Cottage" and id ~= "Warehouse" and id ~= "Greenhouse" and id ~= "GardenLamp" then return end
+    if id ~= "Path" and id ~= "FlowerBed" and id ~= "Cottage" and id ~= "Warehouse" and id ~= "Greenhouse" and id ~= "GardenLamp" and id ~= "Fence" and id ~= "WhiteFence" and id ~= "StoneFence" and id ~= "HedgeFence" and id ~= "Bench" and id ~= "DecorativeTree" and id ~= "WoodenPath" and id ~= "GardenArch" and id ~= "BirdBath" then return end
 
     local x = math.clamp(tonumber(decoration.x) or 0, 0, 12)
     local z = math.clamp(tonumber(decoration.z) or 0, -4, 8)
@@ -3369,6 +3369,85 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
         prompt(withdrawAnchor, "Склад", "Забрать материалы", function(visitor)
             useWarehouse(visitor, ownerUserId, "Withdraw")
         end)
+    elseif id == "Fence" or id == "WhiteFence" or id == "StoneFence" or id == "HedgeFence" then
+        local styles = {
+            Fence = {post = Color3.fromRGB(119, 79, 49), rail = Color3.fromRGB(164, 119, 77), material = Enum.Material.WoodPlanks},
+            WhiteFence = {post = Color3.fromRGB(226, 218, 190), rail = Color3.fromRGB(244, 237, 214), material = Enum.Material.Wood},
+            StoneFence = {post = Color3.fromRGB(112, 119, 116), rail = Color3.fromRGB(151, 157, 149), material = Enum.Material.Slate},
+            HedgeFence = {post = Color3.fromRGB(73, 117, 65), rail = Color3.fromRGB(84, 145, 73), material = Enum.Material.Grass},
+        }
+        local style = styles[id]
+        for _, xOffset in {-1.68, 1.68} do
+            makeFarmVisualPart(model, "FencePost", Vector3.new(0.34, 1.42, 0.34), frame * CFrame.new(xOffset, 0.72, 0), style.post, Enum.PartType.Block, style.material)
+            if id == "WhiteFence" then
+                makeFarmVisualPart(model, "FencePostCap", Vector3.new(0.48, 0.2, 0.48), frame * CFrame.new(xOffset, 1.48, 0), Color3.fromRGB(250, 242, 217), Enum.PartType.Ball, Enum.Material.SmoothPlastic)
+            elseif id == "StoneFence" then
+                makeFarmVisualPart(model, "StoneFenceCap", Vector3.new(0.52, 0.22, 0.52), frame * CFrame.new(xOffset, 1.52, 0), Color3.fromRGB(174, 179, 169), Enum.PartType.Block, Enum.Material.Slate)
+            end
+        end
+        for _, yOffset in {0.55, 1.12} do
+            makeFarmVisualPart(model, "FenceRail", Vector3.new(3.5, id == "StoneFence" and 0.3 or 0.2, 0.24), frame * CFrame.new(0, yOffset, 0), style.rail, Enum.PartType.Block, style.material)
+        end
+        if id == "HedgeFence" then
+            for index = 1, 5 do
+                local leaf = makeFarmVisualPart(model, "HedgeLeaf", Vector3.new(0.92, 0.82, 0.72), frame * CFrame.new((index - 3) * 0.67, 1.12, 0), index % 2 == 0 and Color3.fromRGB(91, 158, 76) or Color3.fromRGB(75, 139, 68), Enum.PartType.Ball, Enum.Material.Grass)
+                leaf.CanCollide = false
+            end
+        end
+    elseif id == "Bench" then
+        local wood = Color3.fromRGB(143, 96, 58)
+        local dark = Color3.fromRGB(92, 62, 43)
+        makeFarmVisualPart(model, "BenchSeat", Vector3.new(3.15, 0.22, 1.05), frame * CFrame.new(0, 0.88, 0), wood, Enum.PartType.Block, Enum.Material.WoodPlanks)
+        for _, xOffset in {-1.25, 1.25} do
+            makeFarmVisualPart(model, "BenchLeg", Vector3.new(0.22, 0.82, 0.82), frame * CFrame.new(xOffset, 0.42, 0), dark, Enum.PartType.Block, Enum.Material.Wood)
+            makeFarmVisualPart(model, "BenchBackSupport", Vector3.new(0.18, 1.2, 0.18), frame * CFrame.new(xOffset, 1.35, 0.42), dark, Enum.PartType.Block, Enum.Material.Wood)
+        end
+        for _, yOffset in {1.38, 1.72} do
+            makeFarmVisualPart(model, "BenchBack", Vector3.new(3.12, 0.26, 0.18), frame * CFrame.new(0, yOffset, 0.48), wood, Enum.PartType.Block, Enum.Material.WoodPlanks)
+        end
+        for index = 1, 3 do
+            makeFarmVisualPart(model, "BenchSeatSlat", Vector3.new(3.1, 0.08, 0.08), frame * CFrame.new(0, 1.01, (index - 2) * 0.28), Color3.fromRGB(187, 137, 88), Enum.PartType.Block, Enum.Material.Wood)
+        end
+    elseif id == "DecorativeTree" then
+        makeFarmVisualPart(model, "TreeRoot", Vector3.new(1.45, 0.22, 1.45), frame * CFrame.new(0, 0.12, 0), Color3.fromRGB(99, 76, 52), Enum.PartType.Cylinder, Enum.Material.Ground)
+        makeFarmVisualPart(model, "TreeTrunk", Vector3.new(0.62, 2.5, 0.62), frame * CFrame.new(0, 1.34, 0), Color3.fromRGB(116, 76, 48), Enum.PartType.Cylinder, Enum.Material.Wood)
+        for index, offset in {Vector3.new(0, 3.0, 0), Vector3.new(-0.9, 2.65, 0.15), Vector3.new(0.88, 2.7, 0.08), Vector3.new(0.1, 3.75, 0.08), Vector3.new(-0.42, 3.32, -0.68), Vector3.new(0.48, 3.3, 0.66)} do
+            local crown = makeFarmVisualPart(model, "TreeCrown", Vector3.new(1.72, 1.68, 1.72), frame * CFrame.new(offset), index % 2 == 0 and Color3.fromRGB(104, 166, 88) or Color3.fromRGB(126, 184, 96), Enum.PartType.Ball, Enum.Material.Grass)
+            crown.CanCollide = false
+        end
+        for _, offset in {Vector3.new(-0.7, 3.2, -0.48), Vector3.new(0.72, 3.45, 0.3), Vector3.new(0.1, 4.05, -0.38), Vector3.new(-0.3, 2.82, 0.72)} do
+            local blossom = makeFarmVisualPart(model, "TreeBlossom", Vector3.new(0.34, 0.34, 0.34), frame * CFrame.new(offset), Color3.fromRGB(246, 196, 177), Enum.PartType.Ball, Enum.Material.SmoothPlastic)
+            blossom.CanCollide = false
+        end
+    elseif id == "WoodenPath" then
+        for index = 1, 5 do
+            local plank = makeFarmVisualPart(model, "WoodenPavingPlank", Vector3.new(3.25, 0.2, 0.58), frame * CFrame.new(0, 0.12, (index - 3) * 0.72), index % 2 == 0 and Color3.fromRGB(148, 104, 68) or Color3.fromRGB(169, 124, 82), Enum.PartType.Block, Enum.Material.WoodPlanks)
+            plank.CanCollide = true
+        end
+        for _, xOffset in {-1.48, 1.48} do
+            makeFarmVisualPart(model, "PathBorder", Vector3.new(0.18, 0.16, 3.8), frame * CFrame.new(xOffset, 0.08, 0), Color3.fromRGB(103, 83, 62), Enum.PartType.Block, Enum.Material.Wood)
+        end
+    elseif id == "GardenArch" then
+        for _, xOffset in {-1.42, 1.42} do
+            makeFarmVisualPart(model, "ArchPost", Vector3.new(0.34, 3.35, 0.34), frame * CFrame.new(xOffset, 1.7, 0), Color3.fromRGB(119, 83, 55), Enum.PartType.Block, Enum.Material.Wood)
+            for _, yOffset in {0.65, 1.25, 1.85, 2.45} do
+                local vine = makeFarmVisualPart(model, "ArchVine", Vector3.new(0.52, 0.38, 0.48), frame * CFrame.new(xOffset * 1.08, yOffset, -0.08), Color3.fromRGB(89, 151, 76), Enum.PartType.Ball, Enum.Material.Grass)
+                vine.CanCollide = false
+            end
+        end
+        makeFarmVisualPart(model, "ArchTop", Vector3.new(3.2, 0.42, 0.42), frame * CFrame.new(0, 3.38, 0), Color3.fromRGB(119, 83, 55), Enum.PartType.Block, Enum.Material.Wood)
+        for index = 1, 5 do
+            local flower = makeFarmVisualPart(model, "ArchFlower", Vector3.new(0.46, 0.42, 0.46), frame * CFrame.new((index - 3) * 0.58, 3.42, -0.02), index % 2 == 0 and Color3.fromRGB(232, 143, 153) or Color3.fromRGB(246, 190, 105), Enum.PartType.Ball, Enum.Material.SmoothPlastic)
+            flower.CanCollide = false
+        end
+    elseif id == "BirdBath" then
+        local stone = Color3.fromRGB(157, 160, 148)
+        makeFarmVisualPart(model, "BirdBathFoot", Vector3.new(1.55, 0.28, 1.55), frame * CFrame.new(0, 0.14, 0), Color3.fromRGB(119, 124, 116), Enum.PartType.Cylinder, Enum.Material.Slate)
+        makeFarmVisualPart(model, "BirdBathPedestal", Vector3.new(0.48, 1.48, 0.48), frame * CFrame.new(0, 0.98, 0), stone, Enum.PartType.Cylinder, Enum.Material.Slate)
+        makeFarmVisualPart(model, "BirdBathBowl", Vector3.new(2.2, 0.3, 2.2), frame * CFrame.new(0, 1.82, 0), stone, Enum.PartType.Cylinder, Enum.Material.Marble)
+        local water = makeFarmVisualPart(model, "BirdBathWater", Vector3.new(1.72, 0.08, 1.72), frame * CFrame.new(0, 2.0, 0), Color3.fromRGB(116, 190, 207), Enum.PartType.Cylinder, Enum.Material.Glass)
+        water.Transparency = 0.28
+        water.CanCollide = false
     elseif id == "Greenhouse" then
         local stone = Color3.fromRGB(112, 126, 111)
         local timber = Color3.fromRGB(119, 82, 53)
@@ -4139,6 +4218,15 @@ removeIslandDecoration = function(player, payload)
         Warehouse = {Wood = 5, Stone = 4},
         Greenhouse = {Wood = 9, Stone = 6},
         GardenLamp = {Wood = 3, Stone = 2},
+        Fence = {Wood = 3, Stone = 1},
+        WhiteFence = {Wood = 4, Stone = 1},
+        StoneFence = {Wood = 1, Stone = 4},
+        HedgeFence = {Wood = 3, Stone = 2},
+        Bench = {Wood = 4, Stone = 1},
+        DecorativeTree = {Wood = 3, Stone = 2},
+        WoodenPath = {Wood = 2, Stone = 0},
+        GardenArch = {Wood = 5, Stone = 3},
+        BirdBath = {Wood = 2, Stone = 3},
     }
     local refund = refunds[decoration.id]
     if not refund then return tip(player, "Этот объект пока нельзя разобрать.") end
@@ -4175,7 +4263,7 @@ placeIslandDecoration = function(player, payload)
     if type(payload) ~= "table" then return tip(player, "Не удалось прочитать место постройки.") end
 
     local decorationId = payload.id
-    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" and decorationId ~= "GardenLamp" then
+    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" and decorationId ~= "GardenLamp" and decorationId ~= "Fence" and decorationId ~= "WhiteFence" and decorationId ~= "StoneFence" and decorationId ~= "HedgeFence" and decorationId ~= "Bench" and decorationId ~= "DecorativeTree" and decorationId ~= "WoodenPath" and decorationId ~= "GardenArch" and decorationId ~= "BirdBath" then
         return tip(player, "Такого предмета пока нет в каталоге строительства.")
     end
     if decorationId == "Greenhouse" and session.city.farm.level < 3 then
@@ -4244,6 +4332,15 @@ placeIslandDecoration = function(player, payload)
         Warehouse = {Wood = 10, Stone = 8},
         Greenhouse = {Wood = 18, Stone = 12},
         GardenLamp = {Wood = 6, Stone = 4},
+        Fence = {Wood = 6, Stone = 2},
+        WhiteFence = {Wood = 8, Stone = 2},
+        StoneFence = {Wood = 2, Stone = 8},
+        HedgeFence = {Wood = 6, Stone = 4},
+        Bench = {Wood = 8, Stone = 2},
+        DecorativeTree = {Wood = 6, Stone = 4},
+        WoodenPath = {Wood = 4, Stone = 0},
+        GardenArch = {Wood = 10, Stone = 6},
+        BirdBath = {Wood = 4, Stone = 6},
     }
     local cost = costs[decorationId]
     local previousBuildings = copyCityBuildings(session.city.buildings)
@@ -4286,6 +4383,15 @@ placeIslandDecoration = function(player, payload)
             Warehouse = "Склад построен! Теперь можно хранить материалы.",
             Greenhouse = "Теплица готова! Новые посадки и повторный рост клубники ускорены на 15%.",
             GardenLamp = "Садовый фонарь установлен! Его можно включать и выключать у самого фонаря.",
+            Fence = "Деревянная ограда установлена!",
+            WhiteFence = "Белая ограда добавила острову уюта!",
+            StoneFence = "Каменная ограда обрамляет сад!",
+            HedgeFence = "Живая изгородь украсила твой остров!",
+            Bench = "Садовая скамейка готова. Самое время отдохнуть!",
+            DecorativeTree = "Цветущее дерево поселилось в твоём саду!",
+            WoodenPath = "Деревянная дорожка проложена!",
+            GardenArch = "Цветочная арка украсила вход в сад!",
+            BirdBath = "Купальня для птиц установлена!",
         }
         tip(player, placedMessages[decorationId])
     end
