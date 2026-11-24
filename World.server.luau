@@ -4192,7 +4192,7 @@ placeIslandDecoration = function(player, payload)
     syncFarm(player)
 
     if not save(player) then
-        rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, cost.Wood, cost.Stone)
+        rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, moveIndex and 0 or cost.Wood, moveIndex and 0 or cost.Stone)
         session.economyBusy = false
         return tip(player, "Сохранение не удалось. Постройка и материалы восстановлены.")
     end
