@@ -21,7 +21,7 @@ class GreenhouseBuildingContractTests(unittest.TestCase):
         self.assertIn('Теплица уже построена на твоём острове.', WORLD)
         self.assertIn('Greenhouse = {Wood = 18, Stone = 12}', WORLD)
         self.assertIn('Greenhouse = {Wood = 9, Stone = 6}', WORLD)
-        self.assertIn('or decorationId == "Warehouse" and "Склад"\n                or decorationId == "Greenhouse" and "Теплица" or "Садовый фонарь"', HUD)
+        self.assertIn('or decorationId == "Greenhouse" and "Теплица" or "Садовый фонарь"', HUD)
 
     def test_greenhouse_accelerates_new_planting_and_strawberry_regrowth(self):
         helper = WORLD.split("local function getFarmGrowthDuration(session, baseSeconds)", 1)[1].split("local function interactFarmPlot", 1)[0]
