@@ -9,7 +9,7 @@ HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 class IslandBuildingPlacementContractTests(unittest.TestCase):
     def test_only_known_decorations_are_normalized_and_saved(self):
-        self.assertIn('saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse"', WORLD)
+        self.assertIn('saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse" or saved.id == "GardenLamp"', WORLD)
         self.assertIn('city.storage[itemId] = math.clamp(math.floor(tonumber(rawStorage[itemId]) or 0), 0, WAREHOUSE_CAPACITY)', WORLD)
         self.assertIn('savedIsland.storage = citySnapshot.storage', WORLD)
         self.assertIn('local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}', WORLD)
@@ -19,7 +19,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
 
     def test_server_checks_ownership_location_bounds_capacity_and_cost(self):
         self.assertIn('if action == "PlaceIslandDecoration" then', WORLD)
-        self.assertIn('decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse"', WORLD)
+        self.assertIn('decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" and decorationId ~= "GardenLamp"', WORLD)
         self.assertIn('if #session.city.buildings >= 16 and not moveIndex then', WORLD)
         self.assertIn('(root.Position - meadow.Position).Magnitude > 22', WORLD)
         self.assertIn('(root.Position - targetFrame.Position).Magnitude > 24', WORLD)
@@ -64,7 +64,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('if action == "RemoveIslandDecoration" then', WORLD)
         self.assertIn('removeIslandDecoration = function(player, payload)', WORLD)
         self.assertIn('local movingDecoration = moveIndex and session.city.buildings[moveIndex] or nil', WORLD)
-        self.assertIn('session.city.buildings[moveIndex] = {id = decorationId, x = x, z = z, rotation = rotation}', WORLD)
+        self.assertIn('session.city.buildings[moveIndex] = movedBuilding', WORLD)
         self.assertIn('if index ~= moveIndex and existing.x == x and existing.z == z then', WORLD)
         self.assertIn('Greenhouse = {Wood = 9, Stone = 6}', WORLD)
         self.assertIn('session.inventory.Wood = (session.inventory.Wood or 0) + refund.Wood', WORLD)
@@ -119,6 +119,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('{id = "Cottage", title = "Уютный домик"', HUD)
         self.assertIn('{id = "Warehouse", title = "Склад"', HUD)
         self.assertIn('{id = "Greenhouse", title = "Теплица"', HUD)
+        self.assertIn('{id = "GardenLamp", title = "Садовый фонарь"', HUD)
         self.assertIn('Greenhouse = {Wood = 18, Stone = 12}', WORLD)
         self.assertIn('Greenhouse = {Wood = 9, Stone = 6}', WORLD)
         self.assertIn('if decorationId == "Greenhouse" and session.city.farm.level < 3 then', WORLD)
@@ -134,13 +135,29 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('Построй склад, чтобы хранить до 120 единиц', HUD)
         self.assertIn('placementState == "Cottage" and wood >= 8 and stone >= 6', HUD)
         self.assertIn('CottagePreviewWalls', HUD)
-        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" then return end', HUD)
-        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" then', WORLD)
+        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" and decorationId ~= "GardenLamp" then return end', HUD)
+        self.assertIn('if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" and decorationId ~= "GardenLamp" then', WORLD)
         self.assertIn('placedMessages[decorationId]', WORLD)
         self.assertIn('Cottage = {Wood = 4, Stone = 3}', WORLD)
         self.assertIn('beginIslandPlacement(definition.id)', HUD)
         self.assertIn('action.TextSize = compact and 9 or 10', HUD)
 
+
+    def test_garden_lamp_is_placeable_interactive_and_persistent(self):
+        self.assertIn('GardenLamp = {Wood = 6, Stone = 4}', WORLD)
+        self.assertIn('GardenLamp = {Wood = 3, Stone = 2}', WORLD)
+        self.assertIn('"GardenLampLight"', WORLD)
+        self.assertIn('glow.Enabled = decoration.lit ~= false', WORLD)
+        self.assertIn('local function toggleGardenLamp(player, ownerUserId, index, anchor)', WORLD)
+        self.assertIn('if player.UserId ~= ownerUserId then return tip(player, "Этот фонарь принадлежит другому игроку.") end', WORLD)
+        self.assertIn('if not save(player) then', WORLD)
+        self.assertIn('lit = saved.id == "GardenLamp" and saved.lit ~= false', WORLD)
+        self.assertIn('lit = building.lit', WORLD)
+        self.assertIn('movedBuilding.lit = movingDecoration.lit ~= false', WORLD)
+        self.assertIn('newBuilding.lit = true', WORLD)
+        self.assertIn('toggleGardenLamp(visitor, ownerUserId, index, anchor)', WORLD)
+        self.assertIn('GardenLampPreviewBase', HUD)
+        self.assertIn('placementState == "GardenLamp" and wood >= 6 and stone >= 4', HUD)
 
     def test_warehouse_transfers_are_server_authorized_and_transactional(self):
         warehouse = WORLD.split("local function useWarehouse(player, ownerUserId, action)", 1)[1].split("local COMPANION_IDS", 1)[0]
