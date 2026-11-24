@@ -2365,6 +2365,7 @@ local function init(player)
                 session.homeReturnCFrame = nil
                 session.homeInteriorIsland = nil
                 player:SetAttribute("HomeInteriorActive", false)
+                player:SetAttribute("HomeInteriorIslandOwnerUserId", 0)
                 character:PivotTo(session.homeSpawn.CFrame + Vector3.new(0, 4, 0))
             end
         end)
@@ -3956,7 +3957,7 @@ local function applyHomeHouseVisuals(homeIsland, houseLevel)
     for shelf = 1, 3 do
         add("BookcaseShelf", Vector3.new(0.65, 0.12, 1.85), Vector3.new(3.72, -1.55 + shelf * 0.62, 1.35), wood, Enum.Material.Wood)
     end
-    add("IndoorPlantPot", Vector3.new(0.62, 0.55, 0.62), Vector3.new(-3.55, -1.58, -2.15), Color3.fromRGB(177, 111, 73), Enum.Material.Ceramic, Enum.PartType.Cylinder)
+    add("IndoorPlantPot", Vector3.new(0.62, 0.55, 0.62), Vector3.new(-3.55, -1.58, -2.15), Color3.fromRGB(177, 111, 73), Enum.Material.SmoothPlastic, Enum.PartType.Cylinder)
     add("IndoorPlantLeaves", Vector3.new(0.9, 1.1, 0.9), Vector3.new(-3.55, -0.78, -2.15), Color3.fromRGB(93, 150, 94), Enum.Material.Grass, Enum.PartType.Ball)
     add("CeilingBeamFront", Vector3.new(8.0, 0.18, 0.2), Vector3.new(0, 2.28, -3.0), darkWood, Enum.Material.Wood)
     add("CeilingBeamBack", Vector3.new(8.0, 0.18, 0.2), Vector3.new(0, 2.28, 3.0), darkWood, Enum.Material.Wood)
@@ -4131,6 +4132,7 @@ createPersonalCity = function(player, session)
             end
             visitorSession.homeReturnCFrame = root.CFrame
             visitorSession.homeInteriorIsland = homeIsland
+            visitor:SetAttribute("HomeInteriorIslandOwnerUserId", ownerUserId)
             visitor:SetAttribute("HomeInteriorActive", true)
             character:PivotTo(homeInteriorSpawn.CFrame * CFrame.new(0, 0.3, 0))
             tip(visitor, "Добро пожаловать домой! Осмотрись и отдохни у камина.")
@@ -4150,6 +4152,7 @@ createPersonalCity = function(player, session)
             visitorSession.homeReturnCFrame = nil
             visitorSession.homeInteriorIsland = nil
             visitor:SetAttribute("HomeInteriorActive", false)
+            visitor:SetAttribute("HomeInteriorIslandOwnerUserId", 0)
             tip(visitor, "Ты снова во дворе своего острова.")
         end)
     end
@@ -5813,6 +5816,7 @@ Players.PlayerRemoving:Connect(function(player)
                     otherSession.homeReturnCFrame = nil
                     otherSession.homeInteriorIsland = nil
                     otherPlayer:SetAttribute("HomeInteriorActive", false)
+                    otherPlayer:SetAttribute("HomeInteriorIslandOwnerUserId", 0)
                     tip(otherPlayer, "Владелец острова вышел. Ты вернулся во двор.")
                 end
             end
