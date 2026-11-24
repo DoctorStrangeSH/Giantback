@@ -45,6 +45,7 @@ class HomeInteriorContractTests(unittest.TestCase):
         self.assertIn('prompt(homeExitAnchor, "Входная дверь", "Выйти во двор"', WORLD)
         self.assertIn("visitorSession.homeReturnCFrame = root.CFrame", WORLD)
         self.assertIn("visitorSession.homeInteriorIsland = homeIsland", WORLD)
+        self.assertIn('visitor:SetAttribute("HomeInteriorIslandOwnerUserId", ownerUserId)', WORLD)
         self.assertIn("visitorSession.homeReturnCFrame = nil", WORLD)
         self.assertIn('visitor:SetAttribute("HomeInteriorActive", false)', WORLD)
 
