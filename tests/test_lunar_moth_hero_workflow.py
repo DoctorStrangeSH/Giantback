@@ -63,9 +63,11 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
 
     def test_review_cameras_keep_hovering_moth_profile_level(self):
         source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
-        self.assertIn('"three_quarter":Vector((4.0,1.45,-5.0))', source)
-        self.assertIn('"side":Vector((6.0,1.45,0.0))', source)
-        self.assertIn('"back":Vector((0,1.45,6.0))', source)
+        self.assertIn('"three_quarter":Vector((4.0,0.0,-5.0)).normalized()', source)
+        self.assertIn('"side":Vector((1.0,0.0,0.0))', source)
+        self.assertIn('"back":Vector((0.0,0.0,1.0))', source)
+        self.assertIn('camera_up=right.cross(forward).normalized()', source)
+        self.assertIn('camera.rotation_euler=Matrix((right,camera_up,back)).transposed().to_quaternion().to_euler()', source)
 
     def test_mesh_report_uses_stable_ten_group_contract(self):
         source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
