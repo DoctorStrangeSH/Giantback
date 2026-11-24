@@ -536,11 +536,25 @@ local function createPlacementGhost(decorationId)
             makePlacementPart("CottagePreviewWindow", Vector3.new(0.82, 0.72, 0.12), Vector3.new(side * 1.12, 1.52, -1.72))
         end
         makePlacementPart("CottagePreviewChimney", Vector3.new(0.62, 1.55, 0.62), Vector3.new(1.18, 3.2, 0.82))
-    else
+    elseif decorationId == "Warehouse" then
         makePlacementPart("WarehousePreviewFoundation", Vector3.new(3.8, 0.28, 3.8), Vector3.new(0, 0.14, 0))
         makePlacementPart("WarehousePreviewBody", Vector3.new(3.35, 2.5, 3.25), Vector3.new(0, 1.5, 0))
         makePlacementPart("WarehousePreviewRoof", Vector3.new(3.95, 0.3, 3.9), Vector3.new(0, 2.95, 0))
         makePlacementPart("WarehousePreviewDoor", Vector3.new(1.15, 2.05, 0.16), Vector3.new(0, 1.08, -1.7))
+    elseif decorationId == "Greenhouse" then
+        makePlacementPart("GreenhousePreviewFoundation", Vector3.new(3.8, 0.22, 3.8), Vector3.new(0, 0.11, 0))
+        makePlacementPart("GreenhousePreviewSoil", Vector3.new(2.85, 0.12, 2.45), Vector3.new(0, 0.29, 0.12))
+        for _, xOffset in {-1.72, 1.72} do
+            for _, zOffset in {-1.72, 1.72} do
+                makePlacementPart("GreenhousePreviewPost", Vector3.new(0.2, 2.8, 0.2), Vector3.new(xOffset, 1.48, zOffset))
+            end
+        end
+        for _, side in {-1, 1} do
+            makePlacementPart("GreenhousePreviewGlass", Vector3.new(0.08, 2.5, 3.25), Vector3.new(side * 1.72, 1.48, 0))
+            makePlacementPart("GreenhousePreviewEndGlass", Vector3.new(3.25, 2.5, 0.08), Vector3.new(0, 1.48, side * 1.72))
+        end
+        makePlacementPart("GreenhousePreviewRoof", Vector3.new(3.72, 0.16, 3.72), Vector3.new(0, 2.86, 0))
+        makePlacementPart("GreenhousePreviewDoor", Vector3.new(0.95, 2.2, 0.12), Vector3.new(0, 1.18, -1.76))
     end
 end
 
@@ -625,10 +639,12 @@ local function updatePlacementGhost()
     local occupied = getOccupiedPlacementCells(placementMoveIndex)[cellKey] == true
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
     local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
+    local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
     local enough = placementMoveIndex ~= nil or (placementState == "Path" and wood >= 2
         or placementState == "FlowerBed" and wood >= 4 and stone >= 2
         or placementState == "Cottage" and wood >= 8 and stone >= 6
-        or placementState == "Warehouse" and wood >= 10 and stone >= 8)
+        or placementState == "Warehouse" and wood >= 10 and stone >= 8
+        or placementState == "Greenhouse" and farmLevel >= 3 and wood >= 18 and stone >= 12)
     local count = tonumber(player:GetAttribute("City_DecorationCount")) or 0
     local hasSpace = placementMoveIndex ~= nil or count < 12
     placementValid = inBounds and not occupied and enough and hasSpace
@@ -650,8 +666,10 @@ local function updatePlacementGhost()
         placementStatus.Text = "За пределами строительной площадки"
     elseif occupied then
         placementStatus.Text = "Это место уже занято"
+    elseif placementState == "Greenhouse" and farmLevel < 3 then
+        placementStatus.Text = "Теплица откроется на 3 уровне фермы"
     elseif not enough then
-        placementStatus.Text = "Не хватает материалов для постройки"
+        placementStatus.Text = "Нужно 18 дерева и 12 камня для постройки"
     elseif not hasSpace then
         placementStatus.Text = "Достигнут лимит: 12 построек"
     else
@@ -663,7 +681,7 @@ local function updatePlacementGhost()
 end
 
 local function beginIslandPlacement(decorationId, moveIndex)
-    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" then return end
+    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" then return end
     finishPlacement()
     placementState = decorationId
     placementMoveIndex = moveIndex
@@ -792,16 +810,18 @@ local function renderCity()
         {id = "FlowerBed", title = "Цветочная клумба", description = "Деревянная рамка и четыре цветка. Цена: 4 дерева и 2 камня.", cost = "4 ДЕРЕВА · 2 КАМНЯ", glyph = "Ц"},
         {id = "Cottage", title = "Уютный домик", description = "Домик с крышей, дверью, окнами и дымоходом. Цена: 8 дерева и 6 камня.", cost = "8 ДЕРЕВА · 6 КАМНЯ", glyph = "⌂"},
         {id = "Warehouse", title = "Склад", description = "Храни до 120 единиц дерева, камня, руды, слитков и урожая. Цена: 10 дерева и 8 камня.", cost = "10 ДЕРЕВА · 8 КАМНЯ", glyph = "С"},
+        {id = "Greenhouse", title = "Теплица", description = "На 3 уровне фермы. Новые посадки и повторный рост клубники на 15% быстрее. Цена: 18 дерева и 12 камня.", cost = "18 ДЕРЕВА · 12 КАМНЯ", glyph = "Т"},
     }
     for index = 1, decorationCount do
         local decorationId = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Id")
         local x = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_X")
         local z = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Z")
         local rotation = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Rotation")
-        if decorationId == "Path" or decorationId == "FlowerBed" or decorationId == "Cottage" or decorationId == "Warehouse" then
+        if decorationId == "Path" or decorationId == "FlowerBed" or decorationId == "Cottage" or decorationId == "Warehouse" or decorationId == "Greenhouse" then
             local title = decorationId == "Path" and "Каменная дорожка"
                 or decorationId == "FlowerBed" and "Цветочная клумба"
-                or decorationId == "Cottage" and "Уютный домик" or "Склад"
+                or decorationId == "Cottage" and "Уютный домик"
+                or decorationId == "Warehouse" and "Склад" or "Теплица"
             local item = card(body, "PlacedDecoration_" .. tostring(index), compact and 112 or 86)
             label(item, "Title", title .. " №" .. tostring(index),
                 UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 7), 13, palette.ink, Enum.Font.GothamBold)
@@ -842,9 +862,23 @@ local function renderCity()
             compact and UDim2.fromOffset(12, 78) or UDim2.new(1, -136, 0, 26),
             palette.forest)
         action.TextSize = compact and 9 or 10
-        action.Activated:Connect(function()
-            beginIslandPlacement(definition.id)
-        end)
+        local greenhouseBuilt = player:GetAttribute("Greenhouse_Built") == true
+        local greenhouseLocked = definition.id == "Greenhouse" and farmLevel < 3
+        if definition.id == "Greenhouse" and greenhouseBuilt then
+            action.Text = "УЖЕ ПОСТРОЕНА"
+            action.Active = false
+            action.AutoButtonColor = false
+            action.BackgroundColor3 = palette.paperDark
+        elseif greenhouseLocked then
+            action.Text = "ОТКРОЕТСЯ НА УР. 3"
+            action.Active = false
+            action.AutoButtonColor = false
+            action.BackgroundColor3 = palette.paperDark
+        else
+            action.Activated:Connect(function()
+                beginIslandPlacement(definition.id)
+            end)
+        end
     end
 end
 
@@ -893,6 +927,13 @@ local function renderFarm()
         table.insert(marketPriceSummary, crop.name .. " — " .. tostring(crop.sale) .. " мон.")
     end
     addInfo("Ферма • уровень " .. tostring(farmLevel), "Семян всего: " .. tostring(totalSeeds) .. ( #harvestSummary > 0 and "   •   Урожай: " .. table.concat(harvestSummary, ", ") or "   •   Урожай пока не собран"), 78)
+    if player:GetAttribute("Greenhouse_Built") == true then
+        addInfo("Теплица построена • +15% к скорости роста", "Бонус действует на новые посадки и повторное созревание клубники. Уже растущие культуры не меняют своё время.", 68)
+    elseif farmLevel >= 3 then
+        addInfo("Открыта теплица", "Построй её в разделе «Остров»: новые посадки и повторный рост клубники будут созревать на 15% быстрее.", 68)
+    else
+        addInfo("Теплица • открывается на 3 уровне", "Улучши ферму до максимального уровня, чтобы построить стеклянную теплицу.", 68)
+    end
     addInfo("1. Развитие фермы", "Улучшай ферму за монеты, чтобы открывать новые грядки. Сейчас доступно: " .. tostring(farmLevel == 1 and 1 or (farmLevel == 2 and 3 or 4)) .. " из 4.", 68)
     addFarmUpgrade(farmLevel)
     addInfo("2. Семена и магазин", "Монеты: " .. tostring(tonumber(player:GetAttribute("Coins")) or 0) .. ". Выбери культуру для посадки или купи набор семян. Покупка сохраняется в рюкзаке.", 76)
