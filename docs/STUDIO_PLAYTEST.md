@@ -6,6 +6,8 @@
 - 585 Python unittest пройдены.
 - Roblox place собран и структурно проверен: 88 именованных объектов, 18 скриптов.
 - Визуальные workflow Fox Hero (#616) и Lunar Moth (#397) для этого HEAD завершились успешно.
+- Fox Hero review: https://github.com/DoctorStrangeSH/Giantback/actions/runs/45375814839/artifacts/14911955507
+- Lunar Moth review: https://github.com/DoctorStrangeSH/Giantback/actions/runs/45375815155/artifacts/14912250018
 - Сборка: [Giantback-visual-build](https://github.com/DoctorStrangeSH/Giantback/actions/runs/45375814727).
 
 **Важно:** CI не запускает полноценную игровую сессию. До ручной приёмки нельзя считать строительство, DataStore, сохранение острова или адаптивный HUD проверенными в игре.
