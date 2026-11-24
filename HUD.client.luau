@@ -22,6 +22,68 @@ local TextService = game:GetService("TextService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
+local companionTemplateResolver = require(ReplicatedStorage:WaitForChild("CompanionTemplateResolver"))
+
+-- Only display imported hero meshes after the same Studio approval gates used by
+-- the live follower. Blockout fallbacks are deliberately never presented as hero art.
+local function createApprovedCompanionPreview(parent, companionId, objectName, size, position)
+    local expectedName = companionId == "Fox" and "FoxCompanion"
+        or companionId == "Moth" and "MothCompanion" or nil
+    if not expectedName then return false end
+
+    local template = companionTemplateResolver.resolve(ReplicatedStorage, companionId)
+    if not template or template.Name ~= expectedName
+        or template:GetAttribute("GiantbackImportStatus") ~= "Approved"
+        or template:GetAttribute("GiantbackRuntimeReady") ~= true
+        or template:GetAttribute("GiantbackProceduralAnimationCompatible") ~= true then
+        return false
+    end
+
+    local viewport = Instance.new("ViewportFrame")
+    viewport.Name = objectName
+    viewport.Size = size
+    viewport.Position = position
+    viewport.BackgroundColor3 = Color3.fromRGB(235, 239, 220)
+    viewport.BackgroundTransparency = 0.08
+    viewport.BorderSizePixel = 0
+    viewport.Ambient = Color3.fromRGB(190, 190, 190)
+    viewport.LightColor = Color3.fromRGB(255, 244, 220)
+    viewport.LightDirection = Vector3.new(-1, -1, -1)
+    viewport.Parent = parent
+    corner(viewport, 18)
+    stroke(viewport, palette.gold, 0.28, 1.5)
+
+    local worldModel = Instance.new("WorldModel")
+    worldModel.Name = "PreviewWorld"
+    worldModel.Parent = viewport
+    local clone = template:Clone()
+    clone.Name = "ApprovedPreview"
+    for _, descendant in clone:GetDescendants() do
+        if descendant:IsA("Script") or descendant:IsA("LocalScript") or descendant:IsA("ModuleScript") then
+            descendant:Destroy()
+        elseif descendant:IsA("BasePart") then
+            descendant.Anchored = true
+            descendant.CanCollide = false
+            descendant.CanTouch = false
+            descendant.CanQuery = false
+        end
+    end
+    clone.Parent = worldModel
+
+    local boundsCFrame, boundsSize = clone:GetBoundingBox()
+    local focus = boundsCFrame.Position
+    local extent = math.max(boundsSize.X, boundsSize.Y, boundsSize.Z, 1)
+    local camera = Instance.new("Camera")
+    camera.Name = "PreviewCamera"
+    camera.FieldOfView = 34
+    camera.CFrame = CFrame.lookAt(
+        focus + Vector3.new(extent * 0.82, extent * 0.32, extent * 2.15),
+        focus + Vector3.new(0, boundsSize.Y * 0.06, 0)
+    )
+    camera.Parent = viewport
+    viewport.CurrentCamera = camera
+    return true
+end
 
 local homeVisualsAddedConnection
 local homeIslandAddedConnection
@@ -2181,23 +2243,43 @@ local function renderExpeditions()
             local selectedOwned = player:GetAttribute(selectedPet.id) == true
             local selectedMutation = player:GetAttribute("Companion_" .. selectedPet.id .. "_Mutation")
             local selectedFound = selectedOwned and type(selectedMutation) == "string" and selectedMutation ~= ""
-            local detail = card(body, "CompanionAlbumDetail", 104)
+            local detail = card(body, "CompanionAlbumDetail", compactAlbum and 164 or 144)
             detail.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
-            createPictogram(detail, "DetailIcon", selectedFound and selectedPet.icon or "lock",
-                42, selectedFound and selectedPet.color or palette.muted).Position = UDim2.fromOffset(12, 16)
+            local hasHeroPreview = createApprovedCompanionPreview(
+                detail, selectedPet.id, "CompanionHeroPreview",
+                UDim2.fromOffset(compactAlbum and 88 or 104, compactAlbum and 88 or 104),
+                UDim2.fromOffset(12, 12)
+            )
+            if not hasHeroPreview then
+                local portraitPlate = Instance.new("Frame")
+                portraitPlate.Name = "PortraitInArtReview"
+                portraitPlate.Size = UDim2.fromOffset(72, 72)
+                portraitPlate.Position = UDim2.fromOffset(12, 18)
+                portraitPlate.BackgroundColor3 = selectedFound and selectedPet.color or palette.paperDark
+                portraitPlate.BackgroundTransparency = selectedFound and 0.78 or 0.18
+                portraitPlate.BorderSizePixel = 0
+                portraitPlate.Parent = detail
+                corner(portraitPlate, 20)
+                stroke(portraitPlate, selectedFound and selectedPet.color or palette.muted, 0.45, 1)
+                createPictogram(portraitPlate, "DetailIcon", selectedFound and selectedPet.icon or "lock",
+                    46, selectedFound and selectedPet.color or palette.muted).Position = UDim2.fromOffset(13, 13)
+            end
+            local textOffset = hasHeroPreview and (compactAlbum and 110 or 128) or 96
             label(detail, "DetailTitle", selectedPet.title,
-                UDim2.new(1, -76, 0, 22), UDim2.fromOffset(64, 8), 13, palette.ink, Enum.Font.GothamBlack)
+                UDim2.new(1, -textOffset - 12, 0, 26), UDim2.fromOffset(textOffset, 10), 13, palette.ink, Enum.Font.GothamBlack)
             local detailMutation = selectedFound
                 and tostring(player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationName") or "Особая форма")
                 or "Форма пока неизвестна"
-            label(detail, "DetailMutation", detailMutation,
-                UDim2.new(1, -76, 0, 20), UDim2.fromOffset(64, 32), 11,
+            local detailMutationLabel = label(detail, "DetailMutation", detailMutation,
+                UDim2.new(1, -textOffset - 12, 0, 32), UDim2.fromOffset(textOffset, 39), 11,
                 selectedFound and selectedPet.color or palette.muted, Enum.Font.GothamBold)
+            detailMutationLabel.TextYAlignment = Enum.TextYAlignment.Top
+            detailMutationLabel.TextWrapped = true
             local detailRarity = selectedFound
                 and ("Редкость: " .. tostring(player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationRarity") or "Необычная"))
                 or ("Где искать: " .. selectedPet.biome)
             local detailHint = label(detail, "DetailHint", detailRarity,
-                UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 66), 10, palette.muted)
+                UDim2.new(1, -24, 0, 34), UDim2.fromOffset(12, compactAlbum and 112 or 108), 10, palette.muted)
             detailHint.TextWrapped = true
             detailHint.TextYAlignment = Enum.TextYAlignment.Top
         end
