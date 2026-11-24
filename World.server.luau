@@ -3578,7 +3578,7 @@ local function interactFarmPlot(player, ownerUserId, plotId)
         state.plantedAt = now
         local growthSeconds = getFarmGrowthDuration(session, definition.growthSeconds)
         state.readyAt = now + growthSeconds
-        tip(player, definition.displayName .. " посажена! Рост займёт около " .. tostring(math.ceil(growthSeconds / 60)) .. " мин.)
+        tip(player, definition.displayName .. " посажена! Рост займёт около " .. tostring(math.ceil(growthSeconds / 60)) .. " мин.")
     else
         local definition = cropDefinitions[state.cropId]
         if not definition then
