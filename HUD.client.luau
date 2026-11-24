@@ -215,6 +215,19 @@ local function createPictogram(parent, name, kind, size, tint)
         part("Shell", 0.24, 0.08, 0.52, 0.82, palette.paper, nil, true)
         part("Spot1", 0.34, 0.30, 0.12, 0.12, color, nil, true)
         part("Spot2", 0.55, 0.56, 0.10, 0.10, color, nil, true)
+    elseif kind == "turtle" then
+        part("Shell", 0.12, 0.25, 0.70, 0.62, color, nil, true)
+        part("Head", 0.70, 0.48, 0.24, 0.24, palette.paper, nil, true)
+        part("LegL", 0.08, 0.64, 0.20, 0.20, palette.ink, nil, true)
+        part("LegR", 0.62, 0.78, 0.20, 0.18, palette.ink, nil, true)
+    elseif kind == "owl" then
+        part("EarL", 0.12, 0.10, 0.28, 0.30, color, -14)
+        part("EarR", 0.60, 0.10, 0.28, 0.30, color, 14)
+        part("Body", 0.18, 0.24, 0.64, 0.68, color, nil, true)
+        part("EyeL", 0.28, 0.42, 0.22, 0.22, palette.paper, nil, true)
+        part("EyeR", 0.50, 0.42, 0.22, 0.22, palette.paper, nil, true)
+        part("PupilL", 0.35, 0.49, 0.08, 0.08, palette.ink, nil, true)
+        part("PupilR", 0.57, 0.49, 0.08, 0.08, palette.ink, nil, true)
     elseif kind == "backpack" then
         part("Body", 0.18, 0.12, 0.64, 0.78, color)
         part("Pocket", 0.28, 0.52, 0.44, 0.28, palette.paper)
@@ -1270,7 +1283,7 @@ local function renderPets()
         {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "crystal"},
         {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "pumpkin"},
         {id = "BrambleBun", name = "Колючка", role = "Редкий • Лесной ёжик", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "paw"},
-        {id = "MossTurtle", name = "Мохопанцирь", role = "Редкий • Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "paw"},
+        {id = "MossTurtle", name = "Мохопанцирь", role = "Редкий • Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "turtle"},
         {id = "Glowcap", name = "Светошляп", role = "Эпический • Грибной огонёк", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "mushroom"},
         {id = "Dewdrop", name = "Росинка", role = "Эпический • Капля ручья", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "droplet"},
         {id = "Starling", name = "Звёздокрыл", role = "Легендарный • Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "paw"},
