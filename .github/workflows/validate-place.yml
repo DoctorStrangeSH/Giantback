@@ -109,6 +109,9 @@ jobs:
           required_markers = [
               "local function renderPets()",
               "local function getFarmGrowthDuration(session, baseSeconds)",
+              "local function copyCityBuildings(buildings)",
+              "local function rollbackCityBuildingOperation",
+              "Сохранение не удалось. Постройка и материалы восстановлены.",
               'if decorationId == "Greenhouse" and session.city.farm.level < 3 then',
               'player:SetAttribute("Greenhouse_Built"',
               '"GreenhouseGlassRoof"',
