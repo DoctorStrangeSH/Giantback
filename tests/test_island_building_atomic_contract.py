@@ -42,8 +42,15 @@ class IslandBuildingAtomicContractTests(unittest.TestCase):
         self.assertIn("stoneDelta", helper)
         self.assertIn("math.max(0, (session.inventory.Wood or 0) + woodDelta)", helper)
         self.assertIn("math.max(0, (session.inventory.Stone or 0) + stoneDelta)", helper)
-        self.assertIn("cost.Wood, cost.Stone", WORLD)
+        self.assertIn("moveIndex and 0 or cost.Wood, moveIndex and 0 or cost.Stone", WORLD)
         self.assertIn("-refund.Wood, -refund.Stone", WORLD)
+
+    def test_failed_move_never_refunds_a_purchase_cost(self):
+        placement = WORLD.split("placeIslandDecoration = function(player, payload)", 1)[1].split("local function encounter(", 1)[0]
+        self.assertIn("if moveIndex then", placement)
+        self.assertIn("else\n        session.inventory.Wood = previousWood - cost.Wood", placement)
+        self.assertIn("moveIndex and 0 or cost.Wood", placement)
+        self.assertIn("moveIndex and 0 or cost.Stone", placement)
 
     def test_rollback_rebuilds_visuals_and_syncs_player_attributes(self):
         helper = WORLD.split("local function rollbackCityBuildingOperation", 1)[1].split("removeIslandDecoration = function", 1)[0]
