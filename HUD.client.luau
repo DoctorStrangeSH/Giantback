@@ -1880,6 +1880,11 @@ local function renderDailyQuests()
     addInfo("ПРАЗДНИЧНЫЕ НАГРАДЫ", tostring(eventPoints) .. "/100 очков • доступно рубежей: " .. tostring(eventClaimable) .. " • " .. tostring(eventCoins) .. " Coins + " .. tostring(eventShards) .. " осколков", 48)
 end
 
+local companionAlbumFilter = "Все"
+local companionAlbumSort = "Редкость"
+local companionAlbumSearch = ""
+local companionAlbumSelected = nil
+
 local function renderExpeditions()
     renderDailyQuests()
     addInfo("ДНЕВНИК ЭКСПЕДИЦИЙ", "Записывай новые находки и выполненные задания. Все открытия сохраняются в твоём дневнике.", 78)
@@ -2003,7 +2008,114 @@ local function renderExpeditions()
     codexFill.Parent = codexTrack
     corner(codexFill, 4)
 
-    for index, pet in mutationPets do
+    local filterRow = Instance.new("Frame")
+    filterRow.Name = "CompanionAlbumFilters"
+    filterRow.Size = UDim2.new(1, 0, 0, 36)
+    filterRow.BackgroundTransparency = 1
+    filterRow.Parent = body
+    local filters = {
+        {id = "Все", title = "ВСЕ"},
+        {id = "Найдены", title = "НАЙДЕНЫ"},
+        {id = "Не найдены", title = "НЕ НАЙДЕНЫ"},
+    }
+    for index, filter in filters do
+        local active = companionAlbumFilter == filter.id
+        local filterButton = button(filterRow, "Filter_" .. tostring(index), filter.title,
+            UDim2.new(1 / 3, -6, 1, 0), UDim2.new((index - 1) / 3, (index - 1) * 3, 0, 0),
+            active and palette.forest or palette.paperDark)
+        filterButton.TextColor3 = active and palette.white or palette.ink
+        filterButton.TextSize = 9
+        filterButton.Activated:Connect(function()
+            companionAlbumFilter = filter.id
+            refreshActiveTab()
+        end)
+    end
+
+    local searchRow = Instance.new("Frame")
+    searchRow.Name = "CompanionAlbumSearchRow"
+    searchRow.Size = UDim2.new(1, 0, 0, 38)
+    searchRow.BackgroundTransparency = 1
+    searchRow.Parent = body
+    local searchBox = Instance.new("TextBox")
+    searchBox.Name = "CompanionAlbumSearch"
+    searchBox.Size = UDim2.new(1, -112, 1, 0)
+    searchBox.Position = UDim2.new()
+    searchBox.BackgroundColor3 = palette.white
+    searchBox.BorderSizePixel = 0
+    searchBox.ClearTextOnFocus = false
+    searchBox.Font = Enum.Font.GothamMedium
+    searchBox.TextSize = 12
+    searchBox.TextColor3 = palette.ink
+    searchBox.PlaceholderColor3 = palette.muted
+    searchBox.PlaceholderText = "Найти питомца или биом…"
+    searchBox.Text = companionAlbumSearch
+    searchBox.TextXAlignment = Enum.TextXAlignment.Left
+    searchBox.Parent = searchRow
+    corner(searchBox, 12)
+    stroke(searchBox, palette.paperDark, 0.15, 1)
+    local searchPadding = Instance.new("UIPadding")
+    searchPadding.PaddingLeft = UDim.new(0, 12)
+    searchPadding.PaddingRight = UDim.new(0, 8)
+    searchPadding.Parent = searchBox
+    local sortButton = button(searchRow, "SortByRarity", companionAlbumSort == "Редкость" and "РЕДКОСТЬ ↓" or "ИМЯ А–Я",
+        UDim2.fromOffset(104, 38), UDim2.new(1, -104, 0, 0), palette.lilac)
+    sortButton.TextColor3 = palette.ink
+    sortButton.TextSize = 9
+    sortButton.Activated:Connect(function()
+        companionAlbumSort = companionAlbumSort == "Редкость" and "Имя" or "Редкость"
+        refreshActiveTab()
+    end)
+    searchBox.FocusLost:Connect(function()
+        companionAlbumSearch = string.sub(searchBox.Text, 1, 48)
+        refreshActiveTab()
+    end)
+
+    local rarityOrder = {
+        ["мифическая"] = 6,
+        ["легендарная"] = 5,
+        ["эпическая"] = 4,
+        ["редкая"] = 3,
+        ["необычная"] = 2,
+        ["обычная"] = 1,
+    }
+    local visiblePets = {}
+    local normalizedSearch = string.lower(companionAlbumSearch)
+    for _, pet in mutationPets do
+        local owned = player:GetAttribute(pet.id) == true
+        local mutationId = player:GetAttribute("Companion_" .. pet.id .. "_Mutation")
+        local found = owned and type(mutationId) == "string" and mutationId ~= ""
+        local mutationName = player:GetAttribute("Companion_" .. pet.id .. "_MutationName")
+        local matchesFilter = companionAlbumFilter == "Все"
+            or (companionAlbumFilter == "Найдены" and found)
+            or (companionAlbumFilter == "Не найдены" and not found)
+        local searchable = string.lower(pet.title .. " " .. pet.biome .. " " .. tostring(mutationName or ""))
+        if matchesFilter and (normalizedSearch == "" or string.find(searchable, normalizedSearch, 1, true)) then
+            table.insert(visiblePets, pet)
+        end
+    end
+    table.sort(visiblePets, function(a, b)
+        if companionAlbumSort == "Имя" then
+            return a.title < b.title
+        end
+        local aRarity = string.lower(tostring(player:GetAttribute("Companion_" .. a.id .. "_MutationRarity") or ""))
+        local bRarity = string.lower(tostring(player:GetAttribute("Companion_" .. b.id .. "_MutationRarity") or ""))
+        local aRank = rarityOrder[aRarity] or 0
+        local bRank = rarityOrder[bRarity] or 0
+        if aRank == bRank then return a.title < b.title end
+        return aRank > bRank
+    end)
+    local selectedVisible = false
+    for _, pet in visiblePets do
+        if pet.id == companionAlbumSelected then selectedVisible = true break end
+    end
+    if not selectedVisible then companionAlbumSelected = nil end
+
+    local resultCount = label(body, "AlbumResultCount",
+        tostring(#visiblePets) .. " из " .. tostring(#mutationPets) .. " записей",
+        UDim2.new(1, 0, 0, 18), UDim2.new(), 10, palette.muted, Enum.Font.GothamBold)
+    resultCount.TextXAlignment = Enum.TextXAlignment.Right
+
+    for index, pet in visiblePets do
         local owned = player:GetAttribute(pet.id) == true
         local mutationId = player:GetAttribute("Companion_" .. pet.id .. "_Mutation")
         local found = owned and type(mutationId) == "string" and mutationId ~= ""
@@ -2036,12 +2148,55 @@ local function renderExpeditions()
             found and pet.color or palette.muted, Enum.Font.GothamBlack)
         local hintText = found and ("Найдено: " .. pet.biome) or ("Место поиска: " .. pet.biome)
         local hintLabel = label(item, "MutationBiome", hintText,
-            UDim2.new(1, -82, 0, 20), UDim2.fromOffset(68, compactAlbum and 67 or 55), 9, palette.muted)
+            UDim2.new(1, -158, 0, 20), UDim2.fromOffset(68, compactAlbum and 67 or 55), 9, palette.muted)
         hintLabel.TextWrapped = true
         local state = label(item, "MutationState", found and "ОТКРЫТО" or "ИСКАТЬ",
             UDim2.fromOffset(64, 20), UDim2.new(1, -72, 0, compactAlbum and 8 or 12),
             8, found and palette.forest or palette.muted, Enum.Font.GothamBlack)
         state.TextXAlignment = Enum.TextXAlignment.Center
+        local detailsButton = button(item, "Details",
+            companionAlbumSelected == pet.id and "ВЫБРАНО" or "ПОДРОБНЕЕ",
+            UDim2.fromOffset(76, 24), UDim2.new(1, -84, 1, -31),
+            companionAlbumSelected == pet.id and palette.gold or palette.forestLight)
+        detailsButton.TextColor3 = palette.white
+        detailsButton.TextSize = 8
+        detailsButton.Activated:Connect(function()
+            companionAlbumSelected = pet.id
+            refreshActiveTab()
+        end)
+    end
+    if companionAlbumSelected then
+        local selectedPet
+        for _, pet in mutationPets do
+            if pet.id == companionAlbumSelected then selectedPet = pet break end
+        end
+        if selectedPet then
+            local selectedOwned = player:GetAttribute(selectedPet.id) == true
+            local selectedMutation = player:GetAttribute("Companion_" .. selectedPet.id .. "_Mutation")
+            local selectedFound = selectedOwned and type(selectedMutation) == "string" and selectedMutation ~= ""
+            local detail = card(body, "CompanionAlbumDetail", 104)
+            detail.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
+            createPictogram(detail, "DetailIcon", selectedFound and selectedPet.icon or "lock",
+                42, selectedFound and selectedPet.color or palette.muted).Position = UDim2.fromOffset(12, 16)
+            label(detail, "DetailTitle", selectedPet.title,
+                UDim2.new(1, -76, 0, 22), UDim2.fromOffset(64, 8), 13, palette.ink, Enum.Font.GothamBlack)
+            local detailMutation = selectedFound
+                and tostring(player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationName") or "Особая форма")
+                or "Форма пока неизвестна"
+            label(detail, "DetailMutation", detailMutation,
+                UDim2.new(1, -76, 0, 20), UDim2.fromOffset(64, 32), 11,
+                selectedFound and selectedPet.color or palette.muted, Enum.Font.GothamBold)
+            local detailRarity = selectedFound
+                and ("Редкость: " .. tostring(player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationRarity") or "Необычная"))
+                or ("Где искать: " .. selectedPet.biome)
+            local detailHint = label(detail, "DetailHint", detailRarity,
+                UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 66), 10, palette.muted)
+            detailHint.TextWrapped = true
+            detailHint.TextYAlignment = Enum.TextYAlignment.Top
+        end
+    end
+    if #visiblePets == 0 then
+        addInfo("НИЧЕГО НЕ НАШЛОСЬ", "Измени запрос или выбери другой фильтр — альбом покажет подходящие записи.", 58)
     end
     local codexClaimed = player:GetAttribute("CompanionCodexRewardClaimed") == true
     local codexComplete = discoveredMutations == #mutationPets
