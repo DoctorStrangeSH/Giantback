@@ -535,7 +535,7 @@ local function updateResponsiveLayout()
         local titleLabel = navLabels[definition.id]
         if navButton then
             navButton.Size = UDim2.new(1 / #navDefinitions, narrow and -1 or compact and -4 or -8, 1, -8)
-            local iconSize = narrow and 16 or compact and 20 or 24
+            local iconSize = narrow and 18 or compact and 20 or 24
             if iconRoot then
                 iconRoot.Size = UDim2.fromOffset(iconSize, iconSize)
                 iconRoot.Position = narrow and UDim2.new(0.5, -iconSize / 2, 0.5, -iconSize / 2)
@@ -543,7 +543,7 @@ local function updateResponsiveLayout()
             end
             if titleLabel then
                 titleLabel.Visible = true
-                titleLabel.TextSize = narrow and 8 or compact and 9 or 11
+                titleLabel.TextSize = narrow and 9 or compact and 9 or 11
                 titleLabel.Position = UDim2.new(0, 1, 1, -20)
                 titleLabel.Size = UDim2.new(1, -2, 0, 16)
             end
@@ -2056,12 +2056,12 @@ local function openTab(tabName)
 end
 
 navDefinitions = {
-    {id = "City", title = "ДОМ", icon = "house"},
-    {id = "Farm", title = "ФЕРМА", icon = "farm"},
-    {id = "Pets", title = "ПИТОМЦЫ", icon = "paw"},
-    {id = "Tools", title = "СУМКА", icon = "backpack"},
-    {id = "World", title = "КАРТА", icon = "map"},
-    {id = "Expeditions", title = "ДНЕВНИК", icon = "journal"},
+    {id = "City", title = "Дом", icon = "house"},
+    {id = "Farm", title = "Ферма", icon = "farm"},
+    {id = "Pets", title = "Питомцы", icon = "paw"},
+    {id = "Tools", title = "Сумка", icon = "backpack"},
+    {id = "World", title = "Карта", icon = "map"},
+    {id = "Expeditions", title = "Дневник", icon = "journal"},
 }
 
 for _, definition in navDefinitions do
