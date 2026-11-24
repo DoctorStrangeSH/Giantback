@@ -14,22 +14,28 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('local UserInputService = game:GetService("UserInputService")', HUD)
         self.assertIn('local function updateResponsiveLayout()', HUD)
         self.assertIn('local compact = viewport.X < 620', HUD)
-        self.assertIn('local narrow = viewport.X < 420', HUD)
-        self.assertIn('local panelHeight = math.max(160, math.min(420, viewport.Y - (compact and 140 or 220)))', HUD)
+        self.assertIn('local narrow = viewport.X < 480', HUD)
+        self.assertIn('local shortScreen = viewport.Y < 440', HUD)
+        self.assertIn('local panelWidth = math.max(240, math.min(560, viewport.X - 16))', HUD)
+        self.assertIn('local panelHeight = math.max(210, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))', HUD)
         self.assertIn('panel.Size = UDim2.fromOffset(panelWidth, panelHeight)', HUD)
-        self.assertIn('nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 54 or 68)', HUD)
-        self.assertIn('navButton.Text = compact and definition.glyph', HUD)
+        self.assertIn('nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and (shortScreen and 48 or 56) or 72)', HUD)
+        self.assertIn('titleLabel.Visible = true', HUD)
         self.assertIn('ViewportSize"):Connect(updateResponsiveLayout)', HUD)
         self.assertIn('panel.Visible = true', HUD)
+        self.assertIn('gui.IgnoreGuiInset = false', HUD)
 
-    def test_critical_icons_have_font_safe_fallbacks(self):
-        for glyph in ('glyph = "О"', 'glyph = "Ф"', 'glyph = "П"',
-                      'glyph = "И"', 'glyph = "М"', 'glyph = "Д"',
-                      'icon = "Л"', 'icon = "М"', 'icon = "С"'):
-            self.assertIn(glyph, HUD)
-        self.assertNotIn('glyph = "📖"', HUD)
-        self.assertNotIn('icon = "🦊"', HUD)
-        self.assertNotIn('icon = "🦋"', HUD)
+    def test_important_icons_are_native_gui_pictograms(self):
+        self.assertIn('local function createPictogram(parent, name, kind, size, tint)', HUD)
+        self.assertIn('local function setPictogramColor(root, color)', HUD)
+        for icon_kind in ('house', 'farm', 'paw', 'backpack', 'map', 'journal',
+                          'wood', 'stone', 'fox', 'moth', 'crystal', 'carrot',
+                          'berry', 'pumpkin', 'cabbage', 'flower', 'greenhouse',
+                          'lamp', 'fence', 'bench', 'tree', 'birdbath'):
+            self.assertIn(f'"{icon_kind}"', HUD)
+        self.assertNotIn('glyph = "О"', HUD)
+        self.assertNotIn('icon = "Л"', HUD)
+        self.assertNotIn('definition.glyph', HUD)
 
     def test_bridges_are_wider_and_rails_follow_new_deck_edges(self):
         self.assertIn('(8.2, 0.55, plank_length)', BUILD)
