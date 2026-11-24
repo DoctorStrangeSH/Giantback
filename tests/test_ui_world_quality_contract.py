@@ -24,6 +24,9 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('ViewportSize"):Connect(updateResponsiveLayout)', HUD)
         self.assertIn('panel.Visible = true', HUD)
         self.assertIn('gui.IgnoreGuiInset = false', HUD)
+        self.assertIn('local updatePlayOverlayLayout', HUD)
+        self.assertIn('local width = math.max(240, math.min(340, viewport.X - 24))', HUD)
+        self.assertIn('updatePlayOverlayLayout()', HUD)
 
     def test_important_icons_are_native_gui_pictograms(self):
         self.assertIn('local function createPictogram(parent, name, kind, size, tint)', HUD)
