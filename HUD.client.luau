@@ -24,67 +24,6 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local companionTemplateResolver = require(ReplicatedStorage:WaitForChild("CompanionTemplateResolver"))
 
--- Only display imported hero meshes after the same Studio approval gates used by
--- the live follower. Blockout fallbacks are deliberately never presented as hero art.
-local function createApprovedCompanionPreview(parent, companionId, objectName, size, position)
-    local expectedName = companionId == "Fox" and "FoxCompanion"
-        or companionId == "Moth" and "MothCompanion" or nil
-    if not expectedName then return false end
-
-    local template = companionTemplateResolver.resolve(ReplicatedStorage, companionId)
-    if not template or template.Name ~= expectedName
-        or template:GetAttribute("GiantbackImportStatus") ~= "Approved"
-        or template:GetAttribute("GiantbackRuntimeReady") ~= true
-        or template:GetAttribute("GiantbackProceduralAnimationCompatible") ~= true then
-        return false
-    end
-
-    local viewport = Instance.new("ViewportFrame")
-    viewport.Name = objectName
-    viewport.Size = size
-    viewport.Position = position
-    viewport.BackgroundColor3 = Color3.fromRGB(235, 239, 220)
-    viewport.BackgroundTransparency = 0.08
-    viewport.BorderSizePixel = 0
-    viewport.Ambient = Color3.fromRGB(190, 190, 190)
-    viewport.LightColor = Color3.fromRGB(255, 244, 220)
-    viewport.LightDirection = Vector3.new(-1, -1, -1)
-    viewport.Parent = parent
-    corner(viewport, 18)
-    stroke(viewport, palette.gold, 0.28, 1.5)
-
-    local worldModel = Instance.new("WorldModel")
-    worldModel.Name = "PreviewWorld"
-    worldModel.Parent = viewport
-    local clone = template:Clone()
-    clone.Name = "ApprovedPreview"
-    for _, descendant in clone:GetDescendants() do
-        if descendant:IsA("Script") or descendant:IsA("LocalScript") or descendant:IsA("ModuleScript") then
-            descendant:Destroy()
-        elseif descendant:IsA("BasePart") then
-            descendant.Anchored = true
-            descendant.CanCollide = false
-            descendant.CanTouch = false
-            descendant.CanQuery = false
-        end
-    end
-    clone.Parent = worldModel
-
-    local boundsCFrame, boundsSize = clone:GetBoundingBox()
-    local focus = boundsCFrame.Position
-    local extent = math.max(boundsSize.X, boundsSize.Y, boundsSize.Z, 1)
-    local camera = Instance.new("Camera")
-    camera.Name = "PreviewCamera"
-    camera.FieldOfView = 34
-    camera.CFrame = CFrame.lookAt(
-        focus + Vector3.new(extent * 0.82, extent * 0.32, extent * 2.15),
-        focus + Vector3.new(0, boundsSize.Y * 0.06, 0)
-    )
-    camera.Parent = viewport
-    viewport.CurrentCamera = camera
-    return true
-end
-
 local homeVisualsAddedConnection
 local homeIslandAddedConnection
 local function refreshHomeInteriorView()
@@ -234,6 +173,67 @@ local function card(parent, name, height)
     corner(item, 16)
     stroke(item, palette.paperDark, 0.15, 1)
     return item
+end
+
+-- Only display imported hero meshes after the same Studio approval gates used by
+-- the live follower. Blockout fallbacks are deliberately never presented as hero art.
+local function createApprovedCompanionPreview(parent, companionId, objectName, size, position)
+    local expectedName = companionId == "Fox" and "FoxCompanion"
+        or companionId == "Moth" and "MothCompanion" or nil
+    if not expectedName then return false end
+
+    local template = companionTemplateResolver.resolve(ReplicatedStorage, companionId)
+    if not template or template.Name ~= expectedName
+        or template:GetAttribute("GiantbackImportStatus") ~= "Approved"
+        or template:GetAttribute("GiantbackRuntimeReady") ~= true
+        or template:GetAttribute("GiantbackProceduralAnimationCompatible") ~= true then
+        return false
+    end
+
+    local viewport = Instance.new("ViewportFrame")
+    viewport.Name = objectName
+    viewport.Size = size
+    viewport.Position = position
+    viewport.BackgroundColor3 = Color3.fromRGB(235, 239, 220)
+    viewport.BackgroundTransparency = 0.08
+    viewport.BorderSizePixel = 0
+    viewport.Ambient = Color3.fromRGB(190, 190, 190)
+    viewport.LightColor = Color3.fromRGB(255, 244, 220)
+    viewport.LightDirection = Vector3.new(-1, -1, -1)
+    viewport.Parent = parent
+    corner(viewport, 18)
+    stroke(viewport, palette.gold, 0.28, 1.5)
+
+    local worldModel = Instance.new("WorldModel")
+    worldModel.Name = "PreviewWorld"
+    worldModel.Parent = viewport
+    local clone = template:Clone()
+    clone.Name = "ApprovedPreview"
+    for _, descendant in clone:GetDescendants() do
+        if descendant:IsA("Script") or descendant:IsA("LocalScript") or descendant:IsA("ModuleScript") then
+            descendant:Destroy()
+        elseif descendant:IsA("BasePart") then
+            descendant.Anchored = true
+            descendant.CanCollide = false
+            descendant.CanTouch = false
+            descendant.CanQuery = false
+        end
+    end
+    clone.Parent = worldModel
+
+    local boundsCFrame, boundsSize = clone:GetBoundingBox()
+    local focus = boundsCFrame.Position
+    local extent = math.max(boundsSize.X, boundsSize.Y, boundsSize.Z, 1)
+    local camera = Instance.new("Camera")
+    camera.Name = "PreviewCamera"
+    camera.FieldOfView = 34
+    camera.CFrame = CFrame.lookAt(
+        focus + Vector3.new(extent * 0.82, extent * 0.32, extent * 2.15),
+        focus + Vector3.new(0, boundsSize.Y * 0.06, 0)
+    )
+    camera.Parent = viewport
+    viewport.CurrentCamera = camera
+    return true
 end
 
 -- Native GUI pictograms: no emoji/font dependency, so icons render consistently on all devices.
