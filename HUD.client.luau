@@ -592,11 +592,11 @@ local function createPlacementGhost(decorationId)
             flower.Color = Color3.fromRGB(232, 143, 153)
         end
     elseif decorationId == "BirdBath" then
-        makePlacementPart("BirdBathPreviewFoot", Vector3.new(1.55, 0.28, 1.55), Vector3.new(0, 0.14, 0), Enum.PartType.Cylinder)
-        makePlacementPart("BirdBathPreviewPedestal", Vector3.new(0.48, 1.48, 0.48), Vector3.new(0, 0.98, 0), Enum.PartType.Cylinder)
-        local bowl = makePlacementPart("BirdBathPreviewBowl", Vector3.new(2.2, 0.3, 2.2), Vector3.new(0, 1.82, 0), Enum.PartType.Cylinder)
+        makePlacementPart("BirdBathPreviewFoot", Vector3.new(0.28, 1.55, 1.55), Vector3.new(0, 0.14, 0), Enum.PartType.Cylinder)
+        makePlacementPart("BirdBathPreviewPedestal", Vector3.new(1.48, 0.48, 0.48), Vector3.new(0, 0.98, 0), Enum.PartType.Cylinder)
+        local bowl = makePlacementPart("BirdBathPreviewBowl", Vector3.new(0.3, 2.2, 2.2), Vector3.new(0, 1.82, 0), Enum.PartType.Cylinder)
         bowl.Color = Color3.fromRGB(157, 160, 148)
-        local water = makePlacementPart("BirdBathPreviewWater", Vector3.new(1.72, 0.08, 1.72), Vector3.new(0, 2.0, 0), Enum.PartType.Cylinder)
+        local water = makePlacementPart("BirdBathPreviewWater", Vector3.new(0.08, 1.72, 1.72), Vector3.new(0, 2.0, 0), Enum.PartType.Cylinder)
         water.Color = Color3.fromRGB(116, 190, 207)
     elseif decorationId == "Greenhouse" then
         makePlacementPart("GreenhousePreviewFoundation", Vector3.new(3.8, 0.22, 3.8), Vector3.new(0, 0.11, 0))
