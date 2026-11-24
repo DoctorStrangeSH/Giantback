@@ -3377,7 +3377,7 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
             HedgeFence = {post = Color3.fromRGB(73, 117, 65), rail = Color3.fromRGB(84, 145, 73), material = Enum.Material.Grass},
         }
         local style = styles[id]
-        for _, xOffset in {-1.68, 1.68} do
+        for _, xOffset in {-1.78, 1.78} do
             makeFarmVisualPart(model, "FencePost", Vector3.new(0.34, 1.42, 0.34), frame * CFrame.new(xOffset, 0.72, 0), style.post, Enum.PartType.Block, style.material)
             if id == "WhiteFence" then
                 makeFarmVisualPart(model, "FencePostCap", Vector3.new(0.48, 0.2, 0.48), frame * CFrame.new(xOffset, 1.48, 0), Color3.fromRGB(250, 242, 217), Enum.PartType.Ball, Enum.Material.SmoothPlastic)
@@ -3386,7 +3386,7 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
             end
         end
         for _, yOffset in {0.55, 1.12} do
-            makeFarmVisualPart(model, "FenceRail", Vector3.new(3.5, id == "StoneFence" and 0.3 or 0.2, 0.24), frame * CFrame.new(0, yOffset, 0), style.rail, Enum.PartType.Block, style.material)
+            makeFarmVisualPart(model, "FenceRail", Vector3.new(3.9, id == "StoneFence" and 0.3 or 0.2, 0.24), frame * CFrame.new(0, yOffset, 0), style.rail, Enum.PartType.Block, style.material)
         end
         if id == "HedgeFence" then
             for index = 1, 5 do
