@@ -21,7 +21,8 @@ class GreenhouseBuildingContractTests(unittest.TestCase):
         self.assertIn('Теплица уже построена на твоём острове.', WORLD)
         self.assertIn('Greenhouse = {Wood = 18, Stone = 12}', WORLD)
         self.assertIn('Greenhouse = {Wood = 9, Stone = 6}', WORLD)
-        self.assertIn('or decorationId == "Greenhouse" and "Теплица" or "Садовый фонарь"', HUD)
+        self.assertIn('Greenhouse = "Теплица"', HUD)
+        self.assertIn('GardenLamp = "Садовый фонарь"', HUD)
 
     def test_greenhouse_accelerates_new_planting_and_strawberry_regrowth(self):
         helper = WORLD.split("local function getFarmGrowthDuration(session, baseSeconds)", 1)[1].split("local function interactFarmPlot", 1)[0]
@@ -44,7 +45,8 @@ class GreenhouseBuildingContractTests(unittest.TestCase):
 
     def test_hud_explains_unlock_bonus_and_placement_requirements(self):
         self.assertIn('{id = "Greenhouse", title = "Теплица"', HUD)
-        self.assertIn('placementState == "Greenhouse" and farmLevel >= 3 and wood >= 18 and stone >= 12', HUD)
+        self.assertIn('Greenhouse = {Wood = 18, Stone = 12}', HUD)
+        self.assertIn('placementState ~= "Greenhouse" or farmLevel >= 3', HUD)
         self.assertIn('GreenhousePreviewGlass', HUD)
         self.assertIn('ОТКРОЕТСЯ НА УР. 3', HUD)
         self.assertIn('Теплица построена • +15% к скорости роста', HUD)
