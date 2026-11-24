@@ -440,7 +440,7 @@ def create_fox(p):
         [0.11, 0.17, 0.22, 0.20, 0.145], p["fox_orange"])
     # Cream tip starts exactly on the orange tail end to avoid a detached cap.
     plush_tail("FoxTailTip",
-        [(0.12, 1.70, 1.78), (0.10, 1.74, 1.82), (0.06, 1.80, 1.88),
+        [(0.08, 1.70, 1.78), (0.06, 1.74, 1.82), (0.04, 1.80, 1.88),
          (0.025, 1.86, 1.94), (0.00, 1.92, 1.98)],
         [0.17, 0.16, 0.13, 0.075, 0.010],
         [0.145, 0.135, 0.11, 0.062, 0.010], p["cream"])
@@ -620,7 +620,7 @@ RIG_PARTS = {
     "FoxLegFrontRight": {"runtime_name": "Paw", "pivot": [0.34, 0.78, -0.55], "animated": True},
     "FoxLegBackLeft": {"runtime_name": "Paw", "pivot": [-0.34, 0.78, 0.57], "animated": True},
     "FoxLegBackRight": {"runtime_name": "Paw", "pivot": [0.34, 0.78, 0.57], "animated": True},
-    "FoxTail": {"runtime_name": "Tail", "pivot": [0.15, 1.02, 0.68], "animated": True},
+    "FoxTail": {"runtime_name": "Tail", "pivot": [0.06, 1.02, 0.68], "animated": True},
     "FoxTailTip": {"runtime_name": "Tail tip", "pivot": [0.12, 1.91, 1.91], "animated": True, "attach_to": "FoxTail"},
     "FoxEyes": {"runtime_name": "Eye", "pivot": [0.0, 1.76, -1.105], "animated": False},
     "FoxEyeSparkles": {"runtime_name": "Eye shine", "pivot": [0.0, 1.825, -1.216], "animated": False},
