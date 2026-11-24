@@ -4016,10 +4016,12 @@ local function rebuildCityDecorations(player, session, cityModel, meadow)
     end
 end
 
-local function rollbackCityBuildingOperation(player, session, cityModel, meadow, buildings, wood, stone)
+local function rollbackCityBuildingOperation(player, session, cityModel, meadow, buildings, woodDelta, stoneDelta)
     session.city.buildings = buildings
-    session.inventory.Wood = wood
-    session.inventory.Stone = stone
+    -- Apply only this transaction's inverse delta. Other legitimate resource
+    -- pickups that happened while UpdateAsync yielded must not be erased.
+    session.inventory.Wood = math.max(0, (session.inventory.Wood or 0) + woodDelta)
+    session.inventory.Stone = math.max(0, (session.inventory.Stone or 0) + stoneDelta)
     rebuildCityDecorations(player, session, cityModel, meadow)
     syncInventory(player)
     syncFarm(player)
@@ -4069,19 +4071,17 @@ removeIslandDecoration = function(player, payload)
     if not refund then return tip(player, "Этот объект пока нельзя разобрать.") end
 
     local previousBuildings = copyCityBuildings(session.city.buildings)
-    local previousWood = session.inventory.Wood or 0
-    local previousStone = session.inventory.Stone or 0
     session.economyBusy = true
 
     table.remove(session.city.buildings, index)
-    session.inventory.Wood = previousWood + refund.Wood
-    session.inventory.Stone = previousStone + refund.Stone
+    session.inventory.Wood = (session.inventory.Wood or 0) + refund.Wood
+    session.inventory.Stone = (session.inventory.Stone or 0) + refund.Stone
     rebuildCityDecorations(player, session, cityModel, meadow)
     syncInventory(player)
     syncFarm(player)
 
     if not save(player) then
-        rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, previousWood, previousStone)
+        rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, -refund.Wood, -refund.Stone)
         session.economyBusy = false
         return tip(player, "Сохранение не удалось. Постройка и материалы восстановлены.")
     end
@@ -4192,7 +4192,7 @@ placeIslandDecoration = function(player, payload)
     syncFarm(player)
 
     if not save(player) then
-        rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, previousWood, previousStone)
+        rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, cost.Wood, cost.Stone)
         session.economyBusy = false
         return tip(player, "Сохранение не удалось. Постройка и материалы восстановлены.")
     end
