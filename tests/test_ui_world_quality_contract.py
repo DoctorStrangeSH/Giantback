@@ -82,6 +82,20 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('CompanionCodexRewardClaimed', HUD)
         self.assertIn('ClaimCompanionCodexReward', HUD)
 
+    def test_companion_album_filters_search_and_sort_are_interactive(self):
+        self.assertIn('local companionAlbumFilter = "Все"', HUD)
+        self.assertIn('local companionAlbumSort = "Редкость"', HUD)
+        self.assertIn('CompanionAlbumFilters', HUD)
+        self.assertIn('Filter_" .. tostring(index)', HUD)
+        self.assertIn('CompanionAlbumSearch', HUD)
+        self.assertIn('searchBox.FocusLost:Connect', HUD)
+        self.assertIn('string.find(searchable, normalizedSearch, 1, true)', HUD)
+        self.assertIn('rarityOrder[aRarity]', HUD)
+        self.assertIn('companionAlbumSort == "Имя"', HUD)
+        self.assertIn('CompanionAlbumDetail', HUD)
+        self.assertIn('detailsButton.Activated:Connect', HUD)
+        self.assertIn('НИЧЕГО НЕ НАШЛОСЬ', HUD)
+
     def test_bridges_are_wider_and_rails_follow_new_deck_edges(self):
         self.assertIn('(8.2, 0.55, plank_length)', BUILD)
         self.assertEqual(BUILD.count('side * 4.15'), 4)
