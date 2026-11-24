@@ -75,7 +75,7 @@ class HomeInteriorContractTests(unittest.TestCase):
 
     def test_each_pet_bed_has_its_own_stable_interaction_anchor(self):
         self.assertIn('for bedIndex = 1, 3 do', WORLD)
-        self.assertIn('ensureAnchor(anchorName, Vector3.new(bedX, -0.6, -1.8))', WORLD)
+        self.assertIn('ensureAnchor("HomePetRestAnchor" .. string.format("%02d", bedIndex), Vector3.new(bedX, -0.6, -1.8))', WORLD)
         self.assertIn('tostring(bedIndex) .. ". Дружба +4."', WORLD)
 
     def test_companion_rest_is_owner_only_and_updates_bond(self):
