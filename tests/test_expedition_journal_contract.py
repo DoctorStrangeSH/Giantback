@@ -64,6 +64,28 @@ class ExpeditionJournalContractTests(unittest.TestCase):
         self.assertNotIn('event:FireServer("GrantMutation"', HUD)
         self.assertIn('player.AttributeChanged:Connect(refresh)', HUD)
 
+    def test_completed_mutation_codex_has_an_in_game_reward_button(self):
+        self.assertIn('local codexClaimed = player:GetAttribute("CompanionCodexRewardClaimed") == true', HUD)
+        self.assertIn('local codexComplete = discoveredMutations == #mutationPets', HUD)
+        self.assertIn('"ClaimCompanionCodex"', HUD)
+        self.assertIn('event:FireServer("ClaimCompanionCodexReward")', HUD)
+        self.assertIn('codexClaimButton.Active = codexComplete and not codexClaimed', HUD)
+
+    def test_pet_codex_reward_checks_saved_mutations_and_rolls_back_on_failure(self):
+        self.assertIn('"CompanionCodexRewardClaimed"', WORLD.split("local progress =", 1)[1].split("local inventoryKeys", 1)[0])
+        branch = WORLD.split('if action == "ClaimCompanionCodexReward" then', 1)[1].split('if action == "ClaimWeeklyChallenges" then', 1)[0]
+        self.assertIn("for _, companionId in COMPANION_IDS do", branch)
+        self.assertIn("local mutationId = session.companionMutations[companionId]", branch)
+        self.assertIn("companionMutationLookup[companionId][mutationId] ~= nil", branch)
+        self.assertIn('player:GetAttribute(companionId) ~= true or not validMutation', branch)
+        self.assertIn('player:GetAttribute("CompanionCodexRewardClaimed") == true', branch)
+        self.assertIn("if session.economyBusy then", branch)
+        self.assertIn("if not session or not session.online then", branch)
+        self.assertIn("session.coins = previousCoins + 250", branch)
+        self.assertIn("if not save(player) then", branch)
+        self.assertIn('player:SetAttribute("CompanionCodexRewardClaimed", false)', branch)
+        self.assertIn("session.economyBusy = false", branch)
+
     def test_journal_is_read_only_and_refreshes_from_replicated_attributes(self):
         self.assertIn("return player:GetAttribute(step.key) == true", HUD)
         self.assertIn("player.AttributeChanged:Connect(refresh)", HUD)
