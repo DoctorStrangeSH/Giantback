@@ -23,6 +23,8 @@ class HomeHouseProgressionContractTests(unittest.TestCase):
         self.assertIn('add("SideExtension"', WORLD)
         self.assertIn('add("ManorUpper"', WORLD)
         self.assertIn('add("TowerRoof"', WORLD)
+        self.assertIn("if item:IsA(\"BasePart\") and solidParts[item.Name] then", WORLD)
+        self.assertIn("item.CanCollide = true", WORLD)
 
     def test_upgrade_is_owner_only_and_requires_persistable_profile(self):
         self.assertIn('if player.UserId ~= ownerUserId then return tip(player, "Этот дом принадлежит другому игроку.") end', WORLD)
