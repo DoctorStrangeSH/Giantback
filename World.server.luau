@@ -3234,7 +3234,7 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
     if id ~= "Path" and id ~= "FlowerBed" and id ~= "Cottage" and id ~= "Warehouse" and id ~= "Greenhouse" and id ~= "GardenLamp" then return end
 
     local x = math.clamp(tonumber(decoration.x) or 0, 0, 12)
-    local z = math.clamp(tonumber(decoration.z) or 0, -4, 4)
+    local z = math.clamp(tonumber(decoration.z) or 0, -4, 8)
     local rotation = (math.floor((tonumber(decoration.rotation) or 0) / 90 + 0.5) % 4) * 90
     local frame = meadow.CFrame * CFrame.new(x, meadow.Size.Y / 2 + 0.16, z) * CFrame.Angles(0, math.rad(rotation), 0)
     local model = Instance.new("Model")
@@ -3451,11 +3451,11 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
         local timber = Color3.fromRGB(105, 75, 50)
         local brass = Color3.fromRGB(207, 169, 91)
         makeFarmVisualPart(model, "GardenLampBase", Vector3.new(1.55, 0.28, 1.55),
-            frame * CFrame.new(0, 0.14, 0), stone, Enum.PartType.Cylinder, Enum.Material.Slate)
+            frame * CFrame.new(0, 0.14, 0), stone, Enum.PartType.Block, Enum.Material.Slate)
         makeFarmVisualPart(model, "GardenLampFoot", Vector3.new(0.72, 0.38, 0.72),
             frame * CFrame.new(0, 0.43, 0), timber, Enum.PartType.Block, Enum.Material.Wood)
         makeFarmVisualPart(model, "GardenLampPost", Vector3.new(0.3, 2.35, 0.3),
-            frame * CFrame.new(0, 1.75, 0), timber, Enum.PartType.Cylinder, Enum.Material.Wood)
+            frame * CFrame.new(0, 1.75, 0), timber, Enum.PartType.Block, Enum.Material.Wood)
         makeFarmVisualPart(model, "GardenLampArm", Vector3.new(1.1, 0.18, 0.18),
             frame * CFrame.new(0, 2.78, 0), brass, Enum.PartType.Block, Enum.Material.Metal)
         local lantern = makeFarmVisualPart(model, "GardenLampLantern", Vector3.new(0.82, 0.88, 0.82),
@@ -3464,7 +3464,7 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
         lantern.CanCollide = false
         local cap = makeFarmVisualPart(model, "GardenLampCap", Vector3.new(1.05, 0.18, 1.05),
             frame * CFrame.new(0, 3.75, 0), brass, Enum.PartType.Block, Enum.Material.Metal)
-        cap.Shape = Enum.PartType.Cylinder
+        cap.Shape = Enum.PartType.Block
         local glow = Instance.new("PointLight")
         glow.Name = "GardenLampLight"
         glow.Color = Color3.fromRGB(255, 211, 135)
