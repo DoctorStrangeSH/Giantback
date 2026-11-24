@@ -553,6 +553,51 @@ local function createPlacementGhost(decorationId)
         lantern.Transparency = 0.3
         local cap = makePlacementPart("GardenLampPreviewCap", Vector3.new(1.05, 0.18, 1.05), Vector3.new(0, 3.75, 0))
         cap.Color = Color3.fromRGB(207, 169, 91)
+    elseif decorationId == "Fence" or decorationId == "WhiteFence" or decorationId == "StoneFence" or decorationId == "HedgeFence" then
+        local color = decorationId == "WhiteFence" and Color3.fromRGB(244, 237, 214) or decorationId == "StoneFence" and Color3.fromRGB(151, 157, 149) or decorationId == "HedgeFence" and Color3.fromRGB(84, 145, 73) or Color3.fromRGB(164, 119, 77)
+        for _, xOffset in {-1.68, 1.68} do
+            local post = makePlacementPart("FencePreviewPost", Vector3.new(0.34, 1.42, 0.34), Vector3.new(xOffset, 0.72, 0))
+            post.Color = color
+        end
+        for _, yOffset in {0.55, 1.12} do
+            local rail = makePlacementPart("FencePreviewRail", Vector3.new(3.5, 0.2, 0.24), Vector3.new(0, yOffset, 0))
+            rail.Color = color
+        end
+        if decorationId == "HedgeFence" then
+            for index = 1, 5 do
+                local leaf = makePlacementPart("HedgeFencePreviewLeaf", Vector3.new(0.92, 0.82, 0.72), Vector3.new((index - 3) * 0.67, 1.12, 0), Enum.PartType.Ball)
+                leaf.Color = Color3.fromRGB(91, 158, 76)
+            end
+        end
+    elseif decorationId == "Bench" then
+        makePlacementPart("BenchPreviewSeat", Vector3.new(3.15, 0.22, 1.05), Vector3.new(0, 0.88, 0))
+        makePlacementPart("BenchPreviewBack", Vector3.new(3.12, 0.26, 0.18), Vector3.new(0, 1.55, 0.48))
+        for _, xOffset in {-1.25, 1.25} do makePlacementPart("BenchPreviewLeg", Vector3.new(0.22, 0.82, 0.82), Vector3.new(xOffset, 0.42, 0)) end
+    elseif decorationId == "DecorativeTree" then
+        makePlacementPart("TreePreviewTrunk", Vector3.new(0.62, 2.5, 0.62), Vector3.new(0, 1.34, 0))
+        for _, offset in {Vector3.new(0, 3.0, 0), Vector3.new(-0.9, 2.65, 0.15), Vector3.new(0.88, 2.7, 0.08), Vector3.new(0.1, 3.75, 0.08)} do
+            local crown = makePlacementPart("TreePreviewCrown", Vector3.new(1.72, 1.68, 1.72), offset, Enum.PartType.Ball)
+            crown.Color = Color3.fromRGB(104, 166, 88)
+        end
+    elseif decorationId == "WoodenPath" then
+        for index = 1, 5 do
+            local plank = makePlacementPart("WoodenPathPreviewPlank", Vector3.new(3.25, 0.2, 0.58), Vector3.new(0, 0.12, (index - 3) * 0.72))
+            plank.Color = Color3.fromRGB(148, 104, 68)
+        end
+    elseif decorationId == "GardenArch" then
+        for _, xOffset in {-1.42, 1.42} do makePlacementPart("GardenArchPreviewPost", Vector3.new(0.34, 3.35, 0.34), Vector3.new(xOffset, 1.7, 0)) end
+        makePlacementPart("GardenArchPreviewTop", Vector3.new(3.2, 0.42, 0.42), Vector3.new(0, 3.38, 0))
+        for index = 1, 5 do
+            local flower = makePlacementPart("GardenArchPreviewFlower", Vector3.new(0.46, 0.42, 0.46), Vector3.new((index - 3) * 0.58, 3.42, -0.02), Enum.PartType.Ball)
+            flower.Color = Color3.fromRGB(232, 143, 153)
+        end
+    elseif decorationId == "BirdBath" then
+        makePlacementPart("BirdBathPreviewFoot", Vector3.new(1.55, 0.28, 1.55), Vector3.new(0, 0.14, 0), Enum.PartType.Cylinder)
+        makePlacementPart("BirdBathPreviewPedestal", Vector3.new(0.48, 1.48, 0.48), Vector3.new(0, 0.98, 0), Enum.PartType.Cylinder)
+        local bowl = makePlacementPart("BirdBathPreviewBowl", Vector3.new(2.2, 0.3, 2.2), Vector3.new(0, 1.82, 0), Enum.PartType.Cylinder)
+        bowl.Color = Color3.fromRGB(157, 160, 148)
+        local water = makePlacementPart("BirdBathPreviewWater", Vector3.new(1.72, 0.08, 1.72), Vector3.new(0, 2.0, 0), Enum.PartType.Cylinder)
+        water.Color = Color3.fromRGB(116, 190, 207)
     elseif decorationId == "Greenhouse" then
         makePlacementPart("GreenhousePreviewFoundation", Vector3.new(3.8, 0.22, 3.8), Vector3.new(0, 0.11, 0))
         makePlacementPart("GreenhousePreviewSoil", Vector3.new(2.85, 0.12, 2.45), Vector3.new(0, 0.29, 0.12))
@@ -599,6 +644,17 @@ local function getOccupiedPlacementCells(excludedIndex)
     end
     return result
 end
+
+local placementCosts = {
+    Path = {Wood = 2, Stone = 0}, FlowerBed = {Wood = 4, Stone = 2},
+    Cottage = {Wood = 8, Stone = 6}, Warehouse = {Wood = 10, Stone = 8},
+    Greenhouse = {Wood = 18, Stone = 12}, GardenLamp = {Wood = 6, Stone = 4},
+    Fence = {Wood = 6, Stone = 2}, WhiteFence = {Wood = 8, Stone = 2},
+    StoneFence = {Wood = 2, Stone = 8}, HedgeFence = {Wood = 6, Stone = 4},
+    Bench = {Wood = 8, Stone = 2}, DecorativeTree = {Wood = 6, Stone = 4},
+    WoodenPath = {Wood = 4, Stone = 0}, GardenArch = {Wood = 10, Stone = 6},
+    BirdBath = {Wood = 4, Stone = 6},
+}
 
 local function updatePlacementGhost()
     if not placementState then return end
@@ -652,12 +708,11 @@ local function updatePlacementGhost()
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
     local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
-    local enough = placementMoveIndex ~= nil or (placementState == "Path" and wood >= 2
-        or placementState == "FlowerBed" and wood >= 4 and stone >= 2
-        or placementState == "Cottage" and wood >= 8 and stone >= 6
-        or placementState == "Warehouse" and wood >= 10 and stone >= 8
-        or placementState == "Greenhouse" and farmLevel >= 3 and wood >= 18 and stone >= 12
-        or placementState == "GardenLamp" and wood >= 6 and stone >= 4)
+    local requiredCost = placementCosts[placementState] or {Wood = 18, Stone = 12}
+    local enough = placementMoveIndex ~= nil or (
+        wood >= requiredCost.Wood and stone >= requiredCost.Stone
+        and (placementState ~= "Greenhouse" or farmLevel >= 3)
+    )
     local count = tonumber(player:GetAttribute("City_DecorationCount")) or 0
     local hasSpace = placementMoveIndex ~= nil or count < 16
     placementValid = inBounds and not occupied and enough and hasSpace
@@ -682,13 +737,8 @@ local function updatePlacementGhost()
     elseif placementState == "Greenhouse" and farmLevel < 3 then
         placementStatus.Text = "Теплица откроется на 3 уровне фермы"
     elseif not enough then
-        local costHint = placementState == "Path" and "2 дерева."
-            or placementState == "FlowerBed" and "4 дерева и 2 камня."
-            or placementState == "Cottage" and "8 дерева и 6 камня."
-            or placementState == "Warehouse" and "10 дерева и 8 камня."
-            or placementState == "GardenLamp" and "6 дерева и 4 камня."
-            or "18 дерева и 12 камня."
-        placementStatus.Text = "Не хватает материалов: " .. costHint
+        placementStatus.Text = "Не хватает материалов: дерево ×" .. tostring(requiredCost.Wood)
+            .. ", камень ×" .. tostring(requiredCost.Stone)
     elseif not hasSpace then
         placementStatus.Text = "Достигнут лимит: 16 построек"
     else
@@ -700,7 +750,7 @@ local function updatePlacementGhost()
 end
 
 local function beginIslandPlacement(decorationId, moveIndex)
-    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" and decorationId ~= "GardenLamp" then return end
+    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" and decorationId ~= "GardenLamp" and decorationId ~= "Fence" and decorationId ~= "WhiteFence" and decorationId ~= "StoneFence" and decorationId ~= "HedgeFence" and decorationId ~= "Bench" and decorationId ~= "DecorativeTree" and decorationId ~= "WoodenPath" and decorationId ~= "GardenArch" and decorationId ~= "BirdBath" then return end
     finishPlacement()
     placementState = decorationId
     placementMoveIndex = moveIndex
@@ -831,18 +881,40 @@ local function renderCity()
         {id = "Warehouse", title = "Склад", description = "Храни до 120 единиц дерева, камня, руды, слитков и урожая. Цена: 10 дерева и 8 камня.", cost = "10 ДЕРЕВА · 8 КАМНЯ", glyph = "С"},
         {id = "Greenhouse", title = "Теплица", description = "На 3 уровне фермы. Новые посадки и повторный рост клубники на 15% быстрее. Цена: 18 дерева и 12 камня.", cost = "18 ДЕРЕВА · 12 КАМНЯ", glyph = "Т"},
         {id = "GardenLamp", title = "Садовый фонарь", description = "Тёплый свет для вечернего сада. Включай и выключай у самого фонаря. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", glyph = "Ф"},
+        {id = "Fence", title = "Деревянная ограда", description = "Классический забор из тёплого дерева. Цена: 6 дерева и 2 камня.", cost = "6 ДЕРЕВА · 2 КАМНЯ", glyph = "О"},
+        {id = "WhiteFence", title = "Белая ограда", description = "Светлый аккуратный забор с фигурными столбиками. Цена: 8 дерева и 2 камня.", cost = "8 ДЕРЕВА · 2 КАМНЯ", glyph = "Б"},
+        {id = "StoneFence", title = "Каменная ограда", description = "Прочная ограда из светлого камня. Цена: 2 дерева и 8 камня.", cost = "2 ДЕРЕВА · 8 КАМНЯ", glyph = "К"},
+        {id = "HedgeFence", title = "Живая изгородь", description = "Плотная зелёная изгородь из кустов. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", glyph = "Ж"},
+        {id = "Bench", title = "Садовая скамейка", description = "Уютная деревянная скамейка со спинкой. Цена: 8 дерева и 2 камня.", cost = "8 ДЕРЕВА · 2 КАМНЯ", glyph = "С"},
+        {id = "DecorativeTree", title = "Цветущее дерево", description = "Небольшое дерево с пышной кроной и цветами. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", glyph = "Д"},
+        {id = "WoodenPath", title = "Деревянная дорожка", description = "Пять деревянных настилов для уютных тропинок. Цена: 4 дерева.", cost = "4 ДЕРЕВА", glyph = "П"},
+        {id = "GardenArch", title = "Цветочная арка", description = "Деревянная арка с цветами и зелёными побегами. Цена: 10 дерева и 6 камня.", cost = "10 ДЕРЕВА · 6 КАМНЯ", glyph = "А"},
+        {id = "BirdBath", title = "Купальня для птиц", description = "Каменная чаша с чистой водой. Цена: 4 дерева и 6 камня.", cost = "4 ДЕРЕВА · 6 КАМНЯ", glyph = "В"},
     }
     for index = 1, decorationCount do
         local decorationId = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Id")
         local x = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_X")
         local z = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Z")
         local rotation = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Rotation")
-        if decorationId == "Path" or decorationId == "FlowerBed" or decorationId == "Cottage" or decorationId == "Warehouse" or decorationId == "Greenhouse" or decorationId == "GardenLamp" then
-            local title = decorationId == "Path" and "Каменная дорожка"
-                or decorationId == "FlowerBed" and "Цветочная клумба"
-                or decorationId == "Cottage" and "Уютный домик"
-                or decorationId == "Warehouse" and "Склад"
-                or decorationId == "Greenhouse" and "Теплица" or "Садовый фонарь"
+        if decorationId == "Path" or decorationId == "FlowerBed" or decorationId == "Cottage" or decorationId == "Warehouse" or decorationId == "Greenhouse" or decorationId == "GardenLamp" or decorationId == "Fence" or decorationId == "WhiteFence" or decorationId == "StoneFence" or decorationId == "HedgeFence" or decorationId == "Bench" or decorationId == "DecorativeTree" or decorationId == "WoodenPath" or decorationId == "GardenArch" or decorationId == "BirdBath" then
+            local titles = {
+                Path = "Каменная дорожка",
+                FlowerBed = "Цветочная клумба",
+                Cottage = "Уютный домик",
+                Warehouse = "Склад",
+                Greenhouse = "Теплица",
+                GardenLamp = "Садовый фонарь",
+                Fence = "Деревянная ограда",
+                WhiteFence = "Белая ограда",
+                StoneFence = "Каменная ограда",
+                HedgeFence = "Живая изгородь",
+                Bench = "Садовая скамейка",
+                DecorativeTree = "Цветущее дерево",
+                WoodenPath = "Деревянная дорожка",
+                GardenArch = "Цветочная арка",
+                BirdBath = "Купальня для птиц",
+            }
+            local title = titles[decorationId] or "Постройка"
             local item = card(body, "PlacedDecoration_" .. tostring(index), compact and 112 or 86)
             label(item, "Title", title .. " №" .. tostring(index),
                 UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 7), 13, palette.ink, Enum.Font.GothamBold)
