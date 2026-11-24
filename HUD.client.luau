@@ -1568,7 +1568,7 @@ end
 local expeditionTracks = {
     {
         id = "Grove", title = "СОЛНЕЧНАЯ РОЩА", subtitle = "Следопытство и первые тайники",
-        icon = "Р", color = palette.mint,
+        icon = "fox", color = palette.mint,
         steps = {
             {key = "Fox", title = "Познакомиться с лисёнком", hint = "Найди гнездо лисёнка в Солнечной роще."},
             {key = "Seed", title = "Найти лунное семя", hint = "Позови лисёнка у следов на тропе."},
@@ -1577,7 +1577,7 @@ local expeditionTracks = {
     },
     {
         id = "Dusk", title = "СУМЕРЕЧНАЯ ДОЛИНА", subtitle = "Лунные цветы и древние руны",
-        icon = "С", color = palette.lilac,
+        icon = "moth", color = palette.lilac,
         steps = {
             {key = "Moth", title = "Познакомиться с лунной молью", hint = "Найди её в Сумеречной долине."},
             {key = "MoonBloom", title = "Пробудить лунный цветок", hint = "Позови моль к скрытому цветку."},
@@ -1858,7 +1858,7 @@ local function renderExpeditions()
 
         local header = card(body, track.id .. "Expedition", 70)
         header.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
-        label(header, "Icon", track.icon, UDim2.fromOffset(42, 46), UDim2.fromOffset(12, 12), 27, track.color, Enum.Font.GothamBold)
+        createPictogram(header, "TrackIcon", track.icon, 34, track.color).Position = UDim2.fromOffset(16, 18)
         label(header, "Title", track.title, UDim2.new(1, -130, 0, 22), UDim2.fromOffset(60, 10), 13, palette.ink, Enum.Font.GothamBlack)
         label(header, "Subtitle", track.subtitle, UDim2.new(1, -130, 0, 18), UDim2.fromOffset(60, 34), 10, palette.muted)
         local count = label(header, "Count", tostring(completed) .. "/" .. tostring(#track.steps), UDim2.fromOffset(52, 28), UDim2.new(1, -62, 0.5, -14), 14, track.color, Enum.Font.GothamBlack)
