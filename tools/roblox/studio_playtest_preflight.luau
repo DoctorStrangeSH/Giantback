@@ -149,9 +149,9 @@ if isRunning then
                     "Personal Meadow " .. tostring(player.UserId), "Buildable meadow missing")
                 record(child(home, "PersonalCity", "Model") ~= nil,
                     "PersonalCity runtime model " .. tostring(player.UserId), "City model was not initialized")
-                if distinct[home] then
-                    note("Island isolation", "Two players resolved to the same island instance")
-                end
+                record(not distinct[home],
+                    "Island isolation " .. tostring(player.UserId),
+                    "Two players resolved to the same island instance")
                 distinct[home] = true
             end
             record(typeof(player:GetAttribute("City_Level")) == "number",
