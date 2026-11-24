@@ -4160,6 +4160,9 @@ createPersonalCity = function(player, session)
             end
             local visitorSession = sessions[visitor]
             if not visitorSession or not visitor:GetAttribute("Ready") then return end
+            if visitor:GetAttribute("HomeInteriorActive") ~= true or visitorSession.homeInteriorIsland ~= homeIsland then
+                return tip(visitor, "Сначала войди в дом, чтобы позвать питомца на отдых.")
+            end
             local companionId = visitor:GetAttribute("Companion")
             if type(companionId) ~= "string" or table.find(COMPANION_IDS, companionId) == nil
                 or visitor:GetAttribute(companionId) ~= true then
