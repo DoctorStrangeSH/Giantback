@@ -87,7 +87,8 @@ class PersonalCityFarmContractTests(unittest.TestCase):
         self.assertIn("growthSeconds = 300", WORLD)
         self.assertIn("state.cropId = cropId", WORLD)
         self.assertIn("session.inventory[definition.seedItemId] -= 1", WORLD)
-        self.assertIn("state.readyAt = now + definition.growthSeconds", WORLD)
+        self.assertIn("getFarmGrowthDuration(session, definition.growthSeconds)", WORLD)
+        self.assertIn("state.readyAt = now + growthSeconds", WORLD)
         self.assertIn("if now < state.readyAt then", WORLD)
         self.assertIn("session.inventory[definition.harvestItemId]", WORLD)
 

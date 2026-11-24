@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - feat/cozy-world-visual-pass
+      - feature/personal-island-greenhouse
   pull_request:
     branches:
       - main
@@ -108,6 +109,25 @@ jobs:
 
           required_markers = [
               "local function renderPets()",
+              "local function getFarmGrowthDuration(session, baseSeconds)",
+              "local function copyCityBuildings(buildings)",
+              "local function rollbackCityBuildingOperation",
+              "Сохранение не удалось. Постройка и материалы восстановлены.",
+              'if decorationId == "Greenhouse" and session.city.farm.level < 3 then',
+              'player:SetAttribute("Greenhouse_Built"',
+              '"GreenhouseGlassRoof"',
+              '"FenceRail"',
+              '"BenchBack"',
+              '"TreeCrown"',
+              '"WoodenPavingPlank"',
+              '"ArchFlower"',
+              '"BirdBathWater"',
+              'local placementCosts = {',
+              'Fence = {Wood = 6, Stone = 2}',
+              'local function toggleGardenLamp(player, ownerUserId, index, anchor)',
+              'addInfo("Теплица построена • +15% к скорости роста"',
+              'Greenhouse = {Wood = 18, Stone = 12}',
+              'placementState ~= "Greenhouse" or farmLevel >= 3',
               'player:GetAttribute("Companion_" .. pet.id .. "_XPToNext")',
               "GiantbackAtmosphere",
               "AlbumAction",

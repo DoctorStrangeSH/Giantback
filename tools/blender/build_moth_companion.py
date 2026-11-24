@@ -15,7 +15,7 @@ from pathlib import Path
 
 import bpy
 import bmesh
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 GROUPS = (
     "MothHead", "MothThorax", "MothAbdomen",
@@ -146,7 +146,7 @@ def abdomen_band(name, y, rx, rz, material, segments=40):
 def crescent(name, center, side, material):
     # Build a crescent as a curved strip between two arcs, not a concave ngon.
     cx, cy, cz = center
-    outer_radius, inner_radius, inner_offset = 0.39, 0.325, 0.19
+    outer_radius, inner_radius, inner_offset = 0.17, 0.132, 0.070
     steps = 28
     outer_front, inner_front = [], []
     for step in range(steps + 1):
@@ -161,7 +161,7 @@ def crescent(name, center, side, material):
             cy + inner_radius * math.sin(angle),
             cz,
         ))
-    thickness = 0.018
+    thickness = 0.008
     outer_back = [(x, y, z + thickness) for x, y, z in outer_front]
     inner_back = [(x, y, z + thickness) for x, y, z in inner_front]
     vertices = outer_front + inner_front + outer_back + inner_back
@@ -202,8 +202,8 @@ def crescent(name, center, side, material):
 
 def wing(name, side, upper, materials):
     # Four individually pivoted, thick, scalloped wing shells. X is span, Y is lift.
-    span = 1.42 if upper else 1.04
-    length = 0.82 if upper else 0.66
+    span = 1.30 if upper else 0.92
+    length = 0.64 if upper else 0.50
     rows, cols = 18, 14
     root_x, root_y, root_z = side * 0.20, 1.52 if upper else 1.28, 0.10 if upper else 0.30
     verts, uvs, faces, material_ids = [], [], [], []
@@ -211,14 +211,14 @@ def wing(name, side, upper, materials):
         for r in range(rows + 1):
             t = r / rows
             # Wide outer lobe, pinched root, softly scalloped trailing edge.
-            width = (0.08 + 0.92 * (math.sin(math.pi * t) ** 0.75)) * span * 1.05
+            width = (0.08 * (1.0 - t) + 0.24 * t + 0.86 * (math.sin(math.pi * t) ** 0.78)) * span * 1.08
             if t > 0.72:
                 width *= 1.0 + 0.055 * math.sin((t - 0.72) * math.pi * 7.0)
             for col in range(cols + 1):
                 s = col / cols * 2.0 - 1.0
                 x = root_x + side * (t * span + s * width * 0.5)
                 y = root_y + t * length + (1.0 - s * s) * 0.11 * math.sin(math.pi * t)
-                z = root_z + 0.20 * t * t + 0.10 * (1.0 - s * s) - layer * 0.055
+                z = root_z + 0.20 * t * t + 0.16 * (1.0 - s * s) - layer * 0.11
                 verts.append((x, y, z))
                 uvs.append((col / cols, t))
     layer_size = (rows + 1) * (cols + 1)
@@ -260,14 +260,14 @@ def moth_leg(name, side, start_y, end_y, material):
     curve = bpy.data.curves.new(name + "Curve", "CURVE")
     curve.dimensions = "3D"
     curve.resolution_u = 12
-    curve.bevel_depth = 0.052
-    curve.bevel_resolution = 3
+    curve.bevel_depth = 0.018
+    curve.bevel_resolution = 4
     spline = curve.splines.new("BEZIER")
     spline.bezier_points.add(2)
     coords = [
-        (side * 0.24, start_y, -0.31),
-        (side * 0.42, (start_y + end_y) * 0.5, -0.34),
-        (side * 0.58, end_y, -0.32),
+        (side * 0.18, start_y, -0.29),
+        (side * 0.23, (start_y + end_y) * 0.5 - 0.06, -0.41),
+        (side * 0.29, end_y - 0.13, -0.49),
     ]
     for point, co in zip(spline.bezier_points, coords):
         point.co = co
@@ -276,7 +276,7 @@ def moth_leg(name, side, start_y, end_y, material):
     obj = bpy.data.objects.new(name, curve)
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(material)
-    foot = sphere(name + "Foot", coords[-1], (0.105, 0.070, 0.075), material, 20, 12)
+    foot = sphere(name + "Foot", coords[-1], (0.040, 0.030, 0.030), material, 20, 12)
     return [obj, foot]
 
 
@@ -332,15 +332,23 @@ def configure_scene(output):
 def render_views(camera, output):
     scene=bpy.context.scene
     center=Vector((0,1.45,0.12))
+    # Keep the moth upright in every view. Explicit Y-up camera basis prevents
+    # side/back views from rolling the hovering character onto its side.
     views={
-      "three_quarter":Vector((4.0,2.6,-5.0)),
-      "front":Vector((0,1.8,-6.0)),
-      "side":Vector((6.0,1.8,0.0)),
-      "back":Vector((0,1.8,6.0)),
+      "three_quarter":Vector((4.0,0.0,-5.0)).normalized(),
+      "front":Vector((0.0,0.0,-1.0)),
+      "side":Vector((1.0,0.0,0.0)),
+      "back":Vector((0.0,0.0,1.0)),
     }
+    distance=6.0
     for name,direction in views.items():
-        camera.location=center+direction
-        camera.rotation_euler=(center-camera.location).to_track_quat("-Z","Y").to_euler()
+        camera.location=center+direction*distance
+        forward=(center-camera.location).normalized()
+        world_up=Vector((0.0,1.0,0.0))
+        right=forward.cross(world_up).normalized()
+        camera_up=right.cross(forward).normalized()
+        back=-forward
+        camera.rotation_euler=Matrix((right,camera_up,back)).transposed().to_quaternion().to_euler()
         scene.render.filepath=str(output/f"moth_companion_hero_{name}.png")
         bpy.ops.render.render(write_still=True)
 
@@ -348,7 +356,7 @@ def render_views(camera, output):
 def mesh_report(objects, output):
     # Aggregate decorative mesh pieces into stable gameplay rig groups.
     def group_for(name):
-        if name == "MothHead" or name.startswith("MothEye"):
+        if name == "MothHead" or name.startswith(("MothEye", "MothSmile", "MothCheek")):
             return "MothHead"
         if name == "MothThorax" or name.startswith("MothThoraxLeg"):
             return "MothThorax"
@@ -405,6 +413,8 @@ def mesh_report(objects, output):
         json.dumps(report, indent=2), encoding="utf-8")
     return report
 
+# Fifth hero correction pass — broad rounded wings and level profile cameras.
+# Keep the legacy OBJ/MTL untouched; this remains a review asset, not an approved runtime rig.
 def main():
     options=args(); output=options.output_dir
     if output.exists() and any(output.iterdir()) and not options.overwrite:
@@ -432,32 +442,47 @@ def main():
         (1.79,0.08,0.09),
     ]
     parts.append(tapered_body("MothThorax",body_profile,ivory))
-    parts.append(sphere("MothHead",(0,1.91,-0.20),(0.43,0.40,0.36),ivory,48,32))
-    for band_index, (band_y, band_rx, band_rz) in enumerate((
-        (0.68,0.285,0.25),
-        (0.88,0.335,0.285),
-        (1.08,0.365,0.31),
-    )):
-        parts.append(abdomen_band(f"AbdomenBand{band_index}",band_y,band_rx,band_rz,gold))
+    parts.append(sphere("MothHead",(0,1.91,-0.20),(0.46,0.42,0.38),ivory,48,32))
+    # A soft warm belly patch replaces the three hard gold rings: the moth
+    # should read as one plush creature, not a mechanically segmented insect.
+    abdomen_mat=mat("abdomen_cream",(0.88,0.77,0.65),0.94)
+    parts.append(sphere("MothAbdomen",(0,0.88,-0.282),(0.235,0.335,0.034),abdomen_mat,40,28))
     for side,suffix in [(-1,"Left"),(1,"Right")]:
-        parts.append(sphere("MothEye"+suffix,(side*0.215,1.97,-0.535),(0.09,0.11,0.04),plum,28,18))
+        parts.append(sphere("MothEye"+suffix,(side*0.17,1.98,-0.535),(0.067,0.085,0.035),plum,28,18))
+        parts.append(sphere("MothCheek"+suffix,(side*0.275,1.82,-0.515),(0.047,0.030,0.020),rose,20,12))
         parts.extend(antenna("MothAntenna"+suffix,side,gold))
-        for leg_index, (start_y, end_y) in enumerate(((1.05,0.88),(0.84,0.68),(0.64,0.50))):
+        for leg_index, (start_y, end_y) in enumerate(((1.02,0.88),(0.84,0.72),(0.68,0.56))):
             parts.extend(moth_leg("MothThoraxLeg"+suffix+str(leg_index+1),side,start_y,end_y,ivory))
-    parts.append(sphere("MothGlowCore",(0,1.55,-0.365),(0.13,0.145,0.08),glow,32,20))
+    # The glow is a chest gem, not a mouth. A small curved smile gives the face a clear expression.
+    smile_curve = bpy.data.curves.new("MothSmileCurve", "CURVE")
+    smile_curve.dimensions = "3D"
+    smile_curve.bevel_depth = 0.012
+    smile_curve.bevel_resolution = 3
+    smile = smile_curve.splines.new("BEZIER")
+    smile.bezier_points.add(2)
+    for point, co in zip(smile.bezier_points, [(-0.075,1.755,-0.562),(0,1.725,-0.574),(0.075,1.755,-0.562)]):
+        point.co = co
+        point.handle_left_type = "AUTO"
+        point.handle_right_type = "AUTO"
+    smile_obj = bpy.data.objects.new("MothSmile", smile_curve)
+    bpy.context.collection.objects.link(smile_obj)
+    smile_obj.data.materials.append(plum)
+    parts.append(smile_obj)
+    parts.append(sphere("MothGlowCore",(0,1.30,-0.385),(0.105,0.115,0.055),glow,32,20))
     wing_mats=[lilac,rose,cyan,gold]
     for side,suffix in [(-1,"Left"),(1,"Right")]:
         for upper,wing_name in ((True,"Upper"),(False,"Lower")):
             parts.append(wing("MothWing"+wing_name+suffix,side,upper,wing_mats))
-            span = 1.42 if upper else 1.04
-            length = 0.82 if upper else 0.66
+            span = 1.30 if upper else 0.92
+            length = 0.64 if upper else 0.50
             root_x = side * 0.20
             root_y = 1.52 if upper else 1.28
             root_z = 0.10 if upper else 0.30
-            t = 0.46
+            # Tiny gold moon marks sit on the camera-facing membrane surface, not behind it.
+            t = 0.62
             mark_x = root_x + side * t * span
-            mark_y = root_y + t * length + 0.055
-            mark_z = root_z + 0.20 * t * t + 0.10 - 0.055 - 0.012
+            mark_y = root_y + t * length + 0.015
+            mark_z = root_z + 0.20 * t * t + 0.16 - 0.11 - 0.012
             parts.append(crescent(
                 "WingMoon" + wing_name + suffix,
                 (mark_x, mark_y, mark_z),

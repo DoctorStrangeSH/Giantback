@@ -35,7 +35,8 @@ class FarmingRegistryTests(unittest.TestCase):
     def test_harvest_is_guarded_and_strawberry_regrows(self):
         self.assertIn("session.farmActionBusy[plotId]", WORLD)
         self.assertIn("definition.regrowSeconds", WORLD)
-        self.assertIn("state.readyAt = now + definition.regrowSeconds", WORLD)
+        self.assertIn("getFarmGrowthDuration(session, definition.regrowSeconds)", WORLD)
+        self.assertIn("state.readyAt = now + regrowSeconds", WORLD)
         self.assertIn("session.inventory[definition.harvestItemId]", WORLD)
         self.assertIn("if now < state.readyAt then", WORLD)
 
@@ -62,7 +63,8 @@ class FarmingRegistryTests(unittest.TestCase):
         self.assertIn("plantedAt = safeTimestamp(saved.plantedAt)", WORLD)
         self.assertIn("readyAt = safeTimestamp(saved.readyAt)", WORLD)
         self.assertIn("state.plantedAt = now", WORLD)
-        self.assertIn("state.readyAt = now + definition.growthSeconds", WORLD)
+        self.assertIn("getFarmGrowthDuration(session, definition.growthSeconds)", WORLD)
+        self.assertIn("state.readyAt = now + growthSeconds", WORLD)
 
 
 if __name__ == "__main__":

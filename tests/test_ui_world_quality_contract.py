@@ -14,22 +14,109 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('local UserInputService = game:GetService("UserInputService")', HUD)
         self.assertIn('local function updateResponsiveLayout()', HUD)
         self.assertIn('local compact = viewport.X < 620', HUD)
-        self.assertIn('local narrow = viewport.X < 420', HUD)
-        self.assertIn('local panelHeight = math.max(160, math.min(420, viewport.Y - (compact and 140 or 220)))', HUD)
+        self.assertIn('local narrow = viewport.X < 480', HUD)
+        self.assertIn('local shortScreen = viewport.Y < 440', HUD)
+        self.assertIn('local panelWidth = math.max(240, math.min(560, viewport.X - 16))', HUD)
+        self.assertIn('local panelHeight = math.max(210, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))', HUD)
         self.assertIn('panel.Size = UDim2.fromOffset(panelWidth, panelHeight)', HUD)
-        self.assertIn('nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 54 or 68)', HUD)
-        self.assertIn('navButton.Text = compact and definition.glyph', HUD)
+        self.assertIn('nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and (shortScreen and 48 or 56) or 72)', HUD)
+        self.assertIn('titleLabel.Visible = true', HUD)
         self.assertIn('ViewportSize"):Connect(updateResponsiveLayout)', HUD)
         self.assertIn('panel.Visible = true', HUD)
+        self.assertIn('gui.IgnoreGuiInset = false', HUD)
+        self.assertIn('local updatePlayOverlayLayout', HUD)
+        self.assertIn('local width = math.max(240, math.min(340, viewport.X - 24))', HUD)
+        self.assertIn('updatePlayOverlayLayout()', HUD)
 
-    def test_critical_icons_have_font_safe_fallbacks(self):
-        for glyph in ('glyph = "О"', 'glyph = "Ф"', 'glyph = "П"',
-                      'glyph = "И"', 'glyph = "М"', 'glyph = "Д"',
-                      'icon = "Л"', 'icon = "М"', 'icon = "С"'):
-            self.assertIn(glyph, HUD)
-        self.assertNotIn('glyph = "📖"', HUD)
-        self.assertNotIn('icon = "🦊"', HUD)
-        self.assertNotIn('icon = "🦋"', HUD)
+    def test_farm_and_daily_quest_cards_reflow_on_compact_screens(self):
+        self.assertIn('local compact = gui.AbsoluteSize.X < 620', HUD)
+        self.assertIn('card(body, "Seed_" .. crop.id, compact and 122 or 82)', HUD)
+        self.assertIn('compact and UDim2.new(0.5, -18, 0, 34)', HUD)
+        self.assertIn('card(body, "Plot" .. tostring(index), compact and 88 or 66)', HUD)
+        self.assertIn('card(body, "DailyQuest_" .. tostring(index), compact and 112 or 78)', HUD)
+        self.assertIn('compact and UDim2.new(1, -28, 0, 30)', HUD)
+        self.assertIn('compact and "ВЫБРАТЬ МЕСТО" or "ПОСТРОИТЬ"', HUD)
+
+    def test_pet_actions_have_touch_friendly_compact_targets(self):
+        self.assertIn('card(body, pet.id .. "Card", compact and 330 or 214)', HUD)
+        self.assertIn('local actionSize = compact and UDim2.new(0.5, -18, 0, 36)', HUD)
+        self.assertIn('compact and UDim2.fromOffset(12, 284)', HUD)
+        self.assertIn('compact and UDim2.new(0.5, 6, 0, 284)', HUD)
+
+    def test_weekly_challenges_reflow_and_use_their_real_index(self):
+        self.assertIn('card(body, "WeeklyChallenge_" .. tostring(index), compact and 112 or 72)', HUD)
+        self.assertIn('label(item, "Number", tostring(index)', HUD)
+        self.assertIn('compact and UDim2.new(1, -28, 0, 30)', HUD)
+        self.assertIn('UDim2.fromOffset(compact and 14 or 54, compact and 84 or 51)', HUD)
+        self.assertIn('compact and UDim2.new(1, -90, 0, 18)', HUD)
+
+    def test_important_icons_are_native_gui_pictograms(self):
+        self.assertIn('local function createPictogram(parent, name, kind, size, tint)', HUD)
+        self.assertIn('local function setPictogramColor(root, color)', HUD)
+        self.assertIn('part("FallbackBadge"', HUD)
+        self.assertIn('FallbackMark', HUD)
+        self.assertIn('local playSymbols = {"1", "2", "3"}', HUD)
+        self.assertNotIn(' · ✦ ', HUD)
+        self.assertNotIn('☀ Солнечные лепестки', HUD)
+        self.assertNotIn('☾ Лунные лепестки', HUD)
+        for icon_kind in ('house', 'farm', 'paw', 'backpack', 'map', 'journal',
+                          'wood', 'stone', 'fox', 'moth', 'crystal', 'carrot',
+                          'berry', 'pumpkin', 'cabbage', 'flower', 'greenhouse',
+                          'lamp', 'fence', 'bench', 'tree', 'birdbath', 'axe',
+                          'pickaxe', 'sword', 'egg', 'owl', 'turtle'):
+            self.assertIn(f'"{icon_kind}"', HUD)
+        self.assertNotIn('glyph = "О"', HUD)
+        self.assertNotIn('icon = "Л"', HUD)
+        self.assertNotIn('definition.glyph', HUD)
+
+    def test_companion_mutation_album_has_progress_discovery_states_and_visual_cards(self):
+        self.assertIn('card(body, "CompanionMutationCodexHeader", 82)', HUD)
+        self.assertIn('CodexProgressTrack', HUD)
+        self.assertIn('CodexProgressFill', HUD)
+        self.assertIn('discoveredMutations / #mutationPets', HUD)
+        self.assertIn('card(body, "CompanionMutationCodex_" .. tostring(index), compactAlbum and 116 or 104)', HUD)
+        self.assertIn('MutationIconPlate', HUD)
+        self.assertIn('found and pet.icon or "lock"', HUD)
+        self.assertIn('found and "ОТКРЫТО" or "ИСКАТЬ"', HUD)
+        self.assertIn('"Место поиска: " .. pet.biome', HUD)
+        self.assertIn('CompanionCodexRewardClaimed', HUD)
+        self.assertIn('ClaimCompanionCodexReward', HUD)
+
+    def test_companion_album_filters_search_and_sort_are_interactive(self):
+        self.assertIn('local companionAlbumFilter = "Все"', HUD)
+        self.assertIn('local companionAlbumSort = "Редкость"', HUD)
+        self.assertIn('CompanionAlbumFilters', HUD)
+        self.assertIn('Filter_" .. tostring(index)', HUD)
+        self.assertIn('CompanionAlbumSearch', HUD)
+        self.assertIn('searchBox.FocusLost:Connect(function(enterPressed)', HUD)
+        self.assertIn('button(searchRow, "SearchAlbum", "ПОИСК"', HUD)
+        self.assertIn('companionAlbumSearch = string.sub(searchBox.Text, 1, 48)', HUD)
+        self.assertIn('string.find(searchable, normalizedSearch, 1, true)', HUD)
+        self.assertIn('rarityOrder[aRarity]', HUD)
+        self.assertIn('companionAlbumSort == "Имя"', HUD)
+        self.assertIn('CompanionAlbumDetail', HUD)
+        self.assertIn('detailsButton.Activated:Connect', HUD)
+        self.assertIn('НИЧЕГО НЕ НАШЛОСЬ', HUD)
+
+    def test_companion_album_detail_action_has_dedicated_card_space(self):
+        self.assertIn('compactAlbum and 116 or 104', HUD)
+        self.assertIn('UDim2.fromOffset(76, 24)', HUD)
+        self.assertIn('UDim2.new(1, -158, 0, 20)', HUD)
+        self.assertIn('UDim2.new(1, -84, 1, -31)', HUD)
+
+    def test_album_3d_previews_require_studio_approved_hero_models(self):
+        self.assertIn('require(ReplicatedStorage:WaitForChild("CompanionTemplateResolver"))', HUD)
+        self.assertIn('createApprovedCompanionPreview', HUD)
+        self.assertIn('template.Name ~= expectedName', HUD)
+        self.assertIn('GiantbackImportStatus") ~= "Approved"', HUD)
+        self.assertIn('GiantbackRuntimeReady") ~= true', HUD)
+        self.assertIn('GiantbackProceduralAnimationCompatible") ~= true', HUD)
+        self.assertIn('Instance.new("ViewportFrame")', HUD)
+        self.assertIn('Instance.new("WorldModel")', HUD)
+        self.assertIn('Instance.new("Camera")', HUD)
+        self.assertIn('CompanionHeroPreview', HUD)
+        self.assertIn('PortraitInArtReview', HUD)
+        self.assertIn('descendant:IsA("Script") or descendant:IsA("LocalScript") or descendant:IsA("ModuleScript")', HUD)
 
     def test_bridges_are_wider_and_rails_follow_new_deck_edges(self):
         self.assertIn('(8.2, 0.55, plank_length)', BUILD)

@@ -202,3 +202,54 @@ The Moth is NOT artist-approved until all are true:
 4. Generate four-view Blender review package and inspect it manually.
 5. Correct silhouette/materials before any runtime replacement.
 6. Import into Studio and validate scale, pivots, animation and mobile readability.
+
+
+## Fifth automated review — artifact 14921347063 (2026-11-24)
+
+The actual four PNG renders were downloaded and manually inspected. Geometry/UV/material checks pass, but the model is **rejected for art acceptance**:
+- the three-quarter and side renders make the hovering body read nearly horizontal/rolled rather than upright and graceful;
+- the wings still read as long pointed panels with angular color blocks, not broad rounded moth wings;
+- the gold crescents are too subtle to read as the signature motif;
+- the legs remain thin rod-like appendages with bulb ends;
+- the head/thorax/abdomen silhouette feels mechanical and segmented rather than plush and magical.
+
+Fifth corrective source pass: make review camera directions level with the moth's hover axis; broaden and round the wing silhouette while reducing spanwise length; enlarge crescent inlays; thicken and shorten the legs/feet; preserve the four separate wing groups and the ten-group report contract. New four-view renders and manual inspection are mandatory. The rig JSON still explicitly says its pivots are metadata hints, not a Roblox-ready animation rig.
+
+
+## Sixth review — render set 14921553142 (2026-11-24)
+
+Manual inspection of the latest actual four-view renders:
+- Front view is friendlier and the wing palette is more readable.
+- Side view still collapses into a horizontal-looking stack. The issue is in the review camera basis: the prior `track_quat` camera orientation did not explicitly preserve world Y as up, and the view vectors also introduced unnecessary elevation.
+- Gold crescent ornaments read as oversized detached horns rather than subtle markings on the wing membranes.
+- Body bands and limb forms still feel mechanical.
+
+Sixth corrective source pass: use the explicit Y-up camera basis already proven by the Fox Hero renderer; use level front/side/back directions. Re-render all four views before deciding on geometry changes. Next art pass after camera verification: redesign moon markings as small membrane inlays and soften body segmentation. The model remains rejected for art acceptance.
+
+
+## Seventh review — render set 14926694019 (2026-11-24)
+
+The new four-view render was manually inspected after the camera-basis fix. All views now keep the moth upright; the side profile is readable as a hovering creature. However, the gold crescents still float outside the wing silhouette and read like horns/antennae, not membrane decoration. The body bands remain too mechanical, and the wing panel design still resembles layered blades more than soft moth wings.
+
+Seventh corrective pass: shrink crescent geometry substantially, place each crescent deeper inside the corresponding wing membrane using the current wing span/length (the old placement incorrectly used pre-correction dimensions), and reduce ornament thickness. Keep the four separate wing groups and 10-group report stable. Next visual review must inspect front and side for actual surface contact and ensure no crescent extends beyond the wing contour. Not approved for production.
+
+
+## Eighth review — render set 14929216439 (2026-11-24)
+
+Manual inspection of all four new renders: the body still reads as a white segmented insect with three raised gold rings; the side view is too thin and the feet look like thick sausages. The crescent ornaments remain partly hidden behind the wing membrane, despite their smaller size. This pass is rejected.
+
+Eighth corrective source pass: place small gold crescents on the camera-facing wing surface (front membrane Z, not behind it), remove the three hard abdomen rings and replace them with one soft warm belly patch, shorten/thin the six legs and reduce the feet. Preserve all four independent wing groups and the ten-group report contract. Await new renders; not production-approved.
+
+
+## Ninth review — render set 14932595567 (2026-11-24)
+
+All four renders were manually inspected. The moth now has a recognizable friendly face and four readable wings, and the old gold abdomen rings are gone. Remaining defects: six legs still read as chunky white tubes with bulb feet; the head could be softer and rounder; side profile shows the wing shells as overly thin stacked plates. This is a partial pass, not production approval.
+
+Ninth corrective source pass: reduce leg bevel and foot volume, move the leg endpoints closer to the thorax, and slightly round the head. Next pass must improve wing thickness/curvature and add a small authored face detail; keep four independent wing groups and the 10-group report contract.
+
+
+## Tenth review — render set 14931327067 (2026-11-24)
+
+Manual review of all four renders: the moth now reads as a friendly companion and the moon marks are visible, but the six legs still resemble short side spikes. The cyan glow below the face is visually misread as a mouth, and the wings remain thin in profile.
+
+Tenth corrective source pass: make the legs curve down and outward with slimmer stems and smaller feet; add a deliberate smile and subtle cheek accents; move the cyan glow to the chest; increase wing camber and shell depth. The render must confirm these changes in all four views. Still not production-approved.

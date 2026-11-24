@@ -434,16 +434,16 @@ def create_fox(p):
 
     # Big plush tail sweeps up behind the body; cream tip remains separately riggable.
     plush_tail("FoxTail",
-        [(0.15, 1.02, 0.68), (0.39, 1.10, 1.08), (0.43, 1.42, 1.55),
-         (0.28, 1.76, 1.86), (0.12, 1.91, 1.99)],
-        [0.18, 0.29, 0.40, 0.37, 0.27],
-        [0.15, 0.25, 0.34, 0.32, 0.23], p["fox_orange"])
-    # Match the orange tail's final center/radii exactly, then taper the cream tip gradually.
+        [(0.06, 1.02, 0.68), (0.24, 1.08, 1.02), (0.30, 1.30, 1.40),
+         (0.21, 1.57, 1.66), (0.08, 1.70, 1.78)],
+        [0.14, 0.20, 0.26, 0.23, 0.17],
+        [0.11, 0.17, 0.22, 0.20, 0.145], p["fox_orange"])
+    # Cream tip starts exactly on the orange tail end to avoid a detached cap.
     plush_tail("FoxTailTip",
-        [(0.12, 1.91, 1.99), (0.10, 1.96, 2.04), (0.06, 2.03, 2.10),
-         (0.025, 2.09, 2.16), (0.00, 2.15, 2.20)],
-        [0.27, 0.255, 0.205, 0.115, 0.012],
-        [0.23, 0.215, 0.175, 0.095, 0.010], p["cream"])
+        [(0.08, 1.70, 1.78), (0.06, 1.74, 1.82), (0.04, 1.80, 1.88),
+         (0.025, 1.86, 1.94), (0.00, 1.92, 1.98)],
+        [0.17, 0.16, 0.13, 0.075, 0.010],
+        [0.145, 0.135, 0.11, 0.062, 0.010], p["cream"])
 
     # Eyes sit on the front (-Z) plane; pupils and catchlights are readable at distance.
     for side, suffix in ((-1, "Left"), (1, "Right")):
@@ -620,7 +620,7 @@ RIG_PARTS = {
     "FoxLegFrontRight": {"runtime_name": "Paw", "pivot": [0.34, 0.78, -0.55], "animated": True},
     "FoxLegBackLeft": {"runtime_name": "Paw", "pivot": [-0.34, 0.78, 0.57], "animated": True},
     "FoxLegBackRight": {"runtime_name": "Paw", "pivot": [0.34, 0.78, 0.57], "animated": True},
-    "FoxTail": {"runtime_name": "Tail", "pivot": [0.15, 1.02, 0.68], "animated": True},
+    "FoxTail": {"runtime_name": "Tail", "pivot": [0.06, 1.02, 0.68], "animated": True},
     "FoxTailTip": {"runtime_name": "Tail tip", "pivot": [0.12, 1.91, 1.91], "animated": True, "attach_to": "FoxTail"},
     "FoxEyes": {"runtime_name": "Eye", "pivot": [0.0, 1.76, -1.105], "animated": False},
     "FoxEyeSparkles": {"runtime_name": "Eye shine", "pivot": [0.0, 1.825, -1.216], "animated": False},

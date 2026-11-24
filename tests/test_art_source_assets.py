@@ -244,8 +244,8 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn("def plush_tail(", source)
         self.assertIn('plush_tail("FoxTail"', source)
         self.assertIn('plush_tail("FoxTailTip"', source)
-        self.assertIn("(0.12, 1.91, 1.99), (0.10, 1.96, 2.04)", source)
-        self.assertIn("[0.27, 0.255, 0.205, 0.115, 0.012]", source)
+        self.assertIn("(0.08, 1.70, 1.78), (0.06, 1.74, 1.82)", source)
+        self.assertIn("[0.17, 0.16, 0.13, 0.075, 0.010]", source)
         self.assertIn("widths[segment]", source)
         self.assertIn("depths[segment]", source)
         self.assertIn("def organic_torso(", source)
@@ -279,7 +279,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('"FoxEarInnerRight"', source)
         self.assertIn('"attach_to": "FoxEarLeft"', source)
         self.assertIn('"attach_to": "FoxEarRight"', source)
-        self.assertIn('"FoxTail": {"runtime_name": "Tail", "pivot": [0.15, 1.02, 0.68]', source)
+        self.assertIn('"FoxTail": {"runtime_name": "Tail", "pivot": [0.06, 1.02, 0.68]', source)
         self.assertIn('"obj_note": "OBJ does not preserve object origins;', source)
 
 
