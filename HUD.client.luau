@@ -21,7 +21,9 @@ local function refreshHomeInteriorView()
 
     local active = player:GetAttribute("HomeInteriorActive") == true
     local islands = workspace:FindFirstChild("PlayerIslands")
-    local island = islands and islands:FindFirstChild("HomeIsland_" .. tostring(player.UserId))
+    local ownerUserId = tonumber(player:GetAttribute("HomeInteriorIslandOwnerUserId")) or player.UserId
+    if ownerUserId <= 0 then ownerUserId = player.UserId end
+    local island = islands and islands:FindFirstChild("HomeIsland_" .. tostring(ownerUserId))
     if not island then return end
 
     local roofNames = {
