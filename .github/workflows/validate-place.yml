@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - feat/cozy-world-visual-pass
+      - feature/personal-island-greenhouse
   pull_request:
     branches:
       - main
