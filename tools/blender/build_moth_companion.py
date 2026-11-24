@@ -146,7 +146,7 @@ def abdomen_band(name, y, rx, rz, material, segments=40):
 def crescent(name, center, side, material):
     # Build a crescent as a curved strip between two arcs, not a concave ngon.
     cx, cy, cz = center
-    outer_radius, inner_radius, inner_offset = 0.27, 0.215, 0.115
+    outer_radius, inner_radius, inner_offset = 0.17, 0.132, 0.070
     steps = 28
     outer_front, inner_front = [], []
     for step in range(steps + 1):
@@ -161,7 +161,7 @@ def crescent(name, center, side, material):
             cy + inner_radius * math.sin(angle),
             cz,
         ))
-    thickness = 0.010
+    thickness = 0.008
     outer_back = [(x, y, z + thickness) for x, y, z in outer_front]
     inner_back = [(x, y, z + thickness) for x, y, z in inner_front]
     vertices = outer_front + inner_front + outer_back + inner_back
@@ -260,14 +260,14 @@ def moth_leg(name, side, start_y, end_y, material):
     curve = bpy.data.curves.new(name + "Curve", "CURVE")
     curve.dimensions = "3D"
     curve.resolution_u = 12
-    curve.bevel_depth = 0.072
+    curve.bevel_depth = 0.045
     curve.bevel_resolution = 3
     spline = curve.splines.new("BEZIER")
     spline.bezier_points.add(2)
     coords = [
         (side * 0.23, start_y, -0.31),
-        (side * 0.38, (start_y + end_y) * 0.5, -0.35),
-        (side * 0.52, end_y, -0.34),
+        (side * 0.32, (start_y + end_y) * 0.5, -0.35),
+        (side * 0.43, end_y, -0.34),
     ]
     for point, co in zip(spline.bezier_points, coords):
         point.co = co
@@ -276,7 +276,7 @@ def moth_leg(name, side, start_y, end_y, material):
     obj = bpy.data.objects.new(name, curve)
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(material)
-    foot = sphere(name + "Foot", coords[-1], (0.12, 0.078, 0.082), material, 20, 12)
+    foot = sphere(name + "Foot", coords[-1], (0.078, 0.055, 0.058), material, 20, 12)
     return [obj, foot]
 
 
@@ -443,12 +443,10 @@ def main():
     ]
     parts.append(tapered_body("MothThorax",body_profile,ivory))
     parts.append(sphere("MothHead",(0,1.91,-0.20),(0.43,0.40,0.36),ivory,48,32))
-    for band_index, (band_y, band_rx, band_rz) in enumerate((
-        (0.68,0.285,0.25),
-        (0.88,0.335,0.285),
-        (1.08,0.365,0.31),
-    )):
-        parts.append(abdomen_band(f"AbdomenBand{band_index}",band_y,band_rx,band_rz,gold))
+    # A soft warm belly patch replaces the three hard gold rings: the moth
+    # should read as one plush creature, not a mechanically segmented insect.
+    abdomen_mat=mat("abdomen_cream",(0.88,0.77,0.65),0.94)
+    parts.append(sphere("MothAbdomen",(0,0.88,-0.282),(0.235,0.335,0.034),abdomen_mat,40,28))
     for side,suffix in [(-1,"Left"),(1,"Right")]:
         parts.append(sphere("MothEye"+suffix,(side*0.215,1.97,-0.535),(0.09,0.11,0.04),plum,28,18))
         parts.extend(antenna("MothAntenna"+suffix,side,gold))
@@ -464,12 +462,11 @@ def main():
             root_x = side * 0.20
             root_y = 1.52 if upper else 1.28
             root_z = 0.10 if upper else 0.30
-            # Small crescent inlays sit inside each membrane instead of floating
-            # above the wing silhouette like detached horns.
+            # Tiny gold moon marks sit on the camera-facing membrane surface, not behind it.
             t = 0.62
             mark_x = root_x + side * t * span
             mark_y = root_y + t * length + 0.015
-            mark_z = root_z + 0.20 * t * t + 0.10 - 0.055 - 0.010
+            mark_z = root_z + 0.20 * t * t + 0.10 + 0.012
             parts.append(crescent(
                 "WingMoon" + wing_name + suffix,
                 (mark_x, mark_y, mark_z),
