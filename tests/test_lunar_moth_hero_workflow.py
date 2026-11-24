@@ -22,7 +22,7 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
             self.assertIn(name, source)
         self.assertIn('uv=mesh.uv_layers.new(name="WingUV")', source)
         self.assertIn("span = 1.30 if upper else 0.92", source)
-        self.assertIn("outer_radius, inner_radius, inner_offset = 0.50, 0.405, 0.22", source)
+        self.assertIn("outer_radius, inner_radius, inner_offset = 0.27, 0.215, 0.115", source)
         self.assertIn("curve.bevel_depth = 0.072", source)
         self.assertIn("length = 0.64 if upper else 0.50", source)
         self.assertIn("0.08 * (1.0 - t) + 0.24 * t + 0.86 * (math.sin", source)
@@ -60,6 +60,14 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn('((1.02,0.88),(0.84,0.72),(0.68,0.56))', source)
         self.assertIn('outer_radius, inner_radius, inner_offset = 0.50, 0.405, 0.22', source)
         self.assertNotIn('parts.append(sphere("MothAbdomen"', source)
+
+    def test_moon_marks_are_small_inlays_inside_wing_membranes(self):
+        source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
+        self.assertIn("outer_radius, inner_radius, inner_offset = 0.27, 0.215, 0.115", source)
+        self.assertIn("t = 0.62", source)
+        self.assertIn("mark_y = root_y + t * length + 0.015", source)
+        self.assertIn("span = 1.30 if upper else 0.92", source)
+        self.assertNotIn("span = 1.42 if upper else 1.04", source)
 
     def test_review_camera_matrix_dependency_is_imported(self):
         source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
