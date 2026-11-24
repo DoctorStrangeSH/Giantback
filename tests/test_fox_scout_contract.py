@@ -14,8 +14,8 @@ VISUALS = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
 class FoxScoutContractTests(unittest.TestCase):
     def test_fox_hero_tail_is_balanced_and_tip_starts_at_tail_endpoint(self):
         source = (ROOT / "tools" / "blender" / "build_fox_companion.py").read_text(encoding="utf-8")
-        self.assertIn('(0.27, 1.57, 1.66), (0.12, 1.70, 1.78)', source)
-        self.assertIn('(0.12, 1.70, 1.78), (0.10, 1.74, 1.82)', source)
+        self.assertIn('(0.21, 1.57, 1.66), (0.08, 1.70, 1.78)', source)
+        self.assertIn('(0.08, 1.70, 1.78), (0.06, 1.74, 1.82)', source)
         self.assertIn('[0.17, 0.16, 0.13, 0.075, 0.010]', source)
 
     def test_schema_v6_adds_the_persistent_fox_scout_profile(self):
