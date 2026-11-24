@@ -69,11 +69,19 @@ class HomeInteriorContractTests(unittest.TestCase):
         self.assertIn('add("PetBedCushion"', WORLD)
         self.assertIn('add("PetBedPillow"', WORLD)
         self.assertIn('add("PetToyBall"', WORLD)
-        self.assertIn('ensureAnchor("HomePetRestAnchor"', WORLD)
-        self.assertIn('local homePetRestAnchor = homeIsland:FindFirstChild("HomePetRestAnchor", true)', WORLD)
+        self.assertIn('ensureAnchor("HomePetRestAnchor" .. string.format("%02d", bedIndex)', WORLD)
+        self.assertIn('local homePetRestAnchors = {}', WORLD)
+        self.assertIn('local anchorName = "HomePetRestAnchor" .. string.format("%02d", bedIndex)', WORLD)
+
+    def test_each_pet_bed_has_its_own_stable_interaction_anchor(self):
+        for index in range(1, 4):
+            self.assertIn(f'HomePetRestAnchor{index:02d}', WORLD)
+        self.assertIn('tostring(bedIndex) .. ". Дружба +4."', WORLD)
 
     def test_companion_rest_is_owner_only_and_updates_bond(self):
-        self.assertIn('prompt(homePetRestAnchor, "Уголок питомцев", "Отдохнуть с компаньоном"', WORLD)
+        self.assertIn('prompt(bedEntry.anchor, "Лежанка " .. tostring(bedEntry.index), "Отдохнуть здесь"', WORLD)
+        self.assertIn('restPrompt.MaxActivationDistance = 4', WORLD)
+        self.assertIn('for _, bedEntry in ipairs(homePetRestAnchors) do', WORLD)
         self.assertIn('if visitor.UserId ~= ownerUserId then', WORLD)
         self.assertIn('visitorSession.homeInteriorIsland ~= homeIsland', WORLD)
         self.assertIn('visitorSession.companionRestReadyAt[companionId] = now + 45', WORLD)
