@@ -3891,7 +3891,9 @@ local function applyHomeHouseVisuals(homeIsland, houseLevel)
     visuals.Parent = homeIsland
 
     local wood = Color3.fromRGB(116, 75, 52)
+    local darkWood = Color3.fromRGB(82, 53, 39)
     local cream = Color3.fromRGB(244, 218, 169)
+    local warmCream = Color3.fromRGB(255, 236, 199)
     local stone = Color3.fromRGB(133, 137, 125)
     local roof = level == 1 and Color3.fromRGB(166, 83, 65)
         or (level == 2 and Color3.fromRGB(93, 111, 126) or Color3.fromRGB(75, 83, 112))
@@ -3900,16 +3902,62 @@ local function applyHomeHouseVisuals(homeIsland, houseLevel)
             shape or Enum.PartType.Block, material or Enum.Material.WoodPlanks)
     end
 
+    -- The front wall is split around a real doorway. The interior is now a walkable room.
     add("Foundation", Vector3.new(10.2, 0.75, 8.6), Vector3.new(0, -2.55, 0), stone, Enum.Material.Slate)
-    add("MainWalls", Vector3.new(8.8, 4.9, 7.2), Vector3.new(0, 0, 0), cream)
-    add("FrontDoor", Vector3.new(1.35, 2.8, 0.18), Vector3.new(0, -1.05, -3.72), wood, Enum.Material.Wood)
-    add("DoorKnob", Vector3.new(0.12, 0.12, 0.12), Vector3.new(0.42, -1.05, -3.84), Color3.fromRGB(244, 193, 88), Enum.Material.Metal, Enum.PartType.Ball)
+    add("InteriorFloor", Vector3.new(8.35, 0.18, 6.65), Vector3.new(0, -2.02, 0), Color3.fromRGB(170, 119, 76), Enum.Material.WoodPlanks)
+    add("BackWall", Vector3.new(8.8, 4.9, 0.35), Vector3.new(0, 0, 3.43), cream)
+    add("LeftWall", Vector3.new(0.35, 4.9, 6.55), Vector3.new(-4.25, 0, 0), cream)
+    add("RightWall", Vector3.new(0.35, 4.9, 6.55), Vector3.new(4.25, 0, 0), cream)
+    add("FrontWallLeft", Vector3.new(3.45, 4.9, 0.35), Vector3.new(-2.65, 0, -3.43), cream)
+    add("FrontWallRight", Vector3.new(3.45, 4.9, 0.35), Vector3.new(2.65, 0, -3.43), cream)
+    add("DoorLintel", Vector3.new(1.9, 1.15, 0.35), Vector3.new(0, 1.88, -3.43), cream)
+    add("DoorFrameLeft", Vector3.new(0.2, 3.85, 0.35), Vector3.new(-0.95, -0.5, -3.5), wood, Enum.Material.Wood)
+    add("DoorFrameRight", Vector3.new(0.2, 3.85, 0.35), Vector3.new(0.95, -0.5, -3.5), wood, Enum.Material.Wood)
+    add("FrontDoor", Vector3.new(1.55, 2.75, 0.12), Vector3.new(0, -1.0, -3.68), darkWood, Enum.Material.Wood)
+    add("DoorInset", Vector3.new(1.1, 1.0, 0.08), Vector3.new(0, -0.35, -3.76), wood, Enum.Material.Wood)
+    add("DoorKnob", Vector3.new(0.12, 0.12, 0.12), Vector3.new(0.58, -1.05, -3.82), Color3.fromRGB(244, 193, 88), Enum.Material.Metal, Enum.PartType.Ball)
+
     for _, side in {-1, 1} do
         add("WindowFrame", Vector3.new(1.55, 1.35, 0.2), Vector3.new(side * 2.55, 0.35, -3.72), wood)
         add("WindowGlass", Vector3.new(1.2, 1.0, 0.1), Vector3.new(side * 2.55, 0.35, -3.84), Color3.fromRGB(140, 207, 220), Enum.Material.Glass)
         add("WindowSill", Vector3.new(1.8, 0.18, 0.42), Vector3.new(side * 2.55, -0.45, -3.9), wood, Enum.Material.Wood)
         add("CornerTimber", Vector3.new(0.22, 4.8, 0.24), Vector3.new(side * 4.28, 0, -3.68), wood, Enum.Material.Wood)
     end
+
+    -- Warm, readable living room: rug, sofa, coffee table, fireplace and bookcase.
+    add("LivingRoomRug", Vector3.new(4.9, 0.08, 3.2), Vector3.new(0, -1.9, 0.45), Color3.fromRGB(151, 79, 67), Enum.Material.Fabric)
+    add("RugBorder", Vector3.new(4.55, 0.04, 2.85), Vector3.new(0, -1.84, 0.45), Color3.fromRGB(225, 177, 111), Enum.Material.Fabric)
+    add("SofaBase", Vector3.new(3.0, 0.65, 1.05), Vector3.new(-1.25, -1.45, 1.85), darkWood, Enum.Material.Wood)
+    add("SofaSeat", Vector3.new(2.85, 0.32, 0.92), Vector3.new(-1.25, -1.08, 1.8), Color3.fromRGB(89, 133, 112), Enum.Material.Fabric)
+    add("SofaBack", Vector3.new(2.95, 1.0, 0.28), Vector3.new(-1.25, -0.75, 2.22), Color3.fromRGB(76, 119, 99), Enum.Material.Fabric)
+    for _, x in {-2.2, -0.3} do
+        add("SofaPillow", Vector3.new(0.65, 0.55, 0.22), Vector3.new(x, -0.72, 1.98), warmCream, Enum.Material.Fabric)
+    end
+    add("CoffeeTableTop", Vector3.new(2.15, 0.18, 1.0), Vector3.new(0.55, -1.05, 0.2), wood, Enum.Material.Wood)
+    for _, x in {-0.25, 1.35} do
+        for _, z in {-0.12, 0.52} do
+            add("CoffeeTableLeg", Vector3.new(0.12, 0.72, 0.12), Vector3.new(x, -1.45, z), darkWood, Enum.Material.Wood)
+        end
+    end
+    add("FireplaceStone", Vector3.new(2.35, 2.25, 0.62), Vector3.new(0, -0.9, 2.95), stone, Enum.Material.Slate)
+    add("FireplaceOpening", Vector3.new(1.15, 1.15, 0.12), Vector3.new(0, -1.25, 2.59), darkWood, Enum.Material.Slate)
+    add("FireplaceMantel", Vector3.new(2.75, 0.2, 0.82), Vector3.new(0, 0.32, 2.75), wood, Enum.Material.Wood)
+    local flame = add("FireplaceGlow", Vector3.new(0.48, 0.72, 0.16), Vector3.new(0, -1.35, 2.48), Color3.fromRGB(255, 151, 66), Enum.Material.Neon)
+    local fireLight = Instance.new("PointLight")
+    fireLight.Name = "FireplaceLight"
+    fireLight.Color = Color3.fromRGB(255, 160, 83)
+    fireLight.Brightness = 1.2
+    fireLight.Range = 12
+    fireLight.Parent = flame
+    add("Bookcase", Vector3.new(0.55, 2.6, 2.0), Vector3.new(3.75, -0.72, 1.35), darkWood, Enum.Material.Wood)
+    for shelf = 1, 3 do
+        add("BookcaseShelf", Vector3.new(0.65, 0.12, 1.85), Vector3.new(3.72, -1.55 + shelf * 0.62, 1.35), wood, Enum.Material.Wood)
+    end
+    add("IndoorPlantPot", Vector3.new(0.62, 0.55, 0.62), Vector3.new(-3.55, -1.58, -2.15), Color3.fromRGB(177, 111, 73), Enum.Material.Ceramic, Enum.PartType.Cylinder)
+    add("IndoorPlantLeaves", Vector3.new(0.9, 1.1, 0.9), Vector3.new(-3.55, -0.78, -2.15), Color3.fromRGB(93, 150, 94), Enum.Material.Grass, Enum.PartType.Ball)
+    add("CeilingBeamFront", Vector3.new(8.0, 0.18, 0.2), Vector3.new(0, 2.28, -3.0), darkWood, Enum.Material.Wood)
+    add("CeilingBeamBack", Vector3.new(8.0, 0.18, 0.2), Vector3.new(0, 2.28, 3.0), darkWood, Enum.Material.Wood)
+
     for _, side in {-1, 1} do
         local roofPart = Instance.new("WedgePart")
         roofPart.Name = "RoofSlope"
@@ -3954,9 +4002,9 @@ local function applyHomeHouseVisuals(homeIsland, houseLevel)
     end
 
     local solidParts = {
-        Foundation = true, MainWalls = true, FrontDoor = true,
-        RoofSlope = true, UpperFloor = true, SideExtension = true,
-        ManorUpper = true, Tower = true,
+        Foundation = true, InteriorFloor = true, BackWall = true, LeftWall = true, RightWall = true,
+        FrontWallLeft = true, FrontWallRight = true, DoorLintel = true, UpperFloor = true,
+        SideExtension = true, ManorUpper = true, Tower = true,
     }
     for _, item in ipairs(visuals:GetChildren()) do
         if item:IsA("BasePart") and solidParts[item.Name] then
@@ -3964,11 +4012,24 @@ local function applyHomeHouseVisuals(homeIsland, houseLevel)
         end
     end
 
-    local upgradeAnchor = add("UpgradeAnchor", Vector3.new(2, 2, 1), Vector3.new(0, -0.6, -6.0), Color3.new(1, 1, 1))
-    upgradeAnchor.Name = "HomeUpgradeAnchor"
-    upgradeAnchor.Transparency = 1
-    upgradeAnchor.CanCollide = false
-    upgradeAnchor.CanQuery = true
+    -- Interaction anchors live outside the replaceable visual model so prompts survive upgrades.
+    local function ensureAnchor(name, offset)
+        local anchor = homeIsland:FindFirstChild(name)
+        if not anchor then
+            anchor = makeFarmVisualPart(homeIsland, name, Vector3.new(2, 2, 1), frame * CFrame.new(offset), Color3.new(1, 1, 1))
+            anchor.Transparency = 1
+            anchor.CanCollide = false
+            anchor.CanTouch = false
+            anchor.CanQuery = true
+        else
+            anchor.CFrame = frame * CFrame.new(offset)
+        end
+        return anchor
+    end
+    ensureAnchor("HomeUpgradeAnchor", Vector3.new(0, -0.6, 6.0))
+    ensureAnchor("HomeEntranceAnchor", Vector3.new(0, -0.6, -6.0))
+    ensureAnchor("HomeExitAnchor", Vector3.new(0, -0.6, -2.55))
+    ensureAnchor("HomeInteriorSpawn", Vector3.new(0, 0.25, -1.45))
     return true
 end
 
