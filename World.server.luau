@@ -3959,6 +3959,18 @@ local function applyHomeHouseVisuals(homeIsland, houseLevel)
     end
     add("IndoorPlantPot", Vector3.new(0.62, 0.55, 0.62), Vector3.new(-3.55, -1.58, -2.15), Color3.fromRGB(177, 111, 73), Enum.Material.SmoothPlastic, Enum.PartType.Cylinder)
     add("IndoorPlantLeaves", Vector3.new(0.9, 1.1, 0.9), Vector3.new(-3.55, -0.78, -2.15), Color3.fromRGB(93, 150, 94), Enum.Material.Grass, Enum.PartType.Ball)
+
+    -- A compact companion nook fits along the quiet side of the living room.
+    for bedIndex = 1, 3 do
+        local bedX = 1.0 + (bedIndex - 1) * 1.22
+        add("PetBedFrame", Vector3.new(1.05, 0.28, 1.25), Vector3.new(bedX, -1.78, -1.8), darkWood, Enum.Material.Wood)
+        add("PetBedCushion", Vector3.new(0.94, 0.18, 1.12), Vector3.new(bedX, -1.55, -1.8), bedIndex == 2 and Color3.fromRGB(157, 139, 190) or Color3.fromRGB(126, 164, 139), Enum.Material.Fabric)
+        add("PetBedPillow", Vector3.new(0.68, 0.16, 0.32), Vector3.new(bedX, -1.42, -2.18), warmCream, Enum.Material.Fabric)
+        add("PetBedFoot", Vector3.new(0.12, 0.36, 1.3), Vector3.new(bedX - 0.52, -1.62, -1.8), wood, Enum.Material.Wood)
+        add("PetBedFoot", Vector3.new(0.12, 0.36, 1.3), Vector3.new(bedX + 0.52, -1.62, -1.8), wood, Enum.Material.Wood)
+    end
+    add("PetToyBall", Vector3.new(0.38, 0.38, 0.38), Vector3.new(0.55, -1.62, -0.9), Color3.fromRGB(240, 177, 94), Enum.Material.SmoothPlastic, Enum.PartType.Ball)
+    add("PetNookSign", Vector3.new(2.0, 0.42, 0.12), Vector3.new(2.2, 1.55, -3.12), Color3.fromRGB(244, 218, 169), Enum.Material.Wood)
     add("CeilingBeamFront", Vector3.new(8.0, 0.18, 0.2), Vector3.new(0, 2.28, -3.0), darkWood, Enum.Material.Wood)
     add("CeilingBeamBack", Vector3.new(8.0, 0.18, 0.2), Vector3.new(0, 2.28, 3.0), darkWood, Enum.Material.Wood)
 
@@ -4034,6 +4046,7 @@ local function applyHomeHouseVisuals(homeIsland, houseLevel)
     ensureAnchor("HomeEntranceAnchor", Vector3.new(0, -0.6, -6.0))
     ensureAnchor("HomeExitAnchor", Vector3.new(0, -0.6, -2.55))
     ensureAnchor("HomeInteriorSpawn", Vector3.new(0, 0.25, -1.45))
+    ensureAnchor("HomePetRestAnchor", Vector3.new(2.25, -0.6, -2.55))
     return true
 end
 
@@ -4114,6 +4127,7 @@ createPersonalCity = function(player, session)
     local homeEntranceAnchor = homeIsland:FindFirstChild("HomeEntranceAnchor", true)
     local homeExitAnchor = homeIsland:FindFirstChild("HomeExitAnchor", true)
     local homeInteriorSpawn = homeIsland:FindFirstChild("HomeInteriorSpawn", true)
+    local homePetRestAnchor = homeIsland:FindFirstChild("HomePetRestAnchor", true)
 
     if houseUpgradeAnchor then
         prompt(houseUpgradeAnchor, "Твой дом", "Улучшить дом", function(visitor)
@@ -4136,6 +4150,36 @@ createPersonalCity = function(player, session)
             visitor:SetAttribute("HomeInteriorActive", true)
             character:PivotTo(homeInteriorSpawn.CFrame * CFrame.new(0, 0.3, 0))
             tip(visitor, "Добро пожаловать домой! Осмотрись и отдохни у камина.")
+        end)
+    end
+
+    if homePetRestAnchor then
+        prompt(homePetRestAnchor, "Уголок питомцев", "Отдохнуть с компаньоном", function(visitor)
+            if visitor.UserId ~= ownerUserId then
+                return tip(visitor, "Это личный уголок питомцев хозяина острова.")
+            end
+            local visitorSession = sessions[visitor]
+            if not visitorSession or not visitor:GetAttribute("Ready") then return end
+            local companionId = visitor:GetAttribute("Companion")
+            if type(companionId) ~= "string" or table.find(COMPANION_IDS, companionId) == nil
+                or visitor:GetAttribute(companionId) ~= true then
+                return tip(visitor, "Сначала выбери своего питомца в альбоме.")
+            end
+            visitorSession.companionRestReadyAt = visitorSession.companionRestReadyAt or {}
+            local now = os.clock()
+            local readyAt = visitorSession.companionRestReadyAt[companionId] or 0
+            if now < readyAt then
+                return tip(visitor, "Питомец ещё отдыхает. Загляните сюда немного позже.")
+            end
+            visitorSession.companionRestReadyAt[companionId] = now + 45
+            local progressData = visitorSession.companionProgress[companionId]
+            progressData.bond = math.clamp((progressData.bond or 0) + 4, 0, 1000)
+            setCompanionMood(visitor, companionId, "Спокойствие")
+            syncCompanionProgress(visitor)
+            tip(visitor, pets[companionId] .. " уютно устроился в уголке отдыха. Дружба +4.")
+            if visitorSession.online and not save(visitor) then
+                warn("Companion rest save will be retried:", visitor.UserId, companionId)
+            end
         end)
     end
 
