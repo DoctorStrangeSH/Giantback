@@ -59,7 +59,7 @@ class ExpeditionJournalContractTests(unittest.TestCase):
         self.assertIn('player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")', HUD)
         self.assertIn('player:GetAttribute(pet.id) == true', HUD)
         self.assertIn('tostring(discoveredMutations) .. "/" .. tostring(#mutationPets)', HUD)
-        self.assertIn('createPictogram(item, "PetMark", found and pet.icon or "paw"', HUD)
+        self.assertIn('createPictogram(iconPlate, "PetMark", found and pet.icon or "lock"', HUD)
         self.assertIn('"Неизвестная форма"', HUD)
         self.assertNotIn('event:FireServer("GrantMutation"', HUD)
         self.assertIn('player.AttributeChanged:Connect(refresh)', HUD)
