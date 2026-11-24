@@ -233,7 +233,7 @@ local function normalizeCity(raw)
                 table.insert(city.buildings, {
                     id = saved.id,
                     x = math.clamp(math.floor(x / 4 + 0.5) * 4, 0, 12),
-                    z = math.clamp(math.floor(z / 4 + 0.5) * 4, -4, 4),
+                    z = math.clamp(math.floor(z / 4 + 0.5) * 4, -4, 8),
                     rotation = (math.floor(rotation / 90 + 0.5) % 4) * 90,
                 })
             end
@@ -296,7 +296,7 @@ local function syncFarm(player)
         table.insert(occupiedCells, tostring(decoration.x) .. "," .. tostring(decoration.z))
     end
     player:SetAttribute("City_BuildingCells", table.concat(occupiedCells, ";"))
-    for index = 1, 12 do
+    for index = 1, 16 do
         local decoration = session.city.buildings[index]
         player:SetAttribute("City_Decoration_" .. tostring(index) .. "_Id", decoration and decoration.id or "")
         player:SetAttribute("City_Decoration_" .. tostring(index) .. "_X", decoration and decoration.x or 0)
@@ -4136,12 +4136,12 @@ placeIslandDecoration = function(player, payload)
         or x % 1 ~= 0 or z % 1 ~= 0 or rotation % 1 ~= 0 then
         return tip(player, "Выбери место на строительной площадке.")
     end
-    if x < 0 or x > 12 or x % 4 ~= 0 or z < -4 or z > 4 or z % 4 ~= 0
+    if x < 0 or x > 12 or x % 4 ~= 0 or z < -4 or z > 8 or z % 4 ~= 0
         or rotation < 0 or rotation >= 360 or rotation % 90 ~= 0 then
         return tip(player, "Это место нельзя использовать для строительства.")
     end
-    if #session.city.buildings >= 12 and not moveIndex then
-        return tip(player, "На площадке пока нет свободных мест. Максимум — 12 украшений.")
+    if #session.city.buildings >= 16 and not moveIndex then
+        return tip(player, "На площадке пока нет свободных мест. Максимум — 16 построек.")
     end
 
     local homeIsland = session.homeIsland
