@@ -225,7 +225,7 @@ local function normalizeCity(raw)
     local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}
     for _, saved in ipairs(rawBuildings) do
         if #city.buildings >= 24 then break end
-        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse") then
+        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse") then
             local x = tonumber(saved.x)
             local z = tonumber(saved.z)
             local rotation = tonumber(saved.rotation) or 0
@@ -285,6 +285,11 @@ local function syncFarm(player)
         for _, building in ipairs(session.city.buildings) do table.insert(ids, building.id) end
         return ids
     end)(), "Warehouse") ~= nil)
+    player:SetAttribute("Greenhouse_Built", table.find((function()
+        local ids = {}
+        for _, building in ipairs(session.city.buildings) do table.insert(ids, building.id) end
+        return ids
+    end)(), "Greenhouse") ~= nil)
     player:SetAttribute("City_DecorationCount", #session.city.buildings)
     local occupiedCells = {}
     for _, decoration in ipairs(session.city.buildings) do
@@ -3195,7 +3200,7 @@ end
 local function renderIslandDecoration(cityModel, meadow, decoration, index, ownerUserId)
     if not cityModel or not meadow or type(decoration) ~= "table" then return end
     local id = decoration.id
-    if id ~= "Path" and id ~= "FlowerBed" and id ~= "Cottage" and id ~= "Warehouse" then return end
+    if id ~= "Path" and id ~= "FlowerBed" and id ~= "Cottage" and id ~= "Warehouse" and id ~= "Greenhouse" then return end
 
     local x = math.clamp(tonumber(decoration.x) or 0, 0, 12)
     local z = math.clamp(tonumber(decoration.z) or 0, -4, 4)
@@ -3274,7 +3279,7 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
         makeFarmVisualPart(model, "CottageChimney", Vector3.new(0.62, 1.55, 0.62), frame * CFrame.new(1.18, 3.2, 0.82), Color3.fromRGB(143, 91, 73), Enum.PartType.Block, Enum.Material.Brick)
         makeFarmVisualPart(model, "CottageChimneyCap", Vector3.new(0.82, 0.18, 0.82), frame * CFrame.new(1.18, 4.0, 0.82), timber, Enum.PartType.Block, Enum.Material.Slate)
         makeFarmVisualPart(model, "CottageStep", Vector3.new(1.3, 0.18, 0.65), front * CFrame.new(0, 0.12, -0.3), Color3.fromRGB(145, 139, 122), Enum.PartType.Block, Enum.Material.Slate)
-    else
+    elseif id == "Warehouse" then
         local wood = Color3.fromRGB(128, 88, 56)
         local stone = Color3.fromRGB(119, 124, 119)
         makeFarmVisualPart(model, "WarehouseFoundation", Vector3.new(3.8, 0.28, 3.8),
@@ -3332,6 +3337,83 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
         withdrawAnchor.Parent = model
         prompt(withdrawAnchor, "Склад", "Забрать материалы", function(visitor)
             useWarehouse(visitor, ownerUserId, "Withdraw")
+        end)
+    elseif id == "Greenhouse" then
+        local stone = Color3.fromRGB(112, 126, 111)
+        local timber = Color3.fromRGB(119, 82, 53)
+        makeFarmVisualPart(model, "GreenhouseFoundation", Vector3.new(3.8, 0.22, 3.8),
+            frame * CFrame.new(0, 0.11, 0), stone, Enum.PartType.Block, Enum.Material.Slate)
+        makeFarmVisualPart(model, "GreenhouseSoil", Vector3.new(2.85, 0.12, 2.45),
+            frame * CFrame.new(0, 0.29, 0.12), Color3.fromRGB(91, 67, 48), Enum.PartType.Block, Enum.Material.Ground)
+        for _, xOffset in {-1.72, 1.72} do
+            for _, zOffset in {-1.72, 1.72} do
+                makeFarmVisualPart(model, "GreenhousePost", Vector3.new(0.2, 2.8, 0.2),
+                    frame * CFrame.new(xOffset, 1.48, zOffset), timber, Enum.PartType.Block, Enum.Material.Wood)
+            end
+        end
+        for _, side in {-1, 1} do
+            local glassWall = makeFarmVisualPart(model, "GreenhouseGlassWall", Vector3.new(0.08, 2.5, 3.25),
+                frame * CFrame.new(side * 1.72, 1.48, 0), Color3.fromRGB(166, 218, 211), Enum.PartType.Block, Enum.Material.Glass)
+            glassWall.Transparency = 0.42
+            glassWall.CanCollide = false
+        end
+        for _, side in {-1, 1} do
+            local glassWall = makeFarmVisualPart(model, "GreenhouseEndGlass", Vector3.new(3.25, 2.5, 0.08),
+                frame * CFrame.new(0, 1.48, side * 1.72), Color3.fromRGB(166, 218, 211), Enum.PartType.Block, Enum.Material.Glass)
+            glassWall.Transparency = 0.42
+            glassWall.CanCollide = false
+        end
+        local glassRoof = makeFarmVisualPart(model, "GreenhouseGlassRoof", Vector3.new(3.72, 0.16, 3.72),
+            frame * CFrame.new(0, 2.86, 0), Color3.fromRGB(169, 218, 207), Enum.PartType.Block, Enum.Material.Glass)
+        glassRoof.Transparency = 0.34
+        glassRoof.CanCollide = false
+        for _, zOffset in {-1.12, 0, 1.12} do
+            makeFarmVisualPart(model, "GreenhouseRoofRib", Vector3.new(3.82, 0.12, 0.14),
+                frame * CFrame.new(0, 2.98, zOffset), timber, Enum.PartType.Block, Enum.Material.Wood)
+        end
+        local front = frame * CFrame.new(0, 0, -1.76)
+        makeFarmVisualPart(model, "GreenhouseDoorFrame", Vector3.new(0.95, 2.2, 0.12),
+            front * CFrame.new(0, 1.18, 0), timber, Enum.PartType.Block, Enum.Material.Wood)
+        local doorGlass = makeFarmVisualPart(model, "GreenhouseDoorGlass", Vector3.new(0.68, 1.78, 0.08),
+            front * CFrame.new(0, 1.18, -0.08), Color3.fromRGB(166, 218, 211), Enum.PartType.Block, Enum.Material.Glass)
+        doorGlass.Transparency = 0.28
+        doorGlass.CanCollide = false
+        for index = 1, 5 do
+            local plant = makeFarmVisualPart(model, "GreenhouseSeedling", Vector3.new(0.28, 0.42, 0.28),
+                frame * CFrame.new((index - 3) * 0.48, 0.56, 0.1 + (index % 2) * 0.62),
+                index % 2 == 0 and Color3.fromRGB(104, 170, 91) or Color3.fromRGB(129, 190, 105),
+                Enum.PartType.Ball, Enum.Material.Grass)
+            plant.CanCollide = false
+        end
+        local sign = makeFarmVisualPart(model, "GreenhouseSign", Vector3.new(1.8, 0.48, 0.12),
+            front * CFrame.new(0, 2.45, -0.08), Color3.fromRGB(226, 207, 143), Enum.PartType.Block, Enum.Material.Wood)
+        local signGui = Instance.new("SurfaceGui")
+        signGui.Name = "GreenhouseSignGui"
+        signGui.Face = Enum.NormalId.Front
+        signGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+        signGui.PixelsPerStud = 40
+        signGui.Parent = sign
+        local signLabel = Instance.new("TextLabel")
+        signLabel.Size = UDim2.fromScale(1, 1)
+        signLabel.BackgroundTransparency = 1
+        signLabel.Text = "ТЕПЛИЦА"
+        signLabel.TextColor3 = Color3.fromRGB(65, 89, 61)
+        signLabel.Font = Enum.Font.GothamBold
+        signLabel.TextScaled = true
+        signLabel.Parent = signGui
+        local anchor = Instance.new("Part")
+        anchor.Name = "GreenhousePromptAnchor"
+        anchor.Size = Vector3.new(0.5, 0.5, 0.5)
+        anchor.Transparency = 1
+        anchor.Anchored = true
+        anchor.CanCollide = false
+        anchor.CanTouch = false
+        anchor.CanQuery = true
+        anchor.CFrame = front * CFrame.new(0, 1.1, -1.05)
+        anchor.Parent = model
+        prompt(anchor, "Теплица", "Осмотреть посадки", function(visitor)
+            if visitor.UserId ~= ownerUserId then return tip(visitor, "Эта теплица принадлежит другому игроку.") end
+            tip(visitor, "Теплица ускоряет новые посадки и повторный рост клубники на 15%.")
         end)
     end
 end
@@ -3455,6 +3537,18 @@ local function refreshFarmCity(player, cityModel)
     end
 end
 
+local function getFarmGrowthDuration(session, baseSeconds)
+    local greenhouseBuilt = false
+    for _, building in ipairs(session.city.buildings) do
+        if building.id == "Greenhouse" then
+            greenhouseBuilt = true
+            break
+        end
+    end
+    if not greenhouseBuilt then return baseSeconds end
+    return math.max(60, math.floor(baseSeconds * 0.85 + 0.5))
+end
+
 local function interactFarmPlot(player, ownerUserId, plotId)
     if player.UserId ~= ownerUserId then return end
     local session = sessions[player]
@@ -3482,8 +3576,9 @@ local function interactFarmPlot(player, ownerUserId, plotId)
         addDailyQuestProgress(player, "Plant", 1, false)
         state.cropId = cropId
         state.plantedAt = now
-        state.readyAt = now + definition.growthSeconds
-        tip(player, definition.displayName .. " посажена! Рост займёт около " .. tostring(math.ceil(definition.growthSeconds / 60)) .. " мин.")
+        local growthSeconds = getFarmGrowthDuration(session, definition.growthSeconds)
+        state.readyAt = now + growthSeconds
+        tip(player, definition.displayName .. " посажена! Рост займёт около " .. tostring(math.ceil(growthSeconds / 60)) .. " мин.)
     else
         local definition = cropDefinitions[state.cropId]
         if not definition then
@@ -3500,7 +3595,8 @@ local function interactFarmPlot(player, ownerUserId, plotId)
         addDailyQuestProgress(player, "Harvest", definition.reward, false)
         if definition.regrowSeconds then
             state.plantedAt = now
-            state.readyAt = now + definition.regrowSeconds
+            local regrowSeconds = getFarmGrowthDuration(session, definition.regrowSeconds)
+            state.readyAt = now + regrowSeconds
             tip(player, "Собрано: " .. definition.displayName .. " ×" .. tostring(definition.reward) .. "! Куст снова плодоносит.")
         else
             state.cropId, state.plantedAt, state.readyAt = "", 0, 0
@@ -3923,7 +4019,7 @@ removeIslandDecoration = function(player, payload)
     end
     local model = cityModel:FindFirstChild("Decoration_" .. tostring(index))
     if model then model:Destroy() end
-    local refunds = {Path = {Wood = 1, Stone = 0}, FlowerBed = {Wood = 2, Stone = 1}, Cottage = {Wood = 4, Stone = 3}, Warehouse = {Wood = 5, Stone = 4}}
+    local refunds = {Path = {Wood = 1, Stone = 0}, FlowerBed = {Wood = 2, Stone = 1}, Cottage = {Wood = 4, Stone = 3}, Warehouse = {Wood = 5, Stone = 4}, Greenhouse = {Wood = 9, Stone = 6}}
     local refund = refunds[decoration.id]
     if not refund then return tip(player, "Этот объект пока нельзя разобрать.") end
     table.remove(session.city.buildings, index)
@@ -3950,8 +4046,11 @@ placeIslandDecoration = function(player, payload)
     if type(payload) ~= "table" then return tip(player, "Не удалось прочитать место постройки.") end
 
     local decorationId = payload.id
-    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" then
+    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" then
         return tip(player, "Такого предмета пока нет в каталоге строительства.")
+    end
+    if decorationId == "Greenhouse" and session.city.farm.level < 3 then
+        return tip(player, "Теплица откроется после улучшения фермы до 3 уровня.")
     end
     local x = tonumber(payload.x)
     local z = tonumber(payload.z)
@@ -4007,7 +4106,7 @@ placeIslandDecoration = function(player, payload)
         syncFarm(player)
         tip(player, "Постройка перемещена!")
     else
-        local costs = {Path = {Wood = 2, Stone = 0}, FlowerBed = {Wood = 4, Stone = 2}, Cottage = {Wood = 8, Stone = 6}, Warehouse = {Wood = 10, Stone = 8}}
+        local costs = {Path = {Wood = 2, Stone = 0}, FlowerBed = {Wood = 4, Stone = 2}, Cottage = {Wood = 8, Stone = 6}, Warehouse = {Wood = 10, Stone = 8}, Greenhouse = {Wood = 18, Stone = 12}}
         local cost = costs[decorationId]
         if (session.inventory.Wood or 0) < cost.Wood or (session.inventory.Stone or 0) < cost.Stone then
             return tip(player, "Не хватает материалов: дерево ×" .. tostring(cost.Wood) .. ", камень ×" .. tostring(cost.Stone) .. ".")
@@ -4019,7 +4118,7 @@ placeIslandDecoration = function(player, payload)
         renderIslandDecoration(cityModel, meadow, decoration, #session.city.buildings, player.UserId)
         syncInventory(player)
         syncFarm(player)
-        local placedMessages = {Path = "Каменная дорожка построена!", FlowerBed = "Цветочная клумба украшает твой остров!", Cottage = "Уютный домик построен! На острове стало ещё уютнее.", Warehouse = "Склад построен! Теперь можно хранить материалы."}
+        local placedMessages = {Path = "Каменная дорожка построена!", FlowerBed = "Цветочная клумба украшает твой остров!", Cottage = "Уютный домик построен! На острове стало ещё уютнее.", Warehouse = "Склад построен! Теперь можно хранить материалы.", Greenhouse = "Теплица готова! Новые посадки и повторный рост клубники ускорены на 15%."}
     tip(player, placedMessages[decorationId])
     end
     if session.online then save(player) end
