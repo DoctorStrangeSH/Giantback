@@ -19,7 +19,7 @@ class HudResponsiveLayoutContractTests(unittest.TestCase):
 
     def test_mobile_topbar_and_objective_fit_narrow_screens(self):
         self.assertIn("brand.Size = UDim2.fromOffset(compact and (narrow and 104 or 132) or 178", HUD)
-        self.assertIn("resources.Size = UDim2.fromOffset(compact and (narrow and 144 or 174) or 214", HUD)
+        self.assertIn("resources.Size = UDim2.fromOffset(compact and (narrow and 150 or 174) or 214", HUD)
         self.assertIn("objective.Size = UDim2.fromOffset(compact and (narrow and 210 or 250) or 352", HUD)
         self.assertIn("objectiveHint.Visible = not compact", HUD)
         self.assertIn("progressCount.Visible = not compact", HUD)
