@@ -2523,6 +2523,12 @@ local function init(player)
     syncFoxScout(player)
     syncCompanionProgress(player)
     if not allocateHomeIsland(player, session) then
+        -- The profile can be loaded before island capacity is known. Do not leave
+        -- attribute listeners attached when the player is rejected from this server.
+        for _, connection in ipairs(session.companionOwnershipConnections or {}) do
+            connection:Disconnect()
+        end
+        session.companionOwnershipConnections = nil
         sessions[player] = nil
         player:Kick("На этом сервере заняты все 8 домашних островов. Попробуй другой сервер.")
         return
@@ -5527,6 +5533,10 @@ Players.PlayerRemoving:Connect(function(player)
     save(player)
     local session = sessions[player]
     if session then
+        for _, connection in ipairs(session.companionOwnershipConnections or {}) do
+            connection:Disconnect()
+        end
+        session.companionOwnershipConnections = nil
         if session.homeIsland then
             session.homeIsland:Destroy()
         end
