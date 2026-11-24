@@ -37,9 +37,9 @@ class ModalPolishTests(unittest.TestCase):
         self.assertIn('toastText.ZIndex = 41', HUD)
 
     def test_companion_memory_game_uses_same_font_safe_symbols_on_client_and_server(self):
-        symbols = 'local companionPlaySymbols = {"●", "◆", "✦"}'
+        symbols = 'local companionPlaySymbols = {"1", "2", "3"}'
         self.assertIn(symbols, WORLD)
-        self.assertIn('local playSymbols = {"●", "◆", "✦"}', HUD)
+        self.assertIn('local playSymbols = {"1", "2", "3"}', HUD)
 
     def test_hud_no_longer_depends_on_emoji_presentation_glyphs(self):
         emoji_ranges = re.compile("[\\U0001F000-\\U0001FAFF]")
