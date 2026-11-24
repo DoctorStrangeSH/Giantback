@@ -33,6 +33,11 @@ class StudioPlaytestPreflightContractTests(unittest.TestCase):
         ):
             self.assertIn(f'player:GetAttribute("{attribute}")', PREFLIGHT)
 
+    def test_duplicate_island_instance_is_a_hard_failure(self):
+        self.assertIn('record(not distinct[home]', PREFLIGHT)
+        self.assertIn('"Island isolation " .. tostring(player.UserId)', PREFLIGHT)
+        self.assertNotIn('note("Island isolation"', PREFLIGHT)
+
     def test_preflight_remains_read_only(self):
         self.assertIn("read-only", PREFLIGHT)
         self.assertNotIn(":SetAttribute(", PREFLIGHT)
