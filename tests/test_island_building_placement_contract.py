@@ -121,5 +121,22 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('action.TextSize = compact and 9 or 10', HUD)
 
 
+    def test_warehouse_transfers_are_server_authorized_and_transactional(self):
+        warehouse = WORLD.split("local function useWarehouse(player, ownerUserId, action)", 1)[1].split("local COMPANION_IDS", 1)[0]
+        self.assertIn('if player.UserId ~= ownerUserId', warehouse)
+        self.assertIn('if not session.online then', warehouse)
+        self.assertIn('if session.economyBusy then', warehouse)
+        self.assertIn('session.economyBusy = true', warehouse)
+        self.assertIn('previousInventory[itemId] = session.inventory[itemId] or 0', warehouse)
+        self.assertIn('previousStorage[itemId] = storage[itemId] or 0', warehouse)
+        self.assertIn('if not save(player) then', warehouse)
+        self.assertIn('session.inventory[itemId] = previousInventory[itemId]', warehouse)
+        self.assertIn('storage[itemId] = previousStorage[itemId]', warehouse)
+        self.assertIn('syncInventory(player)', warehouse)
+        self.assertIn('syncFarm(player)', warehouse)
+        self.assertIn('session.economyBusy = false', warehouse)
+        self.assertNotIn('if session.online then save(player) end', warehouse)
+
+
 if __name__ == "__main__":
     unittest.main()
