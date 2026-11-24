@@ -60,7 +60,7 @@ class ExpeditionJournalContractTests(unittest.TestCase):
         self.assertIn('player:GetAttribute(pet.id) == true', HUD)
         self.assertIn('tostring(discoveredMutations) .. "/" .. tostring(#mutationPets)', HUD)
         self.assertIn('createPictogram(iconPlate, "PetMark", found and pet.icon or "lock"', HUD)
-        self.assertIn('"Неизвестная форма"', HUD)
+        self.assertIn('" • Неизвестная форма"', HUD)
         self.assertNotIn('event:FireServer("GrantMutation"', HUD)
         self.assertIn('player.AttributeChanged:Connect(refresh)', HUD)
 
