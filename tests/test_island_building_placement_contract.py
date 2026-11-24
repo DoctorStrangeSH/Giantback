@@ -186,7 +186,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('newBuilding.lit = true', WORLD)
         self.assertIn('toggleGardenLamp(visitor, ownerUserId, index, anchor)', WORLD)
         self.assertIn('GardenLampPreviewBase', HUD)
-        self.assertIn('placementState == "GardenLamp" and wood >= 6 and stone >= 4', HUD)
+        self.assertIn('GardenLamp = {Wood = 6, Stone = 4}', HUD)
 
     def test_warehouse_transfers_are_server_authorized_and_transactional(self):
         warehouse = WORLD.split("local function useWarehouse(player, ownerUserId, action)", 1)[1].split("local COMPANION_IDS", 1)[0]
