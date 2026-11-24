@@ -75,6 +75,7 @@ class HomeInteriorContractTests(unittest.TestCase):
     def test_companion_rest_is_owner_only_and_updates_bond(self):
         self.assertIn('prompt(homePetRestAnchor, "Уголок питомцев", "Отдохнуть с компаньоном"', WORLD)
         self.assertIn('if visitor.UserId ~= ownerUserId then', WORLD)
+        self.assertIn('visitorSession.homeInteriorIsland ~= homeIsland', WORLD)
         self.assertIn('visitorSession.companionRestReadyAt[companionId] = now + 45', WORLD)
         self.assertIn('progressData.bond = math.clamp((progressData.bond or 0) + 4, 0, 1000)', WORLD)
         self.assertIn('setCompanionMood(visitor, companionId, "Спокойствие")', WORLD)
