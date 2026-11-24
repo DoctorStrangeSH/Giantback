@@ -9,7 +9,7 @@ HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 class GreenhouseBuildingContractTests(unittest.TestCase):
     def test_greenhouse_is_persisted_and_exposed_to_the_hud(self):
-        self.assertIn('saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse" or saved.id == "GardenLamp"', WORLD)
+        self.assertIn('saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse" or saved.id == "GardenLamp" or saved.id == "Fence" or saved.id == "WhiteFence" or saved.id == "StoneFence" or saved.id == "HedgeFence" or saved.id == "Bench" or saved.id == "DecorativeTree" or saved.id == "WoodenPath" or saved.id == "GardenArch" or saved.id == "BirdBath"', WORLD)
         self.assertIn('savedIsland.buildings = citySnapshot.buildings', WORLD)
         self.assertIn('player:SetAttribute("Greenhouse_Built"', WORLD)
         self.assertIn('end)(), "Greenhouse") ~= nil)', WORLD)
