@@ -3409,8 +3409,8 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
             makeFarmVisualPart(model, "BenchSeatSlat", Vector3.new(3.1, 0.08, 0.08), frame * CFrame.new(0, 1.01, (index - 2) * 0.28), Color3.fromRGB(187, 137, 88), Enum.PartType.Block, Enum.Material.Wood)
         end
     elseif id == "DecorativeTree" then
-        makeFarmVisualPart(model, "TreeRoot", Vector3.new(1.45, 0.22, 1.45), frame * CFrame.new(0, 0.12, 0), Color3.fromRGB(99, 76, 52), Enum.PartType.Cylinder, Enum.Material.Ground)
-        makeFarmVisualPart(model, "TreeTrunk", Vector3.new(0.62, 2.5, 0.62), frame * CFrame.new(0, 1.34, 0), Color3.fromRGB(116, 76, 48), Enum.PartType.Cylinder, Enum.Material.Wood)
+        makeFarmVisualPart(model, "TreeRoot", Vector3.new(0.22, 1.45, 1.45), frame * CFrame.new(0, 0.12, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(99, 76, 52), Enum.PartType.Cylinder, Enum.Material.Ground)
+        makeFarmVisualPart(model, "TreeTrunk", Vector3.new(2.5, 0.62, 0.62), frame * CFrame.new(0, 1.34, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(116, 76, 48), Enum.PartType.Cylinder, Enum.Material.Wood)
         for index, offset in {Vector3.new(0, 3.0, 0), Vector3.new(-0.9, 2.65, 0.15), Vector3.new(0.88, 2.7, 0.08), Vector3.new(0.1, 3.75, 0.08), Vector3.new(-0.42, 3.32, -0.68), Vector3.new(0.48, 3.3, 0.66)} do
             local crown = makeFarmVisualPart(model, "TreeCrown", Vector3.new(1.72, 1.68, 1.72), frame * CFrame.new(offset), index % 2 == 0 and Color3.fromRGB(104, 166, 88) or Color3.fromRGB(126, 184, 96), Enum.PartType.Ball, Enum.Material.Grass)
             crown.CanCollide = false
@@ -3442,10 +3442,10 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
         end
     elseif id == "BirdBath" then
         local stone = Color3.fromRGB(157, 160, 148)
-        makeFarmVisualPart(model, "BirdBathFoot", Vector3.new(1.55, 0.28, 1.55), frame * CFrame.new(0, 0.14, 0), Color3.fromRGB(119, 124, 116), Enum.PartType.Cylinder, Enum.Material.Slate)
-        makeFarmVisualPart(model, "BirdBathPedestal", Vector3.new(0.48, 1.48, 0.48), frame * CFrame.new(0, 0.98, 0), stone, Enum.PartType.Cylinder, Enum.Material.Slate)
-        makeFarmVisualPart(model, "BirdBathBowl", Vector3.new(2.2, 0.3, 2.2), frame * CFrame.new(0, 1.82, 0), stone, Enum.PartType.Cylinder, Enum.Material.Marble)
-        local water = makeFarmVisualPart(model, "BirdBathWater", Vector3.new(1.72, 0.08, 1.72), frame * CFrame.new(0, 2.0, 0), Color3.fromRGB(116, 190, 207), Enum.PartType.Cylinder, Enum.Material.Glass)
+        makeFarmVisualPart(model, "BirdBathFoot", Vector3.new(0.28, 1.55, 1.55), frame * CFrame.new(0, 0.14, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(119, 124, 116), Enum.PartType.Cylinder, Enum.Material.Slate)
+        makeFarmVisualPart(model, "BirdBathPedestal", Vector3.new(1.48, 0.48, 0.48), frame * CFrame.new(0, 0.98, 0) * CFrame.Angles(0, 0, math.rad(90)), stone, Enum.PartType.Cylinder, Enum.Material.Slate)
+        makeFarmVisualPart(model, "BirdBathBowl", Vector3.new(0.3, 2.2, 2.2), frame * CFrame.new(0, 1.82, 0) * CFrame.Angles(0, 0, math.rad(90)), stone, Enum.PartType.Cylinder, Enum.Material.Marble)
+        local water = makeFarmVisualPart(model, "BirdBathWater", Vector3.new(0.08, 1.72, 1.72), frame * CFrame.new(0, 2.0, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(116, 190, 207), Enum.PartType.Cylinder, Enum.Material.Glass)
         water.Transparency = 0.28
         water.CanCollide = false
     elseif id == "Greenhouse" then
