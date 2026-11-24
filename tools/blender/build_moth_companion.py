@@ -146,7 +146,7 @@ def abdomen_band(name, y, rx, rz, material, segments=40):
 def crescent(name, center, side, material):
     # Build a crescent as a curved strip between two arcs, not a concave ngon.
     cx, cy, cz = center
-    outer_radius, inner_radius, inner_offset = 0.50, 0.405, 0.22
+    outer_radius, inner_radius, inner_offset = 0.27, 0.215, 0.115
     steps = 28
     outer_front, inner_front = [], []
     for step in range(steps + 1):
@@ -161,7 +161,7 @@ def crescent(name, center, side, material):
             cy + inner_radius * math.sin(angle),
             cz,
         ))
-    thickness = 0.018
+    thickness = 0.010
     outer_back = [(x, y, z + thickness) for x, y, z in outer_front]
     inner_back = [(x, y, z + thickness) for x, y, z in inner_front]
     vertices = outer_front + inner_front + outer_back + inner_back
@@ -459,15 +459,17 @@ def main():
     for side,suffix in [(-1,"Left"),(1,"Right")]:
         for upper,wing_name in ((True,"Upper"),(False,"Lower")):
             parts.append(wing("MothWing"+wing_name+suffix,side,upper,wing_mats))
-            span = 1.42 if upper else 1.04
-            length = 0.82 if upper else 0.66
+            span = 1.30 if upper else 0.92
+            length = 0.64 if upper else 0.50
             root_x = side * 0.20
             root_y = 1.52 if upper else 1.28
             root_z = 0.10 if upper else 0.30
-            t = 0.46
+            # Small crescent inlays sit inside each membrane instead of floating
+            # above the wing silhouette like detached horns.
+            t = 0.62
             mark_x = root_x + side * t * span
-            mark_y = root_y + t * length + 0.055
-            mark_z = root_z + 0.20 * t * t + 0.10 - 0.055 - 0.012
+            mark_y = root_y + t * length + 0.015
+            mark_z = root_z + 0.20 * t * t + 0.10 - 0.055 - 0.010
             parts.append(crescent(
                 "WingMoon" + wing_name + suffix,
                 (mark_x, mark_y, mark_z),
