@@ -286,3 +286,10 @@ Sixth corrective pass: lower and shorten the tail arc, reduce its maximum cross-
 Manual inspection of all four renders: the fox is readable and friendly, with a strong face and a better tail curve. The tail still dominates the side silhouette, and the overall surface reads like a smooth vinyl toy rather than soft fur. The cream tip is now continuous enough to read as attached, but the form still needs sculpted coat breakup and more integrated paw/haunch transitions. Not approved for production.
 
 Seventh corrective source pass: reduce the tail cross-section again while keeping the cream tip's starting radii matched to the orange endpoint. Preserve all 17 rig groups. Further work must focus on authored low-frequency fur clumps and integrated paws, not additional micro-noise. Await new renders.
+
+
+## Eighth review — render set 14931531368 (2026-11-24)
+
+All four renders were manually inspected. Fox face and warm palette are strong; body proportions read as a friendly companion. The tail still dominates the side/back silhouette and makes the fox feel top-heavy. Paws remain too cylindrical, and the coat still needs a few deliberate large fur clumps rather than procedural noise.
+
+Eighth corrective source pass: reduce the tail cross-section while matching the cream tip's starting radii to the orange endpoint. Next pass should add authored coat clumps and blend the haunch/paw transitions; preserve all 17 rig groups.
