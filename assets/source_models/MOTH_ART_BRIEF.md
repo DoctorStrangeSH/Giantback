@@ -232,3 +232,10 @@ Sixth corrective source pass: use the explicit Y-up camera basis already proven 
 The new four-view render was manually inspected after the camera-basis fix. All views now keep the moth upright; the side profile is readable as a hovering creature. However, the gold crescents still float outside the wing silhouette and read like horns/antennae, not membrane decoration. The body bands remain too mechanical, and the wing panel design still resembles layered blades more than soft moth wings.
 
 Seventh corrective pass: shrink crescent geometry substantially, place each crescent deeper inside the corresponding wing membrane using the current wing span/length (the old placement incorrectly used pre-correction dimensions), and reduce ornament thickness. Keep the four separate wing groups and 10-group report stable. Next visual review must inspect front and side for actual surface contact and ensure no crescent extends beyond the wing contour. Not approved for production.
+
+
+## Eighth review — render set 14929216439 (2026-11-24)
+
+Manual inspection of all four new renders: the body still reads as a white segmented insect with three raised gold rings; the side view is too thin and the feet look like thick sausages. The crescent ornaments remain partly hidden behind the wing membrane, despite their smaller size. This pass is rejected.
+
+Eighth corrective source pass: place small gold crescents on the camera-facing wing surface (front membrane Z, not behind it), remove the three hard abdomen rings and replace them with one soft warm belly patch, shorten/thin the six legs and reduce the feet. Preserve all four independent wing groups and the ten-group report contract. Await new renders; not production-approved.
