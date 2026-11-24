@@ -1320,7 +1320,7 @@ local function renderPets()
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
         local equipped = player:GetAttribute("Companion") == pet.id
-        local item = card(body, pet.id .. "Card", compact and 314 or 214)
+        local item = card(body, pet.id .. "Card", compact and 330 or 214)
         local iconPlate = Instance.new("Frame")
         iconPlate.Name = "IconPlate"
         iconPlate.Size = UDim2.fromOffset(58, 58)
@@ -1410,8 +1410,8 @@ local function renderPets()
         talentLabel.TextWrapped = true
         talentLabel.TextYAlignment = Enum.TextYAlignment.Top
 
-        local actionSize = compact and UDim2.new(0.5, -18, 0, 30) or UDim2.fromOffset(108, 28)
-        local actionPosition = compact and UDim2.fromOffset(12, 240) or UDim2.new(1, -120, 0, 8)
+        local actionSize = compact and UDim2.new(0.5, -18, 0, 36) or UDim2.fromOffset(108, 32)
+        local actionPosition = compact and UDim2.fromOffset(12, 242) or UDim2.new(1, -120, 0, 8)
         local action = button(item, "Action", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН", actionSize, actionPosition, equipped and palette.gold or palette.forest)
         action.TextSize = 10
         action.Activated:Connect(function()
@@ -1428,7 +1428,7 @@ local function renderPets()
             + (tonumber(player:GetAttribute("Resource_Carrot")) or 0)
         local feedText = not owned and "НЕТ ПИТОМЦА" or not equipped and "СНАЧАЛА ПОЗОВИ" or foodCount <= 0 and "НЕТ УРОЖАЯ" or "УГОСТИТЬ"
         local feed = button(item, "Feed", feedText, actionSize,
-            compact and UDim2.new(0.5, 6, 0, 240) or UDim2.new(1, -120, 0, 44), palette.forestLight)
+            compact and UDim2.new(0.5, 6, 0, 242) or UDim2.new(1, -120, 0, 46), palette.forestLight)
         feed.TextSize = 9
         feed.Active = owned and equipped and foodCount > 0
         feed.AutoButtonColor = feed.Active
@@ -1440,7 +1440,7 @@ local function renderPets()
         end)
 
         local play = button(item, "Play", owned and (equipped and "ИГРАТЬ" or "ПОЗОВИ") or "НЕТ ПИТОМЦА",
-            actionSize, compact and UDim2.fromOffset(12, 276) or UDim2.new(1, -120, 0, 80), palette.gold)
+            actionSize, compact and UDim2.fromOffset(12, 284) or UDim2.new(1, -120, 0, 84), palette.gold)
         play.TextColor3 = palette.ink
         play.TextSize = 10
         play.Active = owned and equipped
@@ -1453,7 +1453,7 @@ local function renderPets()
         end)
 
         local petButton = button(item, "Pet", owned and (equipped and "ПОГЛАДИТЬ" or "ПОЗОВИ") or "НЕТ ПИТОМЦА",
-            actionSize, compact and UDim2.new(0.5, 6, 0, 276) or UDim2.new(1, -120, 0, 116), palette.lilac)
+            actionSize, compact and UDim2.new(0.5, 6, 0, 284) or UDim2.new(1, -120, 0, 122), palette.lilac)
         petButton.TextColor3 = palette.ink
         petButton.TextSize = 9
         petButton.Active = owned and equipped
@@ -1712,13 +1712,23 @@ local function renderDailyQuests()
         local done = progress >= goal
         if done then weeklyCompleted += 1 end
 
-        local item = card(body, "WeeklyChallenge_" .. tostring(index), 72)
+        local compact = gui.AbsoluteSize.X < 620
+        local item = card(body, "WeeklyChallenge_" .. tostring(index), compact and 112 or 72)
         item.BackgroundColor3 = done and Color3.fromRGB(235, 242, 224) or palette.paper
-        label(item, "Number", "1", UDim2.fromOffset(36, 42), UDim2.fromOffset(10, 12), 18, done and palette.forestLight or palette.gold, Enum.Font.GothamBlack)
-        label(item, "Title", title, UDim2.new(1, -118, 0, 22), UDim2.fromOffset(54, 7), 13, palette.ink, Enum.Font.GothamBold)
-        label(item, "Hint", done and "Испытание выполнено!" or description, UDim2.new(1, -118, 0, 20), UDim2.fromOffset(54, 29), 10, palette.muted)
-        label(item, "Reward", "+" .. tostring(challengeReward) .. " Coins", UDim2.new(1, -118, 0, 16), UDim2.fromOffset(54, 51), 9, palette.gold, Enum.Font.GothamBold)
-        local progressLabel = label(item, "Progress", tostring(math.min(progress, goal)) .. "/" .. tostring(goal), UDim2.fromOffset(56, 24), UDim2.new(1, -66, 0.5, -12), 13, done and palette.forest or palette.ink, Enum.Font.GothamBlack)
+        label(item, "Number", tostring(index), UDim2.fromOffset(36, 42),
+            UDim2.fromOffset(10, compact and 8 or 12), 18, done and palette.forestLight or palette.gold, Enum.Font.GothamBlack)
+        label(item, "Title", title,
+            compact and UDim2.new(1, -126, 0, 36) or UDim2.new(1, -118, 0, 22),
+            UDim2.fromOffset(54, 7), 13, palette.ink, Enum.Font.GothamBold)
+        local hint = label(item, "Hint", done and "Испытание выполнено!" or description,
+            compact and UDim2.new(1, -28, 0, 30) or UDim2.new(1, -118, 0, 20),
+            UDim2.fromOffset(compact and 14 or 54, compact and 46 or 29), 10, palette.muted)
+        hint.TextYAlignment = Enum.TextYAlignment.Top
+        label(item, "Reward", "+" .. tostring(challengeReward) .. " монет",
+            compact and UDim2.new(1, -90, 0, 18) or UDim2.new(1, -118, 0, 16),
+            UDim2.fromOffset(compact and 14 or 54, compact and 84 or 51), 9, palette.gold, Enum.Font.GothamBold)
+        local progressLabel = label(item, "Progress", tostring(math.min(progress, goal)) .. "/" .. tostring(goal),
+            UDim2.fromOffset(56, 24), UDim2.new(1, -66, 0, compact and 80 or 24), 13, done and palette.forest or palette.ink, Enum.Font.GothamBlack)
         progressLabel.TextXAlignment = Enum.TextXAlignment.Center
     end
 
