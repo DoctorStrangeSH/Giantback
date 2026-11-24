@@ -21,12 +21,12 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         ):
             self.assertIn(name, source)
         self.assertIn('uv=mesh.uv_layers.new(name="WingUV")', source)
-        self.assertIn("span = 1.42 if upper else 1.04", source)
-        self.assertIn("outer_radius, inner_radius, inner_offset = 0.39, 0.325, 0.19", source)
-        self.assertIn("curve.bevel_depth = 0.052", source)
-        self.assertIn("length = 0.82 if upper else 0.66", source)
-        self.assertIn("0.08 + 0.92 * (math.sin", source)
-        self.assertIn("width = (0.08 + 0.92 * (math.sin(math.pi * t) ** 0.75)) * span * 1.05", source)
+        self.assertIn("span = 1.30 if upper else 0.92", source)
+        self.assertIn("outer_radius, inner_radius, inner_offset = 0.50, 0.405, 0.22", source)
+        self.assertIn("curve.bevel_depth = 0.072", source)
+        self.assertIn("length = 0.64 if upper else 0.50", source)
+        self.assertIn("0.08 * (1.0 - t) + 0.24 * t + 0.86 * (math.sin", source)
+        self.assertIn("width = (0.08 * (1.0 - t) + 0.24 * t + 0.86 * (math.sin(math.pi * t) ** 0.78)) * span * 1.08", source)
         self.assertIn('"wing_groups":["MothWingUpperLeft","MothWingUpperRight","MothWingLowerLeft","MothWingLowerRight"]', source)
 
     def test_lunar_palette_and_gameplay_animation_states_are_locked(self):
@@ -57,9 +57,15 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn('(0.98,0.355,0.30)', source)
         self.assertIn('(1.20,0.37,0.315)', source)
         self.assertIn('(0.43,0.40,0.36)', source)
-        self.assertIn('((1.05,0.88),(0.84,0.68),(0.64,0.50))', source)
+        self.assertIn('((1.02,0.88),(0.84,0.72),(0.68,0.56))', source)
         self.assertIn('outer_radius, inner_radius, inner_offset = 0.39, 0.325, 0.19', source)
         self.assertNotIn('parts.append(sphere("MothAbdomen"', source)
+
+    def test_review_cameras_keep_hovering_moth_profile_level(self):
+        source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
+        self.assertIn('"three_quarter":Vector((4.0,1.45,-5.0))', source)
+        self.assertIn('"side":Vector((6.0,1.45,0.0))', source)
+        self.assertIn('"back":Vector((0,1.45,6.0))', source)
 
     def test_mesh_report_uses_stable_ten_group_contract(self):
         source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
