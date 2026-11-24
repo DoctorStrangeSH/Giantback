@@ -28,6 +28,15 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('local width = math.max(240, math.min(340, viewport.X - 24))', HUD)
         self.assertIn('updatePlayOverlayLayout()', HUD)
 
+    def test_farm_and_daily_quest_cards_reflow_on_compact_screens(self):
+        self.assertIn('local compact = gui.AbsoluteSize.X < 620', HUD)
+        self.assertIn('card(body, "Seed_" .. crop.id, compact and 122 or 82)', HUD)
+        self.assertIn('compact and UDim2.new(0.5, -18, 0, 34)', HUD)
+        self.assertIn('card(body, "Plot" .. tostring(index), compact and 88 or 66)', HUD)
+        self.assertIn('card(body, "DailyQuest_" .. tostring(index), compact and 112 or 78)', HUD)
+        self.assertIn('compact and UDim2.new(1, -28, 0, 30)', HUD)
+        self.assertIn('compact and "ВЫБРАТЬ МЕСТО" or "ПОСТРОИТЬ"', HUD)
+
     def test_important_icons_are_native_gui_pictograms(self):
         self.assertIn('local function createPictogram(parent, name, kind, size, tint)', HUD)
         self.assertIn('local function setPictogramColor(root, color)', HUD)
