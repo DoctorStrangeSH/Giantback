@@ -75,6 +75,7 @@ local palette = {
     gold = Color3.fromRGB(239, 184, 91),
     coral = Color3.fromRGB(216, 121, 94),
     lilac = Color3.fromRGB(174, 151, 207),
+    water = Color3.fromRGB(122, 191, 204),
     white = Color3.fromRGB(255, 253, 244),
 }
 
@@ -157,6 +158,76 @@ local function card(parent, name, height)
     return item
 end
 
+-- Native GUI pictograms: no emoji/font dependency, so icons render consistently on all devices.
+local function createPictogram(parent, name, kind, size, tint)
+    local root = Instance.new("Frame")
+    root.Name = name
+    root.Size = UDim2.fromOffset(size, size)
+    root.BackgroundTransparency = 1
+    root.Parent = parent
+    local color = tint or palette.gold
+    local function part(id, x, y, w, h, fill, rotation, round)
+        local p = Instance.new("Frame")
+        p.Name = id
+        p.Position = UDim2.fromScale(x, y)
+        p.Size = UDim2.fromScale(w, h)
+        p.BackgroundColor3 = fill or color
+        p.BorderSizePixel = 0
+        p.Rotation = rotation or 0
+        p.Parent = root
+        local c = Instance.new("UICorner")
+        c.CornerRadius = round and UDim.new(1, 0) or UDim.new(0.2, 0)
+        c.Parent = p
+    end
+    if kind == "house" then
+        part("RoofL", 0.06, 0.18, 0.54, 0.14, color, -34)
+        part("RoofR", 0.40, 0.18, 0.54, 0.14, color, 34)
+        part("Walls", 0.18, 0.38, 0.64, 0.48, palette.paper)
+        part("Door", 0.43, 0.59, 0.16, 0.27, palette.ink)
+        part("WindowL", 0.25, 0.48, 0.14, 0.14, palette.water, nil, true)
+        part("WindowR", 0.62, 0.48, 0.14, 0.14, palette.water, nil, true)
+    elseif kind == "farm" then
+        part("Stem", 0.45, 0.30, 0.12, 0.58, palette.ink)
+        part("LeafL", 0.10, 0.12, 0.43, 0.27, color, -28, true)
+        part("LeafR", 0.48, 0.08, 0.42, 0.27, color, 28, true)
+    elseif kind == "paw" then
+        part("ToeL", 0.08, 0.14, 0.24, 0.24, color, nil, true)
+        part("ToeM", 0.35, 0.03, 0.24, 0.24, color, nil, true)
+        part("ToeR", 0.65, 0.14, 0.24, 0.24, color, nil, true)
+        part("Pad", 0.20, 0.43, 0.60, 0.48, color, nil, true)
+    elseif kind == "backpack" then
+        part("Body", 0.18, 0.12, 0.64, 0.78, color)
+        part("Pocket", 0.28, 0.52, 0.44, 0.28, palette.paper)
+        part("StrapL", 0.08, 0.24, 0.13, 0.60, palette.ink)
+        part("StrapR", 0.79, 0.24, 0.13, 0.60, palette.ink)
+    elseif kind == "map" then
+        part("PanelL", 0.05, 0.20, 0.28, 0.64, color)
+        part("PanelC", 0.36, 0.12, 0.28, 0.72, palette.paper)
+        part("PanelR", 0.67, 0.20, 0.28, 0.64, color)
+        part("Pin", 0.58, 0.22, 0.20, 0.20, palette.coral, nil, true)
+    elseif kind == "journal" then
+        part("Cover", 0.12, 0.10, 0.76, 0.80, palette.paper)
+        part("Spine", 0.42, 0.12, 0.12, 0.76, color)
+        part("Line1", 0.61, 0.32, 0.18, 0.06, color)
+        part("Line2", 0.61, 0.50, 0.18, 0.06, color)
+        part("Line3", 0.61, 0.68, 0.18, 0.06, color)
+    elseif kind == "wood" then
+        part("Plank1", 0.10, 0.15, 0.80, 0.22, Color3.fromRGB(172, 117, 73))
+        part("Plank2", 0.10, 0.42, 0.80, 0.22, Color3.fromRGB(197, 145, 91))
+        part("Plank3", 0.10, 0.69, 0.80, 0.18, Color3.fromRGB(145, 94, 59))
+    elseif kind == "stone" then
+        part("Stone1", 0.08, 0.34, 0.48, 0.48, color, -12)
+        part("Stone2", 0.48, 0.18, 0.44, 0.62, palette.paperDark, 12)
+    end
+    return root
+end
+
+local function setPictogramColor(root, color)
+    for _, child in root:GetDescendants() do
+        if child:IsA("Frame") then child.BackgroundColor3 = color end
+    end
+end
+
 local topBar = Instance.new("Frame")
 topBar.Name = "TopBar"
 topBar.Position = UDim2.fromOffset(16, 16)
@@ -184,8 +255,10 @@ resources.BackgroundColor3 = palette.paper
 resources.Parent = topBar
 corner(resources, 18)
 stroke(resources, palette.paperDark, 0.1, 1)
-local woodLabel = label(resources, "Wood", "ДЕР.  0", UDim2.new(0.5, -8, 1, 0), UDim2.fromOffset(10, 0), 13, palette.ink, Enum.Font.GothamBold)
-local stoneLabel = label(resources, "Stone", "КАМ.  0", UDim2.new(0.5, -8, 1, 0), UDim2.new(0.5, 2, 0, 0), 13, palette.ink, Enum.Font.GothamBold)
+createPictogram(resources, "WoodIcon", "wood", 18, Color3.fromRGB(164, 108, 66)).Position = UDim2.fromOffset(8, 20)
+createPictogram(resources, "StoneIcon", "stone", 18, Color3.fromRGB(126, 145, 145)).Position = UDim2.new(0.5, 7, 0, 20)
+local woodLabel = label(resources, "Wood", "0", UDim2.new(0.5, -30, 1, 0), UDim2.fromOffset(29, 0), 13, palette.ink, Enum.Font.GothamBold)
+local stoneLabel = label(resources, "Stone", "0", UDim2.new(0.5, -30, 1, 0), UDim2.new(0.5, 28, 0, 0), 13, palette.ink, Enum.Font.GothamBold)
 
 local objective = Instance.new("Frame")
 objective.Name = "ObjectiveCard"
@@ -316,6 +389,8 @@ toastText.ZIndex = 41
 local toastGeneration = 0
 local toastTween = nil
 local navButtons = {}
+local navIcons = {}
+local navLabels = {}
 local navDefinitions = {}
 local closeActivePanel
 local applyPanelLayer
@@ -327,11 +402,12 @@ local function updateResponsiveLayout()
     if not camera then return end
     local viewport = camera.ViewportSize
     local compact = viewport.X < 620
-    local narrow = viewport.X < 420
+    local narrow = viewport.X < 480
+    local shortScreen = viewport.Y < 440
 
     topBar.Position = UDim2.fromOffset(compact and 8 or 16, compact and 8 or 16)
     topBar.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 48 or 58)
-    brand.Size = UDim2.fromOffset(compact and (narrow and 112 or 132) or 178, compact and 48 or 58)
+    brand.Size = UDim2.fromOffset(compact and (narrow and 104 or 132) or 178, compact and 48 or 58)
     brandTitle.TextSize = compact and 14 or 18
     brandSubtitle.Visible = not compact
     resources.Size = UDim2.fromOffset(compact and (narrow and 150 or 174) or 214, compact and 48 or 58)
@@ -349,34 +425,48 @@ local function updateResponsiveLayout()
     progressTrack.Size = UDim2.new(1, compact and -68 or -92, 0, 5)
     progressCount.Visible = not compact
 
-    nav.Position = UDim2.new(0.5, 0, 1, compact and -6 or -14)
-    nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 54 or 68)
-    navLayout.Padding = UDim.new(0, compact and 2 or 7)
+    nav.Position = UDim2.new(0.5, 0, 1, compact and -8 or -14)
+    nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and (shortScreen and 48 or 56) or 72)
+    navLayout.Padding = UDim.new(0, narrow and 1 or compact and 3 or 7)
     panelTitle.TextSize = compact and 16 or 20
     panelSubtitle.TextSize = compact and 10 or 12
     closeButton.Size = UDim2.fromOffset(compact and 36 or 42, compact and 36 or 42)
     closeButton.Position = UDim2.new(1, compact and -44 or -58, 0, compact and 8 or 12)
     for _, definition in navDefinitions do
         local navButton = navButtons[definition.id]
+        local iconRoot = navIcons[definition.id]
+        local titleLabel = navLabels[definition.id]
         if navButton then
-            navButton.Size = UDim2.new(1 / #navDefinitions, compact and -2 or -6, 1, -8)
-            navButton.Text = compact and definition.glyph or (definition.glyph .. "\\n" .. definition.title)
-            navButton.TextSize = compact and 20 or 13
+            navButton.Size = UDim2.new(1 / #navDefinitions, narrow and -1 or compact and -4 or -8, 1, -8)
+            local iconSize = narrow and 22 or compact and 20 or 24
+            if iconRoot then
+                iconRoot.Size = UDim2.fromOffset(iconSize, iconSize)
+                iconRoot.Position = narrow and UDim2.new(0.5, -iconSize / 2, 0.5, -iconSize / 2)
+                    or UDim2.new(0.5, -iconSize / 2, 0, 4)
+            end
+            if titleLabel then
+                titleLabel.Visible = not narrow
+                titleLabel.TextSize = compact and 9 or 11
+                titleLabel.Position = UDim2.new(0, 2, 1, -23)
+                titleLabel.Size = UDim2.new(1, -4, 0, 18)
+            end
+            navButton.ToolTip = definition.title
         end
     end
 
-    local panelWidth = math.max(240, math.min(470, viewport.X - (compact and 16 or 48)))
-    local panelHeight = math.max(160, math.min(420, viewport.Y - (compact and 140 or 220)))
+    local panelWidth = math.max(240, math.min(560, viewport.X - 16))
+    local panelHeight = math.max(210, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))
     panel.Size = UDim2.fromOffset(panelWidth, panelHeight)
     panelTitle.TextSize = compact and 16 or 20
     panelSubtitle.TextSize = compact and 10 or 12
     closeButton.Size = UDim2.fromOffset(compact and 36 or 42, compact and 36 or 42)
     closeButton.Position = UDim2.new(1, compact and -44 or -58, 0, compact and 8 or 12)
-    panel.Position = UDim2.new(0.5, 0, 0.5, compact and -18 or 0)
+    panel.Position = UDim2.fromScale(0.5, 0.5)
     panelTitle.TextSize = compact and 16 or 20
     panelSubtitle.TextSize = compact and 10 or 12
-    body.Position = UDim2.fromOffset(12, 72)
-    body.Size = UDim2.new(1, -24, 1, -84)
+    panelSubtitle.Visible = viewport.X >= 400 and viewport.Y >= 440
+    body.Position = UDim2.fromOffset(12, compact and 66 or 76)
+    body.Size = UDim2.new(1, -24, 1, compact and -78 or -88)
     toast.Size = UDim2.fromOffset(math.min(380, math.max(190, viewport.X - 24)), 48)
     toast.Position = UDim2.new(0.5, 0, 1, compact and -68 or -96)
 
@@ -1835,9 +1925,10 @@ closeActivePanel = function()
     panel.Visible = false
     modalBackdrop.Visible = false
     activeTab = nil
-    for _, navButton in navButtons do
+    for name, navButton in navButtons do
         navButton.BackgroundColor3 = palette.forestLight
-        navButton.TextColor3 = palette.white
+        if navLabels[name] then navLabels[name].TextColor3 = palette.white end
+        if navIcons[name] then setPictogramColor(navIcons[name], palette.white) end
     end
 end
 
@@ -1860,28 +1951,38 @@ local function openTab(tabName)
     modalBackdrop.Visible = true
     panel.Visible = true
     for name, navButton in navButtons do
-        navButton.BackgroundColor3 = name == tabName and palette.gold or palette.forestLight
-        navButton.TextColor3 = name == tabName and palette.ink or palette.white
+        local selected = name == tabName
+        navButton.BackgroundColor3 = selected and palette.gold or palette.forestLight
+        if navLabels[name] then navLabels[name].TextColor3 = selected and palette.ink or palette.white end
+        if navIcons[name] then setPictogramColor(navIcons[name], selected and palette.ink or palette.white) end
     end
 end
 
 navDefinitions = {
-    {id = "City", title = "ОСТРОВ", glyph = "О"},
-    {id = "Farm", title = "ФЕРМА", glyph = "Ф"},
-    {id = "Pets", title = "ПИТОМЦЫ", glyph = "П"},
-    {id = "Tools", title = "РЮКЗАК", glyph = "И"},
-    {id = "World", title = "КАРТА", glyph = "М"},
-    {id = "Expeditions", title = "ДНЕВНИК", glyph = "Д"},
+    {id = "City", title = "ОСТРОВ", icon = "house"},
+    {id = "Farm", title = "ФЕРМА", icon = "farm"},
+    {id = "Pets", title = "ПИТОМЦЫ", icon = "paw"},
+    {id = "Tools", title = "РЮКЗАК", icon = "backpack"},
+    {id = "World", title = "КАРТА", icon = "map"},
+    {id = "Expeditions", title = "ДНЕВНИК", icon = "journal"},
 }
 
 for _, definition in navDefinitions do
-    local navButton = button(nav, definition.id, definition.glyph .. "\n" .. definition.title, UDim2.new(1 / #navDefinitions, -6, 1, -12), UDim2.new(), palette.forestLight)
-    navButton.TextSize = 13
-    navButton.TextYAlignment = Enum.TextYAlignment.Center
+    local navButton = button(nav, definition.id, "", UDim2.new(1 / #navDefinitions, -8, 1, -12), UDim2.new(), palette.forestLight)
+    navButton.TextTransparency = 1
+    navButton.ClipsDescendants = true
+    local iconRoot = createPictogram(navButton, "Icon", definition.icon, 24, palette.white)
+    iconRoot.Position = UDim2.new(0.5, -12, 0, 4)
+    local titleLabel = label(navButton, "Title", definition.title, UDim2.new(1, -4, 0, 18),
+        UDim2.new(0, 2, 1, -23), 11, palette.white, Enum.Font.GothamBold)
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    navButton.ToolTip = definition.title
     navButton.Activated:Connect(function()
         openTab(definition.id)
     end)
     navButtons[definition.id] = navButton
+    navIcons[definition.id] = iconRoot
+    navLabels[definition.id] = titleLabel
 end
 
 gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateResponsiveLayout)
