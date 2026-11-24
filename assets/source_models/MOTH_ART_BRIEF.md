@@ -202,3 +202,15 @@ The Moth is NOT artist-approved until all are true:
 4. Generate four-view Blender review package and inspect it manually.
 5. Correct silhouette/materials before any runtime replacement.
 6. Import into Studio and validate scale, pivots, animation and mobile readability.
+
+
+## Fifth automated review — artifact 14921347063 (2026-11-24)
+
+The actual four PNG renders were downloaded and manually inspected. Geometry/UV/material checks pass, but the model is **rejected for art acceptance**:
+- the three-quarter and side renders make the hovering body read nearly horizontal/rolled rather than upright and graceful;
+- the wings still read as long pointed panels with angular color blocks, not broad rounded moth wings;
+- the gold crescents are too subtle to read as the signature motif;
+- the legs remain thin rod-like appendages with bulb ends;
+- the head/thorax/abdomen silhouette feels mechanical and segmented rather than plush and magical.
+
+Fifth corrective source pass: make review camera directions level with the moth's hover axis; broaden and round the wing silhouette while reducing spanwise length; enlarge crescent inlays; thicken and shorten the legs/feet; preserve the four separate wing groups and the ten-group report contract. New four-view renders and manual inspection are mandatory. The rig JSON still explicitly says its pivots are metadata hints, not a Roblox-ready animation rig.
