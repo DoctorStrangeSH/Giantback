@@ -434,8 +434,8 @@ def create_fox(p):
 
     # Big plush tail sweeps up behind the body; cream tip remains separately riggable.
     plush_tail("FoxTail",
-        [(0.15, 1.02, 0.68), (0.35, 1.08, 1.02), (0.39, 1.30, 1.40),
-         (0.27, 1.57, 1.66), (0.12, 1.70, 1.78)],
+        [(0.06, 1.02, 0.68), (0.24, 1.08, 1.02), (0.30, 1.30, 1.40),
+         (0.21, 1.57, 1.66), (0.08, 1.70, 1.78)],
         [0.14, 0.20, 0.26, 0.23, 0.17],
         [0.11, 0.17, 0.22, 0.20, 0.145], p["fox_orange"])
     # Cream tip starts exactly on the orange tail end to avoid a detached cap.
