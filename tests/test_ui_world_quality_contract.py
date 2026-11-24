@@ -74,7 +74,7 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('CodexProgressTrack', HUD)
         self.assertIn('CodexProgressFill', HUD)
         self.assertIn('discoveredMutations / #mutationPets', HUD)
-        self.assertIn('card(body, "CompanionMutationCodex_" .. tostring(index), compactAlbum and 92 or 82)', HUD)
+        self.assertIn('card(body, "CompanionMutationCodex_" .. tostring(index), compactAlbum and 116 or 104)', HUD)
         self.assertIn('MutationIconPlate', HUD)
         self.assertIn('found and pet.icon or "lock"', HUD)
         self.assertIn('found and "ОТКРЫТО" or "ИСКАТЬ"', HUD)
