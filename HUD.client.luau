@@ -1286,7 +1286,7 @@ local function renderPets()
         {id = "MossTurtle", name = "Мохопанцирь", role = "Редкий • Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "turtle"},
         {id = "Glowcap", name = "Светошляп", role = "Эпический • Грибной огонёк", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "mushroom"},
         {id = "Dewdrop", name = "Росинка", role = "Эпический • Капля ручья", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "droplet"},
-        {id = "Starling", name = "Звёздокрыл", role = "Легендарный • Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "paw"},
+        {id = "Starling", name = "Звёздокрыл", role = "Легендарный • Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "owl"},
     }
     local compact = gui.AbsoluteSize.X < 620
     for _, pet in pets do
@@ -1916,8 +1916,8 @@ local function renderExpeditions()
         {id = "Moth", title = "Лунная моль", biome = "Сумеречная долина", icon = "moth", color = palette.lilac},
         {id = "CrystalWisp", title = "Кристальный светляк", biome = "Кристальная пещера", icon = "crystal", color = palette.water},
         {id = "HarvestSprite", title = "Тыквик", biome = "Фестиваль урожая", icon = "pumpkin", color = palette.coral},
-        {id = "BrambleBun", title = "Колючка", biome = "Призовое яйцо Фестиваля урожая", glyph = "К", color = palette.gold},
-        {id = "MossTurtle", title = "Мохопанцирь", biome = "Призовое яйцо Фестиваля урожая", glyph = "М", color = palette.forest},
+        {id = "BrambleBun", title = "Колючка", biome = "Призовое яйцо Фестиваля урожая", icon = "paw", color = palette.gold},
+        {id = "MossTurtle", title = "Мохопанцирь", biome = "Призовое яйцо Фестиваля урожая", icon = "turtle", color = palette.forest},
         {id = "Glowcap", title = "Светошляп", biome = "Призовое яйцо Фестиваля урожая", icon = "mushroom", color = palette.lilac},
         {id = "Dewdrop", title = "Росинка", biome = "Призовое яйцо Фестиваля урожая", icon = "droplet", color = palette.water},
         {id = "Starling", title = "Звёздокрыл", biome = "Призовое яйцо Фестиваля урожая", icon = "owl", color = palette.lilac},
