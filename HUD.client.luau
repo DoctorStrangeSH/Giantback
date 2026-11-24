@@ -555,12 +555,12 @@ local function createPlacementGhost(decorationId)
         cap.Color = Color3.fromRGB(207, 169, 91)
     elseif decorationId == "Fence" or decorationId == "WhiteFence" or decorationId == "StoneFence" or decorationId == "HedgeFence" then
         local color = decorationId == "WhiteFence" and Color3.fromRGB(244, 237, 214) or decorationId == "StoneFence" and Color3.fromRGB(151, 157, 149) or decorationId == "HedgeFence" and Color3.fromRGB(84, 145, 73) or Color3.fromRGB(164, 119, 77)
-        for _, xOffset in {-1.68, 1.68} do
+        for _, xOffset in {-1.78, 1.78} do
             local post = makePlacementPart("FencePreviewPost", Vector3.new(0.34, 1.42, 0.34), Vector3.new(xOffset, 0.72, 0))
             post.Color = color
         end
         for _, yOffset in {0.55, 1.12} do
-            local rail = makePlacementPart("FencePreviewRail", Vector3.new(3.5, 0.2, 0.24), Vector3.new(0, yOffset, 0))
+            local rail = makePlacementPart("FencePreviewRail", Vector3.new(3.9, 0.2, 0.24), Vector3.new(0, yOffset, 0))
             rail.Color = color
         end
         if decorationId == "HedgeFence" then
