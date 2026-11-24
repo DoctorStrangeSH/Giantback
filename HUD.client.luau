@@ -82,7 +82,7 @@ local palette = {
 local gui = Instance.new("ScreenGui")
 gui.Name = "GiantbackHUD"
 gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
+gui.IgnoreGuiInset = false
 gui.DisplayOrder = 40
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
@@ -491,17 +491,17 @@ local function updateResponsiveLayout()
         local titleLabel = navLabels[definition.id]
         if navButton then
             navButton.Size = UDim2.new(1 / #navDefinitions, narrow and -1 or compact and -4 or -8, 1, -8)
-            local iconSize = narrow and 22 or compact and 20 or 24
+            local iconSize = narrow and 16 or compact and 20 or 24
             if iconRoot then
                 iconRoot.Size = UDim2.fromOffset(iconSize, iconSize)
                 iconRoot.Position = narrow and UDim2.new(0.5, -iconSize / 2, 0.5, -iconSize / 2)
                     or UDim2.new(0.5, -iconSize / 2, 0, 4)
             end
             if titleLabel then
-                titleLabel.Visible = not narrow
-                titleLabel.TextSize = compact and 9 or 11
-                titleLabel.Position = UDim2.new(0, 2, 1, -23)
-                titleLabel.Size = UDim2.new(1, -4, 0, 18)
+                titleLabel.Visible = true
+                titleLabel.TextSize = narrow and 7 or compact and 9 or 11
+                titleLabel.Position = UDim2.new(0, 1, 1, -20)
+                titleLabel.Size = UDim2.new(1, -2, 0, 16)
             end
             navButton.ToolTip = definition.title
         end
@@ -2013,10 +2013,10 @@ local function openTab(tabName)
 end
 
 navDefinitions = {
-    {id = "City", title = "ОСТРОВ", icon = "house"},
+    {id = "City", title = "ДОМ", icon = "house"},
     {id = "Farm", title = "ФЕРМА", icon = "farm"},
     {id = "Pets", title = "ПИТОМЦЫ", icon = "paw"},
-    {id = "Tools", title = "РЮКЗАК", icon = "backpack"},
+    {id = "Tools", title = "СУМКА", icon = "backpack"},
     {id = "World", title = "КАРТА", icon = "map"},
     {id = "Expeditions", title = "ДНЕВНИК", icon = "journal"},
 }
