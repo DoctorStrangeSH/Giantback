@@ -215,9 +215,62 @@ local function createPictogram(parent, name, kind, size, tint)
         part("Plank1", 0.10, 0.15, 0.80, 0.22, Color3.fromRGB(172, 117, 73))
         part("Plank2", 0.10, 0.42, 0.80, 0.22, Color3.fromRGB(197, 145, 91))
         part("Plank3", 0.10, 0.69, 0.80, 0.18, Color3.fromRGB(145, 94, 59))
-    elseif kind == "stone" then
+    elseif kind == "stone" or kind == "stonepath" or kind == "crystal" then
         part("Stone1", 0.08, 0.34, 0.48, 0.48, color, -12)
         part("Stone2", 0.48, 0.18, 0.44, 0.62, palette.paperDark, 12)
+        if kind == "crystal" then part("Core", 0.38, 0.34, 0.24, 0.30, palette.lilac, 45) end
+    elseif kind == "fox" then
+        part("EarL", 0.10, 0.04, 0.34, 0.44, color, -16)
+        part("EarR", 0.56, 0.04, 0.34, 0.44, color, 16)
+        part("Face", 0.17, 0.30, 0.66, 0.62, color, nil, true)
+        part("Muzzle", 0.38, 0.62, 0.24, 0.17, palette.paper, nil, true)
+    elseif kind == "moth" then
+        part("WingL", 0.04, 0.12, 0.40, 0.62, color, -18, true)
+        part("WingR", 0.56, 0.12, 0.40, 0.62, color, 18, true)
+        part("Body", 0.44, 0.22, 0.12, 0.62, palette.paper, nil, true)
+    elseif kind == "carrot" or kind == "berry" or kind == "pumpkin" or kind == "cabbage" or kind == "droplet" or kind == "mushroom" then
+        local fill = kind == "carrot" and Color3.fromRGB(239, 143, 65)
+            or kind == "berry" and palette.coral or kind == "pumpkin" and Color3.fromRGB(239, 143, 61)
+            or kind == "cabbage" and palette.mint or kind == "droplet" and palette.water or palette.lilac
+        part("Body", 0.18, 0.20, 0.64, 0.68, fill, nil, true)
+        if kind == "pumpkin" then part("Stem", 0.43, 0.06, 0.16, 0.20, palette.ink) end
+        if kind == "berry" then part("Leaf", 0.34, 0.12, 0.34, 0.16, palette.forest) end
+    elseif kind == "flower" or kind == "arch" then
+        part("PetalTop", 0.38, 0.04, 0.24, 0.30, color, nil, true)
+        part("PetalL", 0.10, 0.34, 0.30, 0.30, color, nil, true)
+        part("PetalR", 0.60, 0.34, 0.30, 0.30, color, nil, true)
+        part("PetalBottom", 0.38, 0.62, 0.24, 0.30, color, nil, true)
+        part("Center", 0.38, 0.36, 0.24, 0.24, palette.paper, nil, true)
+    elseif kind == "greenhouse" then
+        part("WallL", 0.12, 0.30, 0.14, 0.56, color)
+        part("WallR", 0.74, 0.30, 0.14, 0.56, color)
+        part("Roof", 0.08, 0.16, 0.84, 0.14, palette.paper)
+        part("Floor", 0.12, 0.82, 0.76, 0.10, palette.ink)
+    elseif kind == "lamp" then
+        part("Post", 0.43, 0.30, 0.14, 0.60, palette.ink)
+        part("Light", 0.24, 0.10, 0.52, 0.34, palette.gold, nil, true)
+        part("Cap", 0.18, 0.06, 0.64, 0.12, color)
+    elseif kind == "fence" then
+        part("PostL", 0.10, 0.12, 0.16, 0.78, color)
+        part("PostR", 0.74, 0.12, 0.16, 0.78, color)
+        part("Rail1", 0.12, 0.30, 0.76, 0.14, palette.paper)
+        part("Rail2", 0.12, 0.62, 0.76, 0.14, palette.paper)
+    elseif kind == "bench" then
+        part("Seat", 0.12, 0.40, 0.76, 0.18, color)
+        part("Back", 0.12, 0.18, 0.76, 0.16, palette.paper)
+        part("LegL", 0.22, 0.58, 0.12, 0.32, palette.ink)
+        part("LegR", 0.66, 0.58, 0.12, 0.32, palette.ink)
+    elseif kind == "tree" then
+        part("Trunk", 0.43, 0.46, 0.16, 0.48, palette.ink)
+        part("CrownL", 0.08, 0.20, 0.52, 0.52, color, nil, true)
+        part("CrownR", 0.42, 0.12, 0.52, 0.56, color, nil, true)
+    elseif kind == "birdbath" then
+        part("Pedestal", 0.42, 0.38, 0.16, 0.52, palette.ink)
+        part("Bowl", 0.12, 0.20, 0.76, 0.22, color, nil, true)
+        part("Water", 0.26, 0.24, 0.48, 0.10, palette.water, nil, true)
+    elseif kind == "lock" then
+        part("Shackle", 0.26, 0.08, 0.48, 0.48, color, nil, true)
+        part("LockBody", 0.16, 0.40, 0.68, 0.48, color)
     end
     return root
 end
@@ -521,10 +574,10 @@ local function addInfo(titleText, description, height)
 end
 
 local cropCatalog = {
-    {id = "Carrot", name = "Морковь", seed = "CarrotSeed", glyph = "◆", grow = "5 мин", sale = 4, color = palette.gold},
-    {id = "Strawberry", name = "Клубника", seed = "StrawberrySeed", glyph = "♥", grow = "12 мин · повторный сбор 8 мин", sale = 3, color = palette.coral},
-    {id = "Pumpkin", name = "Тыква", seed = "PumpkinSeed", glyph = "●", grow = "30 мин", sale = 18, color = palette.gold},
-    {id = "Cabbage", name = "Капуста", seed = "CabbageSeed", glyph = "✿", grow = "20 мин", sale = 12, color = palette.mint},
+    {id = "Carrot", name = "Морковь", seed = "CarrotSeed", icon = "carrot", grow = "5 мин", sale = 4, color = palette.gold},
+    {id = "Strawberry", name = "Клубника", seed = "StrawberrySeed", icon = "berry", grow = "12 мин · повторный сбор 8 мин", sale = 3, color = palette.coral},
+    {id = "Pumpkin", name = "Тыква", seed = "PumpkinSeed", icon = "pumpkin", grow = "30 мин", sale = 18, color = palette.gold},
+    {id = "Cabbage", name = "Капуста", seed = "CabbageSeed", icon = "cabbage", grow = "20 мин", sale = 12, color = palette.mint},
 }
 local cropById = {}
 for _, crop in cropCatalog do cropById[crop.id] = crop end
@@ -552,8 +605,7 @@ local function addSeedChoice(crop, selectedCrop)
     local selected = selectedCrop == crop.id
     local item = card(body, "Seed_" .. crop.id, 82)
     item.BackgroundColor3 = selected and Color3.fromRGB(235, 241, 218) or palette.paper
-    local icon = label(item, "Icon", crop.glyph, UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 20), 25, crop.color, Enum.Font.GothamBold)
-    icon.TextXAlignment = Enum.TextXAlignment.Center
+    createPictogram(item, "CropIcon", crop.icon, 38, crop.color).Position = UDim2.fromOffset(12, 21)
     label(item, "Name", crop.name, UDim2.new(1, -174, 0, 22), UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
     label(item, "Details", crop.grow .. "  •  семян: " .. tostring(seeds), UDim2.new(1, -174, 0, 38), UDim2.fromOffset(60, 32), 10, palette.muted)
     local choose = button(item, "Choose", selected and "ВЫБРАНО" or "ВЫБРАТЬ",
@@ -595,8 +647,7 @@ local function addPlot(plotId, index)
         stateText = string.format("%s растёт — осталось %02d:%02d", crop and crop.name or "Растение", minutes, seconds)
     end
     local item = card(body, "Plot" .. tostring(index), 66)
-    local icon = label(item, "Icon", not unlocked and "З" or (crop and crop.glyph or "＋"), UDim2.fromOffset(42, 42), UDim2.fromOffset(10, 12), 23, palette.forest, Enum.Font.GothamBlack)
-    icon.TextXAlignment = Enum.TextXAlignment.Center
+    createPictogram(item, "PlotIcon", not unlocked and "lock" or (crop and crop.icon or "farm"), 34, palette.forest).Position = UDim2.fromOffset(14, 16)
     label(item, "Title", "Грядка " .. tostring(index), UDim2.new(1, -72, 0, 22), UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
     label(item, "State", stateText, UDim2.new(1, -72, 0, 30), UDim2.fromOffset(60, 31), 12, palette.muted)
 end
@@ -1028,21 +1079,21 @@ local function renderCity()
     end
     local compact = gui.AbsoluteSize.X < 620
     local catalog = {
-        {id = "Path", title = "Каменная дорожка", description = "Четыре каменные плиты. Цена: 2 дерева.", cost = "2 ДЕРЕВА", glyph = "Д"},
-        {id = "FlowerBed", title = "Цветочная клумба", description = "Деревянная рамка и четыре цветка. Цена: 4 дерева и 2 камня.", cost = "4 ДЕРЕВА · 2 КАМНЯ", glyph = "Ц"},
-        {id = "Cottage", title = "Уютный домик", description = "Домик с крышей, дверью, окнами и дымоходом. Цена: 8 дерева и 6 камня.", cost = "8 ДЕРЕВА · 6 КАМНЯ", glyph = "⌂"},
-        {id = "Warehouse", title = "Склад", description = "Храни до 120 единиц дерева, камня, руды, слитков и урожая. Цена: 10 дерева и 8 камня.", cost = "10 ДЕРЕВА · 8 КАМНЯ", glyph = "С"},
-        {id = "Greenhouse", title = "Теплица", description = "На 3 уровне фермы. Новые посадки и повторный рост клубники на 15% быстрее. Цена: 18 дерева и 12 камня.", cost = "18 ДЕРЕВА · 12 КАМНЯ", glyph = "Т"},
-        {id = "GardenLamp", title = "Садовый фонарь", description = "Тёплый свет для вечернего сада. Включай и выключай у самого фонаря. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", glyph = "Ф"},
-        {id = "Fence", title = "Деревянная ограда", description = "Классический забор из тёплого дерева. Цена: 6 дерева и 2 камня.", cost = "6 ДЕРЕВА · 2 КАМНЯ", glyph = "О"},
-        {id = "WhiteFence", title = "Белая ограда", description = "Светлый аккуратный забор с фигурными столбиками. Цена: 8 дерева и 2 камня.", cost = "8 ДЕРЕВА · 2 КАМНЯ", glyph = "Б"},
-        {id = "StoneFence", title = "Каменная ограда", description = "Прочная ограда из светлого камня. Цена: 2 дерева и 8 камня.", cost = "2 ДЕРЕВА · 8 КАМНЯ", glyph = "К"},
-        {id = "HedgeFence", title = "Живая изгородь", description = "Плотная зелёная изгородь из кустов. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", glyph = "Ж"},
-        {id = "Bench", title = "Садовая скамейка", description = "Уютная деревянная скамейка со спинкой. Цена: 8 дерева и 2 камня.", cost = "8 ДЕРЕВА · 2 КАМНЯ", glyph = "С"},
-        {id = "DecorativeTree", title = "Цветущее дерево", description = "Небольшое дерево с пышной кроной и цветами. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", glyph = "Д"},
-        {id = "WoodenPath", title = "Деревянная дорожка", description = "Пять деревянных настилов для уютных тропинок. Цена: 4 дерева.", cost = "4 ДЕРЕВА", glyph = "П"},
-        {id = "GardenArch", title = "Цветочная арка", description = "Деревянная арка с цветами и зелёными побегами. Цена: 10 дерева и 6 камня.", cost = "10 ДЕРЕВА · 6 КАМНЯ", glyph = "А"},
-        {id = "BirdBath", title = "Купальня для птиц", description = "Каменная чаша с чистой водой. Цена: 4 дерева и 6 камня.", cost = "4 ДЕРЕВА · 6 КАМНЯ", glyph = "В"},
+        {id = "Path", title = "Каменная дорожка", description = "Четыре каменные плиты. Цена: 2 дерева.", cost = "2 ДЕРЕВА", icon = "stonepath"},
+        {id = "FlowerBed", title = "Цветочная клумба", description = "Деревянная рамка и четыре цветка. Цена: 4 дерева и 2 камня.", cost = "4 ДЕРЕВА · 2 КАМНЯ", icon = "flower"},
+        {id = "Cottage", title = "Уютный домик", description = "Домик с крышей, дверью, окнами и дымоходом. Цена: 8 дерева и 6 камня.", cost = "8 ДЕРЕВА · 6 КАМНЯ", icon = "cottage"},
+        {id = "Warehouse", title = "Склад", description = "Храни до 120 единиц дерева, камня, руды, слитков и урожая. Цена: 10 дерева и 8 камня.", cost = "10 ДЕРЕВА · 8 КАМНЯ", icon = "warehouse"},
+        {id = "Greenhouse", title = "Теплица", description = "На 3 уровне фермы. Новые посадки и повторный рост клубники на 15% быстрее. Цена: 18 дерева и 12 камня.", cost = "18 ДЕРЕВА · 12 КАМНЯ", icon = "greenhouse"},
+        {id = "GardenLamp", title = "Садовый фонарь", description = "Тёплый свет для вечернего сада. Включай и выключай у самого фонаря. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", icon = "lamp"},
+        {id = "Fence", title = "Деревянная ограда", description = "Классический забор из тёплого дерева. Цена: 6 дерева и 2 камня.", cost = "6 ДЕРЕВА · 2 КАМНЯ", icon = "fence"},
+        {id = "WhiteFence", title = "Белая ограда", description = "Светлый аккуратный забор с фигурными столбиками. Цена: 8 дерева и 2 камня.", cost = "8 ДЕРЕВА · 2 КАМНЯ", icon = "fence"},
+        {id = "StoneFence", title = "Каменная ограда", description = "Прочная ограда из светлого камня. Цена: 2 дерева и 8 камня.", cost = "2 ДЕРЕВА · 8 КАМНЯ", icon = "stone"},
+        {id = "HedgeFence", title = "Живая изгородь", description = "Плотная зелёная изгородь из кустов. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", icon = "leaf"},
+        {id = "Bench", title = "Садовая скамейка", description = "Уютная деревянная скамейка со спинкой. Цена: 8 дерева и 2 камня.", cost = "8 ДЕРЕВА · 2 КАМНЯ", icon = "warehouse"},
+        {id = "DecorativeTree", title = "Цветущее дерево", description = "Небольшое дерево с пышной кроной и цветами. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", icon = "stonepath"},
+        {id = "WoodenPath", title = "Деревянная дорожка", description = "Пять деревянных настилов для уютных тропинок. Цена: 4 дерева.", cost = "4 ДЕРЕВА", icon = "wood"},
+        {id = "GardenArch", title = "Цветочная арка", description = "Деревянная арка с цветами и зелёными побегами. Цена: 10 дерева и 6 камня.", cost = "10 ДЕРЕВА · 6 КАМНЯ", icon = "arch"},
+        {id = "BirdBath", title = "Купальня для птиц", description = "Каменная чаша с чистой водой. Цена: 4 дерева и 6 камня.", cost = "4 ДЕРЕВА · 6 КАМНЯ", icon = "birdbath"},
     }
     for index = 1, decorationCount do
         local decorationId = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Id")
@@ -1091,9 +1142,8 @@ local function renderCity()
     addInfo("Управление постройками", "Перемещай предметы без повторной оплаты или разбирай их. При разборе возвращается половина материалов.", 68)
     for _, definition in catalog do
         local item = card(body, "Build_" .. definition.id, compact and 116 or 86)
-        local glyph = label(item, "Glyph", definition.glyph, UDim2.fromOffset(42, 42),
-            UDim2.fromOffset(10, compact and 8 or 20), 24, palette.gold, Enum.Font.GothamBlack)
-        glyph.TextXAlignment = Enum.TextXAlignment.Center
+        createPictogram(item, "BuildIcon", definition.icon, 38, palette.forestLight).Position =
+            UDim2.fromOffset(12, compact and 8 or 20)
         local title = label(item, "Title", definition.title,
             compact and UDim2.new(1, -68, 0, 22) or UDim2.new(1, -150, 0, 22),
             UDim2.fromOffset(60, 8), 13, palette.ink, Enum.Font.GothamBold)
@@ -1193,15 +1243,15 @@ end
 
 local function renderPets()
     local pets = {
-        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "Л"},
-        {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "М"},
-        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "С"},
-        {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "Т"},
-        {id = "BrambleBun", name = "Колючка", role = "Редкий • Лесной ёжик", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "К"},
+        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "fox"},
+        {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "moth"},
+        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "crystal"},
+        {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "pumpkin"},
+        {id = "BrambleBun", name = "Колючка", role = "Редкий • Лесной ёжик", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "paw"},
         {id = "MossTurtle", name = "Мохопанцирь", role = "Редкий • Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "М"},
-        {id = "Glowcap", name = "Светошляп", role = "Эпический • Грибной огонёк", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "Г"},
-        {id = "Dewdrop", name = "Росинка", role = "Эпический • Капля ручья", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "Р"},
-        {id = "Starling", name = "Звёздокрыл", role = "Легендарный • Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "З"},
+        {id = "Glowcap", name = "Светошляп", role = "Эпический • Грибной огонёк", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "mushroom"},
+        {id = "Dewdrop", name = "Росинка", role = "Эпический • Капля ручья", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "droplet"},
+        {id = "Starling", name = "Звёздокрыл", role = "Легендарный • Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "paw"},
     }
     local compact = gui.AbsoluteSize.X < 620
     for _, pet in pets do
@@ -1225,9 +1275,13 @@ local function renderPets()
         iconPlate.Parent = item
         corner(iconPlate, 18)
         stroke(iconPlate, palette.gold, 0.55, 1)
-        local icon = label(item, "Icon", pet.icon, UDim2.fromOffset(58, 58),
-            UDim2.fromOffset(10, compact and 10 or 24), 34, palette.ink)
-        icon.TextXAlignment = Enum.TextXAlignment.Center
+        local petTint = pet.id == "Fox" and Color3.fromRGB(205, 125, 66)
+            or pet.id == "Moth" and Color3.fromRGB(139, 119, 190)
+            or pet.id == "MossTurtle" and Color3.fromRGB(91, 143, 84)
+            or pet.id == "Dewdrop" and palette.water
+            or pet.id == "Starling" and Color3.fromRGB(100, 126, 184)
+            or palette.forestLight
+        createPictogram(iconPlate, "PetPictogram", pet.icon, 42, petTint).Position = UDim2.fromOffset(8, 8)
         local nameLabel = label(item, "Name", pet.name .. " • " .. pet.role,
             compact and UDim2.new(1, -96, 0, 58) or UDim2.new(1, -210, 0, 24),
             UDim2.fromOffset(76, 8), 14, palette.ink, Enum.Font.GothamBold)
