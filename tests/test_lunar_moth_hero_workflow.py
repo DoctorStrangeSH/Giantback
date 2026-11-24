@@ -76,7 +76,7 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn('sphere("MothAbdomen",(0,0.88,-0.282)', source)
         self.assertIn('abdomen_cream', source)
         self.assertNotIn('parts.append(abdomen_band(', source)
-        self.assertIn("curve.bevel_depth = 0.045", source)
+        self.assertIn("curve.bevel_depth = 0.026", source)
 
     def test_review_camera_matrix_dependency_is_imported(self):
         source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
