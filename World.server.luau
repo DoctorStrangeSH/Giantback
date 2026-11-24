@@ -468,17 +468,34 @@ local function useWarehouse(player, ownerUserId, action)
     if player.UserId ~= ownerUserId then return tip(player, "Этот склад принадлежит другому игроку.") end
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then
+        return tip(player, "Склад временно недоступен: сохранение профиля не работает.")
+    end
+    if session.economyBusy then
+        return tip(player, "Подожди завершения текущей операции.")
+    end
+
     local warehouseBuilt = false
     for _, building in ipairs(session.city.buildings) do
         if building.id == "Warehouse" then warehouseBuilt = true; break end
     end
     if not warehouseBuilt then return tip(player, "Сначала построй склад на своём острове.") end
+    if action ~= "Deposit" and action ~= "Withdraw" then return end
+
     local storage = session.city.storage
+    local previousInventory = {}
+    local previousStorage = {}
+    for _, itemId in ipairs(warehouseItemIds) do
+        previousInventory[itemId] = session.inventory[itemId] or 0
+        previousStorage[itemId] = storage[itemId] or 0
+    end
+
+    session.economyBusy = true
     local changed = 0
     if action == "Deposit" then
         local used = 0
         for _, itemId in ipairs(warehouseItemIds) do used += storage[itemId] or 0 end
-        local remaining = WAREHOUSE_CAPACITY - used
+        local remaining = math.max(0, WAREHOUSE_CAPACITY - used)
         for _, itemId in ipairs(warehouseItemIds) do
             if remaining <= 0 then break end
             local available = math.max(0, math.floor(session.inventory[itemId] or 0))
@@ -490,9 +507,11 @@ local function useWarehouse(player, ownerUserId, action)
                 changed += amount
             end
         end
-        if changed == 0 then return tip(player, used >= WAREHOUSE_CAPACITY and "Склад заполнен." or "Нет материалов для хранения.") end
-        tip(player, "На склад помещено предметов: " .. tostring(changed) .. ".")
-    elseif action == "Withdraw" then
+        if changed == 0 then
+            session.economyBusy = false
+            return tip(player, used >= WAREHOUSE_CAPACITY and "Склад заполнен." or "Нет материалов для хранения.")
+        end
+    else
         for _, itemId in ipairs(warehouseItemIds) do
             local amount = math.max(0, math.floor(storage[itemId] or 0))
             if amount > 0 then
@@ -501,14 +520,29 @@ local function useWarehouse(player, ownerUserId, action)
                 changed += amount
             end
         end
-        if changed == 0 then return tip(player, "Склад пока пуст.") end
-        tip(player, "Со склада забрано предметов: " .. tostring(changed) .. ".")
-    else
-        return
+        if changed == 0 then
+            session.economyBusy = false
+            return tip(player, "Склад пока пуст.")
+        end
     end
+
     syncInventory(player)
     syncFarm(player)
-    if session.online then save(player) end
+    if not save(player) then
+        for _, itemId in ipairs(warehouseItemIds) do
+            session.inventory[itemId] = previousInventory[itemId]
+            storage[itemId] = previousStorage[itemId]
+        end
+        syncInventory(player)
+        syncFarm(player)
+        session.economyBusy = false
+        return tip(player, "Сохранение склада не удалось. Все предметы возвращены на прежние места.")
+    end
+
+    session.economyBusy = false
+    tip(player, action == "Deposit"
+        and ("На склад помещено предметов: " .. tostring(changed) .. ".")
+        or ("Со склада забрано предметов: " .. tostring(changed) .. "."))
 end
 
 local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
