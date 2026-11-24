@@ -9,7 +9,7 @@ HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 class CompanionMobileCardLayoutTests(unittest.TestCase):
     def test_companion_cards_expand_and_reflow_below_mobile_breakpoint(self):
         self.assertIn('local compact = gui.AbsoluteSize.X < 620', HUD)
-        self.assertIn('compact and 314 or 214', HUD)
+        self.assertIn('compact and 330 or 214', HUD)
         self.assertIn('compact and UDim2.new(1, -96, 0, 58)', HUD)
         self.assertIn('compact and UDim2.new(1, -28, 0, 32)', HUD)
         self.assertIn('nameLabel.TextWrapped = true', HUD)
@@ -18,11 +18,11 @@ class CompanionMobileCardLayoutTests(unittest.TestCase):
         self.assertIn('talentLabel.TextWrapped = true', HUD)
 
     def test_mobile_actions_are_a_two_by_two_grid_and_keep_existing_server_actions(self):
-        self.assertIn('local actionSize = compact and UDim2.new(0.5, -18, 0, 30)', HUD)
-        self.assertIn('compact and UDim2.fromOffset(12, 240)', HUD)
-        self.assertIn('compact and UDim2.new(0.5, 6, 0, 240)', HUD)
-        self.assertIn('compact and UDim2.fromOffset(12, 276)', HUD)
-        self.assertIn('compact and UDim2.new(0.5, 6, 0, 276)', HUD)
+        self.assertIn('local actionSize = compact and UDim2.new(0.5, -18, 0, 36)', HUD)
+        self.assertIn('compact and UDim2.fromOffset(12, 242)', HUD)
+        self.assertIn('compact and UDim2.new(0.5, 6, 0, 242)', HUD)
+        self.assertIn('compact and UDim2.fromOffset(12, 284)', HUD)
+        self.assertIn('compact and UDim2.new(0.5, 6, 0, 284)', HUD)
         self.assertIn('event:FireServer(pet.id)', HUD)
         self.assertIn('event:FireServer("FeedCompanion", pet.id)', HUD)
         self.assertIn('event:FireServer("StartCompanionPlay", pet.id)', HUD)
