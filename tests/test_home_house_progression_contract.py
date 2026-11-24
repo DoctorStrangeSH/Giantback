@@ -41,7 +41,7 @@ class HomeHouseProgressionContractTests(unittest.TestCase):
         self.assertIn("if not save(player) then", WORLD)
         self.assertIn("session.city.homeLevel = currentLevel", WORLD)
         self.assertIn("applyHomeHouseVisuals(session.homeIsland, currentLevel)", WORLD)
-        self.assertIn("Улучшение отменено.", WORLD)
+        self.assertIn("улучшение отменено.", WORLD)
 
     def test_hud_explains_current_home_level_and_next_upgrade(self):
         self.assertIn('player:GetAttribute("Home_Level")', HUD)
