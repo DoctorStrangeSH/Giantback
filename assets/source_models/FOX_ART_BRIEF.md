@@ -260,3 +260,15 @@ A preview lighting pass now reduces key/fill/rim power (1200/650/950 to 520/260/
 The contrast pass did not sufficiently restore the intended orange/cream separation: the character still reads pale peach and the neck-to-body transition is too smooth. Updated the linear material palette to a deeper orange and warmer cream, with a richer inner-ear tone. Added three tapered chest-ruff plumes (center/left/right), merged into the existing FoxBelly rig group so the 17 runtime group contract remains unchanged. Source tests now lock the palette, all three ruff elements and their rig grouping.
 
 This is a new geometry/material iteration, not an art approval. Inspect the next four-view render for chest intersections, silhouette readability and color under the preview lighting before proceeding to tail/cheek sculpting.
+
+
+## Fifth automated review — artifact 14921426754 (2026-11-24)
+
+The four actual CI renders were manually inspected. The camera orientation is now consistent and the orange/cream palette is substantially more readable. The fox is recognizable and friendly, with expressive eyes and a strong tail silhouette. This is still **not artist-approved**:
+- torso and head read as smooth primitive-like masses rather than a sculpted connected cub;
+- legs/paws are tube-like and the toe details look like small surface marks rather than integrated paws;
+- the tail is oversized and nearly vertical, dominating the body silhouette;
+- the coat remains a smooth procedural surface; the current micro-relief is not a substitute for authored fur breakup;
+- the cream tail tip appears visually detached/peeking over the tail in the three-quarter render.
+
+Next pass: reduce tail height/volume slightly, blend its root into the rump, make the tail-tip transition visibly continuous, sculpt shoulder/haunch and paw transitions, and add broad low-frequency fur clumps rather than more micro-noise. Keep 17 rig groups stable. Do not import as production art until a new four-view manual review passes.
