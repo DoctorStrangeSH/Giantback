@@ -218,7 +218,7 @@ def wing(name, side, upper, materials):
                 s = col / cols * 2.0 - 1.0
                 x = root_x + side * (t * span + s * width * 0.5)
                 y = root_y + t * length + (1.0 - s * s) * 0.11 * math.sin(math.pi * t)
-                z = root_z + 0.20 * t * t + 0.10 * (1.0 - s * s) - layer * 0.055
+                z = root_z + 0.20 * t * t + 0.16 * (1.0 - s * s) - layer * 0.11
                 verts.append((x, y, z))
                 uvs.append((col / cols, t))
     layer_size = (rows + 1) * (cols + 1)
@@ -260,14 +260,14 @@ def moth_leg(name, side, start_y, end_y, material):
     curve = bpy.data.curves.new(name + "Curve", "CURVE")
     curve.dimensions = "3D"
     curve.resolution_u = 12
-    curve.bevel_depth = 0.026
-    curve.bevel_resolution = 3
+    curve.bevel_depth = 0.018
+    curve.bevel_resolution = 4
     spline = curve.splines.new("BEZIER")
     spline.bezier_points.add(2)
     coords = [
-        (side * 0.19, start_y, -0.30),
-        (side * 0.27, (start_y + end_y) * 0.5, -0.33),
-        (side * 0.35, end_y, -0.32),
+        (side * 0.18, start_y, -0.29),
+        (side * 0.23, (start_y + end_y) * 0.5 - 0.06, -0.41),
+        (side * 0.29, end_y - 0.13, -0.49),
     ]
     for point, co in zip(spline.bezier_points, coords):
         point.co = co
@@ -276,7 +276,7 @@ def moth_leg(name, side, start_y, end_y, material):
     obj = bpy.data.objects.new(name, curve)
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(material)
-    foot = sphere(name + "Foot", coords[-1], (0.048, 0.036, 0.038), material, 20, 12)
+    foot = sphere(name + "Foot", coords[-1], (0.040, 0.030, 0.030), material, 20, 12)
     return [obj, foot]
 
 
@@ -356,7 +356,7 @@ def render_views(camera, output):
 def mesh_report(objects, output):
     # Aggregate decorative mesh pieces into stable gameplay rig groups.
     def group_for(name):
-        if name == "MothHead" or name.startswith("MothEye"):
+        if name == "MothHead" or name.startswith(("MothEye", "MothSmile", "MothCheek")):
             return "MothHead"
         if name == "MothThorax" or name.startswith("MothThoraxLeg"):
             return "MothThorax"
@@ -448,11 +448,27 @@ def main():
     abdomen_mat=mat("abdomen_cream",(0.88,0.77,0.65),0.94)
     parts.append(sphere("MothAbdomen",(0,0.88,-0.282),(0.235,0.335,0.034),abdomen_mat,40,28))
     for side,suffix in [(-1,"Left"),(1,"Right")]:
-        parts.append(sphere("MothEye"+suffix,(side*0.215,1.97,-0.535),(0.09,0.11,0.04),plum,28,18))
+        parts.append(sphere("MothEye"+suffix,(side*0.17,1.98,-0.535),(0.067,0.085,0.035),plum,28,18))
+        parts.append(sphere("MothCheek"+suffix,(side*0.275,1.82,-0.515),(0.047,0.030,0.020),rose,20,12))
         parts.extend(antenna("MothAntenna"+suffix,side,gold))
         for leg_index, (start_y, end_y) in enumerate(((1.02,0.88),(0.84,0.72),(0.68,0.56))):
             parts.extend(moth_leg("MothThoraxLeg"+suffix+str(leg_index+1),side,start_y,end_y,ivory))
-    parts.append(sphere("MothGlowCore",(0,1.55,-0.365),(0.13,0.145,0.08),glow,32,20))
+    # The glow is a chest gem, not a mouth. A small curved smile gives the face a clear expression.
+    smile_curve = bpy.data.curves.new("MothSmileCurve", "CURVE")
+    smile_curve.dimensions = "3D"
+    smile_curve.bevel_depth = 0.012
+    smile_curve.bevel_resolution = 3
+    smile = smile_curve.splines.new("BEZIER")
+    smile.bezier_points.add(2)
+    for point, co in zip(smile.bezier_points, [(-0.075,1.755,-0.562),(0,1.725,-0.574),(0.075,1.755,-0.562)]):
+        point.co = co
+        point.handle_left_type = "AUTO"
+        point.handle_right_type = "AUTO"
+    smile_obj = bpy.data.objects.new("MothSmile", smile_curve)
+    bpy.context.collection.objects.link(smile_obj)
+    smile_obj.data.materials.append(plum)
+    parts.append(smile_obj)
+    parts.append(sphere("MothGlowCore",(0,1.30,-0.385),(0.105,0.115,0.055),glow,32,20))
     wing_mats=[lilac,rose,cyan,gold]
     for side,suffix in [(-1,"Left"),(1,"Right")]:
         for upper,wing_name in ((True,"Upper"),(False,"Lower")):
@@ -466,7 +482,7 @@ def main():
             t = 0.62
             mark_x = root_x + side * t * span
             mark_y = root_y + t * length + 0.015
-            mark_z = root_z + 0.20 * t * t + 0.10 - 0.055 - 0.012
+            mark_z = root_z + 0.20 * t * t + 0.16 - 0.11 - 0.012
             parts.append(crescent(
                 "WingMoon" + wing_name + suffix,
                 (mark_x, mark_y, mark_z),
