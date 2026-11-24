@@ -4063,6 +4063,13 @@ placeIslandDecoration = function(player, payload)
     if moveIndex and (not movingDecoration or movingDecoration.id ~= decorationId) then
         return tip(player, "Эта постройка больше не доступна для перемещения.")
     end
+    if decorationId == "Greenhouse" and not moveIndex then
+        for _, existing in ipairs(session.city.buildings) do
+            if existing.id == "Greenhouse" then
+                return tip(player, "Теплица уже построена на твоём острове.")
+            end
+        end
+    end
     if not x or not z or not rotation
         or x ~= x or z ~= z or rotation ~= rotation
         or math.abs(x) == math.huge or math.abs(z) == math.huge or math.abs(rotation) == math.huge
