@@ -80,6 +80,20 @@ local template = child(ServerStorage, "HomeIslandTemplate", "Model")
 record(template ~= nil, "HomeIslandTemplate", "Personal-island template absent")
 record(child(template, "HomeSpawn", "SpawnLocation") ~= nil,
     "HomeSpawn template", "Start spawn missing inside island template")
+record(child(template, "IslandPivot", "BasePart") ~= nil,
+    "IslandPivot template", "Island placement pivot missing or is not a BasePart")
+record(child(template, "Meadow", "BasePart") ~= nil,
+    "Meadow template", "Buildable meadow missing or is not a BasePart")
+if template then
+    local templatePartCount = 0
+    for _, descendant in template:GetDescendants() do
+        if descendant:IsA("BasePart") then
+            templatePartCount += 1
+        end
+    end
+    record(templatePartCount >= 8, "Home island geometry",
+        "Expected at least 8 BaseParts; found " .. tostring(templatePartCount))
+end
 
 local grove = child(workspace, "Grove", "Model")
 local dusk = child(workspace, "Dusk", "Model")
@@ -127,13 +141,29 @@ if isRunning then
             record(home ~= nil, "Personal island for " .. tostring(player.UserId),
                 "Missing " .. islandName .. "; verify World startup and Output errors")
             if home then
+                record(home:GetAttribute("OwnerUserId") == player.UserId,
+                    "Island ownership " .. tostring(player.UserId), "OwnerUserId does not match the player")
                 record(child(home, "HomeSpawn", "SpawnLocation") ~= nil,
                     "Personal HomeSpawn " .. tostring(player.UserId), "SpawnLocation missing")
+                record(child(home, "Meadow", "BasePart") ~= nil,
+                    "Personal Meadow " .. tostring(player.UserId), "Buildable meadow missing")
+                record(child(home, "PersonalCity", "Model") ~= nil,
+                    "PersonalCity runtime model " .. tostring(player.UserId), "City model was not initialized")
                 if distinct[home] then
                     note("Island isolation", "Two players resolved to the same island instance")
                 end
                 distinct[home] = true
             end
+            record(typeof(player:GetAttribute("City_Level")) == "number",
+                "City level sync " .. tostring(player.UserId), "City_Level attribute missing")
+            record(typeof(player:GetAttribute("Farm_Level")) == "number",
+                "Farm level sync " .. tostring(player.UserId), "Farm_Level attribute missing")
+            record(typeof(player:GetAttribute("City_DecorationCount")) == "number",
+                "Building count sync " .. tostring(player.UserId), "City_DecorationCount attribute missing")
+            record(typeof(player:GetAttribute("City_BuildingCells")) == "string",
+                "Building cells sync " .. tostring(player.UserId), "City_BuildingCells attribute missing")
+            record(typeof(player:GetAttribute("Warehouse_Capacity")) == "number",
+                "Warehouse capacity sync " .. tostring(player.UserId), "Warehouse_Capacity attribute missing")
             if player:GetAttribute("Ready") == true then
                 record(true, "Ready flag " .. tostring(player.UserId), "")
             else
