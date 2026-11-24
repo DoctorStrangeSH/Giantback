@@ -69,6 +69,19 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertNotIn('icon = "Л"', HUD)
         self.assertNotIn('definition.glyph', HUD)
 
+    def test_companion_mutation_album_has_progress_discovery_states_and_visual_cards(self):
+        self.assertIn('card(body, "CompanionMutationCodexHeader", 82)', HUD)
+        self.assertIn('CodexProgressTrack', HUD)
+        self.assertIn('CodexProgressFill', HUD)
+        self.assertIn('discoveredMutations / #mutationPets', HUD)
+        self.assertIn('card(body, "CompanionMutationCodex_" .. tostring(index), compactAlbum and 92 or 82)', HUD)
+        self.assertIn('MutationIconPlate', HUD)
+        self.assertIn('found and pet.icon or "lock"', HUD)
+        self.assertIn('found and "ОТКРЫТО" or "ИСКАТЬ"', HUD)
+        self.assertIn('"Место поиска: " .. pet.biome', HUD)
+        self.assertIn('CompanionCodexRewardClaimed', HUD)
+        self.assertIn('ClaimCompanionCodexReward', HUD)
+
     def test_bridges_are_wider_and_rails_follow_new_deck_edges(self):
         self.assertIn('(8.2, 0.55, plank_length)', BUILD)
         self.assertEqual(BUILD.count('side * 4.15'), 4)
