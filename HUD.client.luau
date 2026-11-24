@@ -6,6 +6,40 @@ local TextService = game:GetService("TextService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
+
+local homeVisualsAddedConnection
+local function refreshHomeInteriorView()
+    if homeVisualsAddedConnection then
+        homeVisualsAddedConnection:Disconnect()
+        homeVisualsAddedConnection = nil
+    end
+    local active = player:GetAttribute("HomeInteriorActive") == true
+    local islands = workspace:FindFirstChild("PlayerIslands")
+    local island = islands and islands:FindFirstChild("HomeIsland_" .. tostring(player.UserId))
+    local visuals = island and island:FindFirstChild("HomeHouseVisuals")
+    if not visuals then return end
+
+    local roofNames = {
+        RoofSlope = true,
+        ManorGable = true,
+        TowerRoof = true,
+        FrontCanopy = true,
+    }
+    local function updatePart(item)
+        if item:IsA("BasePart") and roofNames[item.Name] then
+            item.LocalTransparencyModifier = active and 1 or 0
+        end
+    end
+    for _, item in ipairs(visuals:GetDescendants()) do
+        updatePart(item)
+    end
+    if active then
+        homeVisualsAddedConnection = visuals.DescendantAdded:Connect(updatePart)
+    end
+end
+
+player:GetAttributeChangedSignal("HomeInteriorActive"):Connect(refreshHomeInteriorView)
+task.defer(refreshHomeInteriorView)
 local event = ReplicatedStorage:WaitForChild("AlbumAction")
 
 local palette = {
