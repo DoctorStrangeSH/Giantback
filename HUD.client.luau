@@ -541,6 +541,18 @@ local function createPlacementGhost(decorationId)
         makePlacementPart("WarehousePreviewBody", Vector3.new(3.35, 2.5, 3.25), Vector3.new(0, 1.5, 0))
         makePlacementPart("WarehousePreviewRoof", Vector3.new(3.95, 0.3, 3.9), Vector3.new(0, 2.95, 0))
         makePlacementPart("WarehousePreviewDoor", Vector3.new(1.15, 2.05, 0.16), Vector3.new(0, 1.08, -1.7))
+    elseif decorationId == "GardenLamp" then
+        local base = makePlacementPart("GardenLampPreviewBase", Vector3.new(1.55, 0.28, 1.55), Vector3.new(0, 0.14, 0), Enum.PartType.Cylinder)
+        base.Color = Color3.fromRGB(119, 127, 116)
+        local post = makePlacementPart("GardenLampPreviewPost", Vector3.new(0.3, 2.35, 0.3), Vector3.new(0, 1.75, 0), Enum.PartType.Cylinder)
+        post.Color = Color3.fromRGB(105, 75, 50)
+        local arm = makePlacementPart("GardenLampPreviewArm", Vector3.new(1.1, 0.18, 0.18), Vector3.new(0, 2.78, 0))
+        arm.Color = Color3.fromRGB(207, 169, 91)
+        local lantern = makePlacementPart("GardenLampPreviewLantern", Vector3.new(0.82, 0.88, 0.82), Vector3.new(0, 3.22, 0), Enum.PartType.Ball)
+        lantern.Color = Color3.fromRGB(255, 221, 151)
+        lantern.Transparency = 0.3
+        local cap = makePlacementPart("GardenLampPreviewCap", Vector3.new(1.05, 0.18, 1.05), Vector3.new(0, 3.75, 0), Enum.PartType.Cylinder)
+        cap.Color = Color3.fromRGB(207, 169, 91)
     elseif decorationId == "Greenhouse" then
         makePlacementPart("GreenhousePreviewFoundation", Vector3.new(3.8, 0.22, 3.8), Vector3.new(0, 0.11, 0))
         makePlacementPart("GreenhousePreviewSoil", Vector3.new(2.85, 0.12, 2.45), Vector3.new(0, 0.29, 0.12))
@@ -644,7 +656,8 @@ local function updatePlacementGhost()
         or placementState == "FlowerBed" and wood >= 4 and stone >= 2
         or placementState == "Cottage" and wood >= 8 and stone >= 6
         or placementState == "Warehouse" and wood >= 10 and stone >= 8
-        or placementState == "Greenhouse" and farmLevel >= 3 and wood >= 18 and stone >= 12)
+        or placementState == "Greenhouse" and farmLevel >= 3 and wood >= 18 and stone >= 12
+        or placementState == "GardenLamp" and wood >= 6 and stone >= 4)
     local count = tonumber(player:GetAttribute("City_DecorationCount")) or 0
     local hasSpace = placementMoveIndex ~= nil or count < 16
     placementValid = inBounds and not occupied and enough and hasSpace
@@ -669,7 +682,13 @@ local function updatePlacementGhost()
     elseif placementState == "Greenhouse" and farmLevel < 3 then
         placementStatus.Text = "Теплица откроется на 3 уровне фермы"
     elseif not enough then
-        placementStatus.Text = "Нужно 18 дерева и 12 камня для постройки"
+        local costHint = placementState == "Path" and "2 дерева."
+            or placementState == "FlowerBed" and "4 дерева и 2 камня."
+            or placementState == "Cottage" and "8 дерева и 6 камня."
+            or placementState == "Warehouse" and "10 дерева и 8 камня."
+            or placementState == "GardenLamp" and "6 дерева и 4 камня."
+            or "18 дерева и 12 камня."
+        placementStatus.Text = "Не хватает материалов: " .. costHint
     elseif not hasSpace then
         placementStatus.Text = "Достигнут лимит: 16 построек"
     else
