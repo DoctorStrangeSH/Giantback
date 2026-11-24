@@ -332,15 +332,23 @@ def configure_scene(output):
 def render_views(camera, output):
     scene=bpy.context.scene
     center=Vector((0,1.45,0.12))
+    # Keep the moth upright in every view. Explicit Y-up camera basis prevents
+    # side/back views from rolling the hovering character onto its side.
     views={
-      "three_quarter":Vector((4.0,1.45,-5.0)),
-      "front":Vector((0,1.45,-6.0)),
-      "side":Vector((6.0,1.45,0.0)),
-      "back":Vector((0,1.45,6.0)),
+      "three_quarter":Vector((4.0,0.0,-5.0)).normalized(),
+      "front":Vector((0.0,0.0,-1.0)),
+      "side":Vector((1.0,0.0,0.0)),
+      "back":Vector((0.0,0.0,1.0)),
     }
+    distance=6.0
     for name,direction in views.items():
-        camera.location=center+direction
-        camera.rotation_euler=(center-camera.location).to_track_quat("-Z","Y").to_euler()
+        camera.location=center+direction*distance
+        forward=(center-camera.location).normalized()
+        world_up=Vector((0.0,1.0,0.0))
+        right=forward.cross(world_up).normalized()
+        camera_up=right.cross(forward).normalized()
+        back=-forward
+        camera.rotation_euler=Matrix((right,camera_up,back)).transposed().to_quaternion().to_euler()
         scene.render.filepath=str(output/f"moth_companion_hero_{name}.png")
         bpy.ops.render.render(write_still=True)
 
