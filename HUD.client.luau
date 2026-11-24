@@ -499,11 +499,11 @@ local function updateResponsiveLayout()
             end
             if titleLabel then
                 titleLabel.Visible = true
-                titleLabel.TextSize = narrow and 7 or compact and 9 or 11
+                titleLabel.TextSize = narrow and 8 or compact and 9 or 11
                 titleLabel.Position = UDim2.new(0, 1, 1, -20)
                 titleLabel.Size = UDim2.new(1, -2, 0, 16)
             end
-            navButton.ToolTip = definition.title
+        
         end
     end
 
@@ -2030,7 +2030,7 @@ for _, definition in navDefinitions do
     local titleLabel = label(navButton, "Title", definition.title, UDim2.new(1, -4, 0, 18),
         UDim2.new(0, 2, 1, -23), 11, palette.white, Enum.Font.GothamBold)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Center
-    navButton.ToolTip = definition.title
+
     navButton.Activated:Connect(function()
         openTab(definition.id)
     end)
