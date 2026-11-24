@@ -108,6 +108,12 @@ jobs:
 
           required_markers = [
               "local function renderPets()",
+              "local function getFarmGrowthDuration(session, baseSeconds)",
+              'if decorationId == "Greenhouse" and session.city.farm.level < 3 then',
+              'player:SetAttribute("Greenhouse_Built"',
+              '"GreenhouseGlassRoof"',
+              'addInfo("Теплица построена • +15% к скорости роста"',
+              'placementState == "Greenhouse" and farmLevel >= 3 and wood >= 18 and stone >= 12',
               'player:GetAttribute("Companion_" .. pet.id .. "_XPToNext")',
               "GiantbackAtmosphere",
               "AlbumAction",
