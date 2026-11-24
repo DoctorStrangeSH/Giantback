@@ -375,7 +375,7 @@ objectiveIcon.Size = UDim2.fromOffset(54, 54)
 objectiveIcon.BackgroundColor3 = palette.gold
 objectiveIcon.Parent = objective
 corner(objectiveIcon, 16)
-local objectiveGlyph = label(objectiveIcon, "Glyph", "✦", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), 28, palette.ink, Enum.Font.GothamBlack)
+local objectiveGlyph = label(objectiveIcon, "Glyph", "1", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), 28, palette.ink, Enum.Font.GothamBlack)
 objectiveGlyph.TextXAlignment = Enum.TextXAlignment.Center
 
 local objectiveEyebrow = label(objective, "Eyebrow", "ТВОЯ СЛЕДУЮЩАЯ ЦЕЛЬ", UDim2.new(1, -82, 0, 18), UDim2.fromOffset(76, 10), 10, palette.forestLight, Enum.Font.GothamBold)
@@ -1725,7 +1725,7 @@ local function renderDailyQuests()
 
     local eventCard = card(body, "SeasonalHarvestFestival", 142)
     eventCard.BackgroundColor3 = Color3.fromRGB(244, 235, 207)
-    label(eventCard, "FestivalIcon", "✿", UDim2.fromOffset(42, 44), UDim2.fromOffset(10, 8), 24, palette.forest, Enum.Font.GothamBlack)
+    createPictogram(eventCard, "FestivalIcon", "flower", 34, palette.forest).Position = UDim2.fromOffset(14, 13)
     label(eventCard, "FestivalTitle", "ПУТЬ УРОЖАЯ", UDim2.new(1, -70, 0, 22), UDim2.fromOffset(58, 8), 13, palette.ink, Enum.Font.GothamBold)
     label(eventCard, "FestivalPoints", tostring(eventPoints) .. " / 100 очков фестиваля", UDim2.new(1, -70, 0, 20), UDim2.fromOffset(58, 31), 11, palette.forest, Enum.Font.GothamBold)
     local milestoneLines = {
