@@ -96,6 +96,12 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('detailsButton.Activated:Connect', HUD)
         self.assertIn('НИЧЕГО НЕ НАШЛОСЬ', HUD)
 
+    def test_companion_album_detail_action_has_dedicated_card_space(self):
+        self.assertIn('compactAlbum and 116 or 104', HUD)
+        self.assertIn('UDim2.fromOffset(76, 24)', HUD)
+        self.assertIn('UDim2.new(1, -158, 0, 20)', HUD)
+        self.assertIn('UDim2.new(1, -84, 1, -31)', HUD)
+
     def test_bridges_are_wider_and_rails_follow_new_deck_edges(self):
         self.assertIn('(8.2, 0.55, plank_length)', BUILD)
         self.assertEqual(BUILD.count('side * 4.15'), 4)
