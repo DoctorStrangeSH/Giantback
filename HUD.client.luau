@@ -314,6 +314,10 @@ local function createPictogram(parent, name, kind, size, tint)
     elseif kind == "lock" then
         part("Shackle", 0.26, 0.08, 0.48, 0.48, color, nil, true)
         part("LockBody", 0.16, 0.40, 0.68, 0.48, color)
+    else
+        -- Unknown future IDs still render a visible neutral badge, never an empty slot.
+        part("FallbackBadge", 0.16, 0.16, 0.68, 0.68, color, nil, true)
+        part("FallbackMark", 0.43, 0.30, 0.14, 0.40, palette.paper)
     end
     return root
 end
