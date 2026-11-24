@@ -810,7 +810,8 @@ local function renderCity()
         {id = "FlowerBed", title = "Цветочная клумба", description = "Деревянная рамка и четыре цветка. Цена: 4 дерева и 2 камня.", cost = "4 ДЕРЕВА · 2 КАМНЯ", glyph = "Ц"},
         {id = "Cottage", title = "Уютный домик", description = "Домик с крышей, дверью, окнами и дымоходом. Цена: 8 дерева и 6 камня.", cost = "8 ДЕРЕВА · 6 КАМНЯ", glyph = "⌂"},
         {id = "Warehouse", title = "Склад", description = "Храни до 120 единиц дерева, камня, руды, слитков и урожая. Цена: 10 дерева и 8 камня.", cost = "10 ДЕРЕВА · 8 КАМНЯ", glyph = "С"},
-        {id = "Greenhouse", title = "Теплица", description = "На 3 уровне фермы. Новые посадки и повторный рост клубники на 15% быстрее. Цена: 18 дерева и 12 камня.", cost = "18 ДЕРЕВА · 12 КАМНЯ", glyph = "Т"},\n        {id = "GardenLamp", title = "Садовый фонарь", description = "Тёплый свет для вечернего сада. Включай и выключай у самого фонаря. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", glyph = "Ф"},
+        {id = "Greenhouse", title = "Теплица", description = "На 3 уровне фермы. Новые посадки и повторный рост клубники на 15% быстрее. Цена: 18 дерева и 12 камня.", cost = "18 ДЕРЕВА · 12 КАМНЯ", glyph = "Т"},
+        {id = "GardenLamp", title = "Садовый фонарь", description = "Тёплый свет для вечернего сада. Включай и выключай у самого фонаря. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", glyph = "Ф"},
     }
     for index = 1, decorationCount do
         local decorationId = player:GetAttribute("City_Decoration_" .. tostring(index) .. "_Id")
@@ -821,7 +822,8 @@ local function renderCity()
             local title = decorationId == "Path" and "Каменная дорожка"
                 or decorationId == "FlowerBed" and "Цветочная клумба"
                 or decorationId == "Cottage" and "Уютный домик"
-                or decorationId == "Warehouse" and "Склад"\n                or decorationId == "Greenhouse" and "Теплица" or "Садовый фонарь"
+                or decorationId == "Warehouse" and "Склад"
+                or decorationId == "Greenhouse" and "Теплица" or "Садовый фонарь"
             local item = card(body, "PlacedDecoration_" .. tostring(index), compact and 112 or 86)
             label(item, "Title", title .. " №" .. tostring(index),
                 UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 7), 13, palette.ink, Enum.Font.GothamBold)
