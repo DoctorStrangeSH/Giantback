@@ -2,11 +2,11 @@
 
 ## Статус сборки и обязательный release gate (24.11.2026)
 
-**Автоматическая проверка HEAD `61cade0f749c3717a834e3d8097c7f5a9e1dd5ae`: PASS.**
-- 575 Python unittest пройдены.
+**Автоматическая проверка HEAD `8824dc7825480cd838ca7c165e4c42fef6f8ce7f`: PASS.**
+- 580 Python unittest пройдены.
 - Roblox place собран и структурно проверен: 88 именованных объектов, 18 скриптов.
 - Проверки Fox Hero и Lunar Moth завершились успешно.
-- Сборка: [Giantback-visual-build](https://github.com/DoctorStrangeSH/Giantback/actions/runs/45362625809).
+- Сборка: [Giantback-visual-build](https://github.com/DoctorStrangeSH/Giantback/actions/runs/45367990321).
 
 **Важно:** CI не запускает полноценную игровую сессию. До ручной приёмки нельзя считать строительство, DataStore, сохранение острова или адаптивный HUD проверенными в игре.
 
@@ -32,7 +32,7 @@
 ### Шаблон результата ручной проверки
 
 ```text
-Build SHA: 61cade0f749c3717a834e3d8097c7f5a9e1dd5ae
+Build SHA: 8824dc7825480cd838ca7c165e4c42fef6f8ce7f
 Studio version:
 Test mode: Play / Start Server + 2 Players
 Screen: 320x568 / 375x667 / 414x896 / Desktop
