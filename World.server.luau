@@ -225,7 +225,7 @@ local function normalizeCity(raw)
     local rawBuildings = type(raw.buildings) == "table" and raw.buildings or {}
     for _, saved in ipairs(rawBuildings) do
         if #city.buildings >= 24 then break end
-        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse") then
+        if type(saved) == "table" and (saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse" or saved.id == "GardenLamp") then
             local x = tonumber(saved.x)
             local z = tonumber(saved.z)
             local rotation = tonumber(saved.rotation) or 0
@@ -235,6 +235,7 @@ local function normalizeCity(raw)
                     x = math.clamp(math.floor(x / 4 + 0.5) * 4, 0, 12),
                     z = math.clamp(math.floor(z / 4 + 0.5) * 4, -4, 8),
                     rotation = (math.floor(rotation / 90 + 0.5) % 4) * 90,
+                    lit = saved.id == "GardenLamp" and saved.lit ~= false,
                 })
             end
         end
@@ -3197,10 +3198,40 @@ local function makeFarmVisualPart(parent, name, size, frame, color, shape, mater
     return part
 end
 
+local function toggleGardenLamp(player, ownerUserId, index, anchor)
+    if player.UserId ~= ownerUserId then return tip(player, "Этот фонарь принадлежит другому игроку.") end
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") then return end
+    if not session.online then return tip(player, "Фонарь временно недоступен: сохранение профиля не работает.") end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    local building = session.city.buildings[index]
+    if not root or not anchor or not anchor.Parent or not building or building.id ~= "GardenLamp"
+        or (root.Position - anchor.Position).Magnitude > 14 then
+        return tip(player, "Подойди к своему садовому фонарю.")
+    end
+
+    local previousLit = building.lit ~= false
+    session.economyBusy = true
+    building.lit = not previousLit
+    if not save(player) then
+        building.lit = previousLit
+        session.economyBusy = false
+        return tip(player, "Состояние фонаря не сохранилось. Свет оставлен без изменений.")
+    end
+    session.economyBusy = false
+
+    local model = session.cityModel and session.cityModel:FindFirstChild("Decoration_" .. tostring(index))
+    local light = model and model:FindFirstChild("GardenLampLight", true)
+    if light and light:IsA("PointLight") then light.Enabled = building.lit end
+    tip(player, building.lit and "Садовый фонарь зажжён. Вечер стал уютнее!" or "Фонарь выключен. До новых огоньков!")
+end
+
 local function renderIslandDecoration(cityModel, meadow, decoration, index, ownerUserId)
     if not cityModel or not meadow or type(decoration) ~= "table" then return end
     local id = decoration.id
-    if id ~= "Path" and id ~= "FlowerBed" and id ~= "Cottage" and id ~= "Warehouse" and id ~= "Greenhouse" then return end
+    if id ~= "Path" and id ~= "FlowerBed" and id ~= "Cottage" and id ~= "Warehouse" and id ~= "Greenhouse" and id ~= "GardenLamp" then return end
 
     local x = math.clamp(tonumber(decoration.x) or 0, 0, 12)
     local z = math.clamp(tonumber(decoration.z) or 0, -4, 4)
@@ -3414,6 +3445,46 @@ local function renderIslandDecoration(cityModel, meadow, decoration, index, owne
         prompt(anchor, "Теплица", "Осмотреть посадки", function(visitor)
             if visitor.UserId ~= ownerUserId then return tip(visitor, "Эта теплица принадлежит другому игроку.") end
             tip(visitor, "Теплица ускоряет новые посадки и повторный рост клубники на 15%.")
+        end)
+    elseif id == "GardenLamp" then
+        local stone = Color3.fromRGB(119, 127, 116)
+        local timber = Color3.fromRGB(105, 75, 50)
+        local brass = Color3.fromRGB(207, 169, 91)
+        makeFarmVisualPart(model, "GardenLampBase", Vector3.new(1.55, 0.28, 1.55),
+            frame * CFrame.new(0, 0.14, 0), stone, Enum.PartType.Cylinder, Enum.Material.Slate)
+        makeFarmVisualPart(model, "GardenLampFoot", Vector3.new(0.72, 0.38, 0.72),
+            frame * CFrame.new(0, 0.43, 0), timber, Enum.PartType.Block, Enum.Material.Wood)
+        makeFarmVisualPart(model, "GardenLampPost", Vector3.new(0.3, 2.35, 0.3),
+            frame * CFrame.new(0, 1.75, 0), timber, Enum.PartType.Cylinder, Enum.Material.Wood)
+        makeFarmVisualPart(model, "GardenLampArm", Vector3.new(1.1, 0.18, 0.18),
+            frame * CFrame.new(0, 2.78, 0), brass, Enum.PartType.Block, Enum.Material.Metal)
+        local lantern = makeFarmVisualPart(model, "GardenLampLantern", Vector3.new(0.82, 0.88, 0.82),
+            frame * CFrame.new(0, 3.22, 0), Color3.fromRGB(255, 221, 151), Enum.PartType.Ball, Enum.Material.Glass)
+        lantern.Transparency = 0.38
+        lantern.CanCollide = false
+        local cap = makeFarmVisualPart(model, "GardenLampCap", Vector3.new(1.05, 0.18, 1.05),
+            frame * CFrame.new(0, 3.75, 0), brass, Enum.PartType.Block, Enum.Material.Metal)
+        cap.Shape = Enum.PartType.Cylinder
+        local glow = Instance.new("PointLight")
+        glow.Name = "GardenLampLight"
+        glow.Color = Color3.fromRGB(255, 211, 135)
+        glow.Brightness = 1.35
+        glow.Range = 18
+        glow.Shadows = false
+        glow.Enabled = decoration.lit ~= false
+        glow.Parent = lantern
+        local anchor = Instance.new("Part")
+        anchor.Name = "GardenLampPromptAnchor"
+        anchor.Size = Vector3.new(0.5, 0.5, 0.5)
+        anchor.Transparency = 1
+        anchor.Anchored = true
+        anchor.CanCollide = false
+        anchor.CanTouch = false
+        anchor.CanQuery = true
+        anchor.CFrame = frame * CFrame.new(0, 1.1, -1.1)
+        anchor.Parent = model
+        prompt(anchor, "Садовый фонарь", "Включить / выключить", function(visitor)
+            toggleGardenLamp(visitor, ownerUserId, index, anchor)
         end)
     end
 end
@@ -4000,6 +4071,7 @@ local function copyCityBuildings(buildings)
             x = building.x,
             z = building.z,
             rotation = building.rotation,
+            lit = building.lit,
         }
     end
     return snapshot
@@ -4066,6 +4138,7 @@ removeIslandDecoration = function(player, payload)
         Cottage = {Wood = 4, Stone = 3},
         Warehouse = {Wood = 5, Stone = 4},
         Greenhouse = {Wood = 9, Stone = 6},
+        GardenLamp = {Wood = 3, Stone = 2},
     }
     local refund = refunds[decoration.id]
     if not refund then return tip(player, "Этот объект пока нельзя разобрать.") end
@@ -4102,7 +4175,7 @@ placeIslandDecoration = function(player, payload)
     if type(payload) ~= "table" then return tip(player, "Не удалось прочитать место постройки.") end
 
     local decorationId = payload.id
-    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" then
+    if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" and decorationId ~= "GardenLamp" then
         return tip(player, "Такого предмета пока нет в каталоге строительства.")
     end
     if decorationId == "Greenhouse" and session.city.farm.level < 3 then
@@ -4170,6 +4243,7 @@ placeIslandDecoration = function(player, payload)
         Cottage = {Wood = 8, Stone = 6},
         Warehouse = {Wood = 10, Stone = 8},
         Greenhouse = {Wood = 18, Stone = 12},
+        GardenLamp = {Wood = 6, Stone = 4},
     }
     local cost = costs[decorationId]
     local previousBuildings = copyCityBuildings(session.city.buildings)
@@ -4181,11 +4255,15 @@ placeIslandDecoration = function(player, payload)
 
     session.economyBusy = true
     if moveIndex then
-        session.city.buildings[moveIndex] = {id = decorationId, x = x, z = z, rotation = rotation}
+        local movedBuilding = {id = decorationId, x = x, z = z, rotation = rotation}
+        if decorationId == "GardenLamp" then movedBuilding.lit = movingDecoration.lit ~= false end
+        session.city.buildings[moveIndex] = movedBuilding
     else
         session.inventory.Wood = previousWood - cost.Wood
         session.inventory.Stone = previousStone - cost.Stone
-        table.insert(session.city.buildings, {id = decorationId, x = x, z = z, rotation = rotation})
+        local newBuilding = {id = decorationId, x = x, z = z, rotation = rotation}
+        if decorationId == "GardenLamp" then newBuilding.lit = true end
+        table.insert(session.city.buildings, newBuilding)
     end
     rebuildCityDecorations(player, session, cityModel, meadow)
     syncInventory(player)
@@ -4207,6 +4285,7 @@ placeIslandDecoration = function(player, payload)
             Cottage = "Уютный домик построен! На острове стало ещё уютнее.",
             Warehouse = "Склад построен! Теперь можно хранить материалы.",
             Greenhouse = "Теплица готова! Новые посадки и повторный рост клубники ускорены на 15%.",
+            GardenLamp = "Садовый фонарь установлен! Его можно включать и выключать у самого фонаря.",
         }
         tip(player, placedMessages[decorationId])
     end
