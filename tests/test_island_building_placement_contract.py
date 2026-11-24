@@ -39,6 +39,7 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
 
     def test_building_grid_expands_to_sixteen_cells_without_moving_legacy_rows(self):
         self.assertIn('z = math.clamp(math.floor(z / 4 + 0.5) * 4, -4, 8)', WORLD)
+        self.assertIn('local z = math.clamp(tonumber(decoration.z) or 0, -4, 8)', WORLD)
         self.assertIn('for index = 1, 16 do', WORLD)
         self.assertIn('if #session.city.buildings >= 16 and not moveIndex then', WORLD)
         self.assertIn('local z = math.clamp(math.floor(localPoint.Z / 4 + 0.5) * 4, -4, 8)', HUD)
