@@ -33,7 +33,7 @@ class HudResponsiveLayoutContractTests(unittest.TestCase):
     def test_mobile_navigation_keeps_compact_tap_targets(self):
         self.assertIn("nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and 54 or 68)", HUD)
         self.assertIn("navButton.Size = UDim2.new(1 / #navDefinitions, compact and -2 or -6, 1, -8)", HUD)
-        self.assertIn('navButton.Text = compact and definition.glyph or (definition.glyph .. "\\n" .. definition.title)', HUD)
+        self.assertIn('navButton.Text = compact and definition.glyph or (definition.glyph .. "\\\\n" .. definition.title)', HUD)
         self.assertIn("navButton.TextSize = compact and 20 or 13", HUD)
 
     def test_layout_rebuilds_active_tab_when_crossing_breakpoint(self):
