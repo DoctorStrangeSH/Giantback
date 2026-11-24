@@ -104,6 +104,20 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('UDim2.new(1, -158, 0, 20)', HUD)
         self.assertIn('UDim2.new(1, -84, 1, -31)', HUD)
 
+    def test_album_3d_previews_require_studio_approved_hero_models(self):
+        self.assertIn('require(ReplicatedStorage:WaitForChild("CompanionTemplateResolver"))', HUD)
+        self.assertIn('createApprovedCompanionPreview', HUD)
+        self.assertIn('template.Name ~= expectedName', HUD)
+        self.assertIn('GiantbackImportStatus") ~= "Approved"', HUD)
+        self.assertIn('GiantbackRuntimeReady") ~= true', HUD)
+        self.assertIn('GiantbackProceduralAnimationCompatible") ~= true', HUD)
+        self.assertIn('Instance.new("ViewportFrame")', HUD)
+        self.assertIn('Instance.new("WorldModel")', HUD)
+        self.assertIn('Instance.new("Camera")', HUD)
+        self.assertIn('CompanionHeroPreview', HUD)
+        self.assertIn('PortraitInArtReview', HUD)
+        self.assertIn('descendant:IsA("Script") or descendant:IsA("LocalScript") or descendant:IsA("ModuleScript")', HUD)
+
     def test_bridges_are_wider_and_rails_follow_new_deck_edges(self):
         self.assertIn('(8.2, 0.55, plank_length)', BUILD)
         self.assertEqual(BUILD.count('side * 4.15'), 4)
