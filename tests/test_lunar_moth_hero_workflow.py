@@ -22,7 +22,7 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
             self.assertIn(name, source)
         self.assertIn('uv=mesh.uv_layers.new(name="WingUV")', source)
         self.assertIn("span = 1.30 if upper else 0.92", source)
-        self.assertIn("outer_radius, inner_radius, inner_offset = 0.27, 0.215, 0.115", source)
+        self.assertIn("outer_radius, inner_radius, inner_offset = 0.17, 0.132, 0.070", source)
         self.assertIn("curve.bevel_depth = 0.072", source)
         self.assertIn("length = 0.64 if upper else 0.50", source)
         self.assertIn("0.08 * (1.0 - t) + 0.24 * t + 0.86 * (math.sin", source)
@@ -68,6 +68,15 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn("mark_y = root_y + t * length + 0.015", source)
         self.assertIn("span = 1.30 if upper else 0.92", source)
         self.assertNotIn("span = 1.42 if upper else 1.04", source)
+
+    def test_moth_uses_surface_moon_marks_and_plush_belly_instead_of_gold_rings(self):
+        source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
+        self.assertIn("outer_radius, inner_radius, inner_offset = 0.17, 0.132, 0.070", source)
+        self.assertIn("mark_z = root_z + 0.20 * t * t + 0.10 + 0.012", source)
+        self.assertIn('sphere("MothAbdomen",(0,0.88,-0.282)', source)
+        self.assertIn('abdomen_cream',(source)
+        self.assertNotIn('parts.append(abdomen_band(', source)
+        self.assertIn("curve.bevel_depth = 0.045", source)
 
     def test_review_camera_matrix_dependency_is_imported(self):
         source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
