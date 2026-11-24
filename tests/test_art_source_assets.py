@@ -279,7 +279,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('"FoxEarInnerRight"', source)
         self.assertIn('"attach_to": "FoxEarLeft"', source)
         self.assertIn('"attach_to": "FoxEarRight"', source)
-        self.assertIn('"FoxTail": {"runtime_name": "Tail", "pivot": [0.15, 1.02, 0.68]', source)
+        self.assertIn('"FoxTail": {"runtime_name": "Tail", "pivot": [0.06, 1.02, 0.68]', source)
         self.assertIn('"obj_note": "OBJ does not preserve object origins;', source)
 
 
