@@ -9,7 +9,7 @@ HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 class EquipmentInventoryLayoutTests(unittest.TestCase):
     def test_tools_tab_is_presented_as_a_categorized_backpack(self):
         self.assertIn('Tools = {"МОЙ РЮКЗАК", "Ресурсы, находки и снаряжение путешественника"}', HUD)
-        self.assertIn('{id = "Tools", title = "РЮКЗАК", glyph = "И"}', HUD)
+        self.assertIn('{id = "Tools", title = "Сумка", icon = "backpack"}', HUD)
         self.assertIn('addInfo("Твой рюкзак"', HUD)
         self.assertIn('addInfo("Материалы"', HUD)
         self.assertIn('addInfo("Семена и урожай"', HUD)
