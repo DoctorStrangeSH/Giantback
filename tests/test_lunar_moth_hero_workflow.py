@@ -61,6 +61,10 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn('outer_radius, inner_radius, inner_offset = 0.50, 0.405, 0.22', source)
         self.assertNotIn('parts.append(sphere("MothAbdomen"', source)
 
+    def test_review_camera_matrix_dependency_is_imported(self):
+        source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
+        self.assertIn("from mathutils import Matrix, Vector", source)
+
     def test_review_cameras_keep_hovering_moth_profile_level(self):
         source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
         self.assertIn('"three_quarter":Vector((4.0,0.0,-5.0)).normalized()', source)
