@@ -20,7 +20,7 @@ class IslandBuildingAtomicContractTests(unittest.TestCase):
         self.assertIn("local previousBuildings = copyCityBuildings(session.city.buildings)", placement)
         self.assertIn("local previousWood = session.inventory.Wood or 0", placement)
         self.assertIn("local previousStone = session.inventory.Stone or 0", placement)
-        self.assertIn("rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, cost.Wood, cost.Stone)", placement)
+        self.assertIn("rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, moveIndex and 0 or cost.Wood, moveIndex and 0 or cost.Stone)", placement)
         self.assertIn("Постройка и материалы восстановлены.", placement)
         self.assertLess(placement.index("if not save(player) then"), placement.index("tip(player, placedMessages[decorationId])"))
 
