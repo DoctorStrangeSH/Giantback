@@ -632,9 +632,9 @@ local function updatePlacementGhost()
 
     local localPoint = meadow.CFrame:PointToObjectSpace(hit.Position)
     local x = math.clamp(math.floor(localPoint.X / 4 + 0.5) * 4, 0, 12)
-    local z = math.clamp(math.floor(localPoint.Z / 4 + 0.5) * 4, -4, 4)
+    local z = math.clamp(math.floor(localPoint.Z / 4 + 0.5) * 4, -4, 8)
     local inBounds = localPoint.X >= -2 and localPoint.X <= 14
-        and localPoint.Z >= -6 and localPoint.Z <= 6
+        and localPoint.Z >= -6 and localPoint.Z <= 10
     local cellKey = tostring(x) .. "," .. tostring(z)
     local occupied = getOccupiedPlacementCells(placementMoveIndex)[cellKey] == true
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
@@ -646,7 +646,7 @@ local function updatePlacementGhost()
         or placementState == "Warehouse" and wood >= 10 and stone >= 8
         or placementState == "Greenhouse" and farmLevel >= 3 and wood >= 18 and stone >= 12)
     local count = tonumber(player:GetAttribute("City_DecorationCount")) or 0
-    local hasSpace = placementMoveIndex ~= nil or count < 12
+    local hasSpace = placementMoveIndex ~= nil or count < 16
     placementValid = inBounds and not occupied and enough and hasSpace
     placementTarget = {x = x, z = z, rotation = placementRotation}
 
@@ -671,7 +671,7 @@ local function updatePlacementGhost()
     elseif not enough then
         placementStatus.Text = "Нужно 18 дерева и 12 камня для постройки"
     elseif not hasSpace then
-        placementStatus.Text = "Достигнут лимит: 12 построек"
+        placementStatus.Text = "Достигнут лимит: 16 построек"
     else
         placementStatus.Text = "Место свободно • Поворот: " .. tostring(placementRotation) .. "°"
     end
@@ -791,7 +791,7 @@ local function renderCity()
     addInfo("Ферма: уровень " .. tostring(farmLevel), "На острове четыре грядки. Открой раздел «Ферма», чтобы выбрать семена, посадить растения и собрать урожай.", 76)
     addInfo("Твой следующий шаг", getObjective(), 76)
     local decorationCount = tonumber(player:GetAttribute("City_DecorationCount")) or 0
-    addInfo("Свободное строительство", "Построек: " .. tostring(decorationCount) .. "/12. Выбери объект, найди свободную клетку и подтверди размещение.", 82)
+    addInfo("Свободное строительство", "Построек: " .. tostring(decorationCount) .. "/16. Выбери объект, найди свободную клетку и подтверди размещение.", 82)
     local warehouseUsed = tonumber(player:GetAttribute("Warehouse_Used")) or 0
     local warehouseCapacity = tonumber(player:GetAttribute("Warehouse_Capacity")) or 120
     if player:GetAttribute("Warehouse_Built") then
