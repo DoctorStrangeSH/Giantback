@@ -4107,10 +4107,47 @@ createPersonalCity = function(player, session)
     local stonePile = homeIsland:FindFirstChild("StonePile")
     local gangway = homeIsland:FindFirstChild("Gangway")
     local houseUpgradeAnchor = homeIsland:FindFirstChild("HomeUpgradeAnchor", true)
+    local homeEntranceAnchor = homeIsland:FindFirstChild("HomeEntranceAnchor", true)
+    local homeExitAnchor = homeIsland:FindFirstChild("HomeExitAnchor", true)
+    local homeInteriorSpawn = homeIsland:FindFirstChild("HomeInteriorSpawn", true)
 
     if houseUpgradeAnchor then
         prompt(houseUpgradeAnchor, "Твой дом", "Улучшить дом", function(visitor)
             upgradeHome(visitor, ownerUserId)
+        end)
+    end
+
+    if homeEntranceAnchor and homeInteriorSpawn then
+        prompt(homeEntranceAnchor, "Домашний очаг", "Войти домой", function(visitor)
+            local visitorSession = sessions[visitor]
+            local character = visitor.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            if not visitorSession or not root then return end
+            if visitor:GetAttribute("HomeInteriorActive") then
+                return tip(visitor, "Ты уже находишься внутри дома.")
+            end
+            visitorSession.homeReturnCFrame = root.CFrame
+            visitorSession.homeInteriorIsland = homeIsland
+            visitor:SetAttribute("HomeInteriorActive", true)
+            character:PivotTo(homeInteriorSpawn.CFrame * CFrame.new(0, 2.4, 0))
+            tip(visitor, "Добро пожаловать домой! Осмотрись и отдохни у камина.")
+        end)
+    end
+
+    if homeExitAnchor then
+        prompt(homeExitAnchor, "Входная дверь", "Выйти во двор", function(visitor)
+            local visitorSession = sessions[visitor]
+            local character = visitor.Character
+            if not visitorSession or not character then return end
+            local returnCFrame = visitorSession.homeReturnCFrame
+            if not returnCFrame then
+                return tip(visitor, "Не удалось найти место выхода. Используй телепорт домой.")
+            end
+            character:PivotTo(returnCFrame)
+            visitorSession.homeReturnCFrame = nil
+            visitorSession.homeInteriorIsland = nil
+            visitor:SetAttribute("HomeInteriorActive", false)
+            tip(visitor, "Ты снова во дворе своего острова.")
         end)
     end
 
