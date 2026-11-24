@@ -434,16 +434,16 @@ def create_fox(p):
 
     # Big plush tail sweeps up behind the body; cream tip remains separately riggable.
     plush_tail("FoxTail",
-        [(0.15, 1.02, 0.68), (0.39, 1.10, 1.08), (0.43, 1.42, 1.55),
-         (0.28, 1.76, 1.86), (0.12, 1.91, 1.99)],
-        [0.18, 0.29, 0.40, 0.37, 0.27],
-        [0.15, 0.25, 0.34, 0.32, 0.23], p["fox_orange"])
-    # Match the orange tail's final center/radii exactly, then taper the cream tip gradually.
+        [(0.15, 1.02, 0.68), (0.35, 1.08, 1.02), (0.39, 1.30, 1.40),
+         (0.27, 1.57, 1.66), (0.12, 1.70, 1.78)],
+        [0.18, 0.27, 0.35, 0.32, 0.23],
+        [0.15, 0.23, 0.30, 0.27, 0.20], p["fox_orange"])
+    # Cream tip starts exactly on the orange tail end to avoid a detached cap.
     plush_tail("FoxTailTip",
-        [(0.12, 1.91, 1.99), (0.10, 1.96, 2.04), (0.06, 2.03, 2.10),
-         (0.025, 2.09, 2.16), (0.00, 2.15, 2.20)],
-        [0.27, 0.255, 0.205, 0.115, 0.012],
-        [0.23, 0.215, 0.175, 0.095, 0.010], p["cream"])
+        [(0.12, 1.70, 1.78), (0.10, 1.74, 1.82), (0.06, 1.80, 1.88),
+         (0.025, 1.86, 1.94), (0.00, 1.92, 1.98)],
+        [0.23, 0.215, 0.17, 0.095, 0.010],
+        [0.20, 0.185, 0.145, 0.080, 0.010], p["cream"])
 
     # Eyes sit on the front (-Z) plane; pupils and catchlights are readable at distance.
     for side, suffix in ((-1, "Left"), (1, "Right")):
