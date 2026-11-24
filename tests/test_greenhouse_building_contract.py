@@ -9,7 +9,7 @@ HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 
 class GreenhouseBuildingContractTests(unittest.TestCase):
     def test_greenhouse_is_persisted_and_exposed_to_the_hud(self):
-        self.assertIn('saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse"', WORLD)
+        self.assertIn('saved.id == "Path" or saved.id == "FlowerBed" or saved.id == "Cottage" or saved.id == "Warehouse" or saved.id == "Greenhouse" or saved.id == "GardenLamp"', WORLD)
         self.assertIn('savedIsland.buildings = citySnapshot.buildings', WORLD)
         self.assertIn('player:SetAttribute("Greenhouse_Built"', WORLD)
         self.assertIn('end)(), "Greenhouse") ~= nil)', WORLD)
@@ -21,7 +21,7 @@ class GreenhouseBuildingContractTests(unittest.TestCase):
         self.assertIn('Теплица уже построена на твоём острове.', WORLD)
         self.assertIn('Greenhouse = {Wood = 18, Stone = 12}', WORLD)
         self.assertIn('Greenhouse = {Wood = 9, Stone = 6}', WORLD)
-        self.assertIn('or decorationId == "Warehouse" and "Склад" or "Теплица"', HUD)
+        self.assertIn('or decorationId == "Warehouse" and "Склад"\n                or decorationId == "Greenhouse" and "Теплица" or "Садовый фонарь"', HUD)
 
     def test_greenhouse_accelerates_new_planting_and_strawberry_regrowth(self):
         helper = WORLD.split("local function getFarmGrowthDuration(session, baseSeconds)", 1)[1].split("local function interactFarmPlot", 1)[0]
