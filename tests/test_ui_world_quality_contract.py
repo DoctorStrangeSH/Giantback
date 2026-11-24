@@ -47,7 +47,7 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('card(body, "WeeklyChallenge_" .. tostring(index), compact and 112 or 72)', HUD)
         self.assertIn('label(item, "Number", tostring(index)', HUD)
         self.assertIn('compact and UDim2.new(1, -28, 0, 30)', HUD)
-        self.assertIn('compact and UDim2.fromOffset(14, 84)', HUD)
+        self.assertIn('UDim2.fromOffset(compact and 14 or 54, compact and 84 or 51)', HUD)
         self.assertIn('compact and UDim2.new(1, -90, 0, 18)', HUD)
 
     def test_important_icons_are_native_gui_pictograms(self):
