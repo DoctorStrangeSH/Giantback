@@ -58,7 +58,7 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn('(1.20,0.37,0.315)', source)
         self.assertIn('(0.43,0.40,0.36)', source)
         self.assertIn('((1.02,0.88),(0.84,0.72),(0.68,0.56))', source)
-        self.assertIn('outer_radius, inner_radius, inner_offset = 0.39, 0.325, 0.19', source)
+        self.assertIn('outer_radius, inner_radius, inner_offset = 0.50, 0.405, 0.22', source)
         self.assertNotIn('parts.append(sphere("MothAbdomen"', source)
 
     def test_review_cameras_keep_hovering_moth_profile_level(self):
