@@ -15,7 +15,7 @@ from pathlib import Path
 
 import bpy
 import bmesh
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 GROUPS = (
     "MothHead", "MothThorax", "MothAbdomen",
