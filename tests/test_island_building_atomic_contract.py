@@ -20,7 +20,7 @@ class IslandBuildingAtomicContractTests(unittest.TestCase):
         self.assertIn("local previousBuildings = copyCityBuildings(session.city.buildings)", placement)
         self.assertIn("local previousWood = session.inventory.Wood or 0", placement)
         self.assertIn("local previousStone = session.inventory.Stone or 0", placement)
-        self.assertIn("rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, previousWood, previousStone)", placement)
+        self.assertIn("rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, cost.Wood, cost.Stone)", placement)
         self.assertIn("Постройка и материалы восстановлены.", placement)
         self.assertLess(placement.index("if not save(player) then"), placement.index("tip(player, placedMessages[decorationId])"))
 
@@ -29,17 +29,29 @@ class IslandBuildingAtomicContractTests(unittest.TestCase):
         self.assertIn("if not session.online then", demolition)
         self.assertIn("if session.economyBusy then", demolition)
         self.assertIn("local previousBuildings = copyCityBuildings(session.city.buildings)", demolition)
-        self.assertIn("session.inventory.Wood = previousWood + refund.Wood", demolition)
-        self.assertIn("session.inventory.Stone = previousStone + refund.Stone", demolition)
+        self.assertIn("session.inventory.Wood = (session.inventory.Wood or 0) + refund.Wood", demolition)
+        self.assertIn("session.inventory.Stone = (session.inventory.Stone or 0) + refund.Stone", demolition)
+        self.assertIn("rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, -refund.Wood, -refund.Stone)", demolition)
         self.assertIn("if not save(player) then", demolition)
         self.assertIn("Постройка и материалы восстановлены.", demolition)
         self.assertLess(demolition.index("if not save(player) then"), demolition.index('tip(player, "Постройка разобрана.'))
 
+    def test_rollback_uses_inverse_deltas_to_preserve_concurrent_pickups(self):
+        helper = WORLD.split("local function rollbackCityBuildingOperation", 1)[1].split("removeIslandDecoration = function", 1)[0]
+        self.assertIn("woodDelta", helper)
+        self.assertIn("stoneDelta", helper)
+        self.assertIn("math.max(0, (session.inventory.Wood or 0) + woodDelta)", helper)
+        self.assertIn("math.max(0, (session.inventory.Stone or 0) + stoneDelta)", helper)
+        self.assertIn("cost.Wood, cost.Stone", WORLD)
+        self.assertIn("-refund.Wood, -refund.Stone", WORLD)
+
     def test_rollback_rebuilds_visuals_and_syncs_player_attributes(self):
         helper = WORLD.split("local function rollbackCityBuildingOperation", 1)[1].split("removeIslandDecoration = function", 1)[0]
         self.assertIn("session.city.buildings = buildings", helper)
-        self.assertIn("session.inventory.Wood = wood", helper)
-        self.assertIn("session.inventory.Stone = stone", helper)
+        self.assertIn("(session.inventory.Wood or 0) + woodDelta", helper)
+        self.assertIn("(session.inventory.Stone or 0) + stoneDelta", helper)
+        self.assertNotIn("session.inventory.Wood = wood", helper)
+        self.assertNotIn("session.inventory.Stone = stone", helper)
         self.assertIn("rebuildCityDecorations(player, session, cityModel, meadow)", helper)
         self.assertIn("syncInventory(player)", helper)
         self.assertIn("syncFarm(player)", helper)
