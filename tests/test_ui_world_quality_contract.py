@@ -31,6 +31,8 @@ class UIWorldQualityContracts(unittest.TestCase):
     def test_important_icons_are_native_gui_pictograms(self):
         self.assertIn('local function createPictogram(parent, name, kind, size, tint)', HUD)
         self.assertIn('local function setPictogramColor(root, color)', HUD)
+        self.assertIn('part("FallbackBadge"', HUD)
+        self.assertIn('FallbackMark', HUD)
         for icon_kind in ('house', 'farm', 'paw', 'backpack', 'map', 'journal',
                           'wood', 'stone', 'fox', 'moth', 'crystal', 'carrot',
                           'berry', 'pumpkin', 'cabbage', 'flower', 'greenhouse',
