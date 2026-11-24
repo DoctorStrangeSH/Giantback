@@ -293,3 +293,10 @@ Seventh corrective source pass: reduce the tail cross-section again while keepin
 All four renders were manually inspected. Fox face and warm palette are strong; body proportions read as a friendly companion. The tail still dominates the side/back silhouette and makes the fox feel top-heavy. Paws remain too cylindrical, and the coat still needs a few deliberate large fur clumps rather than procedural noise.
 
 Eighth corrective source pass: reduce the tail cross-section while matching the cream tip's starting radii to the orange endpoint. Next pass should add authored coat clumps and blend the haunch/paw transitions; preserve all 17 rig groups.
+
+
+## Ninth review — render set 14931318938 (2026-11-24)
+
+Manual review of all four renders: the fox has a clear friendly face, appealing orange/cream palette, and readable four-paw stance. The tail remains the strongest silhouette feature and is visually attractive from side/three-quarter views, but its root sits too far to one side in the rear view, making it look shoulder-mounted rather than attached to the center of the rump.
+
+Ninth corrective pass: shift the tail root and its first control points toward the body center, and move the rig pivot to the same anchor. Keep the tail volume and matched cream tip radii; do not shrink it further. Await a fresh rear/side render before approval. Coat breakup and paw/haunch blending remain follow-up tasks.
