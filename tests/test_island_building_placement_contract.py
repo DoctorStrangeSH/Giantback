@@ -37,6 +37,14 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('Warehouse_Used', WORLD)
         self.assertIn('Warehouse_Built', WORLD)
 
+    def test_building_grid_expands_to_sixteen_cells_without_moving_legacy_rows(self):
+        self.assertIn('z = math.clamp(math.floor(z / 4 + 0.5) * 4, -4, 8)', WORLD)
+        self.assertIn('for index = 1, 16 do', WORLD)
+        self.assertIn('if #session.city.buildings >= 16 and not moveIndex then', WORLD)
+        self.assertIn('local z = math.clamp(math.floor(localPoint.Z / 4 + 0.5) * 4, -4, 8)', HUD)
+        self.assertIn('local hasSpace = placementMoveIndex ~= nil or count < 16', HUD)
+        self.assertIn('tostring(decorationCount) .. "/16.', HUD)
+
     def test_client_ghost_preview_and_manual_placement_controls(self):
         self.assertIn('local function createPlacementGhost(decorationId)', HUD)
         self.assertIn('workspace:Raycast(ray.Origin, ray.Direction * 600, params)', HUD)
@@ -59,10 +67,10 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('session.city.buildings[moveIndex] = {id = decorationId, x = x, z = z, rotation = rotation}', WORLD)
         self.assertIn('if index ~= moveIndex and existing.x == x and existing.z == z then', WORLD)
         self.assertIn('Greenhouse = {Wood = 9, Stone = 6}', WORLD)
-        self.assertIn('session.inventory.Wood = previousWood + refund.Wood', WORLD)
-        self.assertIn('session.inventory.Stone = previousStone + refund.Stone', WORLD)
+        self.assertIn('session.inventory.Wood = (session.inventory.Wood or 0) + refund.Wood', WORLD)
+        self.assertIn('session.inventory.Stone = (session.inventory.Stone or 0) + refund.Stone', WORLD)
         self.assertIn('if not save(player) then', WORLD)
-        self.assertIn('rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, previousWood, previousStone)', WORLD)
+        self.assertIn('rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, -refund.Wood, -refund.Stone)', WORLD)
 
     def test_city_lists_existing_buildings_and_offers_actions(self):
         self.assertIn('City_Decoration_" .. tostring(index) .. "_Id', WORLD)
