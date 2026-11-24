@@ -2362,6 +2362,9 @@ local function init(player)
                 task.wait(0.1)
             end
             if root and session.homeSpawn and character.Parent and player.Character == character then
+                session.homeReturnCFrame = nil
+                session.homeInteriorIsland = nil
+                player:SetAttribute("HomeInteriorActive", false)
                 character:PivotTo(session.homeSpawn.CFrame + Vector3.new(0, 4, 0))
             end
         end)
@@ -4129,7 +4132,7 @@ createPersonalCity = function(player, session)
             visitorSession.homeReturnCFrame = root.CFrame
             visitorSession.homeInteriorIsland = homeIsland
             visitor:SetAttribute("HomeInteriorActive", true)
-            character:PivotTo(homeInteriorSpawn.CFrame * CFrame.new(0, 2.4, 0))
+            character:PivotTo(homeInteriorSpawn.CFrame * CFrame.new(0, 0.3, 0))
             tip(visitor, "Добро пожаловать домой! Осмотрись и отдохни у камина.")
         end)
     end
@@ -5798,6 +5801,22 @@ Players.PlayerRemoving:Connect(function(player)
     save(player)
     local session = sessions[player]
     if session then
+        if session.homeIsland then
+            for otherPlayer, otherSession in sessions do
+                if otherPlayer ~= player and otherSession.homeInteriorIsland == session.homeIsland then
+                    local otherCharacter = otherPlayer.Character
+                    if otherCharacter and otherSession.homeReturnCFrame then
+                        otherCharacter:PivotTo(otherSession.homeReturnCFrame)
+                    elseif otherCharacter and otherSession.homeSpawn then
+                        otherCharacter:PivotTo(otherSession.homeSpawn.CFrame + Vector3.new(0, 4, 0))
+                    end
+                    otherSession.homeReturnCFrame = nil
+                    otherSession.homeInteriorIsland = nil
+                    otherPlayer:SetAttribute("HomeInteriorActive", false)
+                    tip(otherPlayer, "Владелец острова вышел. Ты вернулся во двор.")
+                end
+            end
+        end
         for _, connection in ipairs(session.companionOwnershipConnections or {}) do
             connection:Disconnect()
         end
