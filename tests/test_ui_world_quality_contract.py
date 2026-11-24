@@ -42,6 +42,10 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('local function setPictogramColor(root, color)', HUD)
         self.assertIn('part("FallbackBadge"', HUD)
         self.assertIn('FallbackMark', HUD)
+        self.assertIn('local playSymbols = {"1", "2", "3"}', HUD)
+        self.assertNotIn(' · ✦ ', HUD)
+        self.assertNotIn('☀ Солнечные лепестки', HUD)
+        self.assertNotIn('☾ Лунные лепестки', HUD)
         for icon_kind in ('house', 'farm', 'paw', 'backpack', 'map', 'journal',
                           'wood', 'stone', 'fox', 'moth', 'crystal', 'carrot',
                           'berry', 'pumpkin', 'cabbage', 'flower', 'greenhouse',
