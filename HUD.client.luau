@@ -2038,7 +2038,7 @@ local function renderExpeditions()
     searchRow.Parent = body
     local searchBox = Instance.new("TextBox")
     searchBox.Name = "CompanionAlbumSearch"
-    searchBox.Size = UDim2.new(1, -112, 1, 0)
+    searchBox.Size = UDim2.new(1, -168, 1, 0)
     searchBox.Position = UDim2.new()
     searchBox.BackgroundColor3 = palette.white
     searchBox.BorderSizePixel = 0
@@ -2057,6 +2057,13 @@ local function renderExpeditions()
     searchPadding.PaddingLeft = UDim.new(0, 12)
     searchPadding.PaddingRight = UDim.new(0, 8)
     searchPadding.Parent = searchBox
+    local searchButton = button(searchRow, "SearchAlbum", "ПОИСК",
+        UDim2.fromOffset(48, 38), UDim2.new(1, -160, 0, 0), palette.forestLight)
+    searchButton.TextSize = 8
+    searchButton.Activated:Connect(function()
+        companionAlbumSearch = string.sub(searchBox.Text, 1, 48)
+        refreshActiveTab()
+    end)
     local sortButton = button(searchRow, "SortByRarity", companionAlbumSort == "Редкость" and "РЕДКОСТЬ ↓" or "ИМЯ А–Я",
         UDim2.fromOffset(104, 38), UDim2.new(1, -104, 0, 0), palette.lilac)
     sortButton.TextColor3 = palette.ink
@@ -2065,9 +2072,9 @@ local function renderExpeditions()
         companionAlbumSort = companionAlbumSort == "Редкость" and "Имя" or "Редкость"
         refreshActiveTab()
     end)
-    searchBox.FocusLost:Connect(function()
+    searchBox.FocusLost:Connect(function(enterPressed)
         companionAlbumSearch = string.sub(searchBox.Text, 1, 48)
-        refreshActiveTab()
+        if enterPressed then refreshActiveTab() end
     end)
 
     local rarityOrder = {
