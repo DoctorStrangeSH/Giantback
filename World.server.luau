@@ -5808,16 +5808,16 @@ Players.PlayerRemoving:Connect(function(player)
             for otherPlayer, otherSession in sessions do
                 if otherPlayer ~= player and otherSession.homeInteriorIsland == session.homeIsland then
                     local otherCharacter = otherPlayer.Character
-                    if otherCharacter and otherSession.homeReturnCFrame then
-                        otherCharacter:PivotTo(otherSession.homeReturnCFrame)
-                    elseif otherCharacter and otherSession.homeSpawn then
+                    if otherCharacter and otherSession.homeSpawn and otherSession.homeSpawn.Parent then
                         otherCharacter:PivotTo(otherSession.homeSpawn.CFrame + Vector3.new(0, 4, 0))
+                    elseif otherCharacter and otherSession.homeReturnCFrame then
+                        otherCharacter:PivotTo(otherSession.homeReturnCFrame)
                     end
                     otherSession.homeReturnCFrame = nil
                     otherSession.homeInteriorIsland = nil
                     otherPlayer:SetAttribute("HomeInteriorActive", false)
                     otherPlayer:SetAttribute("HomeInteriorIslandOwnerUserId", 0)
-                    tip(otherPlayer, "Владелец острова вышел. Ты вернулся во двор.")
+                    tip(otherPlayer, "Владелец острова вышел. Ты вернулся на свой остров.")
                 end
             end
         end
