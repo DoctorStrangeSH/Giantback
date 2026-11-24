@@ -260,14 +260,14 @@ def moth_leg(name, side, start_y, end_y, material):
     curve = bpy.data.curves.new(name + "Curve", "CURVE")
     curve.dimensions = "3D"
     curve.resolution_u = 12
-    curve.bevel_depth = 0.045
+    curve.bevel_depth = 0.026
     curve.bevel_resolution = 3
     spline = curve.splines.new("BEZIER")
     spline.bezier_points.add(2)
     coords = [
-        (side * 0.23, start_y, -0.31),
-        (side * 0.32, (start_y + end_y) * 0.5, -0.35),
-        (side * 0.43, end_y, -0.34),
+        (side * 0.19, start_y, -0.30),
+        (side * 0.27, (start_y + end_y) * 0.5, -0.33),
+        (side * 0.35, end_y, -0.32),
     ]
     for point, co in zip(spline.bezier_points, coords):
         point.co = co
@@ -276,7 +276,7 @@ def moth_leg(name, side, start_y, end_y, material):
     obj = bpy.data.objects.new(name, curve)
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(material)
-    foot = sphere(name + "Foot", coords[-1], (0.078, 0.055, 0.058), material, 20, 12)
+    foot = sphere(name + "Foot", coords[-1], (0.048, 0.036, 0.038), material, 20, 12)
     return [obj, foot]
 
 
@@ -442,7 +442,7 @@ def main():
         (1.79,0.08,0.09),
     ]
     parts.append(tapered_body("MothThorax",body_profile,ivory))
-    parts.append(sphere("MothHead",(0,1.91,-0.20),(0.43,0.40,0.36),ivory,48,32))
+    parts.append(sphere("MothHead",(0,1.91,-0.20),(0.46,0.42,0.38),ivory,48,32))
     # A soft warm belly patch replaces the three hard gold rings: the moth
     # should read as one plush creature, not a mechanically segmented insect.
     abdomen_mat=mat("abdomen_cream",(0.88,0.77,0.65),0.94)
