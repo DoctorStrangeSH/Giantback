@@ -179,14 +179,14 @@ local function createPictogram(parent, name, kind, size, tint)
         c.CornerRadius = round and UDim.new(1, 0) or UDim.new(0.2, 0)
         c.Parent = p
     end
-    if kind == "house" then
+    if kind == "house" or kind == "cottage" or kind == "warehouse" then
         part("RoofL", 0.06, 0.18, 0.54, 0.14, color, -34)
         part("RoofR", 0.40, 0.18, 0.54, 0.14, color, 34)
         part("Walls", 0.18, 0.38, 0.64, 0.48, palette.paper)
         part("Door", 0.43, 0.59, 0.16, 0.27, palette.ink)
         part("WindowL", 0.25, 0.48, 0.14, 0.14, palette.water, nil, true)
         part("WindowR", 0.62, 0.48, 0.14, 0.14, palette.water, nil, true)
-    elseif kind == "farm" then
+    elseif kind == "farm" or kind == "leaf" then
         part("Stem", 0.45, 0.30, 0.12, 0.58, palette.ink)
         part("LeafL", 0.10, 0.12, 0.43, 0.27, color, -28, true)
         part("LeafR", 0.48, 0.08, 0.42, 0.27, color, 28, true)
@@ -1089,8 +1089,8 @@ local function renderCity()
         {id = "WhiteFence", title = "Белая ограда", description = "Светлый аккуратный забор с фигурными столбиками. Цена: 8 дерева и 2 камня.", cost = "8 ДЕРЕВА · 2 КАМНЯ", icon = "fence"},
         {id = "StoneFence", title = "Каменная ограда", description = "Прочная ограда из светлого камня. Цена: 2 дерева и 8 камня.", cost = "2 ДЕРЕВА · 8 КАМНЯ", icon = "stone"},
         {id = "HedgeFence", title = "Живая изгородь", description = "Плотная зелёная изгородь из кустов. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", icon = "leaf"},
-        {id = "Bench", title = "Садовая скамейка", description = "Уютная деревянная скамейка со спинкой. Цена: 8 дерева и 2 камня.", cost = "8 ДЕРЕВА · 2 КАМНЯ", icon = "warehouse"},
-        {id = "DecorativeTree", title = "Цветущее дерево", description = "Небольшое дерево с пышной кроной и цветами. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", icon = "stonepath"},
+        {id = "Bench", title = "Садовая скамейка", description = "Уютная деревянная скамейка со спинкой. Цена: 8 дерева и 2 камня.", cost = "8 ДЕРЕВА · 2 КАМНЯ", icon = "bench"},
+        {id = "DecorativeTree", title = "Цветущее дерево", description = "Небольшое дерево с пышной кроной и цветами. Цена: 6 дерева и 4 камня.", cost = "6 ДЕРЕВА · 4 КАМНЯ", icon = "tree"},
         {id = "WoodenPath", title = "Деревянная дорожка", description = "Пять деревянных настилов для уютных тропинок. Цена: 4 дерева.", cost = "4 ДЕРЕВА", icon = "wood"},
         {id = "GardenArch", title = "Цветочная арка", description = "Деревянная арка с цветами и зелёными побегами. Цена: 10 дерева и 6 камня.", cost = "10 ДЕРЕВА · 6 КАМНЯ", icon = "arch"},
         {id = "BirdBath", title = "Купальня для птиц", description = "Каменная чаша с чистой водой. Цена: 4 дерева и 6 камня.", cost = "4 ДЕРЕВА · 6 КАМНЯ", icon = "birdbath"},
@@ -1248,7 +1248,7 @@ local function renderPets()
         {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "crystal"},
         {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "pumpkin"},
         {id = "BrambleBun", name = "Колючка", role = "Редкий • Лесной ёжик", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "paw"},
-        {id = "MossTurtle", name = "Мохопанцирь", role = "Редкий • Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "М"},
+        {id = "MossTurtle", name = "Мохопанцирь", role = "Редкий • Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "paw"},
         {id = "Glowcap", name = "Светошляп", role = "Эпический • Грибной огонёк", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "mushroom"},
         {id = "Dewdrop", name = "Росинка", role = "Эпический • Капля ручья", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "droplet"},
         {id = "Starling", name = "Звёздокрыл", role = "Легендарный • Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "paw"},
@@ -2159,8 +2159,8 @@ getObjective = function()
 end
 
 local function refresh()
-    woodLabel.Text = "ДЕРЕВО  " .. tostring(player:GetAttribute("Resource_Wood") or 0)
-    stoneLabel.Text = "КАМЕНЬ  " .. tostring(player:GetAttribute("Resource_Stone") or 0)
+    woodLabel.Text = tostring(player:GetAttribute("Resource_Wood") or 0)
+    stoneLabel.Text = tostring(player:GetAttribute("Resource_Stone") or 0)
     objectiveText.Text = getObjective()
     local completed, total = getTutorialProgress()
     local bridgeBuilt = player:GetAttribute("Bridge_HomeToGrove") == true
