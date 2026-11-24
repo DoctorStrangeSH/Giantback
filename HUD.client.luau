@@ -479,7 +479,7 @@ local function clearPlacementGhost()
     placementGhost = nil
 end
 
-local function makePlacementPart(name, size, offset, shape)
+local function makePlacementPart(name, size, offset, shape, rotation)
     local part = Instance.new("Part")
     part.Name = name
     part.Size = size
@@ -492,7 +492,7 @@ local function makePlacementPart(name, size, offset, shape)
     part.Material = Enum.Material.Neon
     part.Transparency = 1
     part.Parent = workspace
-    table.insert(placementParts, {part = part, offset = offset})
+    table.insert(placementParts, {part = part, offset = offset, rotation = rotation})
     return part
 end
 
@@ -592,11 +592,11 @@ local function createPlacementGhost(decorationId)
             flower.Color = Color3.fromRGB(232, 143, 153)
         end
     elseif decorationId == "BirdBath" then
-        makePlacementPart("BirdBathPreviewFoot", Vector3.new(0.28, 1.55, 1.55), Vector3.new(0, 0.14, 0), Enum.PartType.Cylinder)
-        makePlacementPart("BirdBathPreviewPedestal", Vector3.new(1.48, 0.48, 0.48), Vector3.new(0, 0.98, 0), Enum.PartType.Cylinder)
-        local bowl = makePlacementPart("BirdBathPreviewBowl", Vector3.new(0.3, 2.2, 2.2), Vector3.new(0, 1.82, 0), Enum.PartType.Cylinder)
+        makePlacementPart("BirdBathPreviewFoot", Vector3.new(0.28, 1.55, 1.55), Vector3.new(0, 0.14, 0), Enum.PartType.Cylinder, CFrame.Angles(0, 0, math.rad(90)))
+        makePlacementPart("BirdBathPreviewPedestal", Vector3.new(1.48, 0.48, 0.48), Vector3.new(0, 0.98, 0), Enum.PartType.Cylinder, CFrame.Angles(0, 0, math.rad(90)))
+        local bowl = makePlacementPart("BirdBathPreviewBowl", Vector3.new(0.3, 2.2, 2.2), Vector3.new(0, 1.82, 0), Enum.PartType.Cylinder, CFrame.Angles(0, 0, math.rad(90)))
         bowl.Color = Color3.fromRGB(157, 160, 148)
-        local water = makePlacementPart("BirdBathPreviewWater", Vector3.new(0.08, 1.72, 1.72), Vector3.new(0, 2.0, 0), Enum.PartType.Cylinder)
+        local water = makePlacementPart("BirdBathPreviewWater", Vector3.new(0.08, 1.72, 1.72), Vector3.new(0, 2.0, 0), Enum.PartType.Cylinder, CFrame.Angles(0, 0, math.rad(90)))
         water.Color = Color3.fromRGB(116, 190, 207)
     elseif decorationId == "Greenhouse" then
         makePlacementPart("GreenhousePreviewFoundation", Vector3.new(3.8, 0.22, 3.8), Vector3.new(0, 0.11, 0))
@@ -723,7 +723,7 @@ local function updatePlacementGhost()
     for _, entry in ipairs(placementParts) do
         local part = entry.part
         if part and part.Parent then
-            part.CFrame = frame * CFrame.new(entry.offset)
+            part.CFrame = frame * CFrame.new(entry.offset) * (entry.rotation or CFrame.new())
             part.Transparency = 0.42
             part.Color = placementValid and Color3.fromRGB(105, 235, 145)
                 or Color3.fromRGB(235, 100, 92)
