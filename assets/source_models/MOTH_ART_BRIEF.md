@@ -239,3 +239,10 @@ Seventh corrective pass: shrink crescent geometry substantially, place each cres
 Manual inspection of all four new renders: the body still reads as a white segmented insect with three raised gold rings; the side view is too thin and the feet look like thick sausages. The crescent ornaments remain partly hidden behind the wing membrane, despite their smaller size. This pass is rejected.
 
 Eighth corrective source pass: place small gold crescents on the camera-facing wing surface (front membrane Z, not behind it), remove the three hard abdomen rings and replace them with one soft warm belly patch, shorten/thin the six legs and reduce the feet. Preserve all four independent wing groups and the ten-group report contract. Await new renders; not production-approved.
+
+
+## Ninth review — render set 14932595567 (2026-11-24)
+
+All four renders were manually inspected. The moth now has a recognizable friendly face and four readable wings, and the old gold abdomen rings are gone. Remaining defects: six legs still read as chunky white tubes with bulb feet; the head could be softer and rounder; side profile shows the wing shells as overly thin stacked plates. This is a partial pass, not production approval.
+
+Ninth corrective source pass: reduce leg bevel and foot volume, move the leg endpoints closer to the thorax, and slightly round the head. Next pass must improve wing thickness/curvature and add a small authored face detail; keep four independent wing groups and the 10-group report contract.
