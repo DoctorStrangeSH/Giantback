@@ -244,6 +244,16 @@ local function createPictogram(parent, name, kind, size, tint)
         part("Line1", 0.61, 0.32, 0.18, 0.06, color)
         part("Line2", 0.61, 0.50, 0.18, 0.06, color)
         part("Line3", 0.61, 0.68, 0.18, 0.06, color)
+    elseif kind == "axe" then
+        part("Handle", 0.43, 0.30, 0.14, 0.64, Color3.fromRGB(139, 92, 58), -18)
+        part("Blade", 0.12, 0.10, 0.62, 0.36, palette.paperDark, -18)
+    elseif kind == "pickaxe" then
+        part("Handle", 0.44, 0.28, 0.12, 0.68, Color3.fromRGB(139, 92, 58), 18)
+        part("Head", 0.08, 0.18, 0.84, 0.18, color, -12)
+    elseif kind == "sword" then
+        part("Blade", 0.43, 0.06, 0.14, 0.62, palette.paper, -8)
+        part("Guard", 0.16, 0.62, 0.68, 0.12, color)
+        part("Grip", 0.43, 0.72, 0.14, 0.22, Color3.fromRGB(139, 92, 58))
     elseif kind == "wood" then
         part("Plank1", 0.10, 0.15, 0.80, 0.22, Color3.fromRGB(172, 117, 73))
         part("Plank2", 0.10, 0.42, 0.80, 0.22, Color3.fromRGB(197, 145, 91))
@@ -1472,17 +1482,16 @@ local function renderTools()
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
     local catalog = {
-        {id = "Axe", name = "Топор путешественника", glyph = "Т", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
-        {id = "Pickaxe", name = "Кирка путешественника", glyph = "К", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
+        {id = "Axe", name = "Топор путешественника", icon = "axe", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
+        {id = "Pickaxe", name = "Кирка путешественника", icon = "pickaxe", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
     }
     for _, definition in catalog do
         local level = tonumber(player:GetAttribute("Tool_" .. definition.id .. "Level")) or 1
         local owned = player:GetAttribute("Tool_" .. definition.id .. "Owned") == true
         local equipped = player:GetAttribute("Tool_Equipped") == definition.id
         local item = card(body, "Tool_" .. definition.id, compact and 132 or 106)
-        local icon = label(item, "Icon", definition.glyph, UDim2.fromOffset(44, 48),
-            UDim2.fromOffset(10, compact and 8 or 22), 28, palette.gold)
-        icon.TextXAlignment = Enum.TextXAlignment.Center
+        createPictogram(item, "ToolIcon", definition.icon, 38, palette.gold).Position =
+            UDim2.fromOffset(13, compact and 12 or 26)
         local nameLabel = label(item, "Name", definition.name,
             compact and UDim2.new(1, -72, 0, 24) or UDim2.new(1, -156, 0, 22),
             UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
@@ -1512,8 +1521,8 @@ local function renderTools()
     local swordOwned = player:GetAttribute("Tool_SwordOwned") == true
     local swordEquipped = player:GetAttribute("Tool_Equipped") == "Sword"
     local swordCard = card(body, "Tool_Sword", compact and 148 or 124)
-    label(swordCard, "SwordIcon", "М", UDim2.fromOffset(44, 48),
-        UDim2.fromOffset(10, compact and 8 or 22), 28, palette.gold)
+    createPictogram(swordCard, "SwordIcon", "sword", 38, palette.gold).Position =
+        UDim2.fromOffset(13, compact and 12 or 26)
     local swordName = label(swordCard, "SwordName", "Меч странника",
         compact and UDim2.new(1, -72, 0, 24) or UDim2.new(1, -156, 0, 24),
         UDim2.fromOffset(62, 8), 14, palette.ink, Enum.Font.GothamBold)
