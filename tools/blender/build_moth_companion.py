@@ -466,7 +466,7 @@ def main():
             t = 0.62
             mark_x = root_x + side * t * span
             mark_y = root_y + t * length + 0.015
-            mark_z = root_z + 0.20 * t * t + 0.10 + 0.012
+            mark_z = root_z + 0.20 * t * t + 0.10 - 0.055 - 0.012
             parts.append(crescent(
                 "WingMoon" + wing_name + suffix,
                 (mark_x, mark_y, mark_z),
