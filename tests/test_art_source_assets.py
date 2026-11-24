@@ -245,7 +245,7 @@ class FoxHeroMeshGeneratorTests(unittest.TestCase):
         self.assertIn('plush_tail("FoxTail"', source)
         self.assertIn('plush_tail("FoxTailTip"', source)
         self.assertIn("(0.12, 1.70, 1.78), (0.10, 1.74, 1.82)", source)
-        self.assertIn("[0.20, 0.19, 0.15, 0.085, 0.010]", source)
+        self.assertIn("[0.17, 0.16, 0.13, 0.075, 0.010]", source)
         self.assertIn("widths[segment]", source)
         self.assertIn("depths[segment]", source)
         self.assertIn("def organic_torso(", source)
