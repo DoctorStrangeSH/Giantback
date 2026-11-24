@@ -834,6 +834,7 @@ end)
 
 local function renderCity()
     local cityLevel = tonumber(player:GetAttribute("City_Level")) or 1
+    local homeLevel = tonumber(player:GetAttribute("Home_Level")) or 1
     local farmLevel = tonumber(player:GetAttribute("Farm_Level")) or 1
     local homeSlot = tonumber(player:GetAttribute("HomeIslandSlot")) or 0
     addInfo("Добро пожаловать домой!", "Это твой личный остров. Друзья могут приходить в гости, но строить и менять что-либо здесь можешь только ты.", 84)
@@ -841,6 +842,12 @@ local function renderCity()
     addInfo("Кошелёк • " .. tostring(coins) .. " монет", "Выращивай морковь, клубнику, тыкву и капусту, а затем продавай весь урожай на фермерском рынке.", 68)
     addInfo("Домашний остров №" .. tostring(homeSlot), "На сервере восемь личных островов. Дом и ферма на твоём участке принадлежат только тебе.", 76)
     addInfo("Уровень города: " .. tostring(cityLevel), "Строй и улучшай свой остров, собирай материалы и открывай новые места.", 76)
+    local houseHint = homeLevel == 1
+        and "Собери дерево ×20 и камень ×12, чтобы добавить второй этаж, балкон и пристройку."
+        or (homeLevel == 2
+            and "Собери дерево ×45 и камень ×30, чтобы превратить дом в большую сказочную усадьбу."
+            or "Дом достиг максимального уровня. Теперь это твоя сказочная усадьба!")
+    addInfo("Дом • уровень " .. tostring(homeLevel) .. " / 3", houseHint .. " Подойди к дому и нажми «Улучшить дом».", 82)
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
     local stone = tonumber(player:GetAttribute("Resource_Stone")) or 0
     local ore = tonumber(player:GetAttribute("Resource_IronOre")) or 0
