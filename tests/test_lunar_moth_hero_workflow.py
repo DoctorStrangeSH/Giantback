@@ -56,7 +56,7 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
         self.assertIn('sphere("MothAbdomen"', source)
         self.assertIn('(0.98,0.355,0.30)', source)
         self.assertIn('(1.20,0.37,0.315)', source)
-        self.assertIn('(0.43,0.40,0.36)', source)
+        self.assertIn('(0.46,0.42,0.38)', source)
         self.assertIn('((1.02,0.88),(0.84,0.72),(0.68,0.56))', source)
         self.assertIn('outer_radius, inner_radius, inner_offset = 0.17, 0.132, 0.070', source)
         self.assertIn('parts.append(sphere("MothAbdomen"', source)
