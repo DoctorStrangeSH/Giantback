@@ -56,12 +56,13 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('if action == "RemoveIslandDecoration" then', WORLD)
         self.assertIn('removeIslandDecoration = function(player, payload)', WORLD)
         self.assertIn('local movingDecoration = moveIndex and session.city.buildings[moveIndex] or nil', WORLD)
-        self.assertIn('session.city.buildings[moveIndex] = decoration', WORLD)
+        self.assertIn('session.city.buildings[moveIndex] = {id = decorationId, x = x, z = z, rotation = rotation}', WORLD)
         self.assertIn('if index ~= moveIndex and existing.x == x and existing.z == z then', WORLD)
-        self.assertIn('local refunds = {Path = {Wood = 1, Stone = 0}, FlowerBed = {Wood = 2, Stone = 1}, Cottage = {Wood = 4, Stone = 3}, Warehouse = {Wood = 5, Stone = 4}, Greenhouse = {Wood = 9, Stone = 6}}', WORLD)
-        self.assertIn('session.inventory.Wood = (session.inventory.Wood or 0) + refund.Wood', WORLD)
-        self.assertIn('session.inventory.Stone = (session.inventory.Stone or 0) + refund.Stone', WORLD)
-        self.assertIn('if session.online then save(player) end', WORLD)
+        self.assertIn('Greenhouse = {Wood = 9, Stone = 6}', WORLD)
+        self.assertIn('session.inventory.Wood = previousWood + refund.Wood', WORLD)
+        self.assertIn('session.inventory.Stone = previousStone + refund.Stone', WORLD)
+        self.assertIn('if not save(player) then', WORLD)
+        self.assertIn('rollbackCityBuildingOperation(player, session, cityModel, meadow, previousBuildings, previousWood, previousStone)', WORLD)
 
     def test_city_lists_existing_buildings_and_offers_actions(self):
         self.assertIn('City_Decoration_" .. tostring(index) .. "_Id', WORLD)
