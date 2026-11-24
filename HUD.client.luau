@@ -2121,7 +2121,7 @@ local function renderExpeditions()
         local found = owned and type(mutationId) == "string" and mutationId ~= ""
         local mutationName = player:GetAttribute("Companion_" .. pet.id .. "_MutationName")
         local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
-        local item = card(body, "CompanionMutationCodex_" .. tostring(index), compactAlbum and 92 or 82)
+        local item = card(body, "CompanionMutationCodex_" .. tostring(index), compactAlbum and 116 or 104)
         item.BackgroundColor3 = found and Color3.fromRGB(235, 242, 224) or Color3.fromRGB(242, 237, 222)
         local iconPlate = Instance.new("Frame")
         iconPlate.Name = "MutationIconPlate"
