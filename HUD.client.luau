@@ -211,6 +211,10 @@ local function createPictogram(parent, name, kind, size, tint)
         part("ToeM", 0.35, 0.03, 0.24, 0.24, color, nil, true)
         part("ToeR", 0.65, 0.14, 0.24, 0.24, color, nil, true)
         part("Pad", 0.20, 0.43, 0.60, 0.48, color, nil, true)
+    elseif kind == "egg" then
+        part("Shell", 0.24, 0.08, 0.52, 0.82, palette.paper, nil, true)
+        part("Spot1", 0.34, 0.30, 0.12, 0.12, color, nil, true)
+        part("Spot2", 0.55, 0.56, 0.10, 0.10, color, nil, true)
     elseif kind == "backpack" then
         part("Body", 0.18, 0.12, 0.64, 0.78, color)
         part("Pocket", 0.28, 0.52, 0.44, 0.28, palette.paper)
@@ -610,10 +614,10 @@ local seedShopOffers = {
 }
 
 local festivalShopOffers = {
-    {id = "HarvestEgg", name = "Призовое яйцо", description = "Ещё одна попытка открыть нового питомца", amount = 1, cost = 10, limit = 1, glyph = "◉"},
-    {id = "StarShard", name = "Звёздный осколок", description = "Редкий материал для магических открытий", amount = 1, cost = 4, limit = 2, glyph = "✦"},
-    {id = "MoonPetal", name = "Лунные лепестки", description = "Три лепестка для особых находок", amount = 3, cost = 2, limit = 3, glyph = "✿"},
-    {id = "PumpkinSeed", name = "Семена тыквы", description = "Пять семян для осеннего урожая", amount = 5, cost = 1, limit = 3, glyph = "●"},
+    {id = "HarvestEgg", name = "Призовое яйцо", description = "Ещё одна попытка открыть нового питомца", amount = 1, cost = 10, limit = 1, icon = "egg"},
+    {id = "StarShard", name = "Звёздный осколок", description = "Редкий материал для магических открытий", amount = 1, cost = 4, limit = 2, icon = "crystal"},
+    {id = "MoonPetal", name = "Лунные лепестки", description = "Три лепестка для особых находок", amount = 3, cost = 2, limit = 3, icon = "flower"},
+    {id = "PumpkinSeed", name = "Семена тыквы", description = "Пять семян для осеннего урожая", amount = 5, cost = 1, limit = 3, icon = "pumpkin"},
 }
 
 local function addSeedChoice(crop, selectedCrop)
@@ -1314,8 +1318,7 @@ local function renderPets()
         descriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
         local mood = player:GetAttribute("Companion_" .. pet.id .. "_Mood") or (pet.id == "Fox" and "Любопытство" or pet.id == "Moth" and "Спокойствие" or "Сияние")
         local moodLine = pet.id == "Fox" and "Любопытный исследователь" or pet.id == "Moth" and "Нежная хранительница света" or pet.id == "HarvestSprite" and "Добрый хранитель урожая" or pet.id == "BrambleBun" and "Осторожный собиратель" or pet.id == "MossTurtle" and "Спокойный защитник" or pet.id == "Glowcap" and "Светлый мечтатель" or pet.id == "Dewdrop" and "Весёлый непоседа" or pet.id == "Starling" and "Звёздный наблюдатель" or "Кристальный проводник"
-        local moodGlyph = mood == "Радость" and "✦" or mood == "Довольство" and "♡" or pet.id == "Fox" and "⌕" or "☾"
-        local moodLabel = label(item, "Mood", owned and (moodGlyph .. " " .. moodLine .. " · " .. mood) or "Характер откроется при знакомстве",
+        local moodLabel = label(item, "Mood", owned and (moodLine .. " · " .. mood) or "Характер откроется при знакомстве",
             compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, -220, 0, 18),
             UDim2.fromOffset(compact and 14 or 76, compact and 114 or 60), 10, palette.forest, Enum.Font.GothamBold)
         moodLabel.TextWrapped = true
@@ -1774,7 +1777,7 @@ local function renderDailyQuests()
     addInfo("ЛАВКА ФЕСТИВАЛЯ", "За каждые 5 очков события ты получаешь 1 листочек. Листочки не списывают очки прогресса и сохраняются до конца фестиваля.", 68)
     local tokenCard = card(body, "FestivalTokenWallet", 56)
     tokenCard.BackgroundColor3 = Color3.fromRGB(232, 240, 218)
-    label(tokenCard, "TokenGlyph", "✿", UDim2.fromOffset(38, 38), UDim2.fromOffset(12, 9), 24, palette.forest, Enum.Font.GothamBlack)
+    createPictogram(tokenCard, "TokenIcon", "flower", 30, palette.forest).Position = UDim2.fromOffset(16, 13)
     label(tokenCard, "TokenTitle", "ЛИСТОЧКИ", UDim2.new(1, -120, 0, 20), UDim2.fromOffset(58, 6), 11, palette.forest, Enum.Font.GothamBold)
     label(tokenCard, "TokenCount", tostring(shopTokens) .. " доступно", UDim2.new(1, -120, 0, 22), UDim2.fromOffset(58, 27), 14, palette.ink, Enum.Font.GothamBlack)
     for _, offer in festivalShopOffers do
@@ -1789,11 +1792,11 @@ local function renderDailyQuests()
         local canBuy = eventActive and not soldOut and not unavailable and shopTokens >= offer.cost
         local item = card(body, "FestivalShop_" .. offer.id, 82)
         item.BackgroundColor3 = canBuy and Color3.fromRGB(250, 241, 218) or Color3.fromRGB(239, 234, 218)
-        local glyph = label(item, "Glyph", offer.glyph, UDim2.fromOffset(38, 42), UDim2.fromOffset(10, 18), 23, offer.id == "HarvestEgg" and palette.gold or palette.forest, Enum.Font.GothamBlack)
-        glyph.TextXAlignment = Enum.TextXAlignment.Center
+        local offerTint = offer.id == "HarvestEgg" and palette.gold or offer.id == "StarShard" and palette.lilac or palette.forestLight
+        createPictogram(item, "OfferIcon", offer.icon, 34, offerTint).Position = UDim2.fromOffset(12, 22)
         label(item, "Name", offer.name .. " ×" .. tostring(offer.amount), UDim2.new(1, -154, 0, 22), UDim2.fromOffset(54, 8), 12, palette.ink, Enum.Font.GothamBold)
         label(item, "Details", offer.description .. " · " .. tostring(purchased) .. "/" .. tostring(offer.limit), UDim2.new(1, -154, 0, 36), UDim2.fromOffset(54, 34), 9, palette.muted)
-        local buyText = soldOut and "ЛИМИТ" or unavailable and "НЕ НУЖНО" or ("КУПИТЬ · " .. tostring(offer.cost) .. " ✿")
+        local buyText = soldOut and "ЛИМИТ" or unavailable and "НЕ НУЖНО" or ("КУПИТЬ · " .. tostring(offer.cost) .. " лист.")
         local buy = button(item, "Buy", buyText, UDim2.fromOffset(112, 34), UDim2.new(1, -120, 0.5, -17), canBuy and palette.gold or palette.paperDark)
         buy.TextColor3 = canBuy and palette.ink or palette.muted
         buy.TextSize = 9
@@ -1862,14 +1865,14 @@ local function renderExpeditions()
     addInfo("КОЛЛЕКЦИЯ ЭХО-КАМЕРЫ", "Найди три древние реликвии в скрытой комнате Кристальной пещеры. Открытые находки сохраняются навсегда.", 76)
     local collectionHeader = card(body, "CrystalRelicCollection", 62)
     collectionHeader.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
-    label(collectionHeader, "CollectionIcon", "✦", UDim2.fromOffset(38, 42), UDim2.fromOffset(12, 10), 25, palette.lilac, Enum.Font.GothamBlack)
+    createPictogram(collectionHeader, "CollectionIcon", "crystal", 30, palette.lilac).Position = UDim2.fromOffset(16, 15)
     label(collectionHeader, "CollectionTitle", "РЕЛИКВИИ ДРЕВНЕЙ ПЕЩЕРЫ", UDim2.new(1, -128, 0, 22), UDim2.fromOffset(58, 8), 12, palette.ink, Enum.Font.GothamBlack)
     label(collectionHeader, "CollectionCount", tostring(foundRelics) .. "/3", UDim2.fromOffset(52, 28), UDim2.new(1, -62, 0.5, -14), 15, palette.forest, Enum.Font.GothamBlack)
     for index, relic in relics do
         local found = player:GetAttribute(relic.id) == true
         local item = card(body, "CrystalRelic_" .. tostring(index), 78)
         item.BackgroundColor3 = found and Color3.fromRGB(235, 242, 224) or palette.paper
-        label(item, "RelicGlyph", found and "✦" or "?", UDim2.fromOffset(34, 40), UDim2.fromOffset(10, 18), 22, found and relic.color or palette.muted, Enum.Font.GothamBlack)
+        createPictogram(item, "RelicIcon", "crystal", 28, found and relic.color or palette.muted).Position = UDim2.fromOffset(13, 23)
         label(item, "RelicName", found and relic.name or "Неизвестная реликвия", UDim2.new(1, -62, 0, 21), UDim2.fromOffset(52, 7), 12, palette.ink, Enum.Font.GothamBold)
         label(item, "RelicRarity", found and relic.rarity or "РЕДКОСТЬ НЕИЗВЕСТНА", UDim2.new(1, -62, 0, 16), UDim2.fromOffset(52, 29), 9, found and relic.color or palette.muted, Enum.Font.GothamBlack)
         label(item, "RelicHint", found and relic.description or "Ищи сияющие жилы в Эхо-камере.", UDim2.new(1, -62, 0, 22), UDim2.fromOffset(52, 48), 9, palette.muted)
@@ -1896,15 +1899,15 @@ local function renderExpeditions()
     -- The pet mutation codex reads only server-replicated, saved companion discoveries.
     -- A companion has one permanently rolled mutation, not sixteen collectible copies.
     local mutationPets = {
-        {id = "Fox", title = "Лисёнок", biome = "Солнечная роща", glyph = "Л", color = palette.gold},
-        {id = "Moth", title = "Лунная моль", biome = "Сумеречная долина", glyph = "М", color = palette.lilac},
-        {id = "CrystalWisp", title = "Кристальный светляк", biome = "Кристальная пещера", glyph = "К", color = palette.water},
-        {id = "HarvestSprite", title = "Тыквик", biome = "Фестиваль урожая", glyph = "Т", color = palette.coral},
+        {id = "Fox", title = "Лисёнок", biome = "Солнечная роща", icon = "fox", color = palette.gold},
+        {id = "Moth", title = "Лунная моль", biome = "Сумеречная долина", icon = "moth", color = palette.lilac},
+        {id = "CrystalWisp", title = "Кристальный светляк", biome = "Кристальная пещера", icon = "crystal", color = palette.water},
+        {id = "HarvestSprite", title = "Тыквик", biome = "Фестиваль урожая", icon = "pumpkin", color = palette.coral},
         {id = "BrambleBun", title = "Колючка", biome = "Призовое яйцо Фестиваля урожая", glyph = "К", color = palette.gold},
         {id = "MossTurtle", title = "Мохопанцирь", biome = "Призовое яйцо Фестиваля урожая", glyph = "М", color = palette.forest},
-        {id = "Glowcap", title = "Светошляп", biome = "Призовое яйцо Фестиваля урожая", glyph = "С", color = palette.lilac},
-        {id = "Dewdrop", title = "Росинка", biome = "Призовое яйцо Фестиваля урожая", glyph = "Р", color = palette.water},
-        {id = "Starling", title = "Звёздокрыл", biome = "Призовое яйцо Фестиваля урожая", glyph = "З", color = palette.lilac},
+        {id = "Glowcap", title = "Светошляп", biome = "Призовое яйцо Фестиваля урожая", icon = "mushroom", color = palette.lilac},
+        {id = "Dewdrop", title = "Росинка", biome = "Призовое яйцо Фестиваля урожая", icon = "droplet", color = palette.water},
+        {id = "Starling", title = "Звёздокрыл", biome = "Призовое яйцо Фестиваля урожая", icon = "owl", color = palette.lilac},
     }
     local discoveredMutations = 0
     for _, pet in mutationPets do
@@ -1917,7 +1920,7 @@ local function renderExpeditions()
     addInfo("АЛЬБОМ РЕДКИХ ФОРМ", "Каждый найденный питомец получает свою особую форму. В дневнике видны сохранённые формы девяти питомцев. Неизвестные формы раскрываются после получения питомца.", 80)
     local mutationHeader = card(body, "CompanionMutationCodexHeader", 62)
     mutationHeader.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
-    label(mutationHeader, "CodexMark", "М", UDim2.fromOffset(36, 40), UDim2.fromOffset(12, 11), 23, palette.lilac, Enum.Font.GothamBlack)
+    createPictogram(mutationHeader, "CodexMark", "paw", 28, palette.lilac).Position = UDim2.fromOffset(16, 17)
     label(mutationHeader, "CodexTitle", "ОТКРЫТЫЕ ФОРМЫ ПИТОМЦЕВ", UDim2.new(1, -126, 0, 32), UDim2.fromOffset(55, 13), 12, palette.ink, Enum.Font.GothamBlack)
     label(mutationHeader, "CodexCount", tostring(discoveredMutations) .. "/" .. tostring(#mutationPets), UDim2.fromOffset(54, 28), UDim2.new(1, -62, 0.5, -14), 14, palette.forest, Enum.Font.GothamBlack)
 
@@ -1929,7 +1932,7 @@ local function renderExpeditions()
         local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
         local item = card(body, "CompanionMutationCodex_" .. tostring(index), 76)
         item.BackgroundColor3 = found and Color3.fromRGB(235, 242, 224) or palette.paper
-        label(item, "PetMark", found and pet.glyph or "?", UDim2.fromOffset(34, 38), UDim2.fromOffset(10, 17), 20, found and pet.color or palette.muted, Enum.Font.GothamBlack)
+        createPictogram(item, "PetMark", found and pet.icon or "paw", 28, found and pet.color or palette.muted).Position = UDim2.fromOffset(13, 23)
         label(item, "MutationTitle", found and (pet.title .. " • " .. (mutationName or mutationId)) or "Неизвестная форма", UDim2.new(1, -64, 0, 24), UDim2.fromOffset(52, 6), 12, palette.ink, Enum.Font.GothamBold)
         label(item, "MutationRarity", found and (mutationRarity or "Необычная") or "РЕДКОСТЬ НЕИЗВЕСТНА", UDim2.new(1, -64, 0, 18), UDim2.fromOffset(52, 30), 10, found and pet.color or palette.muted, Enum.Font.GothamBlack)
         label(item, "MutationBiome", found and ("Обнаружен: " .. pet.biome) or ("Где искать: " .. pet.biome), UDim2.new(1, -64, 0, 20), UDim2.fromOffset(52, 50), 10, palette.muted)
@@ -2194,7 +2197,7 @@ local function refresh()
         objectiveEyebrow.Text = completed >= total
             and "ПРИКЛЮЧЕНИЕ ПРОДОЛЖАЕТСЯ"
             or ("ПУТЕШЕСТВИЕ • ШАГ " .. tostring(completed + 1) .. " ИЗ " .. tostring(total))
-        objectiveGlyph.Text = completed >= total and "★" or tostring(completed + 1)
+        objectiveGlyph.Text = completed >= total and "✓" or tostring(completed + 1)
         if not bridgeBuilt then
             objectiveHint.Text = "Подготавливаем остров…"
         elseif not player:GetAttribute("Fox") then
