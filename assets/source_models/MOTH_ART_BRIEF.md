@@ -214,3 +214,14 @@ The actual four PNG renders were downloaded and manually inspected. Geometry/UV/
 - the head/thorax/abdomen silhouette feels mechanical and segmented rather than plush and magical.
 
 Fifth corrective source pass: make review camera directions level with the moth's hover axis; broaden and round the wing silhouette while reducing spanwise length; enlarge crescent inlays; thicken and shorten the legs/feet; preserve the four separate wing groups and the ten-group report contract. New four-view renders and manual inspection are mandatory. The rig JSON still explicitly says its pivots are metadata hints, not a Roblox-ready animation rig.
+
+
+## Sixth review — render set 14921553142 (2026-11-24)
+
+Manual inspection of the latest actual four-view renders:
+- Front view is friendlier and the wing palette is more readable.
+- Side view still collapses into a horizontal-looking stack. The issue is in the review camera basis: the prior `track_quat` camera orientation did not explicitly preserve world Y as up, and the view vectors also introduced unnecessary elevation.
+- Gold crescent ornaments read as oversized detached horns rather than subtle markings on the wing membranes.
+- Body bands and limb forms still feel mechanical.
+
+Sixth corrective source pass: use the explicit Y-up camera basis already proven by the Fox Hero renderer; use level front/side/back directions. Re-render all four views before deciding on geometry changes. Next art pass after camera verification: redesign moon markings as small membrane inlays and soften body segmentation. The model remains rejected for art acceptance.
