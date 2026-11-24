@@ -72,7 +72,7 @@ class LunarMothHeroWorkflowTests(unittest.TestCase):
     def test_moth_uses_surface_moon_marks_and_plush_belly_instead_of_gold_rings(self):
         source = (ROOT / "tools" / "blender" / "build_moth_companion.py").read_text(encoding="utf-8")
         self.assertIn("outer_radius, inner_radius, inner_offset = 0.17, 0.132, 0.070", source)
-        self.assertIn("mark_z = root_z + 0.20 * t * t + 0.10 + 0.012", source)
+        self.assertIn("mark_z = root_z + 0.20 * t * t + 0.10 - 0.055 - 0.012", source)
         self.assertIn('sphere("MothAbdomen",(0,0.88,-0.282)', source)
         self.assertIn('abdomen_cream', source)
         self.assertNotIn('parts.append(abdomen_band(', source)
