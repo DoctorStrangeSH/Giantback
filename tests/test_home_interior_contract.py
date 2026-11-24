@@ -64,6 +64,22 @@ class HomeInteriorContractTests(unittest.TestCase):
         self.assertIn("visuals.DescendantAdded:Connect(updatePart)", HUD)
         self.assertIn("island.ChildAdded:Connect", HUD)
 
+    def test_home_has_three_companion_beds_and_a_shared_rest_anchor(self):
+        self.assertIn('add("PetBedFrame"', WORLD)
+        self.assertIn('add("PetBedCushion"', WORLD)
+        self.assertIn('add("PetBedPillow"', WORLD)
+        self.assertIn('add("PetToyBall"', WORLD)
+        self.assertIn('ensureAnchor("HomePetRestAnchor"', WORLD)
+        self.assertIn('local homePetRestAnchor = homeIsland:FindFirstChild("HomePetRestAnchor", true)', WORLD)
+
+    def test_companion_rest_is_owner_only_and_updates_bond(self):
+        self.assertIn('prompt(homePetRestAnchor, "Уголок питомцев", "Отдохнуть с компаньоном"', WORLD)
+        self.assertIn('if visitor.UserId ~= ownerUserId then', WORLD)
+        self.assertIn('visitorSession.companionRestReadyAt[companionId] = now + 45', WORLD)
+        self.assertIn('progressData.bond = math.clamp((progressData.bond or 0) + 4, 0, 1000)', WORLD)
+        self.assertIn('setCompanionMood(visitor, companionId, "Спокойствие")', WORLD)
+        self.assertIn('if visitorSession.online and not save(visitor) then', WORLD)
+
 
 if __name__ == "__main__":
     unittest.main()
