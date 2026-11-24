@@ -12,7 +12,7 @@ class ExpeditionJournalContractTests(unittest.TestCase):
         self.assertIn("local function renderExpeditions()", HUD)
         self.assertIn("Expeditions = renderExpeditions", HUD)
         self.assertIn('Expeditions = {"ДНЕВНИК"', HUD)
-        self.assertIn('{id = "Expeditions", title = "ДНЕВНИК"', HUD)
+        self.assertIn('{id = "Expeditions", title = "Дневник", icon = "journal"}', HUD)
 
     def test_grove_track_uses_existing_server_authoritative_discoveries(self):
         self.assertIn('id = "Grove", title = "СОЛНЕЧНАЯ РОЩА"', HUD)
@@ -59,7 +59,7 @@ class ExpeditionJournalContractTests(unittest.TestCase):
         self.assertIn('player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")', HUD)
         self.assertIn('player:GetAttribute(pet.id) == true', HUD)
         self.assertIn('tostring(discoveredMutations) .. "/" .. tostring(#mutationPets)', HUD)
-        self.assertIn('found and pet.glyph or "?"', HUD)
+        self.assertIn('createPictogram(item, "PetMark", found and pet.icon or "paw"', HUD)
         self.assertIn('"Неизвестная форма"', HUD)
         self.assertNotIn('event:FireServer("GrantMutation"', HUD)
         self.assertIn('player.AttributeChanged:Connect(refresh)', HUD)
