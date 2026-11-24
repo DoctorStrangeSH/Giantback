@@ -52,7 +52,8 @@ class HomeInteriorContractTests(unittest.TestCase):
     def test_respawn_and_owner_departure_do_not_strand_visitors(self):
         self.assertIn('player:SetAttribute("HomeInteriorActive", false)', WORLD)
         self.assertIn("otherSession.homeInteriorIsland == session.homeIsland", WORLD)
-        self.assertIn("Владелец острова вышел. Ты вернулся во двор.", WORLD)
+        self.assertIn("otherSession.homeSpawn and otherSession.homeSpawn.Parent", WORLD)
+        self.assertIn("Владелец острова вышел. Ты вернулся на свой остров.", WORLD)
 
     def test_client_hides_roof_only_while_inside_and_restores_it_outside(self):
         self.assertIn('player:GetAttributeChangedSignal("HomeInteriorActive")', HUD)
