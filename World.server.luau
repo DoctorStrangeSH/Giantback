@@ -840,7 +840,7 @@ local companionFeedFoods = {
 }
 local companionFeedOrder = {"Pumpkin", "Strawberry", "Cabbage", "Carrot"}
 
-local companionPlaySymbols = {"●", "◆", "✦"}
+local companionPlaySymbols = {"1", "2", "3"}
 local companionPlayCooldownSeconds = 25
 
 local function finishCompanionPlay(player, success, reason)
