@@ -1431,7 +1431,11 @@ local function renderPets()
             local bondRank = player:GetAttribute("Companion_" .. selectedPet.id .. "_BondRank") or "Знакомство"
             local mutationName = player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationName")
             local mutationRarity = player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationRarity")
-            local displayRarity = owned and type(mutationRarity) == "string" and mutationRarity ~= ""
+            local evolutionName = player:GetAttribute("Companion_" .. selectedPet.id .. "_EvolutionName")
+            local evolutionRarity = player:GetAttribute("Companion_" .. selectedPet.id .. "_EvolutionRarity")
+            local evolutionId = player:GetAttribute("Companion_" .. selectedPet.id .. "_Evolution")
+            local displayRarity = owned and type(evolutionRarity) == "string" and evolutionRarity ~= ""
+                and evolutionRarity or owned and type(mutationRarity) == "string" and mutationRarity ~= ""
                 and mutationRarity or selectedPet.rarity
             local rarityStyle = rarityStyles[displayRarity] or rarityStyles["Обычный"]
 
@@ -1511,7 +1515,9 @@ local function renderPets()
                     .. " · Уровень " .. tostring(level) .. (level >= 5 and " (максимум)" or " · " .. tostring(xp) .. "/" .. tostring(xpToNext) .. " XP")
                     .. " · Дружба " .. tostring(bond) .. "/1000 · " .. tostring(bondRank))
                     or "Уровень, взросление и дружба откроются после знакомства.", 68)
-            local mutationText = owned and type(mutationName) == "string" and mutationName ~= ""
+            local mutationText = owned and type(evolutionName) == "string" and evolutionName ~= ""
+                and (evolutionName .. " · Секретная эволюция")
+                or owned and type(mutationName) == "string" and mutationName ~= ""
                 and (mutationName .. " · " .. tostring(mutationRarity or "Необычный"))
                 or "Особая форма пока не открыта"
             addInfo("ОСОБАЯ ФОРМА", mutationText, 54)
@@ -1521,6 +1527,43 @@ local function renderPets()
                 or (selectedPet.id == "BrambleBun" or selectedPet.id == "MossTurtle" or selectedPet.id == "Glowcap" or selectedPet.id == "Dewdrop" or selectedPet.id == "Starling") and "Фестивальный спутник: развивай дружбу и открывай характер."
                 or "Призменное чутьё: помогает находить скрытые кристальные жилы."
             addInfo("ТАЛАНТ", owned and talentText or "Талант откроется после знакомства.", 54)
+
+            local evolutionRecipes = {
+                Fox = {name = "Страж древней рощи", items = {{"SunPetal", 15, "Солнечные лепестки"}, {"MoonSeed", 2, "Лунные семена"}, {"RootvaultEssence", 1, "Эссенция Корневой чащи"}}},
+                Moth = {name = "Оракул лунного света", items = {{"MoonPetal", 15, "Лунные лепестки"}, {"StarShard", 8, "Звёздные осколки"}, {"MoonSeed", 3, "Лунные семена"}}},
+                CrystalWisp = {name = "Владыка призмы", items = {{"CrystalShard", 20, "Кристальные осколки"}, {"CrystalSigil", 3, "Кристальные печати"}, {"VoidGeode", 1, "Пустотные жеоды"}}},
+            }
+            local evolutionRecipe = evolutionRecipes[selectedPet.id]
+            if evolutionRecipe then
+                local evolutionUnlocked = type(evolutionName) == "string" and evolutionName ~= ""
+                local resourceLines = {}
+                local enoughResources = true
+                for _, requirement in evolutionRecipe.items do
+                    local amount = math.max(0, math.floor(tonumber(player:GetAttribute("Resource_" .. requirement[1])) or 0))
+                    if amount < requirement[2] then enoughResources = false end
+                    table.insert(resourceLines, requirement[3] .. " " .. tostring(amount) .. "/" .. tostring(requirement[2]))
+                end
+                local evolutionReady = owned and equipped and level >= 5 and bond >= 900 and enoughResources and not evolutionUnlocked
+                local evolutionCard = card(body, "CompanionSecretEvolution", compactProfile and 146 or 136)
+                evolutionCard.BackgroundColor3 = evolutionUnlocked and Color3.fromRGB(235, 242, 224) or Color3.fromRGB(241, 235, 250)
+                label(evolutionCard, "EvolutionTitle", evolutionUnlocked and ("✦ " .. evolutionRecipe.name) or "СЕКРЕТНАЯ ЭВОЛЮЦИЯ",
+                    UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 8), 12, palette.ink, Enum.Font.GothamBlack)
+                local evolutionStatus = evolutionUnlocked and "Эта форма уже пробуждена."
+                    or ("Уровень " .. tostring(level) .. "/5 · Дружба " .. tostring(bond) .. "/900")
+                label(evolutionCard, "EvolutionStatus", evolutionStatus,
+                    UDim2.new(1, -20, 0, 18), UDim2.fromOffset(12, 32), 10, palette.muted)
+                label(evolutionCard, "EvolutionRecipe", table.concat(resourceLines, "  ·  "),
+                    UDim2.new(1, -20, 0, 30), UDim2.fromOffset(12, 52), 9, palette.ink)
+                local evolveButton = button(evolutionCard, "EvolveCompanion", evolutionUnlocked and "СЕКРЕТНАЯ ФОРМА ОТКРЫТА" or "ПРОБУДИТЬ ФОРМУ",
+                    UDim2.new(1, -24, 0, 34), UDim2.fromOffset(12, 94), palette.lilac)
+                evolveButton.TextSize = 10
+                evolveButton.Active = evolutionReady
+                evolveButton.AutoButtonColor = evolutionReady
+                evolveButton.BackgroundTransparency = evolutionReady and 0 or 0.42
+                evolveButton.Activated:Connect(function()
+                    if evolutionReady then event:FireServer("EvolveCompanion", selectedPet.id) end
+                end)
+            end
 
             local actionCard = card(body, "CompanionProfileActions", compactProfile and 96 or 86)
             local actionWidth = UDim2.new(0.5, -18, 0, 34)
