@@ -48,10 +48,10 @@ class HudResponsiveLayoutContractTests(unittest.TestCase):
 
     def test_every_pet_and_navigation_icon_has_a_native_pictogram(self):
         catalog_start = HUD.index("local function renderPets()")
-        catalog_end = HUD.find("\\nlocal function ", catalog_start + 30)
+        catalog_end = HUD.find("\nlocal function ", catalog_start + 30)
         pet_catalog = HUD[catalog_start:catalog_end]
         icon_start = HUD.index("local function createPictogram")
-        icon_end = HUD.find("\\nlocal function ", icon_start + 30)
+        icon_end = HUD.find("\nlocal function ", icon_start + 30)
         pictogram_factory = HUD[icon_start:icon_end]
 
         pet_icons = set(re.findall(r'icon\s*=\s*"([^"]+)"', pet_catalog))
