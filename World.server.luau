@@ -604,7 +604,7 @@ local companionLineageRecipes = {
 local function normalizeCompanionLineages(raw)
     raw = type(raw) == "table" and raw or {}
     local result = {}
-    for companionId in COMPANION_IDS do result[companionId] = nil end
+    for _, companionId in COMPANION_IDS do result[companionId] = nil end
     for recipeId, recipe in companionLineageRecipes do
         if raw[recipe.host] == recipeId then result[recipe.host] = recipeId end
     end
