@@ -1199,3 +1199,17 @@
 - [x] Add regression tests for scheduler timing, movement reset, client-only ownership, and all five species animation reactions.
 - [ ] Roblox Studio: observe idle curiosity frequency and animation readability for all five species at mobile and desktop camera distances.
 - [ ] Next: implement server-authoritative companion gift searches with cooldowns, biome-aware reward tables, and duplicate/ownership/range validation.
+
+
+## Server-authoritative companion gift searches (25.11.2026)
+
+- [x] Add a dedicated "Искать подарок" interaction to the equipped companion, separate from petting.
+- [x] Validate companion ownership and equipped state on the server; reject requests outside supported exploration biomes.
+- [x] Add biome-specific reward tables for Grove, Dusk, and Crystal Grotto using only existing inventory item IDs.
+- [x] Persist independent per-companion search cooldowns (180 seconds) across sessions.
+- [x] Scale the rare-find roll slightly with companion level and bond stage without allowing client-controlled reward values.
+- [x] Save inventory and cooldown together; roll both back if persistence fails.
+- [x] Grant companion XP only after the reward has been saved successfully.
+- [x] Add regression tests for remote routing, ownership/equip validation, biome gating, reward pools, cooldown persistence, rollback, and prompt wiring.
+- [ ] Roblox Studio: verify the second ProximityPrompt is readable on touch/gamepad/keyboard and does not collide with the petting prompt.
+- [ ] Roblox Studio: test biome boundaries and reward feedback in Grove, Dusk, and Crystal Grotto.
