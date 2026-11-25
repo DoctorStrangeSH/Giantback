@@ -21,7 +21,7 @@ class PetCollectionVisualContracts(unittest.TestCase):
         self.assertIn('if not expectedName then return false end', HUD)
 
     def test_compact_pet_cards_reserve_room_for_large_hero_previews(self):
-        self.assertIn('card(body, pet.id .. "Card", compact and 354 or 214)', HUD)
+        self.assertIn('card(body, pet.id .. "Card", compact and 394 or 254)', HUD)
         self.assertIn('UDim2.fromOffset(76, 76), UDim2.fromOffset(10, 10)', HUD)
         self.assertIn('compact and UDim2.fromOffset(12, 258)', HUD)
         self.assertIn('compact and UDim2.fromOffset(12, 300)', HUD)
@@ -57,6 +57,38 @@ class PetCollectionVisualContracts(unittest.TestCase):
     def test_legendary_rarity_badge_has_a_distinct_gold_finish(self):
         self.assertIn('if displayRarity == "Легендарный" then', HUD)
         self.assertIn('gradient(rarityBadge, Color3.fromRGB(255, 246, 213), Color3.fromRGB(246, 207, 126))', HUD)
+
+
+    def test_pet_cards_open_a_dedicated_profile_and_can_return_to_the_collection(self):
+        self.assertIn('local companionProfileSelected = nil', HUD)
+        self.assertIn('detailsButton = button(item, "OpenProfile", "ПОДРОБНЕЕ О ПИТОМЦЕ"', HUD)
+        self.assertIn('companionProfileSelected = pet.id', HUD)
+        self.assertIn('local back = button(body, "BackToPetCollection", "←  ВСЕ ПИТОМЦЫ"', HUD)
+        self.assertIn('companionProfileSelected = nil', HUD)
+        self.assertIn('refreshActiveTab()', HUD)
+
+    def test_pet_profile_shows_identity_progress_mutation_and_talent(self):
+        for section in ("CompanionProfileHero", "ProfileName", "ProfileRole", "ProfileRarityBadge",
+                        "ЗНАКОМСТВО", "ХАРАКТЕР И НАСТРОЕНИЕ", "РОСТ И ДРУЖБА",
+                        "ОСОБАЯ ФОРМА", "ТАЛАНТ"):
+            self.assertIn(section, HUD)
+        self.assertIn('CompanionProfilePreview', HUD)
+        self.assertIn('CompanionProfilePortrait', HUD)
+        self.assertIn('Companion_" .. selectedPet.id .. "_Bond', HUD)
+        self.assertIn('Companion_" .. selectedPet.id .. "_XP', HUD)
+
+    def test_pet_profile_keeps_all_four_existing_server_authoritative_care_actions(self):
+        self.assertIn('profileAction("CallCompanion"', HUD)
+        self.assertIn('event:FireServer(selectedPet.id)', HUD)
+        self.assertIn('event:FireServer("FeedCompanion", selectedPet.id)', HUD)
+        self.assertIn('event:FireServer("StartCompanionPlay", selectedPet.id)', HUD)
+        self.assertIn('event:FireServer("PetCompanion", selectedPet.id)', HUD)
+        self.assertIn('owned and equipped and foodCount > 0', HUD)
+
+    def test_pet_profile_has_mobile_and_desktop_sizing(self):
+        self.assertIn('compactProfile and 188 or 222', HUD)
+        self.assertIn('compactProfile and 132 or 164', HUD)
+        self.assertIn('compact and 394 or 254', HUD)
 
     def test_preview_is_not_allowed_to_replace_server_authoritative_actions(self):
         self.assertIn('event:FireServer("FeedCompanion", pet.id)', HUD)
