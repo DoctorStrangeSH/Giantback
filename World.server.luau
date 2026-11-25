@@ -2925,6 +2925,9 @@ local function searchCompanionGift(player, companionId)
     end
 
     session.economyBusy = false
+    local rarity = reward.weight <= 2 and "epic" or reward.weight <= 7 and "rare" or "common"
+    player:SetAttribute("CompanionGiftSearchResult", reward.itemId .. "|" .. tostring(amount) .. "|" .. rarity)
+    player:SetAttribute("CompanionGiftSearchSerial", (tonumber(player:GetAttribute("CompanionGiftSearchSerial")) or 0) + 1)
     local rewardNames = {
         SunPetal = "солнечные лепестки", Wood = "дерево", CarrotSeed = "семена моркови",
         StrawberrySeed = "семена клубники", MoonSeed = "лунное семя", MoonPetal = "лунные лепестки",
