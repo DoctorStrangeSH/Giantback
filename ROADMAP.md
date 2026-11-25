@@ -1231,6 +1231,18 @@
 
 
 
+## Hybrid breeding and incubation (25.11.2026)
+
+- [x] Add a server-owned breeding recipe module with three unique parent combinations and distinct hybrid results.
+- [x] Require both parents, level 3+ (level 4 for the legendary pair), friendship 400+ (500 for the legendary pair), and recipe-specific materials.
+- [x] Support up to three simultaneous incubations with server-generated egg IDs and real-time hatch timestamps.
+- [x] Persist incubation queues and discovered hybrid codex entries with allowlist normalization.
+- [x] Make material consumption, egg creation, hatching, and discovery persistence transactional with rollback on save failure.
+- [x] Add a responsive breeding laboratory to the companion collection with ingredient counts, parent requirements, incubator timers, hatch actions, and a hybrid discovery codex.
+- [x] Add regression coverage for recipes, eligibility, costs, rollback, persistence, incubation, hatch validation, and UI wiring.
+- [ ] Roblox Studio: test missing/unowned parents, low levels/bond, missing materials, full incubators, duplicate pair attempts, save failure, offline incubation, rejoin, and hatch completion.
+- [ ] Art integration: create approved, unique hybrid rigs and wire discovered hybrids into the active companion collection/follower system. Current milestone records discoveries in the research codex; it does not yet create a followable companion model.
+
 ## Genetic research and inherited companion traits (25.11.2026)
 
 - [x] Add three cross-species experiments: Fox + Moth, Fox + Crystal Wisp, and Moth + Crystal Wisp.
