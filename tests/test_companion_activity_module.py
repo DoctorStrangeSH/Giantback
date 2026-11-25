@@ -19,7 +19,7 @@ class CompanionActivityModuleTests(unittest.TestCase):
         self.assertIn('idleSeconds >= 12', ACTIVITY)
         self.assertIn('idleSeconds >= 45', ACTIVITY)
         self.assertIn('isLocal and id == "Fox"', ACTIVITY)
-        self.assertIn('local resting, sleeping, sniff = companionActivity.update(owner, id, now, moving, owner == player)', CLIENT)
+        self.assertIn('local resting, sleeping, sniff, attention = companionActivity.update(owner, id, now, moving, owner == player)', CLIENT)
         self.assertIn('if sniff then foxSniffUntil = os.clock() + 2.2 end', CLIENT)
         self.assertIn('setSleepIndicator(model, sleeping)', CLIENT)
 
@@ -28,6 +28,18 @@ class CompanionActivityModuleTests(unittest.TestCase):
         self.assertIn('companionActivity[owner] = nil', ACTIVITY)
         for personality in ('Любопытный', 'Озорной', 'Смелый', 'Застенчивый'):
             self.assertIn('["' + personality + '"]', ACTIVITY)
+
+
+    def test_attention_requests_are_local_cooldown_limited_and_personality_scaled(self):
+        self.assertIn('nextAttentionAt = now + math.random(16, 26)', ACTIVITY)
+        self.assertIn('if isLocal and not moving and now >= (activity.nextAttentionAt', ACTIVITY)
+        self.assertIn('local attentionWindows = {', ACTIVITY)
+        self.assertIn('["Любопытный"] = {34, 48}', ACTIVITY)
+        self.assertIn('["Озорной"] = {28, 40}', ACTIVITY)
+        self.assertIn('["Застенчивый"] = {48, 66}', ACTIVITY)
+        self.assertIn('activity.nextAttentionAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))', ACTIVITY)
+        self.assertIn('if attention and owner == player then showCompanionAttention(model, id) end', CLIENT)
+        self.assertIn('return resting, sleeping, sniff, attention', ACTIVITY)
 
     def test_module_is_read_only_to_server_and_does_not_animate(self):
         for forbidden in ('FireServer(', 'InvokeServer(', 'DataStoreService', 'Instance.new(', 'RenderStepped:Connect', ':SetAttribute('):
