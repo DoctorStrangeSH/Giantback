@@ -66,7 +66,8 @@ class CompanionEvolutionTests(unittest.TestCase):
         for form in ("VerdantGuardian", "LunarOracle", "PrismSovereign"):
             self.assertIn(form + " = {color =", APPEARANCE)
         self.assertIn('owner:GetAttribute("Companion_" .. companionId .. "_Evolution")', APPEARANCE)
-        self.assertIn("and evolutionId or mutationId", APPEARANCE)
+        self.assertIn("and lineageId or mutationId", APPEARANCE)
+        self.assertIn("and evolutionId or type(lineageId)", APPEARANCE)
         self.assertIn("if visual.legendary then", APPEARANCE)
 
 
