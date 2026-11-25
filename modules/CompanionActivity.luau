@@ -23,14 +23,17 @@ function CompanionActivity.new()
                 companionId = id,
                 idleSince = now,
                 nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay)),
+                nextAttentionAt = now + math.random(16, 26),
             }
             companionActivity[owner] = activity
         end
 
         local sniff = false
+        local attention = false
         if moving then
             activity.idleSince = now
             activity.nextCuriosityAt = now + math.random(9, 16)
+            activity.nextAttentionAt = now + math.random(24, 38)
         elseif isLocal and id == "Fox" and now >= (activity.nextCuriosityAt or now + 10) then
             sniff = true
             local personality = owner:GetAttribute("Companion_Fox_Personality")
@@ -47,10 +50,27 @@ function CompanionActivity.new()
             activity.nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))
         end
 
+        if isLocal and not moving and now >= (activity.nextAttentionAt or now + 20) then
+            attention = true
+            local personality = owner:GetAttribute("Companion_" .. id .. "_Personality")
+            local attentionWindows = {
+                ["Любопытный"] = {34, 48},
+                ["Озорной"] = {28, 40},
+                ["Смелый"] = {40, 55},
+                ["Застенчивый"] = {48, 66},
+            }
+            local window = attentionWindows[personality] or {38, 54}
+            local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_" .. id .. "_BondStage")) or 0, 0, 4)
+            local reduction = bondStage * 2
+            local minDelay = math.max(22, window[1] - reduction)
+            local maxDelay = math.max(minDelay + 2, window[2] - reduction)
+            activity.nextAttentionAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))
+        end
+
         local idleSeconds = now - activity.idleSince
         local resting = not moving and idleSeconds >= 12
         local sleeping = not moving and idleSeconds >= 45
-        return resting, sleeping, sniff
+        return resting, sleeping, sniff, attention
     end
 
     local function forget(owner)
