@@ -27,7 +27,8 @@ class CompanionGiftSearchTests(unittest.TestCase):
 
     def test_search_requires_player_inside_known_biome_and_uses_cooldown(self):
         self.assertIn('local function getCompanionGiftBiome(position)', WORLD)
-        self.assertIn('isPositionInsideBiome(root.Position, biomeName)', WORLD)
+        self.assertIn('local biomeName = getCompanionGiftBiome(root.Position)', WORLD)
+        self.assertIn('isPositionInsideBiome(position, biomeName)', WORLD)
         self.assertIn('local COMPANION_GIFT_COOLDOWN_SECONDS = 180', WORLD)
         self.assertIn('if readyAt > now then', WORLD)
         self.assertIn('session.companionGiftReadyAt[companionId] = now + COMPANION_GIFT_COOLDOWN_SECONDS', WORLD)
