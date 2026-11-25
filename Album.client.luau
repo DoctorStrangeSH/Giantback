@@ -885,6 +885,9 @@ local function follow(dt)
 
             local state = animationStates[model]
             if state then
+                state.sleeping = sleeping
+                state.mood = owner:GetAttribute("Companion_" .. id .. "_Mood") or "Спокойствие"
+                state.personality = owner:GetAttribute("Companion_" .. id .. "_Personality") or "Любопытный"
                 animateModelParts(model, state, phase, moving, resting)
             end
         end
