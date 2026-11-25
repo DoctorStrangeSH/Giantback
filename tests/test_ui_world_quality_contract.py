@@ -45,7 +45,7 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn("placementButtons.Rotate = rotate", HUD)
         self.assertIn("placementButtons.Cancel = cancel", HUD)
         self.assertIn("updatePlacementOverlayLayout()", HUD)
-        self.assertIn("updatePlacementOverlayLayout()\n        updatePlacementGhost()", HUD)
+        self.assertIn('camera:GetPropertyChangedSignal("ViewportSize"):Connect(updatePlacementOverlayLayout)', HUD)
         self.assertIn("Коснись свободного места на лужайке", HUD)
         self.assertIn('closeActivePanel()\n    placementOverlay = Instance.new("Frame")', HUD)
 
