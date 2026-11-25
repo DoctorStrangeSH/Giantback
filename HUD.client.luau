@@ -1220,6 +1220,8 @@ UserInputService.InputChanged:Connect(function(input, processed)
     end
 end)
 
+local buildingCategory = "Все"
+
 local function renderCity()
     local cityLevel = tonumber(player:GetAttribute("City_Level")) or 1
     local homeLevel = tonumber(player:GetAttribute("Home_Level")) or 1
@@ -1331,7 +1333,30 @@ local function renderCity()
         end
     end
     addInfo("Управление постройками", "Перемещай предметы без повторной оплаты или разбирай их. При разборе возвращается половина материалов.", 68)
+    local buildingCategories = {
+        Path = "Дорожки", WoodenPath = "Дорожки",
+        Cottage = "Здания", Warehouse = "Здания", Greenhouse = "Здания",
+        Fence = "Ограды", WhiteFence = "Ограды", StoneFence = "Ограды", HedgeFence = "Ограды",
+        FlowerBed = "Сад", GardenLamp = "Сад", Bench = "Сад", DecorativeTree = "Сад", GardenArch = "Сад", BirdBath = "Сад",
+    }
+    local filters = {"Все", "Здания", "Дорожки", "Ограды", "Сад"}
+    local filterCard = card(body, "BuildingCategoryFilters", compact and 108 or 54)
+    for index, category in ipairs(filters) do
+        local columns = compact and 3 or 5
+        local column = (index - 1) % columns
+        local row = math.floor((index - 1) / columns)
+        local filter = button(filterCard, "BuildingCategory_" .. tostring(index), category,
+            UDim2.new(1 / columns, -10, 0, 42), UDim2.new(column / columns, 5, 0, 6 + row * 48),
+            buildingCategory == category and palette.gold or palette.forestLight)
+        filter.TextSize = 12
+        filter.TextColor3 = buildingCategory == category and palette.ink or palette.white
+        filter.Activated:Connect(function()
+            buildingCategory = category
+            refreshActiveTab()
+        end)
+    end
     for _, definition in catalog do
+        if buildingCategory ~= "Все" and buildingCategories[definition.id] ~= buildingCategory then continue end
         local item = card(body, "Build_" .. definition.id, compact and 150 or 86)
         createPictogram(item, "BuildIcon", definition.icon, 38, palette.forestLight).Position =
             UDim2.fromOffset(12, compact and 8 or 20)
