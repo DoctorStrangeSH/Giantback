@@ -582,6 +582,35 @@ local function normalizeCompanionEvolutions(raw)
     return result
 end
 
+-- Cross-species resonance creates a persistent inherited trait on the active parent.
+-- The client may request a recipe ID only; all parents, costs and effects are allowlisted here.
+local companionLineageRecipes = {
+    LunarScent = {
+        id = "LunarScent", name = "Лунный нюх", host = "Fox", partner = "Moth",
+        description = "Лисёнок чувствует сумеречные тайники. Находки в Сумеречной долине +1.",
+        biome = "Dusk", items = {SunPetal = 8, MoonPetal = 8, StarShard = 3},
+    },
+    PrismNose = {
+        id = "PrismNose", name = "Призматический нюх", host = "Fox", partner = "CrystalWisp",
+        description = "Лисёнок замечает кристальные жилы. Находки в Кристальном гроте +1.",
+        biome = "CrystalGrotto", items = {SunPetal = 8, CrystalShard = 8, RootvaultEssence = 1},
+    },
+    PrismDust = {
+        id = "PrismDust", name = "Призматическая пыльца", host = "Moth", partner = "CrystalWisp",
+        description = "Моль усиливает кристальные находки. Находки в Кристальном гроте +1.",
+        biome = "CrystalGrotto", items = {MoonPetal = 8, CrystalShard = 8, MoonSeed = 3},
+    },
+}
+local function normalizeCompanionLineages(raw)
+    raw = type(raw) == "table" and raw or {}
+    local result = {}
+    for companionId in COMPANION_IDS do result[companionId] = nil end
+    for recipeId, recipe in companionLineageRecipes do
+        if raw[recipe.host] == recipeId then result[recipe.host] = recipeId end
+    end
+    return result
+end
+
 local function companionXpToNext(level)
     return 100 + math.max(0, level - 1) * 75
 end
@@ -798,6 +827,11 @@ local function syncCompanionProgress(player)
         player:SetAttribute("Companion_" .. id .. "_MutationName", mutationDefinition and mutationDefinition.name or "")
         player:SetAttribute("Companion_" .. id .. "_MutationRarity", mutationDefinition and mutationDefinition.rarity or "")
         player:SetAttribute("Companion_" .. id .. "_MutationBiome", mutationDefinition and mutationDefinition.biome or "")
+        local lineageId = session.companionLineages[id]
+        local lineageDefinition = lineageId and companionLineageRecipes[lineageId]
+        player:SetAttribute("Companion_" .. id .. "_Lineage", lineageId or "")
+        player:SetAttribute("Companion_" .. id .. "_LineageName", lineageDefinition and lineageDefinition.name or "")
+        player:SetAttribute("Companion_" .. id .. "_LineageDescription", lineageDefinition and lineageDefinition.description or "")
         local evolutionDefinition = companionEvolutionDefinitions[id]
         local evolutionId = session.companionEvolutions[id]
         player:SetAttribute("Companion_" .. id .. "_Evolution", evolutionId or "")
@@ -883,6 +917,62 @@ local function evolveCompanion(player, companionId)
         name = definition.name,
     })
     tip(player, "Невероятно! " .. pets[companionId] .. " открыл новую форму: " .. definition.name .. "!")
+end
+
+local function discoverCompanionLineage(player, recipeId)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") or not session.online then
+        return tip(player, "Исследовательская станция ждёт загрузки профиля.")
+    end
+    local recipe = type(recipeId) == "string" and companionLineageRecipes[recipeId] or nil
+    if not recipe then return end
+    if player:GetAttribute(recipe.host) ~= true or player:GetAttribute(recipe.partner) ~= true then
+        return tip(player, "Для опыта нужны оба питомца из рецепта.")
+    end
+    if player:GetAttribute("Companion") ~= recipe.host then
+        return tip(player, "Позови питомца, который будет принимать новый признак.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+    if session.companionLineages[recipe.host] == recipe.id then
+        return tip(player, "Этот наследственный признак уже открыт.")
+    end
+    local hostBond = session.companionProgress[recipe.host].bond
+    local partnerBond = session.companionProgress[recipe.partner].bond
+    if hostBond < 300 or partnerBond < 300 then
+        return tip(player, "Обоим питомцам нужна дружба не ниже 300.")
+    end
+    for itemId, amount in recipe.items do
+        if (session.inventory[itemId] or 0) < amount then
+            return tip(player, "Не хватает материала для опыта: " .. itemId .. " ×" .. tostring(amount) .. ".")
+        end
+    end
+
+    local previousLineage = session.companionLineages[recipe.host]
+    local previousAmounts = {}
+    session.economyBusy = true
+    for itemId, amount in recipe.items do
+        previousAmounts[itemId] = session.inventory[itemId]
+        session.inventory[itemId] -= amount
+    end
+    session.companionLineages[recipe.host] = recipe.id
+    syncInventory(player)
+    syncCompanionProgress(player)
+    if not save(player) then
+        session.companionLineages[recipe.host] = previousLineage
+        for itemId, amount in previousAmounts do session.inventory[itemId] = amount end
+        syncInventory(player)
+        syncCompanionProgress(player)
+        session.economyBusy = false
+        return tip(player, "Опыт не сохранился. Все материалы возвращены.")
+    end
+    session.economyBusy = false
+    event:FireClient(player, "CompanionLineageDiscovered", {
+        companionId = recipe.host,
+        partnerId = recipe.partner,
+        lineageId = recipe.id,
+        name = recipe.name,
+    })
+    tip(player, "Открыт наследственный признак: " .. recipe.name .. "!")
 end
 
 local function awardCompanionXp(player, companionId, amount)
@@ -2299,6 +2389,7 @@ save = function(player)
 
         local companionProgressSnapshot = normalizeCompanionProgress(session.companionProgress)
         local companionEvolutionSnapshot = normalizeCompanionEvolutions(session.companionEvolutions)
+        local companionLineageSnapshot = normalizeCompanionLineages(session.companionLineages)
 
         local ok, err = pcall(function()
             store:UpdateAsync(tostring(player.UserId), function(old)
@@ -2376,6 +2467,7 @@ save = function(player)
                     savedCompanion.personality = session.companionPersonalities[companionId]
                     savedCompanion.mutation = session.companionMutations[companionId]
                     savedCompanion.evolution = companionEvolutionSnapshot[companionId]
+                    savedCompanion.lineage = companionLineageSnapshot[companionId]
                     savedCompanions[companionId] = savedCompanion
                 end
                 old.companions = savedCompanions
@@ -2448,6 +2540,7 @@ local function init(player)
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
         companionMutations = normalizeCompanionMutations(nil),
         companionEvolutions = normalizeCompanionEvolutions(nil),
+        companionLineages = normalizeCompanionLineages(nil),
         companionDiscoveryBiomes = {},
         companionFeedReadyAt = {},
         companionPetReadyAt = {},
@@ -2659,6 +2752,12 @@ local function init(player)
                 savedEvolutions[id] = saved.evolution
             end
             session.companionEvolutions = normalizeCompanionEvolutions(savedEvolutions)
+            local savedLineages = {}
+            for _, id in COMPANION_IDS do
+                local saved = type(savedCompanions[id]) == "table" and savedCompanions[id] or {}
+                savedLineages[id] = saved.lineage
+            end
+            session.companionLineages = normalizeCompanionLineages(savedLineages)
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     else
@@ -3042,6 +3141,9 @@ local function searchCompanionGift(player, companionId)
     local bondStage = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. companionId .. "_BondStage")) or 0), 0, 4)
     local reward, amount = rollCompanionGift(biomeName, level, bondStage)
     if not reward or not table.find(inventoryKeys, reward.itemId) then return end
+    local lineageId = session.companionLineages[companionId]
+    local lineage = lineageId and companionLineageRecipes[lineageId]
+    if lineage and lineage.biome == biomeName then amount += 1 end
 
     local previousAmount = math.max(0, math.floor(tonumber(session.inventory[reward.itemId]) or 0))
     local previousReadyAt = readyAt
@@ -3298,6 +3400,11 @@ end
 
     if action == "EvolveCompanion" then
         evolveCompanion(player, payload)
+        return
+    end
+
+    if action == "DiscoverCompanionLineage" then
+        discoverCompanionLineage(player, payload)
         return
     end
 
