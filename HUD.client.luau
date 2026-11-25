@@ -2225,6 +2225,81 @@ local function renderExpeditions()
         end
     end)
 
+    -- Companion gift discoveries are a separate, persistent collection.
+    local giftEntries = {
+        {id = "SunPetal", name = "Солнечный лепесток", biome = "Grove", biomeName = "Солнечная роща", icon = "leaf", color = palette.gold},
+        {id = "Wood", name = "Сухая веточка", biome = "Grove", biomeName = "Солнечная роща", icon = "wood", color = palette.coral},
+        {id = "CarrotSeed", name = "Семена моркови", biome = "Grove", biomeName = "Солнечная роща", icon = "seed", color = palette.forestLight},
+        {id = "StrawberrySeed", name = "Семена клубники", biome = "Grove", biomeName = "Солнечная роща", icon = "berry", color = palette.coral},
+        {id = "MoonSeed", name = "Лунное семя", biome = "Grove", biomeName = "Солнечная роща", icon = "moon", color = palette.lilac},
+        {id = "MoonPetal", name = "Лунный лепесток", biome = "Dusk", biomeName = "Сумеречная долина", icon = "leaf", color = palette.lilac},
+        {id = "StarShard", name = "Звёздный осколок", biome = "Dusk", biomeName = "Сумеречная долина", icon = "star", color = palette.gold},
+        {id = "Stone", name = "Гладкий камешек", biome = "Dusk", biomeName = "Сумеречная долина", icon = "stone", color = palette.muted},
+        {id = "CrystalShard", name = "Кристальный осколок", biome = "Dusk", biomeName = "Сумеречная долина", icon = "crystal", color = palette.water},
+        {id = "CrystalSigil", name = "Кристальная печать", biome = "CrystalGrotto", biomeName = "Кристальный грот", icon = "crystal", color = palette.water},
+        {id = "PrismSeed", name = "Призматическое семя", biome = "CrystalGrotto", biomeName = "Кристальный грот", icon = "seed", color = palette.lilac},
+        {id = "VoidGeode", name = "Пустотная жеода", biome = "CrystalGrotto", biomeName = "Кристальный грот", icon = "crystal", color = palette.lilac},
+    }
+    local foundGiftCount = 0
+    for _, gift in giftEntries do
+        if player:GetAttribute("CompanionGiftFound_" .. gift.id) == true then foundGiftCount += 1 end
+    end
+    addInfo("КОЛЛЕКЦИЯ НАХОДОК ПИТОМЦЕВ",
+        "Питомцы приносят разные сокровища из исследованных земель. Впервые найденный предмет навсегда записывается сюда.",
+        76)
+    local giftHeader = card(body, "CompanionGiftCollectionHeader", 72)
+    giftHeader.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
+    createPictogram(giftHeader, "GiftCollectionIcon", "chest", 34, palette.gold).Position = UDim2.fromOffset(14, 18)
+    label(giftHeader, "GiftCollectionTitle", "СОКРОВИЩА ДРУЗЕЙ",
+        UDim2.new(1, -128, 0, 22), UDim2.fromOffset(58, 10), 12, palette.ink, Enum.Font.GothamBlack)
+    label(giftHeader, "GiftCollectionHint", "Уникальные находки из трёх биомов",
+        UDim2.new(1, -128, 0, 18), UDim2.fromOffset(58, 34), 10, palette.muted)
+    local giftCount = label(giftHeader, "GiftCollectionCount",
+        tostring(foundGiftCount) .. "/" .. tostring(#giftEntries),
+        UDim2.fromOffset(54, 28), UDim2.new(1, -62, 0.5, -14), 14, palette.forest, Enum.Font.GothamBlack)
+    giftCount.TextXAlignment = Enum.TextXAlignment.Center
+
+    local giftGroups = {
+        {id = "Grove", title = "СОЛНЕЧНАЯ РОЩА"},
+        {id = "Dusk", title = "СУМЕРЕЧНАЯ ДОЛИНА"},
+        {id = "CrystalGrotto", title = "КРИСТАЛЬНЫЙ ГРОТ"},
+    }
+    for _, group in giftGroups do
+        local groupCount = 0
+        for _, gift in giftEntries do
+            if gift.biome == group.id and player:GetAttribute("CompanionGiftFound_" .. gift.id) == true then
+                groupCount += 1
+            end
+        end
+        local groupHeader = card(body, "GiftGroup_" .. group.id, 36)
+        groupHeader.BackgroundColor3 = palette.paperDark
+        label(groupHeader, "GroupTitle", group.title,
+            UDim2.new(1, -70, 1, 0), UDim2.fromOffset(12, 0), 10, palette.ink, Enum.Font.GothamBlack)
+        label(groupHeader, "GroupCount", tostring(groupCount) .. "/"
+            .. tostring((group.id == "Grove" and 5) or (group.id == "Dusk" and 4) or 3),
+            UDim2.fromOffset(48, 36), UDim2.new(1, -56, 0, 0), 11, palette.forest, Enum.Font.GothamBlack)
+        for _, gift in giftEntries do
+            if gift.biome == group.id then
+                local found = player:GetAttribute("CompanionGiftFound_" .. gift.id) == true
+                local item = card(body, "GiftDiscovery_" .. gift.id, 64)
+                item.BackgroundColor3 = found and Color3.fromRGB(235, 242, 224) or palette.paper
+                createPictogram(item, "GiftIcon", found and gift.icon or "lock", 28,
+                    found and gift.color or palette.muted).Position = UDim2.fromOffset(13, 18)
+                label(item, "GiftName", found and gift.name or "Неизвестная находка",
+                    UDim2.new(1, -58, 0, 20), UDim2.fromOffset(52, 7), 12, palette.ink, Enum.Font.GothamBold)
+                local foundPetId = player:GetAttribute("CompanionGiftPet_" .. gift.id)
+                local foundPetName = foundPetId and pets[foundPetId] or nil
+                local foundBiome = player:GetAttribute("CompanionGiftBiome_" .. gift.id)
+                local hint = found and ("Нашёл: " .. (foundPetName or "питомец")
+                    .. " • " .. ((foundBiome == "Grove" and "Солнечная роща")
+                        or (foundBiome == "Dusk" and "Сумеречная долина") or "Кристальный грот"))
+                    or ("Исследуй биом: " .. gift.biomeName)
+                label(item, "GiftHint", hint,
+                    UDim2.new(1, -58, 0, 22), UDim2.fromOffset(52, 31), 9, palette.muted)
+            end
+        end
+    end
+
     -- The pet mutation codex reads only server-replicated, saved companion discoveries.
     -- A companion has one permanently rolled mutation, not sixteen collectible copies.
     local mutationPets = {
