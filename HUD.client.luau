@@ -3072,7 +3072,11 @@ local function finishCompanionPlay(payload)
 end
 
 event.OnClientEvent:Connect(function(message, payload)
-    if message == "CompanionEvolved" and type(payload) == "table" then
+    if message == "CompanionLineageDiscovered" and type(payload) == "table" then
+        showToast("✦ Новый генетический признак: " .. tostring(payload.name or "Неизвестный признак") .. "!")
+        refresh()
+        return
+    elseif message == "CompanionEvolved" and type(payload) == "table" then
         showToast("✦ Новая форма открыта: " .. tostring(payload.name or "Секретная эволюция") .. "!")
         refresh()
         return
