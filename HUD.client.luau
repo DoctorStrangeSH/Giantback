@@ -1413,6 +1413,135 @@ local function renderPets()
         ["Сезонный"] = {color = Color3.fromRGB(207, 119, 75), tint = Color3.fromRGB(255, 231, 207), text = Color3.fromRGB(139, 74, 42)},
     }
 
+    if not companionProfileSelected then
+        local breedingRecipes = {
+            {id = "LunarFox", name = "Лунолис", rarity = "Эпический", parents = {"Fox", "Moth"}, level = 3, bond = 400, duration = 90,
+                items = {{"SunPetal", 10, "Солнечные лепестки"}, {"MoonPetal", 10, "Лунные лепестки"}, {"MoonSeed", 2, "Лунные семена"}},
+                traits = "Лунное зрение · Лесной нюх"},
+            {id = "PrismFox", name = "Призмолис", rarity = "Эпический", parents = {"Fox", "CrystalWisp"}, level = 3, bond = 400, duration = 120,
+                items = {{"SunPetal", 10, "Солнечные лепестки"}, {"CrystalShard", 10, "Кристальные осколки"}, {"RootvaultEssence", 1, "Эссенция Корневой чащи"}},
+                traits = "Призматический слух · Следопыт жил"},
+            {id = "Starwing", name = "Звёздокрыл", rarity = "Легендарный", parents = {"Moth", "CrystalWisp"}, level = 4, bond = 500, duration = 180,
+                items = {{"MoonPetal", 12, "Лунные лепестки"}, {"CrystalShard", 12, "Кристальные осколки"}, {"StarShard", 5, "Звёздные осколки"}},
+                traits = "Звёздная пыльца · Эхо кристалла"},
+        }
+        local parentNames = {Fox = "Лисёнок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк"}
+        local activeEggs = {}
+        for index = 1, 3 do
+            local eggId = player:GetAttribute("CompanionBreeding_Egg" .. index .. "_Id")
+            local recipeId = player:GetAttribute("CompanionBreeding_Egg" .. index .. "_Recipe")
+            if type(eggId) == "string" and eggId ~= "" and type(recipeId) == "string" and recipeId ~= "" then
+                activeEggs[recipeId] = {
+                    id = eggId,
+                    hatchAt = math.max(0, tonumber(player:GetAttribute("CompanionBreeding_Egg" .. index .. "_HatchAt")) or 0),
+                }
+            end
+        end
+        local lab = card(body, "CompanionBreedingLab", compact and 124 or 112)
+        lab.BackgroundColor3 = Color3.fromRGB(232, 239, 224)
+        label(lab, "BreedingEyebrow", "ГЕНЕТИЧЕСКАЯ ЛАБОРАТОРИЯ",
+            UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 8), 10, palette.forest, Enum.Font.GothamBlack)
+        label(lab, "BreedingTitle", "Создай неизвестного гибрида",
+            UDim2.new(1, -24, 0, 25), UDim2.fromOffset(12, 27), compact and 15 or 17, palette.ink, Enum.Font.GothamBlack)
+        label(lab, "BreedingSummary", "Подружи родителей, собери редкие материалы и выведи яйцо. До 3 инкубаторов одновременно.",
+            UDim2.new(1, -24, 0, compact and 42 or 34), UDim2.fromOffset(12, 56), 10, palette.muted)
+
+        local incubator = card(body, "HybridIncubators", compact and 76 or 68)
+        incubator.BackgroundColor3 = Color3.fromRGB(241, 234, 250)
+        local activeCount = math.clamp(math.floor(tonumber(player:GetAttribute("CompanionBreeding_EggCount")) or 0), 0, 3)
+        label(incubator, "IncubatorTitle", "ИНКУБАТОРЫ  " .. tostring(activeCount) .. "/3",
+            UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 8), 10, palette.ink, Enum.Font.GothamBlack)
+        if activeCount == 0 then
+            label(incubator, "IncubatorEmpty", "Пока пусто. Выбери пару ниже, чтобы начать первое скрещивание.",
+                UDim2.new(1, -24, 0, 30), UDim2.fromOffset(12, 30), 10, palette.muted)
+        else
+            for _, recipe in breedingRecipes do
+                local egg = activeEggs[recipe.id]
+                if egg then
+                    local remaining = math.max(0, egg.hatchAt - os.time())
+                    local hatchButton = button(incubator, "Hatch_" .. recipe.id,
+                        remaining > 0 and ("РАЗВИВАЕТСЯ · " .. tostring(math.ceil(remaining)) .. " сек.") or ("ВЫЛУПИТЬ · " .. recipe.name),
+                        UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 30), remaining > 0 and palette.muted or palette.forest)
+                    hatchButton.TextSize = 10
+                    hatchButton.Active = remaining <= 0
+                    hatchButton.AutoButtonColor = remaining <= 0
+                    hatchButton.Activated:Connect(function()
+                        if remaining <= 0 then event:FireServer("HatchHybridEgg", egg.id) end
+                    end)
+                    break
+                end
+            end
+        end
+
+        for _, recipe in breedingRecipes do
+            local ownedParents, parentsReady = true, true
+            local parentLabels = {}
+            for _, parentId in recipe.parents do
+                local owned = player:GetAttribute(parentId) == true
+                local level = math.max(1, math.floor(tonumber(player:GetAttribute("Companion_" .. parentId .. "_Level")) or 1))
+                local bond = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. parentId .. "_Bond")) or 0))
+                ownedParents = ownedParents and owned
+                parentsReady = parentsReady and owned and level >= recipe.level and bond >= recipe.bond
+                table.insert(parentLabels, parentNames[parentId] or parentId)
+            end
+            local ingredientsReady = true
+            local ingredientLines = {}
+            for _, requirement in recipe.items do
+                local amount = math.max(0, math.floor(tonumber(player:GetAttribute("Resource_" .. requirement[1])) or 0))
+                if amount < requirement[2] then ingredientsReady = false end
+                table.insert(ingredientLines, requirement[3] .. " " .. tostring(amount) .. "/" .. tostring(requirement[2]))
+            end
+            local discovered = player:GetAttribute("CompanionBreeding_Discovered_" .. recipe.id) == true
+            local egg = activeEggs[recipe.id]
+            local canStart = parentsReady and ingredientsReady and not discovered and not egg and activeCount < 3
+            local recipeCard = card(body, "BreedRecipe_" .. recipe.id, compact and 202 or 178)
+            local style = rarityStyles[recipe.rarity] or rarityStyles["Эпический"]
+            recipeCard.BackgroundColor3 = discovered and Color3.fromRGB(232, 241, 225) or style.tint:Lerp(palette.paper, 0.45)
+            local title = label(recipeCard, "HybridName", recipe.name .. " · " .. recipe.rarity,
+                UDim2.new(1, -24, 0, 22), UDim2.fromOffset(12, 8), 13, palette.ink, Enum.Font.GothamBlack)
+            title.TextTruncate = Enum.TextTruncate.AtEnd
+            label(recipeCard, "HybridParents", "Родители: " .. table.concat(parentLabels, " + "),
+                UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 33), 10, palette.muted)
+            label(recipeCard, "HybridRequirements", "Уровень " .. tostring(recipe.level) .. " · Дружба " .. tostring(recipe.bond) .. " у каждого",
+                UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 53), 10, palette.muted)
+            label(recipeCard, "HybridIngredients", table.concat(ingredientLines, "  ·  "),
+                UDim2.new(1, -24, 0, compact and 38 or 34), UDim2.fromOffset(12, 74), 9, palette.ink)
+            label(recipeCard, "HybridTraits", "Наследие: " .. recipe.traits,
+                UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, compact and 116 or 110), 9, palette.forest)
+            local buttonText = discovered and "ГИБРИД ОТКРЫТ"
+                or egg and "УЖЕ В ИНКУБАТОРЕ"
+                or not ownedParents and "СНАЧАЛА НАЙДИ ОБОИХ"
+                or not parentsReady and "ПОВЫСЬ УРОВЕНЬ И ДРУЖБУ"
+                or not ingredientsReady and "НЕ ХВАТАЕТ МАТЕРИАЛОВ"
+                or activeCount >= 3 and "НЕТ СВОБОДНОГО ИНКУБАТОРА"
+                or ("СКРЕСТИТЬ · " .. tostring(recipe.duration) .. " СЕК.")
+            local breedButton = button(recipeCard, "Breed_" .. recipe.id, buttonText,
+                UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, compact and 154 or 142),
+                canStart and palette.forest or palette.muted)
+            breedButton.TextSize = 9
+            breedButton.Active = canStart
+            breedButton.AutoButtonColor = canStart
+            breedButton.BackgroundTransparency = canStart and 0 or 0.38
+            breedButton.Activated:Connect(function()
+                if canStart then event:FireServer("BreedCompanions", recipe.id) end
+            end)
+        end
+
+        local discoveries = {}
+        for _, recipe in breedingRecipes do
+            if player:GetAttribute("CompanionBreeding_Discovered_" .. recipe.id) == true then
+                table.insert(discoveries, recipe.name .. " (" .. recipe.rarity .. ")")
+            end
+        end
+        local codex = card(body, "HybridDiscoveryCodex", compact and 72 or 64)
+        codex.BackgroundColor3 = Color3.fromRGB(250, 242, 222)
+        label(codex, "HybridCodexTitle", "ЖУРНАЛ ГИБРИДОВ · " .. tostring(#discoveries) .. "/3",
+            UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 8), 10, palette.ink, Enum.Font.GothamBlack)
+        label(codex, "HybridCodexEntries", #discoveries > 0 and table.concat(discoveries, "  ·  ")
+            or "Неизвестные силуэты ждут открытия. Все результаты сохраняются в коллекции исследований.",
+            UDim2.new(1, -24, 0, compact and 36 or 28), UDim2.fromOffset(12, 30), 10, palette.muted)
+    end
+
     if companionProfileSelected then
         local selectedPet
         for _, candidate in pets do
@@ -3075,7 +3204,15 @@ local function finishCompanionPlay(payload)
 end
 
 event.OnClientEvent:Connect(function(message, payload)
-    if message == "CompanionLineageDiscovered" and type(payload) == "table" then
+    if message == "CompanionEggCreated" and type(payload) == "table" then
+        showToast("🥚 Яйцо гибрида «" .. tostring(payload.name or "Неизвестный гибрид") .. "» отправлено в инкубатор!")
+        refresh()
+        return
+    elseif message == "CompanionHybridDiscovered" and type(payload) == "table" then
+        showToast("✦ Новый гибрид открыт: " .. tostring(payload.name or "Неизвестный гибрид") .. "!")
+        refresh()
+        return
+    elseif message == "CompanionLineageDiscovered" and type(payload) == "table" then
         showToast("✦ Новый генетический признак: " .. tostring(payload.name or "Неизвестный признак") .. "!")
         refresh()
         return
