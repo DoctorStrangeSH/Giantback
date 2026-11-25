@@ -9,7 +9,7 @@ HUD = (ROOT / "HUD.client.luau").read_text(encoding="utf-8")
 class CompanionMobileCardLayoutTests(unittest.TestCase):
     def test_companion_cards_expand_and_reflow_below_mobile_breakpoint(self):
         self.assertIn('local compact = gui.AbsoluteSize.X < 620', HUD)
-        self.assertIn('compact and 354 or 214', HUD)
+        self.assertIn('compact and 394 or 254', HUD)
         self.assertIn('compact and UDim2.new(1, hasHeroPreview and -188 or -168, 0, 58)', HUD)
         self.assertIn('rarityBadge.Position = UDim2.new(1, -92, 0, 12)', HUD)
         self.assertIn('compact and UDim2.new(1, -28, 0, 32)', HUD)
