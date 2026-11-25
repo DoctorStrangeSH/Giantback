@@ -169,8 +169,16 @@ class IslandBuildingPlacementContractTests(unittest.TestCase):
         self.assertIn('placedMessages[decorationId]', WORLD)
         self.assertIn('Cottage = {Wood = 4, Stone = 3}', WORLD)
         self.assertIn('beginIslandPlacement(definition.id)', HUD)
-        self.assertIn('action.TextSize = compact and 9 or 10', HUD)
+        self.assertIn('action.TextSize = compact and 11 or 10', HUD)
 
+
+    def test_catalog_explains_unavailable_buildings_before_placement(self):
+        self.assertIn('card(body, "Build_" .. definition.id, compact and 150 or 86)', HUD)
+        self.assertIn('compact and UDim2.new(1, -24, 0, 42)', HUD)
+        self.assertIn('elseif decorationCount >= 16 then', HUD)
+        self.assertIn('action.Text = "НЕТ СВОБОДНЫХ МЕСТ"', HUD)
+        self.assertIn('elseif wood < placementCosts[definition.id].Wood or stone < placementCosts[definition.id].Stone then', HUD)
+        self.assertIn('action.Text = "НЕ ХВАТАЕТ МАТЕРИАЛОВ"', HUD)
 
     def test_garden_lamp_is_placeable_interactive_and_persistent(self):
         self.assertIn('GardenLamp = {Wood = 6, Stone = 4}', WORLD)
