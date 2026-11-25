@@ -934,7 +934,7 @@ local function discoverCompanionLineage(player, recipeId)
     end
     if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
     if session.companionLineages[recipe.host] then
-        return tip(player, "У этого питомца уже выбран наследственный признак. Второй путь изменит его наследие, поэтому сначала изучи последствия.")
+        return tip(player, "У этого питомца уже выбран наследственный признак. Для каждого питомца доступен только один путь наследия.")
     end
     local hostBond = session.companionProgress[recipe.host].bond
     local partnerBond = session.companionProgress[recipe.partner].bond
