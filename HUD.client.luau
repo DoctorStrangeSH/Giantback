@@ -1375,21 +1375,59 @@ end
 
 local function renderPets()
     local pets = {
-        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "fox"},
-        {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "moth"},
-        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "crystal"},
-        {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "pumpkin"},
-        {id = "BrambleBun", name = "Колючка", role = "Редкий • Лесной ёжик", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "paw"},
-        {id = "MossTurtle", name = "Мохопанцирь", role = "Редкий • Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "turtle"},
-        {id = "Glowcap", name = "Светошляп", role = "Эпический • Грибной огонёк", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "mushroom"},
-        {id = "Dewdrop", name = "Росинка", role = "Эпический • Капля ручья", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "droplet"},
-        {id = "Starling", name = "Звёздокрыл", role = "Легендарный • Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "owl"},
+        {id = "Fox", name = "Лисёнок", role = "Разведчик", rarity = "Обычный", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "fox"},
+        {id = "Moth", name = "Лунная моль", role = "Хранитель света", rarity = "Редкий", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "moth"},
+        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", rarity = "Эпический", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "crystal"},
+        {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", rarity = "Сезонный", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "pumpkin"},
+        {id = "BrambleBun", name = "Колючка", role = "Лесной ёжик", rarity = "Редкий", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "paw"},
+        {id = "MossTurtle", name = "Мохопанцирь", role = "Тихий хранитель", rarity = "Редкий", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "turtle"},
+        {id = "Glowcap", name = "Светошляп", role = "Грибной огонёк", rarity = "Эпический", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "mushroom"},
+        {id = "Dewdrop", name = "Росинка", role = "Капля ручья", rarity = "Эпический", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "droplet"},
+        {id = "Starling", name = "Звёздокрыл", role = "Ночной совёнок", rarity = "Легендарный", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "owl"},
     }
     local compact = gui.AbsoluteSize.X < 620
+    local rarityStyles = {
+        ["Обычный"] = {color = Color3.fromRGB(137, 158, 132), tint = Color3.fromRGB(231, 239, 222), text = Color3.fromRGB(66, 91, 69)},
+        ["Редкий"] = {color = Color3.fromRGB(86, 158, 205), tint = Color3.fromRGB(222, 239, 249), text = Color3.fromRGB(43, 103, 143)},
+        ["Эпический"] = {color = Color3.fromRGB(151, 112, 204), tint = Color3.fromRGB(239, 228, 250), text = Color3.fromRGB(99, 67, 145)},
+        ["Легендарный"] = {color = Color3.fromRGB(218, 157, 55), tint = Color3.fromRGB(255, 239, 194), text = Color3.fromRGB(132, 83, 22)},
+        ["Сезонный"] = {color = Color3.fromRGB(207, 119, 75), tint = Color3.fromRGB(255, 231, 207), text = Color3.fromRGB(139, 74, 42)},
+    }
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
         local equipped = player:GetAttribute("Companion") == pet.id
         local item = card(body, pet.id .. "Card", compact and 354 or 214)
+        local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
+        local displayRarity = owned and type(mutationRarity) == "string" and mutationRarity ~= ""
+            and mutationRarity or pet.rarity
+        local rarityStyle = rarityStyles[displayRarity] or rarityStyles["Обычный"]
+        item.BackgroundColor3 = rarityStyle.tint:Lerp(palette.paper, 0.72)
+        local rarityBorder = stroke(item, rarityStyle.color, displayRarity == "Легендарный" and 0.08 or 0.32,
+            displayRarity == "Легендарный" and 2 or 1.35)
+        local rarityRail = Instance.new("Frame")
+        rarityRail.Name = "RarityAccent"
+        rarityRail.Size = UDim2.new(0, 5, 1, -22)
+        rarityRail.Position = UDim2.fromOffset(0, 11)
+        rarityRail.BackgroundColor3 = rarityStyle.color
+        rarityRail.BorderSizePixel = 0
+        rarityRail.Parent = item
+        corner(rarityRail, 5)
+        local rarityBadge = Instance.new("Frame")
+        rarityBadge.Name = "RarityBadge"
+        rarityBadge.Size = UDim2.fromOffset(82, 23)
+        rarityBadge.Position = UDim2.new(1, -92, 0, 12)
+        rarityBadge.BackgroundColor3 = rarityStyle.tint
+        rarityBadge.BorderSizePixel = 0
+        rarityBadge.Parent = item
+        corner(rarityBadge, 9)
+        stroke(rarityBadge, rarityStyle.color, 0.18, 1)
+        if displayRarity == "Легендарный" then
+            gradient(rarityBadge, Color3.fromRGB(255, 246, 213), Color3.fromRGB(246, 207, 126))
+        end
+        local rarityText = label(rarityBadge, "RarityText", string.upper(displayRarity),
+            UDim2.new(1, -8, 1, 0), UDim2.fromOffset(4, 0), 9, rarityStyle.text, Enum.Font.GothamBold)
+        rarityText.TextXAlignment = Enum.TextXAlignment.Center
+        rarityText.TextYAlignment = Enum.TextYAlignment.Center
         local iconPlate = Instance.new("Frame")
         iconPlate.Name = "IconPlate"
         iconPlate.Size = UDim2.fromOffset(58, 58)
@@ -1419,7 +1457,7 @@ local function renderPets()
         )
         iconPlate.Visible = not hasHeroPreview
         local nameLabel = label(item, "Name", pet.name .. " • " .. pet.role,
-            compact and UDim2.new(1, -116, 0, 58) or UDim2.new(1, hasHeroPreview and -230 or -210, 0, 24),
+            compact and UDim2.new(1, hasHeroPreview and -188 or -168, 0, 58) or UDim2.new(1, hasHeroPreview and -230 or -210, 0, 24),
             UDim2.fromOffset(hasHeroPreview and 96 or 76, 8), 14, palette.ink, Enum.Font.GothamBold)
         nameLabel.TextWrapped = true
         nameLabel.TextYAlignment = Enum.TextYAlignment.Center
@@ -1447,7 +1485,6 @@ local function renderPets()
         local companionXP = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_XP")) or 0))
         local companionXPToNext = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_XPToNext")) or 0))
         local mutationName = player:GetAttribute("Companion_" .. pet.id .. "_MutationName")
-        local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
         local growthStage = companionLevel >= 5 and "ВЗРОСЛЫЙ"
             or companionLevel >= 3 and "ПОДРОСТОК" or "МАЛЫШ"
         local levelText = companionLevel >= 5 and "УР. 5 · МАКСИМУМ"
