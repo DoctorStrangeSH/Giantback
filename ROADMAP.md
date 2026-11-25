@@ -1148,3 +1148,15 @@
 - [x] Add regression tests for complete rarity metadata, badge visibility, mobile title spacing, mutation override, and Legendary styling.
 - [x] CI: 623 tests passed; source asset validation, Roblox Place build, generated-place validation, and artifact upload succeeded (25.11.2026).
 - [ ] Roblox Studio: inspect badge readability, card contrast, and text wrapping on 320/375/414 px mobile widths and desktop.
+
+
+## Companion profile screen (25.11.2026)
+
+- [x] Add a dedicated pet profile view opened from every collection card, with a clear return-to-collection action.
+- [x] Show the approved 3D companion preview when the pet is owned; retain a native portrait/locked fallback otherwise.
+- [x] Present species identity, role, base or mutation rarity, mood/personality, growth stage, level/XP, friendship, bond rank, mutation, and talent in readable sections.
+- [x] Keep call/equip, feed, play, and pet actions in the profile, reusing the existing server-authoritative RemoteEvent commands and eligibility checks.
+- [x] Expand collection cards to fit the profile entry button without colliding with the existing care actions.
+- [x] Add regression coverage for profile navigation, content sections, mobile/desktop sizing, and all four care actions.
+- [x] CI: 627 tests passed; source asset validation, Roblox Place build, generated-place validation, and artifact upload succeeded (25.11.2026).
+- [ ] Roblox Studio: inspect profile readability, hero preview framing, and touch target spacing at 320/375/414 px and desktop.
