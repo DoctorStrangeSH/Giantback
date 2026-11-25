@@ -1127,3 +1127,12 @@
 - [x] CI: 619 tests passed; asset validation, Roblox Place build, generated-place validation, and artifact upload all succeeded (25.11.2026).
 - [ ] Roblox Studio: verify 3D preview framing, lighting, and readability on 320/375/414 px mobile widths and desktop.
 - [ ] Extend approved 3D preview coverage to the remaining collection after each model passes visual, rig, and runtime acceptance.
+
+
+## Pet collection — 3D preview framing (25.11.2026)
+
+- [x] Calculate preview camera distance from model width, height, depth, field of view, and viewport aspect ratio.
+- [x] Add framing margin so wide wing silhouettes and tall models are less likely to be clipped in collection thumbnails.
+- [x] Keep the preview camera aimed at the model bounds center instead of a fixed vertical offset.
+- [x] Add regression contract for horizontal/vertical camera fitting.
+- [ ] Roblox Studio: visually inspect Fox and Lunar Moth framing, model orientation, and lighting at mobile and desktop sizes.
