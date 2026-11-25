@@ -75,15 +75,20 @@ function CompanionAppearance.new(player, animationStates, captureAnimation)
         VerdantGuardian = {color = Color3.fromRGB(83, 174, 100), outline = Color3.fromRGB(226, 255, 157), legendary = true},
         LunarOracle = {color = Color3.fromRGB(128, 139, 235), outline = Color3.fromRGB(238, 226, 255), legendary = true},
         PrismSovereign = {color = Color3.fromRGB(164, 112, 235), outline = Color3.fromRGB(255, 228, 255), legendary = true},
+        LunarScent = {color = Color3.fromRGB(165, 139, 224), outline = Color3.fromRGB(231, 218, 255)},
+        PrismNose = {color = Color3.fromRGB(115, 194, 194), outline = Color3.fromRGB(213, 255, 240)},
+        PrismDust = {color = Color3.fromRGB(172, 157, 230), outline = Color3.fromRGB(236, 224, 255)},
     }
     local mutationOriginalColors = setmetatable({}, {__mode = "k"})
 
     local function applyCompanionMutation(model, owner, companionId)
         if not model or not model.Parent then return end
         local evolutionId = owner:GetAttribute("Companion_" .. companionId .. "_Evolution")
+        local lineageId = owner:GetAttribute("Companion_" .. companionId .. "_Lineage")
         local mutationId = owner:GetAttribute("Companion_" .. companionId .. "_Mutation")
         local selectedVisualId = type(evolutionId) == "string" and companionMutationVisuals[evolutionId]
-            and evolutionId or mutationId
+            and evolutionId or type(lineageId) == "string" and companionMutationVisuals[lineageId]
+            and lineageId or mutationId
         local visual = type(selectedVisualId) == "string" and companionMutationVisuals[selectedVisualId] or nil
         local normalizedId = visual and selectedVisualId or ""
         if model:GetAttribute("AppliedMutation") == normalizedId then return end
