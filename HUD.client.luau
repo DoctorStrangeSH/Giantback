@@ -3207,7 +3207,7 @@ end
 
 event.OnClientEvent:Connect(function(message, payload)
     if message == "CompanionEggCreated" and type(payload) == "table" then
-        showToast("🥚 Яйцо гибрида «" .. tostring(payload.name or "Неизвестный гибрид") .. "» отправлено в инкубатор!")
+        showToast("Яйцо гибрида «" .. tostring(payload.name or "Неизвестный гибрид") .. "» отправлено в инкубатор!")
         refresh()
         return
     elseif message == "CompanionHybridDiscovered" and type(payload) == "table" then
