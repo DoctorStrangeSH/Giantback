@@ -1383,7 +1383,7 @@ local function renderPets()
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
         local equipped = player:GetAttribute("Companion") == pet.id
-        local item = card(body, pet.id .. "Card", compact and 330 or 214)
+        local item = card(body, pet.id .. "Card", compact and 354 or 214)
         local iconPlate = Instance.new("Frame")
         iconPlate.Name = "IconPlate"
         iconPlate.Size = UDim2.fromOffset(58, 58)
@@ -1408,15 +1408,19 @@ local function renderPets()
             or pet.id == "Starling" and Color3.fromRGB(100, 126, 184)
             or palette.forestLight
         createPictogram(iconPlate, "PetPictogram", pet.icon, 42, petTint).Position = UDim2.fromOffset(8, 8)
+        local hasHeroPreview = createApprovedCompanionPreview(
+            item, pet.id, "PetHeroPreview", UDim2.fromOffset(76, 76), UDim2.fromOffset(10, 10)
+        )
+        iconPlate.Visible = not hasHeroPreview
         local nameLabel = label(item, "Name", pet.name .. " • " .. pet.role,
-            compact and UDim2.new(1, -96, 0, 58) or UDim2.new(1, -210, 0, 24),
-            UDim2.fromOffset(76, 8), 14, palette.ink, Enum.Font.GothamBold)
+            compact and UDim2.new(1, -116, 0, 58) or UDim2.new(1, hasHeroPreview and -230 or -210, 0, 24),
+            UDim2.fromOffset(hasHeroPreview and 96 or 76, 8), 14, palette.ink, Enum.Font.GothamBold)
         nameLabel.TextWrapped = true
         nameLabel.TextYAlignment = Enum.TextYAlignment.Center
         local desc = owned and pet.description or pet.location
         local descriptionLabel = label(item, "Description", desc,
-            compact and UDim2.new(1, -28, 0, 32) or UDim2.new(1, -210, 0, 25),
-            UDim2.fromOffset(compact and 14 or 76, compact and 78 or 33),
+            compact and UDim2.new(1, -28, 0, 32) or UDim2.new(1, hasHeroPreview and -230 or -210, 0, 25),
+            UDim2.fromOffset(compact and 14 or (hasHeroPreview and 96 or 76), compact and 92 or 33),
             compact and 11 or 11, palette.muted)
         descriptionLabel.TextWrapped = true
         descriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -1424,14 +1428,14 @@ local function renderPets()
         local moodLine = pet.id == "Fox" and "Любопытный исследователь" or pet.id == "Moth" and "Нежная хранительница света" or pet.id == "HarvestSprite" and "Добрый хранитель урожая" or pet.id == "BrambleBun" and "Осторожный собиратель" or pet.id == "MossTurtle" and "Спокойный защитник" or pet.id == "Glowcap" and "Светлый мечтатель" or pet.id == "Dewdrop" and "Весёлый непоседа" or pet.id == "Starling" and "Звёздный наблюдатель" or "Кристальный проводник"
         local moodText = mood == "Довольство" and "Довольство" or mood == "Радость" and "Радость" or mood
         local moodLabel = label(item, "Mood", owned and (moodLine .. " · " .. moodText) or "Характер откроется при знакомстве",
-            compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, -220, 0, 18),
-            UDim2.fromOffset(compact and 14 or 76, compact and 114 or 60), 10, palette.forest, Enum.Font.GothamBold)
+            compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, hasHeroPreview and -240 or -220, 0, 18),
+            UDim2.fromOffset(compact and 14 or (hasHeroPreview and 96 or 76), compact and 130 or 60), 10, palette.forest, Enum.Font.GothamBold)
         moodLabel.TextWrapped = true
         local bond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_Bond")) or 0), 0, 1000)
         local bondRank = player:GetAttribute("Companion_" .. pet.id .. "_BondRank") or "Знакомство"
         label(item, "Friendship", owned and ("Дружба " .. tostring(bond) .. "/1000 · " .. bondRank) or "Сначала найди питомца",
-            compact and UDim2.new(1, -28, 0, 18) or UDim2.new(1, -220, 0, 18),
-            UDim2.fromOffset(compact and 14 or 76, compact and 138 or 84), 10, palette.forest, Enum.Font.GothamBold)
+            compact and UDim2.new(1, -28, 0, 18) or UDim2.new(1, hasHeroPreview and -240 or -220, 0, 18),
+            UDim2.fromOffset(compact and 14 or (hasHeroPreview and 96 or 76), compact and 154 or 84), 10, palette.forest, Enum.Font.GothamBold)
 
         local companionLevel = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_Level")) or 1), 1, 5)
         local companionXP = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_XP")) or 0))
@@ -1446,7 +1450,7 @@ local function renderPets()
             and (" · Особая форма: " .. mutationName .. " (" .. tostring(mutationRarity or "Необычный") .. ")") or ""
         local progressionLabel = label(item, "Progression", owned and (growthStage .. " · " .. levelText .. mutationText) or "Уровень и мутация откроются при знакомстве",
             UDim2.new(1, -28, 0, compact and 34 or 20),
-            UDim2.fromOffset(16, compact and 162 or 151), compact and 10 or 11, palette.ink, Enum.Font.GothamBold)
+            UDim2.fromOffset(16, compact and 178 or 151), compact and 10 or 11, palette.ink, Enum.Font.GothamBold)
         progressionLabel.TextWrapped = true
         progressionLabel.TextYAlignment = Enum.TextYAlignment.Top
         local foxTalent = companionLevel >= 5 and "Острый нюх: поиск каждые 60 сек."
@@ -1469,12 +1473,12 @@ local function renderPets()
         local isFestivalHatchling = pet.id == "BrambleBun" or pet.id == "MossTurtle" or pet.id == "Glowcap" or pet.id == "Dewdrop" or pet.id == "Starling"
         local talentLabel = label(item, "Talent", owned and (pet.id == "Fox" and foxTalent or pet.id == "Moth" and mothTalent or pet.id == "HarvestSprite" and harvestTalent or isFestivalHatchling and festivalTalent or wispTalent) or "Найди питомца, чтобы открыть талант",
             UDim2.new(1, -28, 0, compact and 34 or 20),
-            UDim2.fromOffset(16, compact and 202 or 179), 10, palette.forest)
+            UDim2.fromOffset(16, compact and 218 or 179), 10, palette.forest)
         talentLabel.TextWrapped = true
         talentLabel.TextYAlignment = Enum.TextYAlignment.Top
 
         local actionSize = compact and UDim2.new(0.5, -18, 0, 36) or UDim2.fromOffset(108, 32)
-        local actionPosition = compact and UDim2.fromOffset(12, 242) or UDim2.new(1, -120, 0, 8)
+        local actionPosition = compact and UDim2.fromOffset(12, 258) or UDim2.new(1, -120, 0, 8)
         local action = button(item, "Action", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН", actionSize, actionPosition, equipped and palette.gold or palette.forest)
         action.TextSize = 10
         action.Activated:Connect(function()
@@ -1491,7 +1495,7 @@ local function renderPets()
             + (tonumber(player:GetAttribute("Resource_Carrot")) or 0)
         local feedText = not owned and "НЕТ ПИТОМЦА" or not equipped and "СНАЧАЛА ПОЗОВИ" or foodCount <= 0 and "НЕТ УРОЖАЯ" or "УГОСТИТЬ"
         local feed = button(item, "Feed", feedText, actionSize,
-            compact and UDim2.new(0.5, 6, 0, 242) or UDim2.new(1, -120, 0, 46), palette.forestLight)
+            compact and UDim2.new(0.5, 6, 0, 258) or UDim2.new(1, -120, 0, 46), palette.forestLight)
         feed.TextSize = 9
         feed.Active = owned and equipped and foodCount > 0
         feed.AutoButtonColor = feed.Active
@@ -1503,7 +1507,7 @@ local function renderPets()
         end)
 
         local play = button(item, "Play", owned and (equipped and "ИГРАТЬ" or "ПОЗОВИ") or "НЕТ ПИТОМЦА",
-            actionSize, compact and UDim2.fromOffset(12, 284) or UDim2.new(1, -120, 0, 84), palette.gold)
+            actionSize, compact and UDim2.fromOffset(12, 300) or UDim2.new(1, -120, 0, 84), palette.gold)
         play.TextColor3 = palette.ink
         play.TextSize = 10
         play.Active = owned and equipped
@@ -1516,7 +1520,7 @@ local function renderPets()
         end)
 
         local petButton = button(item, "Pet", owned and (equipped and "ПОГЛАДИТЬ" or "ПОЗОВИ") or "НЕТ ПИТОМЦА",
-            actionSize, compact and UDim2.new(0.5, 6, 0, 284) or UDim2.new(1, -120, 0, 122), palette.lilac)
+            actionSize, compact and UDim2.new(0.5, 6, 0, 300) or UDim2.new(1, -120, 0, 122), palette.lilac)
         petButton.TextColor3 = palette.ink
         petButton.TextSize = 9
         petButton.Active = owned and equipped
