@@ -3020,7 +3020,11 @@ local function finishCompanionPlay(payload)
 end
 
 event.OnClientEvent:Connect(function(message, payload)
-    if message == "CompanionPlayStarted" then
+    if message == "CompanionEvolved" and type(payload) == "table" then
+        showToast("✦ Новая форма открыта: " .. tostring(payload.name or "Секретная эволюция") .. "!")
+        refresh()
+        return
+    elseif message == "CompanionPlayStarted" then
         beginCompanionPlay(payload)
         return
     elseif message == "CompanionPlayFinished" then
