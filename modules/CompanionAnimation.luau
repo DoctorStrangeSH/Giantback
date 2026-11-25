@@ -173,6 +173,120 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 else
                     transform = CFrame.new(0, bob, 0)
                 end
+            elseif state.id == "BrambleBun" then
+                local happy = state.mood == "Радость" or petting
+                local personality = state.personality
+                local earEnergy = personality == "Озорной" and 1.3 or personality == "Застенчивый" and 0.7 or 1
+                local bobSpeed = moving and 7.5 or happy and 4.8 or resting and 1.2 or 2.1
+                local bobAmount = moving and 0.13 or happy and 0.095 or resting and 0.018 or 0.045
+                if state.sleeping then bobAmount = 0.012 end
+                local bob = math.sin(time * bobSpeed) * bobAmount
+                if part.Name == "Body" then
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 2.4) * 0.035, 0, math.sin(time * 3.1) * (happy and 0.09 or 0.035)))
+                elseif part.Name == "Head" then
+                    local curiousDip = not moving and not resting and math.sin(time * 0.72) > 0.94 and 0.12 or 0
+                    local nod = petting and math.sin(time * 8) * 0.12 or math.sin(time * 2.2) * 0.035
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(-curiousDip + nod, 0, math.sin(time * 1.7) * 0.035))
+                elseif string.find(part.Name, "Ear") then
+                    local side = string.find(part.Name, "left") and -1 or 1
+                    local twitch = math.sin(time * (petting and 9 or resting and 1.1 or 3.2) + side) * (petting and 0.22 or 0.07) * earEnergy
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(0, 0, twitch * side))
+                elseif part.Name == "Acorn leaf" then
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(0, 0, math.sin(time * 3.6) * 0.12))
+                else
+                    transform = CFrame.new(0, bob, 0)
+                end
+            elseif state.id == "MossTurtle" then
+                local happy = state.mood == "Радость" or petting
+                local bobSpeed = moving and 5.2 or happy and 3.1 or resting and 0.8 or 1.45
+                local bobAmount = moving and 0.07 or happy and 0.055 or resting and 0.012 or 0.026
+                if state.sleeping then bobAmount = 0.008 end
+                local bob = math.sin(time * bobSpeed) * bobAmount
+                if part.Name == "Body" or part.Name == "Shell" then
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 1.35) * 0.018, 0, math.sin(time * 1.1) * 0.025))
+                elseif part.Name == "Head" then
+                    local peek = state.sleeping and -0.16 or math.sin(time * (petting and 6 or 1.8)) * (petting and 0.11 or 0.045)
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(peek, 0, math.sin(time * 1.2) * 0.025))
+                elseif part.Name == "Foot" then
+                    local side = offset.Position.X >= 0 and 1 or -1
+                    local front = offset.Position.Z < 0 and 1 or -1
+                    local paddle = moving and math.sin(time * 6.5 + side * front) * 0.16
+                        or petting and math.sin(time * 4.5 + side * front) * 0.055 or 0
+                    transform = CFrame.new(0, bob + math.max(0, paddle) * 0.12, 0) * aroundPoint(offset.Position, CFrame.Angles(paddle, 0, side * paddle * 0.25))
+                elseif part.Name == "Tail" then
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(0, math.sin(time * 2.4) * (happy and 0.28 or 0.1), 0))
+                else
+                    transform = CFrame.new(0, bob, 0)
+                end
+            elseif state.id == "Glowcap" then
+                local happy = state.mood == "Радость" or petting
+                local bobSpeed = moving and 4.2 or happy and 3.5 or resting and 1 or 1.9
+                local bobAmount = moving and 0.09 or happy and 0.075 or resting and 0.015 or 0.04
+                if state.sleeping then bobAmount = 0.008 end
+                local bob = math.sin(time * bobSpeed) * bobAmount
+                if part.Name == "Body" or part.Name == "Mushroom stalk" then
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 1.7) * 0.025, 0, math.sin(time * 2.1) * 0.045))
+                elseif part.Name == "Mushroom cap" then
+                    local wobble = math.sin(time * (petting and 7 or 2.2)) * (petting and 0.17 or 0.07)
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(0, math.sin(time * 1.4) * 0.04, wobble))
+                elseif part.Name == "Glow core" or part.Name == "Glowcap spot" then
+                    local light = part:FindFirstChildOfClass("PointLight")
+                    if light then
+                        light.Brightness = state.sleeping and 0.2 or happy and (1.05 + math.sin(time * 8) * 0.3) or 0.55 + math.sin(time * 2.6) * 0.18
+                    end
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(0, 0, math.sin(time * 2.8) * 0.035))
+                else
+                    transform = CFrame.new(0, bob, 0)
+                end
+            elseif state.id == "Dewdrop" then
+                local happy = state.mood == "Радость" or petting
+                local bobSpeed = moving and 6.2 or happy and 4.4 or resting and 1.1 or 2.2
+                local bobAmount = moving and 0.12 or happy and 0.09 or resting and 0.018 or 0.05
+                if state.sleeping then bobAmount = 0.01 end
+                local bob = math.sin(time * bobSpeed) * bobAmount
+                if part.Name == "Body" or part.Name == "Head" then
+                    local headNod = part.Name == "Head" and (petting and math.sin(time * 7) * 0.13 or math.sin(time * 2.3) * 0.045) or 0
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(headNod, 0, math.sin(time * 1.8) * 0.035))
+                elseif string.find(part.Name, "Fin") then
+                    local side = string.find(part.Name, "left") and -1 or string.find(part.Name, "right") and 1 or 0
+                    local flapSpeed = moving and 9 or petting and 8 or resting and 1 or 3.2
+                    local flap = math.sin(time * flapSpeed + side) * (moving and 0.25 or happy and 0.2 or 0.09)
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(flap * 0.35, 0, flap * (side == 0 and 1 or side)))
+                elseif part.Name == "Water jewel" then
+                    local light = part:FindFirstChildOfClass("PointLight")
+                    if light then
+                        light.Brightness = state.sleeping and 0.15 or happy and (0.95 + math.sin(time * 9) * 0.25) or 0.45 + math.sin(time * 3) * 0.12
+                    end
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(0, 0, math.sin(time * 2.4) * 0.07))
+                else
+                    transform = CFrame.new(0, bob, 0)
+                end
+            elseif state.id == "Starling" then
+                local happy = state.mood == "Радость" or petting
+                local flapSpeed = moving and 8 or happy and 6 or resting and 0.8 or 2.1
+                local flapStrength = moving and 0.3 or happy and 0.22 or resting and 0.025 or 0.075
+                if state.sleeping then flapStrength = 0.008 end
+                local bob = math.sin(time * (moving and 5 or 2.2)) * (moving and 0.1 or resting and 0.012 or 0.045)
+                if part.Name == "Body" then
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 1.8) * 0.025, 0, math.sin(time * 2.1) * 0.035))
+                elseif part.Name == "Head" then
+                    local curiousTilt = math.sin(time * 0.85) > 0.72 and 0.12 or 0
+                    local nod = petting and math.sin(time * 7) * 0.1 or math.sin(time * 2.3) * 0.035
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(nod, 0, curiousTilt + math.sin(time * 1.1) * 0.035))
+                elseif string.find(part.Name, "Wing") then
+                    local side = string.find(part.Name, "left") and -1 or 1
+                    local flap = math.sin(time * flapSpeed + side) * flapStrength
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(0, 0, flap * side))
+                elseif part.Name == "Crest" then
+                    transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(0, 0, math.sin(time * 3.4) * (happy and 0.16 or 0.07)))
+                elseif part.Name == "Star halo" then
+                    local light = part:FindFirstChildOfClass("PointLight")
+                    if light then light.Brightness = state.sleeping and 0.2 or happy and 0.95 or 0.5 + math.sin(time * 2.5) * 0.18 end
+                    transform = CFrame.new(0, bob + math.sin(time * 1.8) * 0.025, 0)
+                        * aroundPoint(offset.Position, CFrame.Angles(0, math.sin(time * 0.8) * 0.12, math.sin(time * 1.2) * 0.08))
+                else
+                    transform = CFrame.new(0, bob, 0)
+                end
             else
                 local bobSpeed = resting and 1.45 or moving and 4.1 or 2.35
                 local bobAmount = resting and 0.025 or moving and 0.085 or 0.055
