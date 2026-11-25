@@ -617,8 +617,9 @@ local function updateResponsiveLayout()
         end
     end
 
-    local panelWidth = math.max(240, math.min(560, viewport.X - 16))
-    local panelHeight = math.max(210, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))
+    -- Never let the modal extend beyond the actual viewport, including short landscape screens.
+    local panelWidth = math.max(1, math.min(560, viewport.X - 16))
+    local panelHeight = math.max(1, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))
     panel.Size = UDim2.fromOffset(panelWidth, panelHeight)
     panelTitle.TextSize = compact and 16 or 20
     panelSubtitle.TextSize = compact and 10 or 12
