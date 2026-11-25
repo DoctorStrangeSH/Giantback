@@ -54,12 +54,12 @@ class HudResponsiveLayoutContractTests(unittest.TestCase):
         icon_end = HUD.find("\\nlocal function ", icon_start + 30)
         pictogram_factory = HUD[icon_start:icon_end]
 
-        pet_icons = set(re.findall(r'icon\\s*=\\s*"([^"]+)"', pet_catalog))
-        navigation_icons = set(re.findall(r'icon\\s*=\\s*"([^"]+)"', HUD[HUD.index("navDefinitions ="):]))
+        pet_icons = set(re.findall(r'icon\s*=\s*"([^"]+)"', pet_catalog))
+        navigation_icons = set(re.findall(r'icon\s*=\s*"([^"]+)"', HUD[HUD.index("navDefinitions ="):]))
         directly_used_icons = set(
-            re.findall(r'createPictogram\\([^\\n]+,\\s*"([^"]+)"\\s*\\)', HUD)
+            re.findall(r'createPictogram\([^,\n]+,\s*[^,\n]+,\s*"([^"]+)"', HUD)
         )
-        supported_icons = set(re.findall(r'kind\\s*==\\s*"([^"]+)"', pictogram_factory))
+        supported_icons = set(re.findall(r'kind\s*==\s*"([^"]+)"', pictogram_factory))
 
         self.assertTrue(pet_icons, "Pet catalog must declare its pictograms")
         self.assertTrue(navigation_icons, "Navigation must declare its pictograms")
