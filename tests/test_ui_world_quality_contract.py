@@ -38,7 +38,7 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('compact and "ВЫБРАТЬ МЕСТО" or "ПОСТРОИТЬ"', HUD)
 
     def test_pet_actions_have_touch_friendly_compact_targets(self):
-        self.assertIn('card(body, pet.id .. "Card", compact and 354 or 214)', HUD)
+        self.assertIn('card(body, pet.id .. "Card", compact and 394 or 254)', HUD)
         self.assertIn('local actionSize = compact and UDim2.new(0.5, -18, 0, 36)', HUD)
         self.assertIn('compact and UDim2.fromOffset(12, 300)', HUD)
         self.assertIn('compact and UDim2.new(0.5, 6, 0, 300)', HUD)
