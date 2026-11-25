@@ -1116,3 +1116,13 @@
 - [x] Добавить регрессионный тест: каждый используемый вид пиктограммы обязан иметь собственную отрисовку; неизвестный тип обязан показывать заметный fallback, а не пустой слот.
 - [x] CI: полный набор из 615 тестов пройден; проверка библиотеки ассетов и сборка Roblox Place завершились успешно (25.11.2026).
 - [ ] Визуально проверить пиктограммы в Roblox Studio на мобильном и desktop.
+
+
+## Pet collection — hero preview pass (25.11.2026)
+
+- [x] Show approved 3D Fox and Lunar Moth models directly in their collection cards, using the same import/runtime/animation approval gates as the live companion.
+- [x] Keep native pictogram fallbacks for every companion without an approved hero model; never show an empty preview slot.
+- [x] Reflow compact cards to reserve a clear hero-art area without colliding with descriptions, progression, or touch actions.
+- [x] Add regression contracts for approval gates, visible fallbacks, compact spacing, and unchanged server-authoritative pet actions.
+- [ ] Roblox Studio: verify 3D preview framing, lighting, and readability on 320/375/414 px mobile widths and desktop.
+- [ ] Extend approved 3D preview coverage to the remaining collection after each model passes visual, rig, and runtime acceptance.
