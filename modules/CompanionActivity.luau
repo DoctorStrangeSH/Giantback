@@ -33,6 +33,7 @@ function CompanionActivity.new()
         local attention = false
         local curious = false
         if moving then
+            activity.curiosityUntil = 0
             activity.idleSince = now
             activity.nextCuriosityAt = now + math.random(9, 16)
             activity.nextAttentionAt = now + math.random(24, 38)
@@ -53,8 +54,8 @@ function CompanionActivity.new()
             activity.nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))
         end
 
-        if isLocal and not moving and not activity.exploring and now >= (activity.nextExploreAt or now + 15) then
-            curious = true
+        if isLocal and not moving and now >= (activity.nextExploreAt or now + 15) then
+            activity.curiosityUntil = now + 2.6
             local personality = owner:GetAttribute("Companion_" .. id .. "_Personality")
             local exploreWindows = {
                 ["Любопытный"] = {12, 18},
@@ -69,6 +70,8 @@ function CompanionActivity.new()
             local maxDelay = math.max(minDelay + 2, window[2] - reduction)
             activity.nextExploreAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))
         end
+
+        curious = isLocal and not moving and now < (activity.curiosityUntil or 0)
 
         if isLocal and not moving and now >= (activity.nextAttentionAt or now + 20) then
             attention = true
