@@ -25,8 +25,11 @@ class HudResponsiveLayoutContractTests(unittest.TestCase):
         self.assertIn("progressCount.Visible = not compact", HUD)
 
     def test_modal_panel_is_bounded_by_available_viewport(self):
-        self.assertIn("local panelWidth = math.max(240, math.min(560, viewport.X - 16))", HUD)
-        self.assertIn("local panelHeight = math.max(210, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))", HUD)
+        self.assertIn("local panelWidth = math.max(1, math.min(560, viewport.X - 16))", HUD)
+        self.assertIn("local panelHeight = math.max(1, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))", HUD)
+        self.assertIn("Never let the modal extend beyond the actual viewport", HUD)
+        self.assertNotIn("math.max(240, math.min(560, viewport.X - 16))", HUD)
+        self.assertNotIn("math.max(210, math.min(560, viewport.Y -", HUD)
         self.assertIn("panel.Size = UDim2.fromOffset(panelWidth, panelHeight)", HUD)
         self.assertIn("body.Size = UDim2.new(1, -24, 1, compact and -78 or -88)", HUD)
         self.assertIn("body.AutomaticCanvasSize = Enum.AutomaticSize.Y", HUD)
