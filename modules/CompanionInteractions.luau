@@ -61,6 +61,69 @@ function CompanionInteractions.new(player, event, names, palette)
         Debris:AddItem(folder, 0.9)
     end
 
+    local function showCompanionAttention(model, companionId)
+        if not model or not model.Parent then return end
+        local anchor = model:FindFirstChild("Body") or model.PrimaryPart
+        if not anchor or not anchor:IsA("BasePart") then return end
+        if anchor:FindFirstChild("CompanionAttentionBubble") then return end
+
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "CompanionAttentionBubble"
+        billboard.Size = UDim2.fromOffset(48, 48)
+        billboard.StudsOffsetWorldSpace = Vector3.new(0, 2.15, 0)
+        billboard.AlwaysOnTop = true
+        billboard.LightInfluence = 0
+        billboard.MaxDistance = 70
+        billboard.Parent = anchor
+
+        local bubble = Instance.new("Frame")
+        bubble.Name = "Bubble"
+        bubble.Size = UDim2.fromScale(0.82, 0.82)
+        bubble.Position = UDim2.fromScale(0.09, 0.09)
+        bubble.BackgroundColor3 = Color3.fromRGB(255, 246, 224)
+        bubble.BackgroundTransparency = 0.08
+        bubble.Parent = billboard
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = bubble
+        local stroke = Instance.new("UIStroke")
+        stroke.Color = palette.gold
+        stroke.Thickness = 2
+        stroke.Transparency = 0.12
+        stroke.Parent = bubble
+
+        local glyph = Instance.new("TextLabel")
+        glyph.Name = "Glyph"
+        glyph.Size = UDim2.fromScale(1, 1)
+        glyph.BackgroundTransparency = 1
+        glyph.Text = companionId == "Fox" and "♥"
+            or companionId == "Moth" and "✦"
+            or companionId == "CrystalWisp" and "✧"
+            or companionId == "Starling" and "♪"
+            or "?"
+        glyph.TextColor3 = palette.ink
+        glyph.Font = Enum.Font.GothamBold
+        glyph.TextScaled = true
+        glyph.Parent = bubble
+
+        billboard.StudsOffsetWorldSpace += Vector3.new(0, 0.35, 0)
+        bubble.Size = UDim2.fromScale(0.55, 0.55)
+        TweenService:Create(billboard, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            StudsOffsetWorldSpace = Vector3.new(0, 2.5, 0),
+        }):Play()
+        TweenService:Create(bubble, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.fromScale(0.82, 0.82),
+        }):Play()
+
+        task.delay(2.1, function()
+            if not billboard.Parent then return end
+            TweenService:Create(bubble, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(glyph, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+            TweenService:Create(stroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
+            Debris:AddItem(billboard, 0.35)
+        end)
+    end
+
     local function attachWorldPetPrompt(model, companionId)
         if not model or not model.Parent then return end
         local anchor = model:FindFirstChild("Body") or model.PrimaryPart
@@ -88,6 +151,7 @@ function CompanionInteractions.new(player, event, names, palette)
 
     return {
         attachWorldPetPrompt = attachWorldPetPrompt,
+        showCompanionAttention = showCompanionAttention,
         playCompanionPettingBurst = playCompanionPettingBurst,
     }
 end
