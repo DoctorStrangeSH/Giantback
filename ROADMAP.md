@@ -1124,5 +1124,6 @@
 - [x] Keep native pictogram fallbacks for every companion without an approved hero model; never show an empty preview slot.
 - [x] Reflow compact cards to reserve a clear hero-art area without colliding with descriptions, progression, or touch actions.
 - [x] Add regression contracts for approval gates, visible fallbacks, compact spacing, and unchanged server-authoritative pet actions.
+- [x] CI: 619 tests passed; asset validation, Roblox Place build, generated-place validation, and artifact upload all succeeded (25.11.2026).
 - [ ] Roblox Studio: verify 3D preview framing, lighting, and readability on 320/375/414 px mobile widths and desktop.
 - [ ] Extend approved 3D preview coverage to the remaining collection after each model passes visual, rig, and runtime acceptance.
