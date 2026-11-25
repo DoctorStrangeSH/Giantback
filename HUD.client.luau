@@ -1543,6 +1543,7 @@ local function renderPets()
             for recipeId, recipe in lineageRecipes do
                 if recipe.host == selectedPet.id then
                     local discovered = player:GetAttribute("Companion_" .. selectedPet.id .. "_Lineage") == recipeId
+                    local hasOtherLineage = type(lineageName) == "string" and lineageName ~= "" and not discovered
                     local partnerOwned = player:GetAttribute(recipe.partner) == true
                     local partnerBond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. recipe.partner .. "_Bond")) or 0), 0, 1000)
                     local hostBond = bond
@@ -1554,7 +1555,7 @@ local function renderPets()
                         table.insert(ingredientLines, requirement[3] .. " " .. tostring(amount) .. "/" .. tostring(requirement[2]))
                     end
                     local canDiscover = owned and equipped and partnerOwned and hostBond >= 300 and partnerBond >= 300
-                        and enoughResources and not discovered
+                        and enoughResources and not discovered and not hasOtherLineage
                     local lineageCard = card(body, "LineageResearch_" .. recipeId, compactProfile and 142 or 132)
                     lineageCard.BackgroundColor3 = discovered and Color3.fromRGB(232, 241, 225) or Color3.fromRGB(231, 239, 246)
                     label(lineageCard, "LineageTitle", discovered and ("✦ " .. recipe.name) or "ГЕНЕТИЧЕСКИЙ ЭКСПЕРИМЕНТ",
@@ -1568,7 +1569,9 @@ local function renderPets()
                     label(lineageCard, "LineageIngredients", table.concat(ingredientLines, "  ·  "),
                         UDim2.new(1, -20, 0, 30), UDim2.fromOffset(12, 72), 9, palette.ink)
                     local researchButton = button(lineageCard, "DiscoverLineage_" .. recipeId,
-                        discovered and "ПРИЗНАК ОТКРЫТ" or "ПРОВЕСТИ ЭКСПЕРИМЕНТ",
+                        discovered and "ПРИЗНАК ОТКРЫТ"
+                            or hasOtherLineage and "ДРУГОЙ ПУТЬ УЖЕ ВЫБРАН"
+                            or "ПРОВЕСТИ ЭКСПЕРИМЕНТ",
                         UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 98), palette.water)
                     researchButton.TextSize = 10
                     researchButton.Active = canDiscover
