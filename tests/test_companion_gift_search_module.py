@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = (ROOT / "World.server.luau").read_text(encoding="utf-8")
 INTERACTIONS = (ROOT / "modules/CompanionInteractions.luau").read_text(encoding="utf-8")
+ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 CLIENT = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
 
 
@@ -53,6 +54,18 @@ class CompanionGiftSearchTests(unittest.TestCase):
         self.assertIn('searchPrompt.KeyboardKeyCode = Enum.KeyCode.F', INTERACTIONS)
         self.assertIn('event:FireServer("SearchCompanionGift", companionId)', INTERACTIONS)
         self.assertIn('attachWorldPetPrompt(model, id)', CLIENT)
+
+    def test_search_has_species_animation_and_server_confirmed_discovery_feedback(self):
+        self.assertIn('companionSearchUntil = os.clock() + 3.8', CLIENT)
+        self.assertIn('state.searching = owner == player and os.clock() < companionSearchUntil', CLIENT)
+        self.assertIn('state.searching == true', CLIENT)
+        self.assertIn('if searching and (part.Name == "Body"', ANIMATION)
+        self.assertIn('playCompanionSearchStart(model, companionId)', INTERACTIONS)
+        self.assertIn('playCompanionGiftDiscovery(model, companionId, rarity)', INTERACTIONS)
+        self.assertIn('player:GetAttributeChangedSignal("CompanionGiftSearchSerial")', CLIENT)
+        self.assertIn('player:SetAttribute("CompanionGiftSearchResult"', WORLD)
+        self.assertIn('player:SetAttribute("CompanionGiftSearchSerial"', WORLD)
+        self.assertIn('local rarity = reward.weight <= 2 and "epic"', WORLD)
 
 
 if __name__ == "__main__":
