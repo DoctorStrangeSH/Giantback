@@ -147,6 +147,25 @@ function CompanionInteractions.new(player, event, names, palette)
             if player:GetAttribute("Companion") ~= companionId then return end
             event:FireServer("PetCompanion", companionId)
         end)
+
+        local searchPrompt = Instance.new("ProximityPrompt")
+        searchPrompt.Name = "WorldPetSearchPrompt"
+        searchPrompt.ObjectText = names[companionId] or "Питомец"
+        searchPrompt.ActionText = "Искать подарок"
+        searchPrompt.KeyboardKeyCode = Enum.KeyCode.F
+        searchPrompt.GamepadKeyCode = Enum.KeyCode.ButtonY
+        searchPrompt.HoldDuration = 0.65
+        searchPrompt.MaxActivationDistance = 7
+        searchPrompt.RequiresLineOfSight = false
+        searchPrompt.ClickablePrompt = true
+        searchPrompt.Parent = anchor
+
+        searchPrompt.Triggered:Connect(function(triggeringPlayer)
+            if triggeringPlayer and triggeringPlayer ~= player then return end
+            if player:GetAttribute("Companion") ~= companionId then return end
+            showCompanionAttention(model, companionId)
+            event:FireServer("SearchCompanionGift", companionId)
+        end)
     end
 
     return {
