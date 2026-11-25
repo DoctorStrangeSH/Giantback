@@ -25,6 +25,11 @@ class CompanionLineageTests(unittest.TestCase):
         self.assertIn("if hostBond < 300 or partnerBond < 300 then", WORLD)
         self.assertIn('local recipe = type(recipeId) == "string" and companionLineageRecipes[recipeId] or nil', WORLD)
 
+    def test_each_host_can_choose_only_one_lineage_path(self):
+        self.assertIn("if session.companionLineages[recipe.host] then", WORLD)
+        self.assertIn("and not hasOtherLineage", HUD)
+        self.assertIn('or hasOtherLineage and "ДРУГОЙ ПУТЬ УЖЕ ВЫБРАН"', HUD)
+
     def test_costs_are_server_defined_and_consumed_atomically(self):
         self.assertIn("for itemId, amount in recipe.items do", WORLD)
         self.assertIn("session.inventory[itemId] -= amount", WORLD)
