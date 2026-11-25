@@ -26,7 +26,10 @@ class FarmSeedSelectorUiTests(unittest.TestCase):
     def test_selected_crop_is_reflected_in_farm_plot_cards(self):
         self.assertIn('player:GetAttribute("Farm_SelectedCrop")', HUD)
         self.assertIn('stateText = "Свободна — выбрано: "', HUD)
-        self.assertIn('choose.TextSize = 10', HUD)
+        self.assertIn('choose.TextSize = 11', HUD)
+        self.assertIn('choose.Active = seeds > 0 and not selected', HUD)
+        self.assertIn('buy.Active = coins >= offer.cost', HUD)
+        self.assertIn('if coins < offer.cost then return end', HUD)
 
     def test_farm_summary_lists_all_harvested_crops(self):
         self.assertIn("local harvestSummary = {}", HUD)
