@@ -34,6 +34,9 @@ end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик", BrambleBun = "Колючка", MossTurtle = "Мохопанцирь", Glowcap = "Светошляп", Dewdrop = "Росинка", Starling = "Звёздокрыл"}
 local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Discovered_StarPrism", "Discovered_MoonGlass", "Discovered_VoidGeode", "CrystalRelicSetRewardClaimed", "CompanionCodexRewardClaimed", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed", "HarvestEgg", "StarPrism", "MoonGlass", "VoidGeode"}
+local COMPANION_GIFT_ITEM_IDS = {"SunPetal", "Wood", "CarrotSeed", "StrawberrySeed", "MoonSeed", "MoonPetal", "StarShard", "Stone", "CrystalShard", "CrystalSigil", "PrismSeed", "VoidGeode"}
+local companionGiftItemSet = {}
+for _, itemId in COMPANION_GIFT_ITEM_IDS do companionGiftItemSet[itemId] = true end
 local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local swordRecipe = {IronIngot = 2, Wood = 6}
 local combatRewardDefinitions = {
@@ -2186,6 +2189,16 @@ save = function(player)
             searchCount = math.max(0, math.floor(tonumber(session.foxSearchCount) or 0)),
         }
         local companionGiftSnapshot = {}
+        for itemId, discovery in session.companionGiftDiscoveries do
+            if companionGiftItemSet[itemId] and type(discovery) == "table"
+                and (discovery.biome == "Grove" or discovery.biome == "Dusk" or discovery.biome == "CrystalGrotto")
+                and table.find(COMPANION_IDS, discovery.companionId) then
+                companionGiftSnapshot[itemId] = {
+                    biome = discovery.biome,
+                    companionId = discovery.companionId,
+                }
+            end
+        end
         for _, companionId in COMPANION_IDS do
             companionGiftSnapshot[companionId] = math.max(0, math.floor(tonumber(session.companionGiftReadyAt[companionId]) or 0))
         end
@@ -2255,6 +2268,12 @@ save = function(player)
                     savedCompanionGiftSearch[companionId] = math.max(tonumber(savedCompanionGiftSearch[companionId]) or 0, readyAt)
                 end
                 old.companionGiftSearch = savedCompanionGiftSearch
+
+                local savedGiftDiscoveries = type(old.companionGiftDiscoveries) == "table" and old.companionGiftDiscoveries or {}
+                for itemId, discovery in companionGiftSnapshot do
+                    savedGiftDiscoveries[itemId] = discovery
+                end
+                old.companionGiftDiscoveries = savedGiftDiscoveries
 
                 local savedCombatEncounters = type(old.completedCombatEncounters) == "table" and old.completedCombatEncounters or {}
                 for encounterId, completed in completedCombatSnapshot do
@@ -2332,6 +2351,7 @@ local function init(player)
         foxSearchReadyAt = 0,
         foxSearchCount = 0,
         companionGiftReadyAt = {},
+        companionGiftDiscoveries = {},
         completedCombatEncounters = {},
         dailyQuests = nil,
         weeklyChallenges = nil,
@@ -2349,6 +2369,11 @@ local function init(player)
         selectedCropId = defaultCropId,
         farmActionBusy = {},
     }
+    for _, itemId in COMPANION_GIFT_ITEM_IDS do
+        player:SetAttribute("CompanionGiftFound_" .. itemId, false)
+        player:SetAttribute("CompanionGiftBiome_" .. itemId, "")
+        player:SetAttribute("CompanionGiftPet_" .. itemId, "")
+    end
     for _, key in inventoryKeys do session.inventory[key] = 0 end
     session.inventory.CarrotSeed = 3
     session.inventory.StrawberrySeed = 2
@@ -2428,6 +2453,21 @@ local function init(player)
         session.online = ok
         if ok and type(data) == "table" then
             for _, key in progress do player:SetAttribute(key, data[key] == true) end
+            local savedGiftDiscoveries = type(data.companionGiftDiscoveries) == "table" and data.companionGiftDiscoveries or {}
+            for _, itemId in COMPANION_GIFT_ITEM_IDS do
+                local discovery = savedGiftDiscoveries[itemId]
+                if type(discovery) == "table"
+                    and (discovery.biome == "Grove" or discovery.biome == "Dusk" or discovery.biome == "CrystalGrotto")
+                    and table.find(COMPANION_IDS, discovery.companionId) then
+                    session.companionGiftDiscoveries[itemId] = {
+                        biome = discovery.biome,
+                        companionId = discovery.companionId,
+                    }
+                    player:SetAttribute("CompanionGiftFound_" .. itemId, true)
+                    player:SetAttribute("CompanionGiftBiome_" .. itemId, discovery.biome)
+                    player:SetAttribute("CompanionGiftPet_" .. itemId, discovery.companionId)
+                end
+            end
             local savedInventory = type(data.inventory) == "table" and data.inventory or {}
             for _, key in inventoryKeys do
                 local savedAmount = savedInventory[key]
@@ -2911,17 +2951,28 @@ local function searchCompanionGift(player, companionId)
 
     local previousAmount = math.max(0, math.floor(tonumber(session.inventory[reward.itemId]) or 0))
     local previousReadyAt = readyAt
+    local previousDiscovery = session.companionGiftDiscoveries[reward.itemId]
+    local isFirstDiscovery = previousDiscovery == nil
     session.economyBusy = true
     session.inventory[reward.itemId] = previousAmount + amount
     session.companionGiftReadyAt[companionId] = now + COMPANION_GIFT_COOLDOWN_SECONDS
+    if isFirstDiscovery then
+        session.companionGiftDiscoveries[reward.itemId] = {biome = biomeName, companionId = companionId}
+    end
     syncInventory(player)
     local saved = save(player)
     if not saved then
         session.inventory[reward.itemId] = previousAmount
         session.companionGiftReadyAt[companionId] = previousReadyAt
+        session.companionGiftDiscoveries[reward.itemId] = previousDiscovery
         syncInventory(player)
         session.economyBusy = false
         return tip(player, "Находка не сохранилась. Предметы возвращены — попробуй ещё раз позже.")
+    end
+    if isFirstDiscovery then
+        player:SetAttribute("CompanionGiftFound_" .. reward.itemId, true)
+        player:SetAttribute("CompanionGiftBiome_" .. reward.itemId, biomeName)
+        player:SetAttribute("CompanionGiftPet_" .. reward.itemId, companionId)
     end
 
     session.economyBusy = false
@@ -2935,7 +2986,8 @@ local function searchCompanionGift(player, companionId)
         CrystalSigil = "кристальная печать", PrismSeed = "призматическое семя", VoidGeode = "пустотный жеод",
     }
     tip(player, (pets[companionId] or "Питомец") .. " нашёл в биоме «" .. biomeName .. "»: "
-        .. (rewardNames[reward.itemId] or reward.itemId) .. " ×" .. tostring(amount) .. "!")
+        .. (rewardNames[reward.itemId] or reward.itemId) .. " ×" .. tostring(amount)
+        .. (isFirstDiscovery and " • Новая запись в дневнике!" or "!"))
     awardCompanionXp(player, companionId, 12)
 end
 
