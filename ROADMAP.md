@@ -1172,4 +1172,5 @@
 - [x] Give Starling individual wing flaps, curious head tilts, crest motion, and a breathing star halo.
 - [x] Feed each owner's server-replicated mood, personality, and deep-sleep state into the existing single client animation loop.
 - [x] Add regression tests for species-specific part bindings, mood/personality response, sleep state, and cosmetic-only ownership.
+- [x] CI: 630 tests passed; source asset validation, Roblox Place build, generated-place validation, and artifact upload succeeded (25.11.2026).
 - [ ] Roblox Studio: inspect all five hatchlings at idle, follow, petting, and sleep; verify no mesh clipping or excessive motion at mobile and desktop camera distances.
