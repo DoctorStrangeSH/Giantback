@@ -1160,3 +1160,16 @@
 - [x] Add regression coverage for profile navigation, content sections, mobile/desktop sizing, and all four care actions.
 - [x] CI: 627 tests passed; source asset validation, Roblox Place build, generated-place validation, and artifact upload succeeded (25.11.2026).
 - [ ] Roblox Studio: inspect profile readability, hero preview framing, and touch target spacing at 320/375/414 px and desktop.
+
+
+## Companion personality animation pass (25.11.2026)
+
+- [x] Add species-specific idle, movement, affection, and deep-rest motion for BrambleBun, MossTurtle, Glowcap, Dewdrop, and Starling using their actual model part names.
+- [x] Give BrambleBun curious head dips and personality-scaled ear twitches.
+- [x] Give MossTurtle slow shell breathing, head peeks, tail motion, and alternating foot paddles.
+- [x] Give Glowcap a gentle cap wobble and mood-reactive bioluminescent core.
+- [x] Give Dewdrop fin/tail swimming motion, affectionate head nods, and a pulsing water jewel.
+- [x] Give Starling individual wing flaps, curious head tilts, crest motion, and a breathing star halo.
+- [x] Feed each owner's server-replicated mood, personality, and deep-sleep state into the existing single client animation loop.
+- [x] Add regression tests for species-specific part bindings, mood/personality response, sleep state, and cosmetic-only ownership.
+- [ ] Roblox Studio: inspect all five hatchlings at idle, follow, petting, and sleep; verify no mesh clipping or excessive motion at mobile and desktop camera distances.
