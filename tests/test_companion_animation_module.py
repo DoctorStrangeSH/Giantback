@@ -40,6 +40,40 @@ class CompanionAnimationModuleTests(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertIn(marker, ANIMATION)
 
+
+    def test_all_festival_hatchlings_have_species_specific_idle_and_affection_motion(self):
+        species_markers = {
+            "BrambleBun": ("Ear left", "Ear right", "Acorn leaf", "curiousDip"),
+            "MossTurtle": ("Shell", "Head", "Foot", "paddle"),
+            "Glowcap": ("Mushroom stalk", "Mushroom cap", "Glow core", "Glowcap spot"),
+            "Dewdrop": ("Fin left", "Fin right", "Tail fin", "Water jewel"),
+            "Starling": ("Wing left", "Wing right", "Crest", "Star halo"),
+        }
+        for species, markers in species_markers.items():
+            with self.subTest(species=species):
+                self.assertIn('state.id == "' + species + '"', ANIMATION)
+                for marker in markers:
+                    self.assertIn(marker, ANIMATION)
+
+    def test_companion_animation_uses_live_mood_personality_and_deep_sleep_state(self):
+        for marker in (
+            'state.mood == "Радость"',
+            'state.personality == "Озорной"',
+            'state.personality == "Застенчивый"',
+            'state.sleeping',
+            'local flapStrength = moving and 0.3 or happy and 0.22',
+            'local paddle = moving and math.sin(time * 6.5',
+        ):
+            self.assertIn(marker, ANIMATION)
+        self.assertIn('state.sleeping = sleeping', CLIENT)
+        self.assertIn('state.mood = owner:GetAttribute("Companion_" .. id .. "_Mood")', CLIENT)
+        self.assertIn('state.personality = owner:GetAttribute("Companion_" .. id .. "_Personality")', CLIENT)
+
+    def test_festival_pet_animations_remain_cosmetic_and_keep_single_render_loop(self):
+        for forbidden in ("FireServer(", "InvokeServer(", "DataStoreService", "SetAttribute(", "RenderStepped:Connect"):
+            self.assertNotIn(forbidden, ANIMATION)
+        self.assertEqual(CLIENT.count('RunService.RenderStepped:Connect(follow)'), 1)
+
     def test_module_does_not_change_server_state_or_create_duplicate_follow_loop(self):
         for forbidden in ("FireServer(", "InvokeServer(", "DataStoreService", "SetAttribute(", "RenderStepped:Connect"):
             self.assertNotIn(forbidden, ANIMATION)
