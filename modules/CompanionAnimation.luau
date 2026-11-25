@@ -247,7 +247,7 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 if part.Name == "Body" or part.Name == "Head" then
                     local headNod = part.Name == "Head" and (petting and math.sin(time * 7) * 0.13 or math.sin(time * 2.3) * 0.045) or 0
                     transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(headNod, 0, math.sin(time * 1.8) * 0.035))
-                elseif string.find(part.Name, "Fin") then
+                elseif string.find(part.Name, "Fin") or part.Name == "Tail fin" then
                     local side = string.find(part.Name, "left") and -1 or string.find(part.Name, "right") and 1 or 0
                     local flapSpeed = moving and 9 or petting and 8 or resting and 1 or 3.2
                     local flap = math.sin(time * flapSpeed + side) * (moving and 0.25 or happy and 0.2 or 0.09)
