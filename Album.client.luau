@@ -745,7 +745,7 @@ end
 
 local function animateModelParts(model, state, time, moving, resting)
     CompanionAnimation.animate(model, state, time, moving, resting,
-        player, foxSniffUntil, mothAbilityUntil, pettingUntil)
+        player, foxSniffUntil, mothAbilityUntil, pettingUntil, state.searching == true)
 end
 
 -- Sleep glyphs are client-only; the activity module owns idle thresholds.
@@ -812,7 +812,8 @@ end
 player:GetAttributeChangedSignal("CompanionGiftSearchSerial"):Connect(function()
     local result = player:GetAttribute("CompanionGiftSearchResult")
     if type(result) ~= "string" then return end
-    local _, _, rarity = string.match(result, "^([^|]+)|(%d+)|([^|]+)$")
+    local itemId, amount, rarity = string.match(result, "^([^|]+)|(%d+)|([^|]+)$")
+    if not itemId or not amount then return end
     local companionId = player:GetAttribute("Companion")
     if not names[companionId] then return end
     pendingGiftDiscovery = {companionId = companionId, rarity = rarity or "common"}
