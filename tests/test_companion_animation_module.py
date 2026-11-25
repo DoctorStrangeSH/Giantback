@@ -71,6 +71,19 @@ class CompanionAnimationModuleTests(unittest.TestCase):
         self.assertIn('state.mood = owner:GetAttribute("Companion_" .. id .. "_Mood")', CLIENT)
         self.assertIn('state.personality = owner:GetAttribute("Companion_" .. id .. "_Personality")', CLIENT)
 
+
+    def test_all_festival_companions_react_to_autonomous_curiosity_state(self):
+        self.assertIn('state.curious = curious', CLIENT)
+        for marker in (
+            'state.curious and 0.18',
+            'state.curious and 0.13',
+            'state.curious and 5.2',
+            'state.curious and math.sin(time * 5.5)',
+            'state.curious and 0.22',
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, ANIMATION)
+
     def test_festival_pet_animations_remain_cosmetic_and_keep_single_render_loop(self):
         for forbidden in ("FireServer(", "InvokeServer(", "DataStoreService", "SetAttribute(", "RenderStepped:Connect"):
             self.assertNotIn(forbidden, ANIMATION)
