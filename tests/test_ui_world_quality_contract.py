@@ -37,6 +37,18 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('compact and UDim2.new(1, -28, 0, 30)', HUD)
         self.assertIn('compact and "ВЫБРАТЬ МЕСТО" or "ПОСТРОИТЬ"', HUD)
 
+    def test_build_placement_controls_reflow_above_navigation_on_short_mobile_screens(self):
+        self.assertIn("local function updatePlacementOverlayLayout()", HUD)
+        self.assertIn("local navHeight = compact and (shortScreen and 48 or 56) or 72", HUD)
+        self.assertIn("local panelHeight = shortScreen and 96 or 112", HUD)
+        self.assertIn("placementOverlay.Position = UDim2.new(0.5, 0, 1, -(navHeight + bottomGap))", HUD)
+        self.assertIn("placementButtons.Rotate = rotate", HUD)
+        self.assertIn("placementButtons.Cancel = cancel", HUD)
+        self.assertIn("updatePlacementOverlayLayout()", HUD)
+        self.assertIn("updatePlacementOverlayLayout()\n        updatePlacementGhost()", HUD)
+        self.assertIn("Коснись свободного места на лужайке", HUD)
+        self.assertIn('closeActivePanel()\n    placementOverlay = Instance.new("Frame")', HUD)
+
     def test_pet_actions_have_touch_friendly_compact_targets(self):
         self.assertIn('card(body, pet.id .. "Card", compact and 394 or 254)', HUD)
         self.assertIn('local actionSize = compact and UDim2.new(0.5, -18, 0, 36)', HUD)
