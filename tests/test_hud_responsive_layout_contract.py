@@ -40,6 +40,9 @@ class HudResponsiveLayoutContractTests(unittest.TestCase):
         self.assertIn('createPictogram(navButton, "Icon", definition.icon, 24, palette.white)', HUD)
         self.assertIn('titleLabel.Visible = true', HUD)
         self.assertIn("titleLabel.TextSize = narrow and 9 or compact and 9 or 11", HUD)
+        self.assertIn("Keep the icon above its caption on compact and narrow navigation bars", HUD)
+        self.assertIn("iconRoot.Position = UDim2.new(0.5, -iconSize / 2, 0, 3)", HUD)
+        self.assertNotIn("0.5, -iconSize / 2, 0.5, -iconSize / 2", HUD)
 
     def test_layout_rebuilds_active_tab_when_crossing_breakpoint(self):
         self.assertIn("if lastCompactLayout ~= nil and lastCompactLayout ~= compact and refreshActiveTab then", HUD)
