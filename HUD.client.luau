@@ -1402,8 +1402,10 @@ local function renderPets()
             and mutationRarity or pet.rarity
         local rarityStyle = rarityStyles[displayRarity] or rarityStyles["Обычный"]
         item.BackgroundColor3 = rarityStyle.tint:Lerp(palette.paper, 0.72)
-        local rarityBorder = stroke(item, rarityStyle.color, displayRarity == "Легендарный" and 0.08 or 0.32,
-            displayRarity == "Легендарный" and 2 or 1.35)
+        local rarityBorder = item:FindFirstChildOfClass("UIStroke") or stroke(item, rarityStyle.color, 0.32, 1.35)
+        rarityBorder.Color = rarityStyle.color
+        rarityBorder.Transparency = displayRarity == "Легендарный" and 0.08 or 0.32
+        rarityBorder.Thickness = displayRarity == "Легендарный" and 2 or 1.35
         local rarityRail = Instance.new("Frame")
         rarityRail.Name = "RarityAccent"
         rarityRail.Size = UDim2.new(0, 5, 1, -22)
