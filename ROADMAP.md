@@ -1186,3 +1186,16 @@
 - [x] Keep the feature client-only and cosmetic: no rewards, penalties, inventory changes, or server requests.
 - [x] Add regression tests for local-only scheduling, personality/bond pacing, movement reset, temporary bubble lifecycle, and species glyphs.
 - [ ] Roblox Studio: verify bubble readability, head clearance, camera distance, and no overlap with sleep indicators at mobile and desktop resolutions.
+
+
+## Autonomous companion curiosity (25.11.2026)
+
+- [x] Extend idle curiosity moments from Fox-only sniffing to every equipped companion.
+- [x] Pace curiosity by personality and bond stage; playful/curious personalities react sooner, shy personalities take longer.
+- [x] Reset curiosity timing while the player is moving so exploration is never interrupted by repeated idle behaviors.
+- [x] Hold each curiosity animation for a short readable interval instead of a single rendered frame.
+- [x] Add distinct curiosity reactions to BrambleBun, MossTurtle, Glowcap, Dewdrop, and Starling using their existing model parts.
+- [x] Preserve existing Fox scent investigation and all current sleep/rest/attention behavior.
+- [x] Add regression tests for scheduler timing, movement reset, client-only ownership, and all five species animation reactions.
+- [ ] Roblox Studio: observe idle curiosity frequency and animation readability for all five species at mobile and desktop camera distances.
+- [ ] Next: implement server-authoritative companion gift searches with cooldowns, biome-aware reward tables, and duplicate/ownership/range validation.
