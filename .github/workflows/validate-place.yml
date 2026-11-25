@@ -6,10 +6,12 @@ on:
       - main
       - feat/cozy-world-visual-pass
       - feature/personal-island-greenhouse
+      - fix/mobile-modal-safe-area
   pull_request:
     branches:
       - main
       - feat/cozy-world-visual-pass
+      - feature/personal-island-greenhouse
 
 permissions:
   contents: read
