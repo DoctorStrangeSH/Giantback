@@ -1332,23 +1332,23 @@ local function renderCity()
     end
     addInfo("Управление постройками", "Перемещай предметы без повторной оплаты или разбирай их. При разборе возвращается половина материалов.", 68)
     for _, definition in catalog do
-        local item = card(body, "Build_" .. definition.id, compact and 116 or 86)
+        local item = card(body, "Build_" .. definition.id, compact and 150 or 86)
         createPictogram(item, "BuildIcon", definition.icon, 38, palette.forestLight).Position =
             UDim2.fromOffset(12, compact and 8 or 20)
         local title = label(item, "Title", definition.title,
-            compact and UDim2.new(1, -68, 0, 22) or UDim2.new(1, -150, 0, 22),
+            compact and UDim2.new(1, -68, 0, 38) or UDim2.new(1, -150, 0, 22),
             UDim2.fromOffset(60, 8), 13, palette.ink, Enum.Font.GothamBold)
         title.TextWrapped = true
         local description = label(item, "Description", definition.description,
-            compact and UDim2.new(1, -28, 0, 32) or UDim2.new(1, -150, 0, 38),
-            UDim2.fromOffset(compact and 14 or 60, compact and 34 or 34), 10, palette.muted)
+            compact and UDim2.new(1, -28, 0, 44) or UDim2.new(1, -150, 0, 38),
+            UDim2.fromOffset(compact and 14 or 60, compact and 50 or 34), 10, palette.muted)
         description.TextWrapped = true
         description.TextYAlignment = Enum.TextYAlignment.Top
         local action = button(item, "Place", compact and "ВЫБРАТЬ МЕСТО" or "ПОСТРОИТЬ",
-            compact and UDim2.new(1, -24, 0, 28) or UDim2.fromOffset(124, 32),
-            compact and UDim2.fromOffset(12, 78) or UDim2.new(1, -136, 0, 26),
+            compact and UDim2.new(1, -24, 0, 42) or UDim2.fromOffset(124, 32),
+            compact and UDim2.fromOffset(12, 100) or UDim2.new(1, -136, 0, 26),
             palette.forest)
-        action.TextSize = compact and 9 or 10
+        action.TextSize = compact and 11 or 10
         local greenhouseBuilt = player:GetAttribute("Greenhouse_Built") == true
         local greenhouseLocked = definition.id == "Greenhouse" and farmLevel < 3
         if definition.id == "Greenhouse" and greenhouseBuilt then
@@ -1361,6 +1361,18 @@ local function renderCity()
             action.Active = false
             action.AutoButtonColor = false
             action.BackgroundColor3 = palette.paperDark
+        elseif decorationCount >= 16 then
+            action.Text = "НЕТ СВОБОДНЫХ МЕСТ"
+            action.Active = false
+            action.AutoButtonColor = false
+            action.BackgroundColor3 = palette.paperDark
+            action.TextColor3 = palette.ink
+        elseif wood < placementCosts[definition.id].Wood or stone < placementCosts[definition.id].Stone then
+            action.Text = "НЕ ХВАТАЕТ МАТЕРИАЛОВ"
+            action.Active = false
+            action.AutoButtonColor = false
+            action.BackgroundColor3 = palette.paperDark
+            action.TextColor3 = palette.ink
         else
             action.Activated:Connect(function()
                 beginIslandPlacement(definition.id)
