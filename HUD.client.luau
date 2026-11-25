@@ -1433,6 +1433,8 @@ local function renderPets()
             local mutationRarity = player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationRarity")
             local evolutionName = player:GetAttribute("Companion_" .. selectedPet.id .. "_EvolutionName")
             local evolutionRarity = player:GetAttribute("Companion_" .. selectedPet.id .. "_EvolutionRarity")
+            local lineageName = player:GetAttribute("Companion_" .. selectedPet.id .. "_LineageName")
+            local lineageDescription = player:GetAttribute("Companion_" .. selectedPet.id .. "_LineageDescription")
             local evolutionId = player:GetAttribute("Companion_" .. selectedPet.id .. "_Evolution")
             local displayRarity = owned and type(evolutionRarity) == "string" and evolutionRarity ~= ""
                 and evolutionRarity or owned and type(mutationRarity) == "string" and mutationRarity ~= ""
@@ -1527,6 +1529,56 @@ local function renderPets()
                 or (selectedPet.id == "BrambleBun" or selectedPet.id == "MossTurtle" or selectedPet.id == "Glowcap" or selectedPet.id == "Dewdrop" or selectedPet.id == "Starling") and "Фестивальный спутник: развивай дружбу и открывай характер."
                 or "Призменное чутьё: помогает находить скрытые кристальные жилы."
             addInfo("ТАЛАНТ", owned and talentText or "Талант откроется после знакомства.", 54)
+
+            addInfo("НАСЛЕДСТВЕННЫЙ ПРИЗНАК",
+                owned and type(lineageName) == "string" and lineageName ~= ""
+                    and (lineageName .. " · " .. tostring(lineageDescription or "Новый генетический признак"))
+                    or "Пока не обнаружен. Экспериментируй с другими видами питомцев.", 62)
+
+            local lineageRecipes = {
+                LunarScent = {host = "Fox", partner = "Moth", name = "Лунный нюх", items = {{"SunPetal", 8, "Солнечные лепестки"}, {"MoonPetal", 8, "Лунные лепестки"}, {"StarShard", 3, "Звёздные осколки"}}},
+                PrismNose = {host = "Fox", partner = "CrystalWisp", name = "Призматический нюх", items = {{"SunPetal", 8, "Солнечные лепестки"}, {"CrystalShard", 8, "Кристальные осколки"}, {"RootvaultEssence", 1, "Эссенция Корневой чащи"}}},
+                PrismDust = {host = "Moth", partner = "CrystalWisp", name = "Призматическая пыльца", items = {{"MoonPetal", 8, "Лунные лепестки"}, {"CrystalShard", 8, "Кристальные осколки"}, {"MoonSeed", 3, "Лунные семена"}}},
+            }
+            for recipeId, recipe in lineageRecipes do
+                if recipe.host == selectedPet.id then
+                    local discovered = player:GetAttribute("Companion_" .. selectedPet.id .. "_Lineage") == recipeId
+                    local partnerOwned = player:GetAttribute(recipe.partner) == true
+                    local partnerBond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. recipe.partner .. "_Bond")) or 0), 0, 1000)
+                    local hostBond = bond
+                    local enoughResources = true
+                    local ingredientLines = {}
+                    for _, requirement in recipe.items do
+                        local amount = math.max(0, math.floor(tonumber(player:GetAttribute("Resource_" .. requirement[1])) or 0))
+                        if amount < requirement[2] then enoughResources = false end
+                        table.insert(ingredientLines, requirement[3] .. " " .. tostring(amount) .. "/" .. tostring(requirement[2]))
+                    end
+                    local canDiscover = owned and equipped and partnerOwned and hostBond >= 300 and partnerBond >= 300
+                        and enoughResources and not discovered
+                    local lineageCard = card(body, "LineageResearch_" .. recipeId, compactProfile and 142 or 132)
+                    lineageCard.BackgroundColor3 = discovered and Color3.fromRGB(232, 241, 225) or Color3.fromRGB(231, 239, 246)
+                    label(lineageCard, "LineageTitle", discovered and ("✦ " .. recipe.name) or "ГЕНЕТИЧЕСКИЙ ЭКСПЕРИМЕНТ",
+                        UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 8), 12, palette.ink, Enum.Font.GothamBlack)
+                    label(lineageCard, "LineagePair", "Пара: " .. selectedPet.name .. " + "
+                        .. (recipe.partner == "Moth" and "Лунная моль" or "Кристальный светляк"),
+                        UDim2.new(1, -20, 0, 18), UDim2.fromOffset(12, 32), 10, palette.muted)
+                    label(lineageCard, "LineageBond", "Дружба: " .. tostring(hostBond) .. "/300 · партнёр: "
+                        .. tostring(partnerBond) .. "/300",
+                        UDim2.new(1, -20, 0, 18), UDim2.fromOffset(12, 52), 10, palette.muted)
+                    label(lineageCard, "LineageIngredients", table.concat(ingredientLines, "  ·  "),
+                        UDim2.new(1, -20, 0, 30), UDim2.fromOffset(12, 72), 9, palette.ink)
+                    local researchButton = button(lineageCard, "DiscoverLineage_" .. recipeId,
+                        discovered and "ПРИЗНАК ОТКРЫТ" or "ПРОВЕСТИ ЭКСПЕРИМЕНТ",
+                        UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 98), palette.water)
+                    researchButton.TextSize = 10
+                    researchButton.Active = canDiscover
+                    researchButton.AutoButtonColor = canDiscover
+                    researchButton.BackgroundTransparency = canDiscover and 0 or 0.42
+                    researchButton.Activated:Connect(function()
+                        if canDiscover then event:FireServer("DiscoverCompanionLineage", recipeId) end
+                    end)
+                end
+            end
 
             local evolutionRecipes = {
                 Fox = {name = "Страж древней рощи", items = {{"SunPetal", 15, "Солнечные лепестки"}, {"MoonSeed", 2, "Лунные семена"}, {"RootvaultEssence", 1, "Эссенция Корневой чащи"}}},
