@@ -19,7 +19,7 @@ class CompanionAnimationModuleTests(unittest.TestCase):
     def test_live_ability_context_and_model_lifecycle_remain_in_client(self):
         for marker in (
             "animationStates[model] = state",
-            "player, foxSniffUntil, mothAbilityUntil, pettingUntil)",
+            "player, foxSniffUntil, mothAbilityUntil, pettingUntil, state.searching == true)",
             "animationStates[model] = nil",
             "setSleepIndicator(model, false)",
             "local function follow(dt)",
