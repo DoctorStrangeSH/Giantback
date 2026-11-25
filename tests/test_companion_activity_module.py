@@ -19,7 +19,7 @@ class CompanionActivityModuleTests(unittest.TestCase):
         self.assertIn('idleSeconds >= 12', ACTIVITY)
         self.assertIn('idleSeconds >= 45', ACTIVITY)
         self.assertIn('isLocal and id == "Fox"', ACTIVITY)
-        self.assertIn('local resting, sleeping, sniff, attention = companionActivity.update(owner, id, now, moving, owner == player)', CLIENT)
+        self.assertIn('local resting, sleeping, sniff, attention, curious = companionActivity.update(owner, id, now, moving, owner == player)', CLIENT)
         self.assertIn('if sniff then foxSniffUntil = os.clock() + 2.2 end', CLIENT)
         self.assertIn('setSleepIndicator(model, sleeping)', CLIENT)
 
@@ -39,7 +39,19 @@ class CompanionActivityModuleTests(unittest.TestCase):
         self.assertIn('["Застенчивый"] = {48, 66}', ACTIVITY)
         self.assertIn('activity.nextAttentionAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))', ACTIVITY)
         self.assertIn('if attention and owner == player then showCompanionAttention(model, id) end', CLIENT)
-        self.assertIn('return resting, sleeping, sniff, attention', ACTIVITY)
+        self.assertIn('return resting, sleeping, sniff, attention, curious', ACTIVITY)
+
+
+    def test_all_equipped_species_get_short_personality_paced_curiosity_moments(self):
+        self.assertIn('nextExploreAt = now + math.random(11, 18)', ACTIVITY)
+        self.assertIn('if isLocal and not moving and now >= (activity.nextExploreAt', ACTIVITY)
+        self.assertIn('activity.curiosityUntil = now + 2.6', ACTIVITY)
+        self.assertIn('curious = isLocal and not moving and now < (activity.curiosityUntil or 0)', ACTIVITY)
+        self.assertIn('local exploreWindows = {', ACTIVITY)
+        self.assertIn('["Любопытный"] = {12, 18}', ACTIVITY)
+        self.assertIn('["Застенчивый"] = {23, 32}', ACTIVITY)
+        self.assertIn('activity.nextExploreAt = now + math.random(18, 28)', ACTIVITY)
+        self.assertIn('state.curious = curious', CLIENT)
 
     def test_module_is_read_only_to_server_and_does_not_animate(self):
         for forbidden in ('FireServer(', 'InvokeServer(', 'DataStoreService', 'Instance.new(', 'RenderStepped:Connect', ':SetAttribute('):
