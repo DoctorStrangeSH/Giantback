@@ -26,6 +26,15 @@ class PetCollectionVisualContracts(unittest.TestCase):
         self.assertIn('compact and UDim2.fromOffset(12, 258)', HUD)
         self.assertIn('compact and UDim2.fromOffset(12, 300)', HUD)
 
+
+    def test_hero_preview_camera_fits_wide_and_tall_models_to_the_viewport(self):
+        self.assertIn('local aspectRatio = viewport.AbsoluteSize.X / math.max(viewport.AbsoluteSize.Y, 1)', HUD)
+        self.assertIn('local halfFovTangent = math.tan(math.rad(camera.FieldOfView * 0.5))', HUD)
+        self.assertIn('local verticalDistance = (boundsSize.Y * 0.5 + framingMargin) / halfFovTangent', HUD)
+        self.assertIn('local horizontalDistance = (boundsSize.X * 0.5 + framingMargin) / (halfFovTangent * aspectRatio)', HUD)
+        self.assertIn('local cameraDistance = math.max(verticalDistance, horizontalDistance, depthDistance, 1) * 1.08', HUD)
+        self.assertIn('camera.CFrame = CFrame.lookAt(focus + viewDirection * cameraDistance, focus)', HUD)
+
     def test_preview_is_not_allowed_to_replace_server_authoritative_actions(self):
         self.assertIn('event:FireServer("FeedCompanion", pet.id)', HUD)
         self.assertIn('event:FireServer("StartCompanionPlay", pet.id)', HUD)
