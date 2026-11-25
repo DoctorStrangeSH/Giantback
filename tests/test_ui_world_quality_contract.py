@@ -49,6 +49,14 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn("Коснись свободного места на лужайке", HUD)
         self.assertIn('closeActivePanel()\n    placementOverlay = Instance.new("Frame")', HUD)
 
+    def test_placement_cleanup_uses_actual_parts_and_navigation_exits_mode(self):
+        self.assertIn("local part = entry.part", HUD)
+        self.assertIn("if part and part.Parent then part:Destroy() end", HUD)
+        self.assertIn("table.clear(placementParts)", HUD)
+        self.assertIn("if placementState then finishPlacement() end", HUD)
+        self.assertIn("camera:ViewportPointToRay(pointer.X, pointer.Y)", HUD)
+        self.assertIn('moveIndex and "ПЕРЕМЕСТИТЬ" or "ПОСТРОИТЬ"', HUD)
+
     def test_pet_actions_have_touch_friendly_compact_targets(self):
         self.assertIn('card(body, pet.id .. "Card", compact and 394 or 254)', HUD)
         self.assertIn('local actionSize = compact and UDim2.new(0.5, -18, 0, 36)', HUD)
