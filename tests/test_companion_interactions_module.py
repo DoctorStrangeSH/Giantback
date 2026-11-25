@@ -12,7 +12,7 @@ class CompanionInteractionsModuleTests(unittest.TestCase):
     def test_module_is_embedded_and_used(self):
         self.assertIn('companion_interactions = obj(storage, "ModuleScript", "CompanionInteractions")', BUILD)
         self.assertIn('require(storage:WaitForChild("CompanionInteractions"))', CLIENT)
-        self.assertIn('CompanionInteractions.new(player, event, names, palette)', CLIENT)
+        self.assertIn('CompanionInteractions.new(player, event, names, palette, function(companionId)', CLIENT)
         self.assertIn('attachWorldPetPrompt(model, id)', CLIENT)
         self.assertIn('playCompanionPettingBurst(model, id, bondStage)', CLIENT)
 
