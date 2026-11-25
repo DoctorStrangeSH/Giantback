@@ -1095,6 +1095,38 @@ local function updatePlacementGhost()
     placementButtons.Confirm.BackgroundColor3 = placementValid and palette.forest or palette.muted
 end
 
+local function updatePlacementOverlayLayout()
+    if not placementOverlay or not placementOverlay.Parent then return end
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+    local viewport = camera.ViewportSize
+    local compact = viewport.X < 620
+    local narrow = viewport.X < 400
+    local shortScreen = viewport.Y < 440
+    local navHeight = compact and (shortScreen and 48 or 56) or 72
+    local bottomGap = shortScreen and 24 or compact and 24 or 16
+    local panelHeight = shortScreen and 96 or 112
+    placementOverlay.Size = UDim2.new(1, -16, 0, panelHeight)
+    placementOverlay.Position = UDim2.new(0.5, 0, 1, -(navHeight + bottomGap))
+    placementStatus.Size = UDim2.new(1, -20, 0, shortScreen and 30 or 24)
+    placementStatus.Position = UDim2.fromOffset(10, 5)
+    placementStatus.TextSize = narrow and 9 or compact and 10 or 12
+    local controlsTop = shortScreen and 42 or 54
+    local controlsHeight = shortScreen and 42 or 42
+    local sideInset = narrow and 6 or 8
+    local gap = narrow and 4 or 8
+    local buttonWidth = (1 / 3)
+    for _, key in {"Rotate", "Cancel", "Confirm"} do
+        local control = placementButtons[key]
+        if control then
+            control.Size = UDim2.new(buttonWidth, -(sideInset + gap), 0, controlsHeight)
+            control.Position = UDim2.new((key == "Rotate" and 0) or (key == "Cancel" and 1 / 3 or 2 / 3),
+                key == "Rotate" and sideInset or (key == "Cancel" and gap / 2 or gap), 0, controlsTop)
+            control.TextSize = narrow and 9 or compact and 10 or 11
+        end
+    end
+end
+
 local function beginIslandPlacement(decorationId, moveIndex)
     if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" and decorationId ~= "GardenLamp" and decorationId ~= "Fence" and decorationId ~= "WhiteFence" and decorationId ~= "StoneFence" and decorationId ~= "HedgeFence" and decorationId ~= "Bench" and decorationId ~= "DecorativeTree" and decorationId ~= "WoodenPath" and decorationId ~= "GardenArch" and decorationId ~= "BirdBath" then return end
     finishPlacement()
@@ -1109,7 +1141,7 @@ local function beginIslandPlacement(decorationId, moveIndex)
     placementOverlay.Name = "BuildPlacementControls"
     placementOverlay.AnchorPoint = Vector2.new(0.5, 1)
     placementOverlay.Position = UDim2.new(0.5, 0, 1, -88)
-    placementOverlay.Size = UDim2.new(1, -24, 0, 112)
+    placementOverlay.Size = UDim2.new(1, -16, 0, 112)
     placementOverlay.BackgroundColor3 = palette.ink
     placementOverlay.BorderSizePixel = 0
     placementOverlay.ZIndex = 45
@@ -1132,7 +1164,10 @@ local function beginIslandPlacement(decorationId, moveIndex)
         control.ZIndex = 46
         control.TextSize = 11
     end
+    placementButtons.Rotate = rotate
+    placementButtons.Cancel = cancel
     placementButtons.Confirm = confirm
+    updatePlacementOverlayLayout()
     confirm.Active = false
     confirm.AutoButtonColor = false
     confirm.BackgroundColor3 = palette.muted
@@ -1155,7 +1190,10 @@ local function beginIslandPlacement(decorationId, moveIndex)
     end)
 
     if placementConnection then placementConnection:Disconnect() end
-    placementConnection = RunService.RenderStepped:Connect(updatePlacementGhost)
+    placementConnection = RunService.RenderStepped:Connect(function()
+        updatePlacementOverlayLayout()
+        updatePlacementGhost()
+    end)
 end
 
 UserInputService.InputBegan:Connect(function(input, processed)
