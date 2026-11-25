@@ -1146,4 +1146,5 @@
 - [x] Let a discovered mutation's rarity override the base species badge so rare forms are immediately recognizable.
 - [x] Give Legendary companions a stronger gold outline and a distinct badge finish.
 - [x] Add regression tests for complete rarity metadata, badge visibility, mobile title spacing, mutation override, and Legendary styling.
+- [x] CI: 623 tests passed; source asset validation, Roblox Place build, generated-place validation, and artifact upload succeeded (25.11.2026).
 - [ ] Roblox Studio: inspect badge readability, card contrast, and text wrapping on 320/375/414 px mobile widths and desktop.
