@@ -1215,6 +1215,20 @@
 - [ ] Roblox Studio: test biome boundaries and reward feedback in Grove, Dusk, and Crystal Grotto.
 
 
+
+ 
+## Persistent companion treasure journal (25.11.2026)
+
+- [x] Record each unique item discovered through companion gift searches separately from inventory quantity.
+- [x] Save the first-discovery biome and companion alongside the profile; validate item, biome, and companion IDs on load.
+- [x] Save discoveries in the same transaction as the inventory reward and cooldown; roll all three back on save failure.
+- [x] Replicate first-discovery flags and provenance to the client only after successful persistence.
+- [x] Add a 12-item treasure codex to the existing expedition journal, grouped by Grove, Dusk, and Crystal Grotto.
+- [x] Keep unknown entries hidden until first discovery and preserve the original discoverer/biome on repeat drops.
+- [x] Add dedicated pictograms for treasure chest, seed, moon, and star instead of generic fallback marks.
+- [x] Add regression tests for catalog coverage, persistence, rollback, provenance, journal rendering, and pictograms.
+- [ ] Roblox Studio: verify new-profile, first-discovery, repeat-drop, save-failure, and rejoin flows; inspect journal layout at 320/375/414 px and desktop.
+
 ## Companion gift-search animation and discovery feedback (25.11.2026)
 
 - [x] Add a short, readable searching pose to the existing procedural companion animation system.
