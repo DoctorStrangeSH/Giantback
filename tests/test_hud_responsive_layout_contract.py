@@ -55,7 +55,7 @@ class HudResponsiveLayoutContractTests(unittest.TestCase):
         pictogram_factory = HUD[icon_start:icon_end]
 
         pet_icons = set(re.findall(r'icon\s*=\s*"([^"]+)"', pet_catalog))
-        navigation_icons = set(re.findall(r'icon\s*=\s*"([^"]+)"', HUD[HUD.index("navDefinitions ="):]))
+        navigation_icons = set(re.findall(r'icon\s*=\s*"([^"]+)"', HUD[HUD.index("navDefinitions = {"):]))
         directly_used_icons = set(
             re.findall(r'createPictogram\([^,\n]+,\s*[^,\n]+,\s*"([^"]+)"', HUD)
         )
