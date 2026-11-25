@@ -1230,6 +1230,19 @@
 - [ ] Roblox Studio: verify new-profile, first-discovery, repeat-drop, save-failure, and rejoin flows; inspect journal layout at 320/375/414 px and desktop.
 
 
+
+## Genetic research and inherited companion traits (25.11.2026)
+
+- [x] Add three cross-species experiments: Fox + Moth, Fox + Crystal Wisp, and Moth + Crystal Wisp.
+- [x] Require ownership of both parents, the active host companion, friendship 300+ for each parent, and recipe-specific rare materials.
+- [x] Keep recipe IDs, costs, parent species, and reward effects on the server; never trust client-supplied values.
+- [x] Persist inherited traits in the existing companion profile and normalize unknown saved values safely.
+- [x] Consume materials and save the trait atomically; restore all materials and prior trait on save failure.
+- [x] Give each inherited trait a distinct visual treatment and a biome-specific +1 companion-gift bonus.
+- [x] Add profile experiment cards with live parent friendship, ingredient counts, and disabled states until requirements are met.
+- [x] Add contract coverage for recipes, ownership, active host, friendship, atomic costs, persistence, rewards, UI gating, and visuals.
+- [ ] Roblox Studio: test each pairing, unowned parent, insufficient friendship/materials, repeat attempts, save failure, rejoin persistence, and gift bonus in the matching biome.
+
 ## Secret companion evolutions (25.11.2026)
 
 - [x] Add three unique secret forms for the original Fox, Moth, and Crystal Wisp companions.
