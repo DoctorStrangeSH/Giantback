@@ -739,20 +739,27 @@ local function addSeedChoice(crop, selectedCrop)
     local offer = seedShopOffers[crop.id]
     local selected = selectedCrop == crop.id
     local compact = gui.AbsoluteSize.X < 620
-    local item = card(body, "Seed_" .. crop.id, compact and 122 or 82)
+    local item = card(body, "Seed_" .. crop.id, compact and 138 or 82)
     item.BackgroundColor3 = selected and Color3.fromRGB(235, 241, 218) or palette.paper
     createPictogram(item, "CropIcon", crop.icon, 38, crop.color).Position = UDim2.fromOffset(12, compact and 10 or 21)
     label(item, "Name", crop.name,
         compact and UDim2.new(1, -68, 0, 24) or UDim2.new(1, -174, 0, 22),
         UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
     label(item, "Details", crop.grow .. "  •  семян: " .. tostring(seeds),
-        compact and UDim2.new(1, -68, 0, 22) or UDim2.new(1, -174, 0, 38),
+        compact and UDim2.new(1, -68, 0, 40) or UDim2.new(1, -174, 0, 38),
         UDim2.fromOffset(60, 33), 10, palette.muted)
-    local chooseSize = compact and UDim2.new(0.5, -18, 0, 34) or UDim2.fromOffset(102, 29)
-    local choosePosition = compact and UDim2.fromOffset(12, 78) or UDim2.new(1, -112, 0, 7)
+    local chooseSize = compact and UDim2.new(0.5, -18, 0, 42) or UDim2.fromOffset(102, 29)
+    local choosePosition = compact and UDim2.fromOffset(12, 86) or UDim2.new(1, -112, 0, 7)
     local choose = button(item, "Choose", selected and "ВЫБРАНО" or "ВЫБРАТЬ",
         chooseSize, choosePosition, selected and palette.gold or palette.forest)
-    choose.TextSize = 10
+    choose.TextSize = 11
+    choose.Active = seeds > 0 and not selected
+    choose.AutoButtonColor = choose.Active
+    if seeds < 1 then
+        choose.Text = "НЕТ СЕМЯН"
+        choose.BackgroundColor3 = palette.paperDark
+        choose.TextColor3 = palette.ink
+    end
     choose.Activated:Connect(function()
         if seeds < 1 then
             showToast("Семян нет. Купи набор ниже, а затем выбери культуру.")
@@ -761,12 +768,15 @@ local function addSeedChoice(crop, selectedCrop)
         event:FireServer("SelectCrop", crop.id)
     end)
     local buy = button(item, "BuySeeds", "КУПИТЬ ×" .. tostring(offer.amount) .. " · " .. tostring(offer.cost) .. " мон.",
-        compact and UDim2.new(0.5, -18, 0, 34) or UDim2.fromOffset(102, 29),
-        compact and UDim2.new(0.5, 6, 0, 78) or UDim2.new(1, -112, 0, 44),
+        compact and UDim2.new(0.5, -18, 0, 42) or UDim2.fromOffset(102, 29),
+        compact and UDim2.new(0.5, 6, 0, 86) or UDim2.new(1, -112, 0, 44),
         coins >= offer.cost and palette.gold or palette.paperDark)
     buy.TextColor3 = coins >= offer.cost and palette.ink or palette.muted
-    buy.TextSize = 8
+    buy.TextSize = compact and 10 or 9
+    buy.Active = coins >= offer.cost
+    buy.AutoButtonColor = buy.Active
     buy.Activated:Connect(function()
+        if coins < offer.cost then return end
         event:FireServer("BuySeeds", crop.id)
     end)
 end
@@ -1458,15 +1468,16 @@ local function renderFarm()
     else
         addInfo("Теплица • открывается на 3 уровне", "Улучши ферму до максимального уровня, чтобы построить стеклянную теплицу.", 68)
     end
+    addInfo("Твои грядки", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
+    for index = 1, 4 do
+        addPlot(string.format("Plot%02d", index), index)
+    end
     addInfo("1. Развитие фермы", "Улучшай ферму за монеты, чтобы открывать новые грядки. Сейчас доступно: " .. tostring(farmLevel == 1 and 1 or (farmLevel == 2 and 3 or 4)) .. " из 4.", 68)
     addFarmUpgrade(farmLevel)
     addInfo("2. Семена и магазин", "Монеты: " .. tostring(tonumber(player:GetAttribute("Coins")) or 0) .. ". Выбери культуру для посадки или купи набор семян. Покупка сохраняется в рюкзаке.", 76)
     addInfo("3. Цены на рынке", table.concat(marketPriceSummary, "   •   ") .. ". Подойди к стойке «РЫНОК» на своём острове и продай собранный урожай. Семена и материалы рынок не покупает.", 92)
     for _, crop in cropCatalog do addSeedChoice(crop, selectedCrop) end
-    addInfo("4. Посади и собери", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
-    for index = 1, 4 do
-        addPlot(string.format("Plot%02d", index), index)
-    end
+
 end
 
 local companionProfileSelected = nil
