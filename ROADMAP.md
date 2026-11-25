@@ -1305,3 +1305,12 @@
 - [x] Roblox Place build and structural validation passed: 88 named instances, 18 scripts.
 - [x] `Giantback-visual-build` artifact uploaded successfully (run 45637088353; artifact 15033440925).
 - [ ] Roblox Studio visual acceptance remains pending; automated contracts do not prove actual layout, readability, or runtime behavior.
+
+
+## UI acceptance gate — diary mobile layout (25.11.2026)
+
+- [x] Reflow expedition step cards on compact screens: taller card, wrapped title and hint, top-aligned hint.
+- [x] Reflow companion gift discovery cards on compact screens: wrapped item name and source/biome hint.
+- [x] Add automated source contracts for the responsive diary and gift-card layout.
+- [ ] Run CI for the diary layout change and resolve any regressions.
+- [ ] Complete Roblox Studio visual acceptance for diary, collection, farm, building, backpack, and map tabs.
