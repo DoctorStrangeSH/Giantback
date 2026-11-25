@@ -815,6 +815,7 @@ local placementTarget = nil
 local placementValid = false
 local placementPointer = nil
 local placementConnection = nil
+local placementViewportConnection = nil
 local placementParts = {}
 
 local function clearPlacementGhost()
@@ -963,6 +964,7 @@ end
 
 local function finishPlacement()
     if placementConnection then placementConnection:Disconnect(); placementConnection = nil end
+    if placementViewportConnection then placementViewportConnection:Disconnect(); placementViewportConnection = nil end
     if placementOverlay then placementOverlay:Destroy(); placementOverlay = nil end
     clearPlacementGhost()
     placementState = nil
@@ -1190,10 +1192,11 @@ local function beginIslandPlacement(decorationId, moveIndex)
     end)
 
     if placementConnection then placementConnection:Disconnect() end
-    placementConnection = RunService.RenderStepped:Connect(function()
-        updatePlacementOverlayLayout()
-        updatePlacementGhost()
-    end)
+    placementConnection = RunService.RenderStepped:Connect(updatePlacementGhost)
+    local camera = workspace.CurrentCamera
+    if camera then
+        placementViewportConnection = camera:GetPropertyChangedSignal("ViewportSize"):Connect(updatePlacementOverlayLayout)
+    end
 end
 
 UserInputService.InputBegan:Connect(function(input, processed)
