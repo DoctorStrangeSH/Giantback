@@ -1460,16 +1460,30 @@ local function renderPets()
                 local egg = activeEggs[recipe.id]
                 if egg then
                     eggRow += 1
-                    local remaining = math.max(0, egg.hatchAt - os.time())
-                    local hatchButton = button(incubator, "Hatch_" .. recipe.id,
-                        remaining > 0 and (recipe.name .. " · " .. tostring(math.ceil(remaining)) .. " сек.") or ("ВЫЛУПИТЬ · " .. recipe.name),
-                        UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 28 + (eggRow - 1) * 36),
-                        remaining > 0 and palette.muted or palette.forest)
+                    local hatchButton = button(incubator, "Hatch_" .. recipe.id, "",
+                        UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 28 + (eggRow - 1) * 36), palette.muted)
                     hatchButton.TextSize = 9
-                    hatchButton.Active = remaining <= 0
-                    hatchButton.AutoButtonColor = remaining <= 0
+                    local function updateIncubatorButton()
+                        local remaining = math.max(0, egg.hatchAt - os.time())
+                        hatchButton.Text = remaining > 0
+                            and (recipe.name .. " · " .. tostring(math.ceil(remaining)) .. " сек.")
+                            or ("ВЫЛУПИТЬ · " .. recipe.name)
+                        hatchButton.Active = remaining <= 0
+                        hatchButton.AutoButtonColor = remaining <= 0
+                        hatchButton.BackgroundColor3 = remaining <= 0 and palette.forest or palette.muted
+                    end
+                    task.spawn(function()
+                        while hatchButton.Parent do
+                            updateIncubatorButton()
+                            task.wait(1)
+                        end
+                    end)
                     hatchButton.Activated:Connect(function()
-                        if remaining <= 0 then event:FireServer("HatchHybridEgg", egg.id) end
+                        if os.time() >= egg.hatchAt then
+                            event:FireServer("HatchHybridEgg", egg.id)
+                        else
+                            showToast("Яйцо ещё развивается. Загляни в инкубатор чуть позже.")
+                        end
                     end)
                 end
             end
