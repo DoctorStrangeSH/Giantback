@@ -1446,29 +1446,31 @@ local function renderPets()
         label(lab, "BreedingSummary", "Подружи родителей, собери редкие материалы и выведи яйцо. До 3 инкубаторов одновременно.",
             UDim2.new(1, -24, 0, compact and 42 or 34), UDim2.fromOffset(12, 56), 10, palette.muted)
 
-        local incubator = card(body, "HybridIncubators", compact and 76 or 68)
-        incubator.BackgroundColor3 = Color3.fromRGB(241, 234, 250)
         local activeCount = math.clamp(math.floor(tonumber(player:GetAttribute("CompanionBreeding_EggCount")) or 0), 0, 3)
+        local incubator = card(body, "HybridIncubators", activeCount == 0 and (compact and 76 or 68) or 42 + activeCount * 38)
+        incubator.BackgroundColor3 = Color3.fromRGB(241, 234, 250)
         label(incubator, "IncubatorTitle", "ИНКУБАТОРЫ  " .. tostring(activeCount) .. "/3",
             UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 8), 10, palette.ink, Enum.Font.GothamBlack)
         if activeCount == 0 then
             label(incubator, "IncubatorEmpty", "Пока пусто. Выбери пару ниже, чтобы начать первое скрещивание.",
                 UDim2.new(1, -24, 0, 30), UDim2.fromOffset(12, 30), 10, palette.muted)
         else
+            local eggRow = 0
             for _, recipe in breedingRecipes do
                 local egg = activeEggs[recipe.id]
                 if egg then
+                    eggRow += 1
                     local remaining = math.max(0, egg.hatchAt - os.time())
                     local hatchButton = button(incubator, "Hatch_" .. recipe.id,
-                        remaining > 0 and ("РАЗВИВАЕТСЯ · " .. tostring(math.ceil(remaining)) .. " сек.") or ("ВЫЛУПИТЬ · " .. recipe.name),
-                        UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 30), remaining > 0 and palette.muted or palette.forest)
-                    hatchButton.TextSize = 10
+                        remaining > 0 and (recipe.name .. " · " .. tostring(math.ceil(remaining)) .. " сек.") or ("ВЫЛУПИТЬ · " .. recipe.name),
+                        UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 28 + (eggRow - 1) * 36),
+                        remaining > 0 and palette.muted or palette.forest)
+                    hatchButton.TextSize = 9
                     hatchButton.Active = remaining <= 0
                     hatchButton.AutoButtonColor = remaining <= 0
                     hatchButton.Activated:Connect(function()
                         if remaining <= 0 then event:FireServer("HatchHybridEgg", egg.id) end
                     end)
-                    break
                 end
             end
         end
