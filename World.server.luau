@@ -6,6 +6,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
+local CompanionBreeding = require(Storage:WaitForChild("CompanionBreeding"))
 local storeName = RunService:IsStudio() and "GiantbackAlbum_Studio_v1" or "GiantbackAlbum_v1"
 local storeOk, storeResult = pcall(function()
     return DataStoreService:GetDataStore(storeName)
@@ -328,6 +329,25 @@ local function syncInventory(player)
     end
     player:SetAttribute("Smelter_ReadyAt", session and session.smeltingReadyAt or 0)
     player:SetAttribute("Smelter_Pending", session and session.smeltingAmount or 0)
+end
+
+local function syncCompanionBreeding(player)
+    local session = sessions[player]
+    if not session then return end
+    local eggs = CompanionBreeding.normalizeEggs(session.companionEggs, os.time())
+    session.companionEggs = eggs
+    local discoveries = CompanionBreeding.normalizeDiscoveries(session.companionHybridDiscoveries)
+    session.companionHybridDiscoveries = discoveries
+    player:SetAttribute("CompanionBreeding_EggCount", #eggs)
+    for index = 1, CompanionBreeding.MAX_ACTIVE_EGGS do
+        local egg = eggs[index]
+        player:SetAttribute("CompanionBreeding_Egg" .. index .. "_Id", egg and egg.id or "")
+        player:SetAttribute("CompanionBreeding_Egg" .. index .. "_Recipe", egg and egg.recipeId or "")
+        player:SetAttribute("CompanionBreeding_Egg" .. index .. "_HatchAt", egg and egg.hatchAt or 0)
+    end
+    for recipeId in CompanionBreeding.RECIPES do
+        player:SetAttribute("CompanionBreeding_Discovered_" .. recipeId, discoveries[recipeId] == true)
+    end
 end
 
 local save
@@ -917,6 +937,109 @@ local function evolveCompanion(player, companionId)
         name = definition.name,
     })
     tip(player, "Невероятно! " .. pets[companionId] .. " открыл новую форму: " .. definition.name .. "!")
+end
+
+local function breedCompanions(player, recipeId)
+    local session = sessions[player]
+    local recipe = CompanionBreeding.getRecipe(recipeId)
+    if not session or not recipe or not player:GetAttribute("Ready") then return end
+    if not session.online then return tip(player, "Лаборатория недоступна: сохранение профиля не работает.") end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+    if #session.companionEggs >= CompanionBreeding.MAX_ACTIVE_EGGS then
+        return tip(player, "Все три инкубатора заняты. Сначала дождись вылупления.")
+    end
+    if session.companionHybridDiscoveries[recipe.id] then
+        return tip(player, "Этот гибрид уже открыт в генетическом журнале.")
+    end
+    for _, egg in session.companionEggs do
+        if egg.recipeId == recipe.id then
+            return tip(player, "Яйцо этой пары уже находится в инкубаторе.")
+        end
+    end
+    for _, parentId in recipe.parents do
+        if player:GetAttribute(parentId) ~= true then
+            return tip(player, "Для этой пары нужны оба питомца: " .. (pets[parentId] or parentId) .. ".")
+        end
+        local progressData = session.companionProgress[parentId]
+        if not progressData or progressData.level < recipe.level then
+            return tip(player, "Обоим родителям нужен уровень не ниже " .. tostring(recipe.level) .. ".")
+        end
+        if not progressData or progressData.bond < recipe.bond then
+            return tip(player, "Дружба каждого родителя должна быть не ниже " .. tostring(recipe.bond) .. ".")
+        end
+    end
+    for itemId, amount in recipe.items do
+        if (session.inventory[itemId] or 0) < amount then
+            return tip(player, "Не хватает материала: " .. itemId .. " ×" .. tostring(amount) .. ".")
+        end
+    end
+
+    local previousAmounts = {}
+    local previousEggs = table.clone(session.companionEggs)
+    local now = os.time()
+    local egg = {
+        id = HttpService:GenerateGUID(false),
+        recipeId = recipe.id,
+        createdAt = now,
+        hatchAt = now + recipe.incubationSeconds,
+    }
+    session.economyBusy = true
+    for itemId, amount in recipe.items do
+        previousAmounts[itemId] = session.inventory[itemId]
+        session.inventory[itemId] -= amount
+    end
+    table.insert(session.companionEggs, egg)
+    syncInventory(player)
+    syncCompanionBreeding(player)
+    if not save(player) then
+        session.companionEggs = previousEggs
+        for itemId, amount in previousAmounts do session.inventory[itemId] = amount end
+        syncInventory(player)
+        syncCompanionBreeding(player)
+        session.economyBusy = false
+        return tip(player, "Яйцо не сохранилось. Материалы возвращены.")
+    end
+    session.economyBusy = false
+    event:FireClient(player, "CompanionEggCreated", {
+        eggId = egg.id,
+        recipeId = recipe.id,
+        name = recipe.name,
+        hatchAt = egg.hatchAt,
+    })
+    tip(player, "Получено яйцо гибрида «" .. recipe.name .. "»! Инкубация: " .. tostring(recipe.incubationSeconds) .. " сек.")
+end
+
+local function hatchHybridEgg(player, eggId)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") or type(eggId) ~= "string" then return end
+    if not session.online then return tip(player, "Вылупление недоступно: сохранение профиля не работает.") end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+    local eggIndex, selectedEgg
+    for index, egg in session.companionEggs do
+        if egg.id == eggId then eggIndex, selectedEgg = index, egg break end
+    end
+    if not selectedEgg then return end
+    if os.time() < selectedEgg.hatchAt then
+        return tip(player, "Яйцо ещё развивается. Осталось примерно " .. tostring(math.ceil((selectedEgg.hatchAt - os.time()) / 60)) .. " мин.")
+    end
+    local result = CompanionBreeding.getResult(selectedEgg)
+    if not result or session.companionHybridDiscoveries[result.id] then return end
+
+    local previousEgg = selectedEgg
+    session.economyBusy = true
+    table.remove(session.companionEggs, eggIndex)
+    session.companionHybridDiscoveries[result.id] = true
+    syncCompanionBreeding(player)
+    if not save(player) then
+        table.insert(session.companionEggs, math.min(eggIndex, #session.companionEggs + 1), previousEgg)
+        session.companionHybridDiscoveries[result.id] = nil
+        syncCompanionBreeding(player)
+        session.economyBusy = false
+        return tip(player, "Вылупление не сохранилось. Яйцо возвращено в инкубатор.")
+    end
+    session.economyBusy = false
+    event:FireClient(player, "CompanionHybridDiscovered", result)
+    tip(player, "Открыт новый гибрид: " .. result.name .. "! Запись добавлена в генетический журнал.")
 end
 
 local function discoverCompanionLineage(player, recipeId)
@@ -2390,6 +2513,10 @@ save = function(player)
         local companionProgressSnapshot = normalizeCompanionProgress(session.companionProgress)
         local companionEvolutionSnapshot = normalizeCompanionEvolutions(session.companionEvolutions)
         local companionLineageSnapshot = normalizeCompanionLineages(session.companionLineages)
+        local companionBreedingSnapshot = {
+            eggs = CompanionBreeding.normalizeEggs(session.companionEggs, os.time()),
+            discoveries = CompanionBreeding.normalizeDiscoveries(session.companionHybridDiscoveries),
+        }
 
         local ok, err = pcall(function()
             store:UpdateAsync(tostring(player.UserId), function(old)
@@ -2471,6 +2598,7 @@ save = function(player)
                     savedCompanions[companionId] = savedCompanion
                 end
                 old.companions = savedCompanions
+                old.companionBreeding = companionBreedingSnapshot
 
                 -- Schema v5 moves the old city payload into the permanent island record.
                 -- Schema v6 adds persistent companion scouting and the MoonSeed inventory item.
@@ -2541,6 +2669,8 @@ local function init(player)
         companionMutations = normalizeCompanionMutations(nil),
         companionEvolutions = normalizeCompanionEvolutions(nil),
         companionLineages = normalizeCompanionLineages(nil),
+        companionEggs = {},
+        companionHybridDiscoveries = {},
         companionDiscoveryBiomes = {},
         companionFeedReadyAt = {},
         companionPetReadyAt = {},
@@ -2758,6 +2888,9 @@ local function init(player)
                 savedLineages[id] = saved.lineage
             end
             session.companionLineages = normalizeCompanionLineages(savedLineages)
+            local savedBreeding = type(data.companionBreeding) == "table" and data.companionBreeding or {}
+            session.companionEggs = CompanionBreeding.normalizeEggs(savedBreeding.eggs, os.time())
+            session.companionHybridDiscoveries = CompanionBreeding.normalizeDiscoveries(savedBreeding.discoveries)
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     else
@@ -2778,6 +2911,7 @@ local function init(player)
     syncBridge(player)
     syncFoxScout(player)
     syncCompanionProgress(player)
+    syncCompanionBreeding(player)
     if not allocateHomeIsland(player, session) then
         -- The profile can be loaded before island capacity is known. Do not leave
         -- attribute listeners attached when the player is rejected from this server.
@@ -3405,6 +3539,16 @@ end
 
     if action == "DiscoverCompanionLineage" then
         discoverCompanionLineage(player, payload)
+        return
+    end
+
+    if action == "BreedCompanions" then
+        breedCompanions(player, payload)
+        return
+    end
+
+    if action == "HatchHybridEgg" then
+        hatchHybridEgg(player, payload)
         return
     end
 
