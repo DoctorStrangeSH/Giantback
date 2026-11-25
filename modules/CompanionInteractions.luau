@@ -5,7 +5,7 @@ local Debris = game:GetService("Debris")
 
 local CompanionInteractions = {}
 
-function CompanionInteractions.new(player, event, names, palette)
+function CompanionInteractions.new(player, event, names, palette, onSearch)
     local function playCompanionPettingBurst(model, companionId, bondStage)
         if not model or not model.Parent then return end
         bondStage = math.clamp(math.floor(tonumber(bondStage) or 0), 0, 4)
@@ -124,6 +124,77 @@ function CompanionInteractions.new(player, event, names, palette)
         end)
     end
 
+
+    local function playCompanionSearchStart(model, companionId)
+        if not model or not model.Parent then return end
+        local origin = model:GetPivot().Position + Vector3.new(0, 0.8, 0)
+        local folder = Instance.new("Folder")
+        folder.Name = "CompanionSearchStartLocal"
+        folder.Parent = workspace
+        local color = companionId == "Fox" and palette.coral
+            or companionId == "CrystalWisp" and palette.water or palette.lilac
+        for index = 1, 5 do
+            local mote = Instance.new("Part")
+            mote.Name = "SearchSpark"
+            mote.Shape = Enum.PartType.Ball
+            mote.Size = Vector3.new(0.12, 0.12, 0.12)
+            mote.Anchored = true
+            mote.CanCollide = false
+            mote.CanTouch = false
+            mote.CanQuery = false
+            mote.CastShadow = false
+            mote.Material = Enum.Material.Neon
+            mote.Color = color
+            mote.CFrame = CFrame.new(origin + Vector3.new((index - 3) * 0.22, 0, 0))
+            mote.Parent = folder
+            TweenService:Create(mote, TweenInfo.new(0.65, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                CFrame = mote.CFrame + Vector3.new((index - 3) * 0.14, 0.75 + (index % 2) * 0.16, 0),
+                Transparency = 1,
+                Size = Vector3.new(0.025, 0.025, 0.025),
+            }):Play()
+        end
+        Debris:AddItem(folder, 0.75)
+    end
+
+    local function playCompanionGiftDiscovery(model, companionId, rarity)
+        if not model or not model.Parent then return end
+        local origin = model:GetPivot().Position + Vector3.new(0, 1.05, 0)
+        local folder = Instance.new("Folder")
+        folder.Name = "CompanionGiftDiscoveryLocal"
+        folder.Parent = workspace
+        local colors = {
+            common = Color3.fromRGB(164, 210, 160),
+            rare = Color3.fromRGB(105, 190, 255),
+            epic = Color3.fromRGB(194, 130, 255),
+        }
+        local color = colors[rarity] or colors.common
+        local count = rarity == "epic" and 14 or rarity == "rare" and 10 or 6
+        for index = 1, count do
+            local angle = (index - 1) * math.pi * 2 / count
+            local direction = Vector3.new(math.cos(angle), 0, math.sin(angle))
+            local mote = Instance.new("Part")
+            mote.Name = "GiftDiscoverySpark"
+            mote.Shape = Enum.PartType.Ball
+            mote.Size = Vector3.new(rarity == "epic" and 0.2 or 0.14, rarity == "epic" and 0.2 or 0.14, rarity == "epic" and 0.2 or 0.14)
+            mote.Anchored = true
+            mote.CanCollide = false
+            mote.CanTouch = false
+            mote.CanQuery = false
+            mote.CastShadow = false
+            mote.Material = Enum.Material.Neon
+            mote.Color = color
+            mote.CFrame = CFrame.new(origin + direction * 0.3)
+            mote.Parent = folder
+            TweenService:Create(mote, TweenInfo.new(0.9, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                CFrame = CFrame.new(origin + direction * (rarity == "epic" and 1.8 or 1.25) + Vector3.new(0, 0.9 + (index % 3) * 0.12, 0)),
+                Size = Vector3.new(0.025, 0.025, 0.025),
+                Transparency = 1,
+            }):Play()
+        end
+        Debris:AddItem(folder, 1.0)
+        showCompanionAttention(model, companionId)
+    end
+
     local function attachWorldPetPrompt(model, companionId)
         if not model or not model.Parent then return end
         local anchor = model:FindFirstChild("Body") or model.PrimaryPart
@@ -163,7 +234,8 @@ function CompanionInteractions.new(player, event, names, palette)
         searchPrompt.Triggered:Connect(function(triggeringPlayer)
             if triggeringPlayer and triggeringPlayer ~= player then return end
             if player:GetAttribute("Companion") ~= companionId then return end
-            showCompanionAttention(model, companionId)
+            if onSearch then onSearch(companionId) end
+            playCompanionSearchStart(model, companionId)
             event:FireServer("SearchCompanionGift", companionId)
         end)
     end
@@ -171,6 +243,8 @@ function CompanionInteractions.new(player, event, names, palette)
     return {
         attachWorldPetPrompt = attachWorldPetPrompt,
         showCompanionAttention = showCompanionAttention,
+        playCompanionSearchStart = playCompanionSearchStart,
+        playCompanionGiftDiscovery = playCompanionGiftDiscovery,
         playCompanionPettingBurst = playCompanionPettingBurst,
     }
 end
