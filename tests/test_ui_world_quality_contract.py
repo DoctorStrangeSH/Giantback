@@ -69,6 +69,17 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertNotIn('icon = "Л"', HUD)
         self.assertNotIn('definition.glyph', HUD)
 
+
+    def test_expedition_and_gift_journal_cards_expand_for_mobile_text(self):
+        self.assertIn('card(body, track.id .. "Step" .. tostring(index), compactDiary and 88 or 58)', HUD)
+        self.assertIn('stepTitle.TextWrapped = true', HUD)
+        self.assertIn('stepHint.TextWrapped = true', HUD)
+        self.assertIn('stepHint.TextYAlignment = Enum.TextYAlignment.Top', HUD)
+        self.assertIn('card(body, "GiftDiscovery_" .. gift.id, compactGift and 82 or 64)', HUD)
+        self.assertIn('giftName.TextWrapped = true', HUD)
+        self.assertIn('giftHint.TextWrapped = true', HUD)
+        self.assertIn('giftHint.TextYAlignment = Enum.TextYAlignment.Top', HUD)
+
     def test_companion_mutation_album_has_progress_discovery_states_and_visual_cards(self):
         self.assertIn('card(body, "CompanionMutationCodexHeader", 82)', HUD)
         self.assertIn('CodexProgressTrack', HUD)
