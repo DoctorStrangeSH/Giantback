@@ -1295,3 +1295,13 @@
 - [ ] Only after all UI items pass, resume deferred gameplay systems and move to the next roadmap milestone.
 
 **Current verified state:** PR #54 is open as Draft; its latest head is `4658f93e`. GitHub Actions `build-and-validate` completed successfully on 25.11.2026. Roblox Studio visual acceptance is still NOT DONE. PR #52 remains a separate open PR and is not treated as accepted until its own CI and Studio checks are reviewed.
+
+
+## UI acceptance gate — mobile contract correction (25.11.2026)
+
+- [x] Fix the multiline refresh assertion in `tests/test_companion_mobile_card_layout.py`: use a whitespace-tolerant regex instead of a double-escaped newline literal.
+- [x] CI on HEAD `ee8940cdb61e3729fd5b0d90baaf4a40fe868d25`: 672/672 Python tests passed.
+- [x] Asset validation passed: 6 original OBJ/MTL source pairs and asset manifest.
+- [x] Roblox Place build and structural validation passed: 88 named instances, 18 scripts.
+- [x] `Giantback-visual-build` artifact uploaded successfully (run 45637088353; artifact 15033440925).
+- [ ] Roblox Studio visual acceptance remains pending; automated contracts do not prove actual layout, readability, or runtime behavior.
