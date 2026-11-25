@@ -1241,6 +1241,7 @@
 - [x] Give each inherited trait a distinct visual treatment and a biome-specific +1 companion-gift bonus.
 - [x] Add profile experiment cards with live parent friendship, ingredient counts, and disabled states until requirements are met.
 - [x] Add contract coverage for recipes, ownership, active host, friendship, atomic costs, persistence, rewards, UI gating, and visuals.
+- [x] Limit each host companion to one inherited-trait path; show alternative paths as unavailable after a choice is made.
 - [ ] Roblox Studio: test each pairing, unowned parent, insufficient friendship/materials, repeat attempts, save failure, rejoin persistence, and gift bonus in the matching biome.
 
 ## Secret companion evolutions (25.11.2026)
