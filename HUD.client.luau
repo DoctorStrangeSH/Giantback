@@ -227,10 +227,16 @@ local function createApprovedCompanionPreview(parent, companionId, objectName, s
     local camera = Instance.new("Camera")
     camera.Name = "PreviewCamera"
     camera.FieldOfView = 34
-    camera.CFrame = CFrame.lookAt(
-        focus + Vector3.new(extent * 0.82, extent * 0.32, extent * 2.15),
-        focus + Vector3.new(0, boundsSize.Y * 0.06, 0)
-    )
+    local aspectRatio = viewport.AbsoluteSize.X / math.max(viewport.AbsoluteSize.Y, 1)
+    if aspectRatio <= 0 then aspectRatio = 1 end
+    local halfFovTangent = math.tan(math.rad(camera.FieldOfView * 0.5))
+    local framingMargin = extent * 0.12
+    local verticalDistance = (boundsSize.Y * 0.5 + framingMargin) / halfFovTangent
+    local horizontalDistance = (boundsSize.X * 0.5 + framingMargin) / (halfFovTangent * aspectRatio)
+    local depthDistance = boundsSize.Z * 0.5 + framingMargin
+    local cameraDistance = math.max(verticalDistance, horizontalDistance, depthDistance, 1) * 1.08
+    local viewDirection = Vector3.new(0.28, 0.12, 1).Unit
+    camera.CFrame = CFrame.lookAt(focus + viewDirection * cameraDistance, focus)
     camera.Parent = viewport
     viewport.CurrentCamera = camera
     return true
