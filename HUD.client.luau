@@ -1373,6 +1373,8 @@ local function renderFarm()
     end
 end
 
+local companionProfileSelected = nil
+
 local function renderPets()
     local pets = {
         {id = "Fox", name = "Лисёнок", role = "Разведчик", rarity = "Обычный", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "fox"},
@@ -1393,10 +1395,150 @@ local function renderPets()
         ["Легендарный"] = {color = Color3.fromRGB(218, 157, 55), tint = Color3.fromRGB(255, 239, 194), text = Color3.fromRGB(132, 83, 22)},
         ["Сезонный"] = {color = Color3.fromRGB(207, 119, 75), tint = Color3.fromRGB(255, 231, 207), text = Color3.fromRGB(139, 74, 42)},
     }
+
+    if companionProfileSelected then
+        local selectedPet
+        for _, candidate in pets do
+            if candidate.id == companionProfileSelected then selectedPet = candidate break end
+        end
+        if not selectedPet then
+            companionProfileSelected = nil
+        else
+            local compactProfile = gui.AbsoluteSize.X < 620
+            local owned = player:GetAttribute(selectedPet.id) == true
+            local equipped = player:GetAttribute("Companion") == selectedPet.id
+            local level = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. selectedPet.id .. "_Level")) or 1), 1, 5)
+            local xp = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. selectedPet.id .. "_XP")) or 0))
+            local xpToNext = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. selectedPet.id .. "_XPToNext")) or 0))
+            local bond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. selectedPet.id .. "_Bond")) or 0), 0, 1000)
+            local bondRank = player:GetAttribute("Companion_" .. selectedPet.id .. "_BondRank") or "Знакомство"
+            local mutationName = player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationName")
+            local mutationRarity = player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationRarity")
+            local displayRarity = owned and type(mutationRarity) == "string" and mutationRarity ~= ""
+                and mutationRarity or selectedPet.rarity
+            local rarityStyle = rarityStyles[displayRarity] or rarityStyles["Обычный"]
+
+            local back = button(body, "BackToPetCollection", "←  ВСЕ ПИТОМЦЫ",
+                UDim2.new(1, 0, 0, 38), UDim2.new(), palette.forestLight)
+            back.TextXAlignment = Enum.TextXAlignment.Left
+            back.TextSize = 12
+            back.Activated:Connect(function()
+                companionProfileSelected = nil
+                refreshActiveTab()
+            end)
+
+            local hero = card(body, "CompanionProfileHero", compactProfile and 188 or 222)
+            hero.BackgroundColor3 = rarityStyle.tint:Lerp(palette.paper, 0.55)
+            local heroStroke = hero:FindFirstChildOfClass("UIStroke")
+            if heroStroke then
+                heroStroke.Color = rarityStyle.color
+                heroStroke.Thickness = displayRarity == "Легендарный" and 2.2 or 1.5
+            end
+            local previewSize = compactProfile and 132 or 164
+            local hasPreview = owned and createApprovedCompanionPreview(
+                hero, selectedPet.id, "CompanionProfilePreview",
+                UDim2.fromOffset(previewSize, previewSize), UDim2.fromOffset(12, compactProfile and 28 or 30)
+            )
+            if not hasPreview then
+                local portrait = Instance.new("Frame")
+                portrait.Name = "CompanionProfilePortrait"
+                portrait.Size = UDim2.fromOffset(previewSize, previewSize)
+                portrait.Position = UDim2.fromOffset(12, compactProfile and 28 or 30)
+                portrait.BackgroundColor3 = owned and rarityStyle.tint or palette.paperDark
+                portrait.BorderSizePixel = 0
+                portrait.Parent = hero
+                corner(portrait, 22)
+                stroke(portrait, rarityStyle.color, 0.22, 1.5)
+                createPictogram(portrait, "ProfilePetIcon", owned and selectedPet.icon or "lock",
+                    compactProfile and 72 or 88, owned and rarityStyle.color or palette.muted).Position =
+                    UDim2.new(0.5, compactProfile and -36 or -44, 0.5, compactProfile and -36 or -44)
+            end
+
+            local textX = compactProfile and 156 or 192
+            local title = label(hero, "ProfileName", selectedPet.name,
+                UDim2.new(1, -textX - 12, 0, compactProfile and 40 or 48),
+                UDim2.fromOffset(textX, compactProfile and 34 or 38),
+                compactProfile and 16 or 20, palette.ink, Enum.Font.GothamBlack)
+            title.TextYAlignment = Enum.TextYAlignment.Top
+            local role = label(hero, "ProfileRole", selectedPet.role,
+                UDim2.new(1, -textX - 12, 0, 34), UDim2.fromOffset(textX, compactProfile and 78 or 91),
+                11, palette.muted, Enum.Font.GothamBold)
+            role.TextYAlignment = Enum.TextYAlignment.Top
+            local rarityBadge = Instance.new("Frame")
+            rarityBadge.Name = "ProfileRarityBadge"
+            rarityBadge.Size = UDim2.fromOffset(compactProfile and 94 or 112, 25)
+            rarityBadge.Position = UDim2.fromOffset(textX, compactProfile and 120 or 139)
+            rarityBadge.BackgroundColor3 = rarityStyle.tint
+            rarityBadge.BorderSizePixel = 0
+            rarityBadge.Parent = hero
+            corner(rarityBadge, 9)
+            stroke(rarityBadge, rarityStyle.color, 0.12, 1.2)
+            if displayRarity == "Легендарный" then
+                gradient(rarityBadge, Color3.fromRGB(255, 246, 213), Color3.fromRGB(246, 207, 126))
+            end
+            local rarityLabel = label(rarityBadge, "ProfileRarity", string.upper(displayRarity),
+                UDim2.new(1, -8, 1, 0), UDim2.fromOffset(4, 0), 9, rarityStyle.text, Enum.Font.GothamBlack)
+            rarityLabel.TextXAlignment = Enum.TextXAlignment.Center
+            rarityLabel.TextYAlignment = Enum.TextYAlignment.Center
+            local state = label(hero, "ProfileState", not owned and "ЕЩЁ НЕ НАЙДЕН" or equipped and "ТВОЙ СПУТНИК" or "В ТВОЕЙ КОЛЛЕКЦИИ",
+                UDim2.new(1, -textX - 12, 0, 18), UDim2.fromOffset(textX, compactProfile and 151 or 174),
+                8, owned and palette.forest or palette.muted, Enum.Font.GothamBlack)
+
+            addInfo("ЗНАКОМСТВО", owned and selectedPet.description or selectedPet.location, 66)
+            addInfo("ХАРАКТЕР И НАСТРОЕНИЕ",
+                owned and ((selectedPet.id == "Fox" and "Любопытный исследователь" or selectedPet.id == "Moth" and "Нежная хранительница света" or selectedPet.id == "HarvestSprite" and "Добрый хранитель урожая" or selectedPet.id == "BrambleBun" and "Осторожный собиратель" or selectedPet.id == "MossTurtle" and "Спокойный защитник" or selectedPet.id == "Glowcap" and "Светлый мечтатель" or selectedPet.id == "Dewdrop" and "Весёлый непоседа" or selectedPet.id == "Starling" and "Звёздный наблюдатель" or "Кристальный проводник")
+                    .. " · " .. tostring(player:GetAttribute("Companion_" .. selectedPet.id .. "_Mood") or "Спокойствие")
+                    or "Познакомься с питомцем, чтобы узнать его характер.", 58)
+            addInfo("РОСТ И ДРУЖБА",
+                owned and ((level >= 5 and "Взрослый" or level >= 3 and "Подросток" or "Малыш")
+                    .. " · Уровень " .. tostring(level) .. (level >= 5 and " (максимум)" or " · " .. tostring(xp) .. "/" .. tostring(xpToNext) .. " XP")
+                    .. " · Дружба " .. tostring(bond) .. "/1000 · " .. tostring(bondRank))
+                    or "Уровень, взросление и дружба откроются после знакомства.", 68)
+            local mutationText = owned and type(mutationName) == "string" and mutationName ~= ""
+                and (mutationName .. " · " .. tostring(mutationRarity or "Необычный"))
+                or "Особая форма пока не открыта"
+            addInfo("ОСОБАЯ ФОРМА", mutationText, 54)
+            local talentText = selectedPet.id == "Fox" and (level >= 5 and "Острый нюх: поиск каждые 60 сек." or level >= 3 and "Чуткий нюх: поиск каждые 90 сек." or "Следопыт: ищет тайники в роще.")
+                or selectedPet.id == "Moth" and (level >= 5 and "Лунная аура: радиус лечения +4." or level >= 3 and "Лунная аура: радиус лечения +2." or "Лунная аура развивается вместе с дружбой.")
+                or selectedPet.id == "HarvestSprite" and "Осенний огонёк: уникальный сезонный спутник."
+                or (selectedPet.id == "BrambleBun" or selectedPet.id == "MossTurtle" or selectedPet.id == "Glowcap" or selectedPet.id == "Dewdrop" or selectedPet.id == "Starling") and "Фестивальный спутник: развивай дружбу и открывай характер."
+                or "Призменное чутьё: помогает находить скрытые кристальные жилы."
+            addInfo("ТАЛАНТ", owned and talentText or "Талант откроется после знакомства.", 54)
+
+            local actionCard = card(body, "CompanionProfileActions", compactProfile and 96 or 86)
+            local actionWidth = UDim2.new(0.5, -18, 0, 34)
+            local function profileAction(name, caption, color, position, enabled, callback)
+                local actionButton = button(actionCard, name, caption, actionWidth, position, color)
+                actionButton.TextSize = 10
+                actionButton.Active = enabled
+                actionButton.AutoButtonColor = enabled
+                actionButton.BackgroundTransparency = enabled and 0 or 0.4
+                actionButton.Activated:Connect(callback)
+            end
+            profileAction("CallCompanion", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН",
+                equipped and palette.gold or palette.forest, UDim2.fromOffset(10, 8), owned,
+                function() if owned then event:FireServer(selectedPet.id) end end)
+            local foodCount = (tonumber(player:GetAttribute("Resource_Pumpkin")) or 0)
+                + (tonumber(player:GetAttribute("Resource_Strawberry")) or 0)
+                + (tonumber(player:GetAttribute("Resource_Cabbage")) or 0)
+                + (tonumber(player:GetAttribute("Resource_Carrot")) or 0)
+            profileAction("FeedCompanion", "УГОСТИТЬ", palette.forestLight,
+                UDim2.new(0.5, 8, 0, 8), owned and equipped and foodCount > 0,
+                function() if owned and equipped and foodCount > 0 then event:FireServer("FeedCompanion", selectedPet.id) end end)
+            profileAction("PlayWithCompanion", "ИГРАТЬ", palette.gold,
+                UDim2.fromOffset(10, 48), owned and equipped,
+                function() if owned and equipped then event:FireServer("StartCompanionPlay", selectedPet.id) end end)
+            profileAction("PetCompanion", "ПОГЛАДИТЬ", palette.lilac,
+                UDim2.new(0.5, 8, 0, 48), owned and equipped,
+                function() if owned and equipped then event:FireServer("PetCompanion", selectedPet.id) end end)
+        end
+        return
+    end
+
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
         local equipped = player:GetAttribute("Companion") == pet.id
-        local item = card(body, pet.id .. "Card", compact and 354 or 214)
+        local item = card(body, pet.id .. "Card", compact and 394 or 254)
         local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
         local displayRarity = owned and type(mutationRarity) == "string" and mutationRarity ~= ""
             and mutationRarity or pet.rarity
@@ -1562,6 +1704,15 @@ local function renderPets()
             if owned and equipped then
                 event:FireServer("StartCompanionPlay", pet.id)
             end
+        end)
+
+        local detailsButton = button(item, "OpenProfile", "ПОДРОБНЕЕ О ПИТОМЦЕ",
+            compact and UDim2.new(1, -24, 0, 30) or UDim2.new(1, -32, 0, 30),
+            compact and UDim2.fromOffset(12, 350) or UDim2.fromOffset(16, 214), palette.forest)
+        detailsButton.TextSize = 10
+        detailsButton.Activated:Connect(function()
+            companionProfileSelected = pet.id
+            refreshActiveTab()
         end)
 
         local petButton = button(item, "Pet", owned and (equipped and "ПОГЛАДИТЬ" or "ПОЗОВИ") or "НЕТ ПИТОМЦА",
