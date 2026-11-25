@@ -1213,3 +1213,15 @@
 - [x] Add regression tests for remote routing, ownership/equip validation, biome gating, reward pools, cooldown persistence, rollback, and prompt wiring.
 - [ ] Roblox Studio: verify the second ProximityPrompt is readable on touch/gamepad/keyboard and does not collide with the petting prompt.
 - [ ] Roblox Studio: test biome boundaries and reward feedback in Grove, Dusk, and Crystal Grotto.
+
+
+## Companion gift-search animation and discovery feedback (25.11.2026)
+
+- [x] Add a short, readable searching pose to the existing procedural companion animation system.
+- [x] Trigger a local search-start sparkle when the player activates the companion search prompt.
+- [x] Emit a server-confirmed result signal only after the reward and cooldown have been saved successfully.
+- [x] Classify common, rare, and epic discoveries on the server; never accept rarity or item values from the client.
+- [x] Add species-aware discovery bursts with stronger color and particle count for rare/epic finds.
+- [x] Handle the case where the result arrives before the local companion model is spawned.
+- [x] Add regression coverage for animation state wiring, result signal, and discovery effects.
+- [ ] Roblox Studio: check all species search poses and reward bursts in motion; verify no clipping with prompt/sleep/attention indicators.
