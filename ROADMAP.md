@@ -1279,3 +1279,19 @@
 - [x] Handle the case where the result arrives before the local companion model is spawned.
 - [x] Add regression coverage for animation state wiring, result signal, and discovery effects.
 - [ ] Roblox Studio: check all species search poses and reward bursts in motion; verify no clipping with prompt/sleep/attention indicators.
+
+
+## UI acceptance gate — scope freeze (25.11.2026)
+
+- [x] Verify the current UI branch and its latest GitHub Actions result before continuing.
+- [x] Confirm the latest PR #54 head has successful `build-and-validate` checks; the branch description records 661/661 automated tests plus asset validation, Roblox Place build, embedded-script validation, and artifact upload.
+- [x] Record that automated source contracts and Place generation do not constitute visual acceptance in Roblox Studio.
+- [ ] Freeze all new gameplay/system work until the UI acceptance gate is complete. Existing companion breeding, genetic research, secret evolution, and gift-journal work remain deferred from further expansion; do not add more systems in this phase.
+- [ ] Roblox Studio visual pass: verify the six-tab navigation, top resource bar, objective panel, modal open/close/scroll behavior, all nine pet cards, rarity badges, profile navigation, 3D preview/fallback states, and action feedback.
+- [ ] Resolution matrix: 320×568, 375×667, 414×896, 568×320 landscape, 768×1024, and 1920×1080. Check safe insets, text wrapping, clipping, overlap, scroll reachability, and touch target sizes.
+- [ ] Companion acceptance: inspect all nine species at idle/follow/affection/rest; verify prompt placement and animation readability. Confirm Fox/Moth 3D previews only appear when their production approval flags are set.
+- [ ] Performance pass on a real mobile device: inspect ViewportFrame clone cleanup, tab switching, UI rebuilds, frame stability, and memory growth.
+- [ ] Capture Studio screenshots and Output results; mark each checklist item PASS/FAIL/BLOCKED before closing UI/UX 2.x.
+- [ ] Only after all UI items pass, resume deferred gameplay systems and move to the next roadmap milestone.
+
+**Current verified state:** PR #54 is open as Draft; its latest head is `4658f93e`. GitHub Actions `build-and-validate` completed successfully on 25.11.2026. Roblox Studio visual acceptance is still NOT DONE. PR #52 remains a separate open PR and is not treated as accepted until its own CI and Studio checks are reviewed.
