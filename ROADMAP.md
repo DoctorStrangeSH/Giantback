@@ -1229,6 +1229,20 @@
 - [x] Add regression tests for catalog coverage, persistence, rollback, provenance, journal rendering, and pictograms.
 - [ ] Roblox Studio: verify new-profile, first-discovery, repeat-drop, save-failure, and rejoin flows; inspect journal layout at 320/375/414 px and desktop.
 
+
+## Secret companion evolutions (25.11.2026)
+
+- [x] Add three unique secret forms for the original Fox, Moth, and Crystal Wisp companions.
+- [x] Require maximum companion level, a high friendship bond, and species-specific rare materials.
+- [x] Keep evolution selection and resource costs server-authoritative; never accept a form or price from the client.
+- [x] Persist evolution IDs inside the existing companion profile and validate saved IDs against the allowlist.
+- [x] Spend materials and save the evolved form as one transaction; roll back both on persistence failure.
+- [x] Show each secret recipe and live resource counts in the companion profile; enable the action only when all requirements are met.
+- [x] Add distinct legendary visual treatments that override the cosmetic mutation tint without changing the companion rig.
+- [x] Add a success event and refresh the profile after the server confirms persistence.
+- [x] Add regression coverage for recipes, eligibility, server validation, persistence, rollback, UI gating, and visuals.
+- [ ] Roblox Studio: test all three recipes, insufficient materials, unowned/not-equipped pets, repeated activation, save failure, and rejoin persistence; inspect effects at mobile and desktop sizes.
+
 ## Companion gift-search animation and discovery feedback (25.11.2026)
 
 - [x] Add a short, readable searching pose to the existing procedural companion animation system.
