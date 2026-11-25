@@ -64,7 +64,7 @@ class CompanionMobileCardLayoutTests(unittest.TestCase):
         self.assertIn('local lastCompactLayout', HUD)
         self.assertIn('if lastCompactLayout ~= nil and lastCompactLayout ~= compact and refreshActiveTab then', HUD)
         self.assertIn('refreshActiveTab = function()', HUD)
-        self.assertIn('clearBody()\\n    renderers[activeTab]()\\n    applyPanelLayer()', HUD)
+        self.assertRegex(HUD, r'clearBody\(\)\s+renderers\[activeTab\]\(\)\s+applyPanelLayer\(\)')
 
 
 if __name__ == "__main__":
