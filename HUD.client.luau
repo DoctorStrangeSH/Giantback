@@ -787,12 +787,20 @@ local function addPlot(plotId, index)
     local readyAt = tonumber(player:GetAttribute("Farm_" .. plotId .. "_ReadyAt")) or 0
     local crop = cropById[cropId]
     local stateText
+    local statusTitle = "РАСТЁТ"
+    local statusColor = palette.forestLight
     if not unlocked then
+        statusTitle = "ЗАКРЫТА"
+        statusColor = palette.muted
         stateText = "Закрыта — откроется после улучшения фермы"
     elseif cropId == "" then
+        statusTitle = "СВОБОДНА"
+        statusColor = palette.water
         local selected = cropById[player:GetAttribute("Farm_SelectedCrop") or "Carrot"]
         stateText = "Свободна — выбрано: " .. (selected and selected.name or "морковь")
     elseif readyAt <= os.time() then
+        statusTitle = "УРОЖАЙ ГОТОВ"
+        statusColor = palette.forest
         stateText = (crop and crop.name or "Растение") .. ": урожай готов! Подойди и собери"
     else
         local remaining = math.max(0, readyAt - os.time())
@@ -801,7 +809,10 @@ local function addPlot(plotId, index)
         stateText = string.format("%s растёт — осталось %02d:%02d", crop and crop.name or "Растение", minutes, seconds)
     end
     local compact = gui.AbsoluteSize.X < 620
-    local item = card(body, "Plot" .. tostring(index), compact and 88 or 66)
+    local item = card(body, "Plot" .. tostring(index), compact and 108 or 88)
+    if unlocked and cropId ~= "" and readyAt <= os.time() then
+        item.BackgroundColor3 = Color3.fromRGB(235, 242, 224)
+    end
     createPictogram(item, "PlotIcon", not unlocked and "lock" or (crop and crop.icon or "farm"), 34, palette.forest)
         .Position = UDim2.fromOffset(14, compact and 26 or 16)
     label(item, "Title", "Грядка " .. tostring(index),
@@ -809,6 +820,9 @@ local function addPlot(plotId, index)
     local state = label(item, "State", stateText,
         UDim2.new(1, -72, 0, compact and 46 or 30), UDim2.fromOffset(60, 31), compact and 11 or 12, palette.muted)
     state.TextYAlignment = Enum.TextYAlignment.Top
+    state.TextWrapped = true
+    label(item, "PlotStatus", statusTitle, UDim2.new(1, -72, 0, 18),
+        UDim2.fromOffset(60, compact and 82 or 64), 10, statusColor, Enum.Font.GothamBlack)
 end
 
 local showToast
@@ -1420,15 +1434,17 @@ local function addFarmUpgrade(farmLevel)
     local coins = tonumber(player:GetAttribute("Coins")) or 0
     local nextLevel = farmLevel + 1
     local cost = farmUpgradeCosts[nextLevel]
-    local item = card(body, "FarmUpgrade", 82)
+    local compact = gui.AbsoluteSize.X < 620
+    local item = card(body, "FarmUpgrade", compact and 142 or 82)
     local title = farmLevel >= 3 and "Ферма • максимальный уровень" or ("Улучшение фермы → уровень " .. tostring(nextLevel))
-    label(item, "Name", title, UDim2.new(1, -142, 0, 24), UDim2.fromOffset(12, 8), 14, palette.ink, Enum.Font.GothamBold)
+    label(item, "Name", title, compact and UDim2.new(1, -24, 0, 36) or UDim2.new(1, -142, 0, 24), UDim2.fromOffset(12, 8), 14, palette.ink, Enum.Font.GothamBold)
     local description = farmLevel == 1 and "Откроет две дополнительные грядки" or "Откроет последнюю грядку"
     label(item, "Details", farmLevel >= 3 and "Все четыре грядки доступны" or description,
-        UDim2.new(1, -142, 0, 30), UDim2.fromOffset(12, 36), 10, palette.muted)
+        compact and UDim2.new(1, -24, 0, 38) or UDim2.new(1, -142, 0, 30), UDim2.fromOffset(12, compact and 46 or 36), 10, palette.muted)
     local action = button(item, "UpgradeFarm",
         farmLevel >= 3 and "МАКС." or (tostring(cost) .. " МОН."),
-        UDim2.fromOffset(112, 38), UDim2.new(1, -122, 0.5, -19),
+        compact and UDim2.new(1, -24, 0, 42) or UDim2.fromOffset(112, 38),
+        compact and UDim2.fromOffset(12, 92) or UDim2.new(1, -122, 0.5, -19),
         farmLevel >= 3 and palette.paperDark or (coins >= cost and palette.gold or palette.paperDark))
     if farmLevel >= 3 or coins < cost then
         action.TextColor3 = palette.muted
