@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CLIENT = (ROOT / "Album.client.luau").read_text(encoding="utf-8")
 ANIMATION = (ROOT / "modules/CompanionAnimation.luau").read_text(encoding="utf-8")
 BUILD = (ROOT / "build.py").read_text(encoding="utf-8")
+VISUALS = (ROOT / "WorldVisuals.server.luau").read_text(encoding="utf-8")
 
 
 class CompanionAnimationModuleTests(unittest.TestCase):
@@ -43,23 +44,24 @@ class CompanionAnimationModuleTests(unittest.TestCase):
 
     def test_all_festival_hatchlings_have_species_specific_idle_and_affection_motion(self):
         species_markers = {
-            "BrambleBun": ("Ear left", "Ear right", "Acorn leaf", "curiousDip"),
-            "MossTurtle": ("Shell", "Head", "Foot", "paddle"),
-            "Glowcap": ("Mushroom stalk", "Mushroom cap", "Glow core", "Glowcap spot"),
-            "Dewdrop": ("Fin left", "Fin right", "Tail fin", "Water jewel"),
-            "Starling": ("Wing left", "Wing right", "Crest", "Star halo"),
+            "BrambleBun": ('string.find(part.Name, "Ear")', 'part.Name == "Acorn leaf"', "curiousDip"),
+            "MossTurtle": ('part.Name == "Shell"', 'part.Name == "Head"', 'part.Name == "Foot"', "paddle"),
+            "Glowcap": ('part.Name == "Mushroom stalk"', 'part.Name == "Mushroom cap"', 'part.Name == "Glow core"', 'part.Name == "Glowcap spot"'),
+            "Dewdrop": ('string.find(part.Name, "Fin")', 'part.Name == "Water jewel"', 'part.Name == "Tail fin"'),
+            "Starling": ('string.find(part.Name, "Wing")', 'part.Name == "Crest"', 'part.Name == "Star halo"'),
         }
         for species, markers in species_markers.items():
             with self.subTest(species=species):
                 self.assertIn('state.id == "' + species + '"', ANIMATION)
                 for marker in markers:
                     self.assertIn(marker, ANIMATION)
+                self.assertIn('"' + species + '"', VISUALS)
 
     def test_companion_animation_uses_live_mood_personality_and_deep_sleep_state(self):
         for marker in (
             'state.mood == "Радость"',
-            'state.personality == "Озорной"',
-            'state.personality == "Застенчивый"',
+            'personality == "Озорной"',
+            'personality == "Застенчивый"',
             'state.sleeping',
             'local flapStrength = moving and 0.3 or happy and 0.22',
             'local paddle = moving and math.sin(time * 6.5',
