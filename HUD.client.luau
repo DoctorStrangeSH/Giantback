@@ -604,8 +604,8 @@ local function updateResponsiveLayout()
             local iconSize = narrow and 18 or compact and 20 or 24
             if iconRoot then
                 iconRoot.Size = UDim2.fromOffset(iconSize, iconSize)
-                iconRoot.Position = narrow and UDim2.new(0.5, -iconSize / 2, 0.5, -iconSize / 2)
-                    or UDim2.new(0.5, -iconSize / 2, 0, 4)
+                -- Keep the icon above its caption on compact and narrow navigation bars.
+                iconRoot.Position = UDim2.new(0.5, -iconSize / 2, 0, 3)
             end
             if titleLabel then
                 titleLabel.Visible = true
