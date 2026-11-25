@@ -24,16 +24,19 @@ function CompanionActivity.new()
                 idleSince = now,
                 nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay)),
                 nextAttentionAt = now + math.random(16, 26),
+                nextExploreAt = now + math.random(11, 18),
             }
             companionActivity[owner] = activity
         end
 
         local sniff = false
         local attention = false
+        local curious = false
         if moving then
             activity.idleSince = now
             activity.nextCuriosityAt = now + math.random(9, 16)
             activity.nextAttentionAt = now + math.random(24, 38)
+            activity.nextExploreAt = now + math.random(18, 28)
         elseif isLocal and id == "Fox" and now >= (activity.nextCuriosityAt or now + 10) then
             sniff = true
             local personality = owner:GetAttribute("Companion_Fox_Personality")
@@ -48,6 +51,23 @@ function CompanionActivity.new()
             local minDelay = math.max(5, window[1] - bondStage * 1.5)
             local maxDelay = math.max(minDelay + 1, window[2] - bondStage * 2)
             activity.nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))
+        end
+
+        if isLocal and not moving and not activity.exploring and now >= (activity.nextExploreAt or now + 15) then
+            curious = true
+            local personality = owner:GetAttribute("Companion_" .. id .. "_Personality")
+            local exploreWindows = {
+                ["Любопытный"] = {12, 18},
+                ["Озорной"] = {14, 21},
+                ["Смелый"] = {16, 24},
+                ["Застенчивый"] = {23, 32},
+            }
+            local window = exploreWindows[personality] or {17, 25}
+            local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_" .. id .. "_BondStage")) or 0, 0, 4)
+            local reduction = bondStage * 1.5
+            local minDelay = math.max(9, window[1] - reduction)
+            local maxDelay = math.max(minDelay + 2, window[2] - reduction)
+            activity.nextExploreAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))
         end
 
         if isLocal and not moving and now >= (activity.nextAttentionAt or now + 20) then
@@ -70,7 +90,7 @@ function CompanionActivity.new()
         local idleSeconds = now - activity.idleSince
         local resting = not moving and idleSeconds >= 12
         local sleeping = not moving and idleSeconds >= 45
-        return resting, sleeping, sniff, attention
+        return resting, sleeping, sniff, attention, curious
     end
 
     local function forget(owner)
