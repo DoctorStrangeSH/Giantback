@@ -2423,21 +2423,31 @@ local function renderExpeditions()
             end
         end
 
-        local header = card(body, track.id .. "Expedition", 70)
+        local compactDiary = gui.AbsoluteSize.X < 620
+        local header = card(body, track.id .. "Expedition", compactDiary and 82 or 70)
         header.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
-        createPictogram(header, "TrackIcon", track.icon, 34, track.color).Position = UDim2.fromOffset(16, 18)
-        label(header, "Title", track.title, UDim2.new(1, -130, 0, 22), UDim2.fromOffset(60, 10), 13, palette.ink, Enum.Font.GothamBlack)
-        label(header, "Subtitle", track.subtitle, UDim2.new(1, -130, 0, 18), UDim2.fromOffset(60, 34), 10, palette.muted)
+        createPictogram(header, "TrackIcon", track.icon, compactDiary and 30 or 34, track.color).Position = UDim2.fromOffset(14, compactDiary and 24 or 18)
+        local trackTitle = label(header, "Title", track.title, UDim2.new(1, -116, 0, compactDiary and 34 or 22), UDim2.fromOffset(54, compactDiary and 6 or 10), compactDiary and 11 or 13, palette.ink, Enum.Font.GothamBlack)
+        trackTitle.TextWrapped = true
+        local trackSubtitle = label(header, "Subtitle", track.subtitle, UDim2.new(1, -116, 0, compactDiary and 28 or 18), UDim2.fromOffset(54, compactDiary and 43 or 34), compactDiary and 9 or 10, palette.muted)
+        trackSubtitle.TextWrapped = true
         local count = label(header, "Count", tostring(completed) .. "/" .. tostring(#track.steps), UDim2.fromOffset(52, 28), UDim2.new(1, -62, 0.5, -14), 14, track.color, Enum.Font.GothamBlack)
         count.TextXAlignment = Enum.TextXAlignment.Center
 
         for index, step in track.steps do
             local done = isExpeditionStepComplete(step)
-            local item = card(body, track.id .. "Step" .. tostring(index), 58)
+            local item = card(body, track.id .. "Step" .. tostring(index), compactDiary and 88 or 58)
             item.BackgroundColor3 = done and Color3.fromRGB(235, 242, 224) or palette.paper
-            label(item, "State", done and "✓" or tostring(index), UDim2.fromOffset(30, 34), UDim2.fromOffset(12, 12), 18, done and palette.forestLight or palette.muted, Enum.Font.GothamBlack)
-            label(item, "Title", step.title, UDim2.new(1, -62, 0, 22), UDim2.fromOffset(48, 6), 13, palette.ink, Enum.Font.GothamBold)
-            label(item, "Hint", done and "Открытие записано в дневник." or step.hint, UDim2.new(1, -62, 0, 23), UDim2.fromOffset(48, 29), 10, palette.muted)
+            label(item, "State", done and "✓" or tostring(index), UDim2.fromOffset(30, 34), UDim2.fromOffset(12, compactDiary and 10 or 12), 18, done and palette.forestLight or palette.muted, Enum.Font.GothamBlack)
+            local stepTitle = label(item, "Title", step.title,
+                UDim2.new(1, -62, 0, compactDiary and 34 or 22), UDim2.fromOffset(48, 6),
+                compactDiary and 12 or 13, palette.ink, Enum.Font.GothamBold)
+            stepTitle.TextWrapped = true
+            local stepHint = label(item, "Hint", done and "Открытие записано в дневник." or step.hint,
+                UDim2.new(1, -62, 0, compactDiary and 38 or 23),
+                UDim2.fromOffset(48, compactDiary and 44 or 29), compactDiary and 9 or 10, palette.muted)
+            stepHint.TextWrapped = true
+            stepHint.TextYAlignment = Enum.TextYAlignment.Top
         end
     end
     addInfo("ПРОГРЕСС ИССЛЕДОВАНИЯ", "Открыто " .. tostring(totalCompleted) .. " из " .. tostring(totalSteps) .. " записей. Новые экспедиции появятся вместе с неизведанными землями.", 66)
@@ -2541,12 +2551,15 @@ local function renderExpeditions()
         for _, gift in giftEntries do
             if gift.biome == group.id then
                 local found = player:GetAttribute("CompanionGiftFound_" .. gift.id) == true
-                local item = card(body, "GiftDiscovery_" .. gift.id, 64)
+                local compactGift = gui.AbsoluteSize.X < 620
+                local item = card(body, "GiftDiscovery_" .. gift.id, compactGift and 82 or 64)
                 item.BackgroundColor3 = found and Color3.fromRGB(235, 242, 224) or palette.paper
                 createPictogram(item, "GiftIcon", found and gift.icon or "lock", 28,
-                    found and gift.color or palette.muted).Position = UDim2.fromOffset(13, 18)
-                label(item, "GiftName", found and gift.name or "Неизвестная находка",
-                    UDim2.new(1, -58, 0, 20), UDim2.fromOffset(52, 7), 12, palette.ink, Enum.Font.GothamBold)
+                    found and gift.color or palette.muted).Position = UDim2.fromOffset(13, compactGift and 26 or 18)
+                local giftName = label(item, "GiftName", found and gift.name or "Неизвестная находка",
+                    UDim2.new(1, -58, 0, compactGift and 30 or 20), UDim2.fromOffset(52, 7),
+                    compactGift and 11 or 12, palette.ink, Enum.Font.GothamBold)
+                giftName.TextWrapped = true
                 local foundPetId = player:GetAttribute("CompanionGiftPet_" .. gift.id)
                 local foundPetName = foundPetId and pets[foundPetId] or nil
                 local foundBiome = player:GetAttribute("CompanionGiftBiome_" .. gift.id)
@@ -2554,8 +2567,11 @@ local function renderExpeditions()
                     .. " • " .. ((foundBiome == "Grove" and "Солнечная роща")
                         or (foundBiome == "Dusk" and "Сумеречная долина") or "Кристальный грот"))
                     or ("Исследуй биом: " .. gift.biomeName)
-                label(item, "GiftHint", hint,
-                    UDim2.new(1, -58, 0, 22), UDim2.fromOffset(52, 31), 9, palette.muted)
+                local giftHint = label(item, "GiftHint", hint,
+                    UDim2.new(1, -58, 0, compactGift and 38 or 22),
+                    UDim2.fromOffset(52, compactGift and 40 or 31), compactGift and 9 or 9, palette.muted)
+                giftHint.TextWrapped = true
+                giftHint.TextYAlignment = Enum.TextYAlignment.Top
             end
         end
     end
