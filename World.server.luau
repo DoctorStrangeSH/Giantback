@@ -559,6 +559,28 @@ end
 
 local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
 local COMPANION_MAX_LEVEL = 5
+local companionEvolutionDefinitions = {
+    Fox = {
+        id = "VerdantGuardian", name = "Страж древней рощи", rarity = "Секретная",
+        requirements = {level = 5, bond = 900, items = {SunPetal = 15, MoonSeed = 2, RootvaultEssence = 1}},
+    },
+    Moth = {
+        id = "LunarOracle", name = "Оракул лунного света", rarity = "Секретная",
+        requirements = {level = 5, bond = 900, items = {MoonPetal = 15, StarShard = 8, MoonSeed = 3}},
+    },
+    CrystalWisp = {
+        id = "PrismSovereign", name = "Владыка призмы", rarity = "Секретная",
+        requirements = {level = 5, bond = 900, items = {CrystalShard = 20, CrystalSigil = 3, VoidGeode = 1}},
+    },
+}
+local function normalizeCompanionEvolutions(raw)
+    raw = type(raw) == "table" and raw or {}
+    local result = {}
+    for companionId, definition in companionEvolutionDefinitions do
+        result[companionId] = raw[companionId] == definition.id and definition.id or nil
+    end
+    return result
+end
 
 local function companionXpToNext(level)
     return 100 + math.max(0, level - 1) * 75
@@ -776,6 +798,13 @@ local function syncCompanionProgress(player)
         player:SetAttribute("Companion_" .. id .. "_MutationName", mutationDefinition and mutationDefinition.name or "")
         player:SetAttribute("Companion_" .. id .. "_MutationRarity", mutationDefinition and mutationDefinition.rarity or "")
         player:SetAttribute("Companion_" .. id .. "_MutationBiome", mutationDefinition and mutationDefinition.biome or "")
+        local evolutionDefinition = companionEvolutionDefinitions[id]
+        local evolutionId = session.companionEvolutions[id]
+        player:SetAttribute("Companion_" .. id .. "_Evolution", evolutionId or "")
+        player:SetAttribute("Companion_" .. id .. "_EvolutionName",
+            evolutionId and evolutionDefinition and evolutionDefinition.name or "")
+        player:SetAttribute("Companion_" .. id .. "_EvolutionRarity",
+            evolutionId and evolutionDefinition and evolutionDefinition.rarity or "")
         local progressData = session.companionProgress[id]
         player:SetAttribute("Companion_" .. id .. "_Level", progressData.level)
         player:SetAttribute("Companion_" .. id .. "_XP", progressData.xp)
@@ -798,6 +827,62 @@ local function syncCompanionProgress(player)
         player:SetAttribute("Companion_" .. id .. "_Mood", mood)
         player:SetAttribute("Companion_" .. id .. "_Personality", session.companionPersonalities[id])
     end
+end
+
+local function evolveCompanion(player, companionId)
+    local session = sessions[player]
+    local definition = companionEvolutionDefinitions[companionId]
+    if not definition or not session or not player:GetAttribute("Ready")
+        or player:GetAttribute(companionId) ~= true then return end
+    if not session.online then
+        return tip(player, "Эволюция временно недоступна: профиль не сохраняется.")
+    end
+    if player:GetAttribute("Companion") ~= companionId then
+        return tip(player, "Сначала позови питомца, которого хочешь преобразить.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+    if session.companionEvolutions[companionId] == definition.id then
+        return tip(player, "Этот питомец уже открыл свою секретную форму.")
+    end
+
+    local progressData = session.companionProgress[companionId]
+    local requirements = definition.requirements
+    if progressData.level < requirements.level or progressData.bond < requirements.bond then
+        return tip(player, "Для эволюции нужен уровень " .. tostring(requirements.level)
+            .. " и дружба " .. tostring(requirements.bond) .. ".")
+    end
+    for itemId, amount in requirements.items do
+        if (session.inventory[itemId] or 0) < amount then
+            return tip(player, "Не хватает ресурсов для секретной формы: "
+                .. tostring(amount) .. " × " .. itemId .. ".")
+        end
+    end
+
+    local previousEvolution = session.companionEvolutions[companionId]
+    local previousAmounts = {}
+    session.economyBusy = true
+    for itemId, amount in requirements.items do
+        previousAmounts[itemId] = session.inventory[itemId]
+        session.inventory[itemId] -= amount
+    end
+    session.companionEvolutions[companionId] = definition.id
+    syncInventory(player)
+    syncCompanionProgress(player)
+    if not save(player) then
+        session.companionEvolutions[companionId] = previousEvolution
+        for itemId, amount in previousAmounts do session.inventory[itemId] = amount end
+        syncInventory(player)
+        syncCompanionProgress(player)
+        session.economyBusy = false
+        return tip(player, "Эволюция не сохранилась. Все ресурсы возвращены — попробуй ещё раз.")
+    end
+    session.economyBusy = false
+    event:FireClient(player, "CompanionEvolved", {
+        companionId = companionId,
+        evolutionId = definition.id,
+        name = definition.name,
+    })
+    tip(player, "Невероятно! " .. pets[companionId] .. " открыл новую форму: " .. definition.name .. "!")
 end
 
 local function awardCompanionXp(player, companionId, amount)
@@ -2213,6 +2298,7 @@ save = function(player)
         end
 
         local companionProgressSnapshot = normalizeCompanionProgress(session.companionProgress)
+        local companionEvolutionSnapshot = normalizeCompanionEvolutions(session.companionEvolutions)
 
         local ok, err = pcall(function()
             store:UpdateAsync(tostring(player.UserId), function(old)
@@ -2289,6 +2375,7 @@ save = function(player)
                     local savedCompanion = companionProgressSnapshot[companionId]
                     savedCompanion.personality = session.companionPersonalities[companionId]
                     savedCompanion.mutation = session.companionMutations[companionId]
+                    savedCompanion.evolution = companionEvolutionSnapshot[companionId]
                     savedCompanions[companionId] = savedCompanion
                 end
                 old.companions = savedCompanions
@@ -2360,6 +2447,7 @@ local function init(player)
         companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth, CrystalWisp = companionMoodDefaults.CrystalWisp, HarvestSprite = companionMoodDefaults.HarvestSprite},
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
         companionMutations = normalizeCompanionMutations(nil),
+        companionEvolutions = normalizeCompanionEvolutions(nil),
         companionDiscoveryBiomes = {},
         companionFeedReadyAt = {},
         companionPetReadyAt = {},
@@ -2565,6 +2653,12 @@ local function init(player)
                 savedMutations[id] = saved.mutation
             end
             session.companionMutations = normalizeCompanionMutations(savedMutations)
+            local savedEvolutions = {}
+            for _, id in COMPANION_IDS do
+                local saved = type(savedCompanions[id]) == "table" and savedCompanions[id] or {}
+                savedEvolutions[id] = saved.evolution
+            end
+            session.companionEvolutions = normalizeCompanionEvolutions(savedEvolutions)
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     else
@@ -3199,6 +3293,11 @@ end
 
     if action == "SearchCompanionGift" then
         searchCompanionGift(player, payload)
+        return
+    end
+
+    if action == "EvolveCompanion" then
+        evolveCompanion(player, payload)
         return
     end
 
