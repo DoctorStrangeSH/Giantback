@@ -184,7 +184,7 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 if part.Name == "Body" then
                     transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 2.4) * 0.035, 0, math.sin(time * 3.1) * (happy and 0.09 or 0.035)))
                 elseif part.Name == "Head" then
-                    local curiousDip = not moving and not resting and math.sin(time * 0.72) > 0.94 and 0.12 or 0
+                    local curiousDip = state.curious and 0.18 or not moving and not resting and math.sin(time * 0.72) > 0.94 and 0.12 or 0
                     local nod = petting and math.sin(time * 8) * 0.12 or math.sin(time * 2.2) * 0.035
                     transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(-curiousDip + nod, 0, math.sin(time * 1.7) * 0.035))
                 elseif string.find(part.Name, "Ear") then
@@ -205,7 +205,7 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 if part.Name == "Body" or part.Name == "Shell" then
                     transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 1.35) * 0.018, 0, math.sin(time * 1.1) * 0.025))
                 elseif part.Name == "Head" then
-                    local peek = state.sleeping and -0.16 or math.sin(time * (petting and 6 or 1.8)) * (petting and 0.11 or 0.045)
+                    local peek = state.sleeping and -0.16 or state.curious and 0.13 or math.sin(time * (petting and 6 or 1.8)) * (petting and 0.11 or 0.045)
                     transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(peek, 0, math.sin(time * 1.2) * 0.025))
                 elseif part.Name == "Foot" then
                     local side = offset.Position.X >= 0 and 1 or -1
@@ -227,7 +227,7 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 if part.Name == "Body" or part.Name == "Mushroom stalk" then
                     transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 1.7) * 0.025, 0, math.sin(time * 2.1) * 0.045))
                 elseif part.Name == "Mushroom cap" then
-                    local wobble = math.sin(time * (petting and 7 or 2.2)) * (petting and 0.17 or 0.07)
+                    local wobble = math.sin(time * (state.curious and 5.2 or petting and 7 or 2.2)) * (state.curious and 0.14 or petting and 0.17 or 0.07)
                     transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(0, math.sin(time * 1.4) * 0.04, wobble))
                 elseif part.Name == "Glow core" or part.Name == "Glowcap spot" then
                     local light = part:FindFirstChildOfClass("PointLight")
@@ -245,7 +245,7 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 if state.sleeping then bobAmount = 0.01 end
                 local bob = math.sin(time * bobSpeed) * bobAmount
                 if part.Name == "Body" or part.Name == "Head" then
-                    local headNod = part.Name == "Head" and (petting and math.sin(time * 7) * 0.13 or math.sin(time * 2.3) * 0.045) or 0
+                    local headNod = part.Name == "Head" and (state.curious and math.sin(time * 5.5) * 0.12 or petting and math.sin(time * 7) * 0.13 or math.sin(time * 2.3) * 0.045) or 0
                     transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(headNod, 0, math.sin(time * 1.8) * 0.035))
                 elseif string.find(part.Name, "Fin") or part.Name == "Tail fin" then
                     local side = string.find(part.Name, "left") and -1 or string.find(part.Name, "right") and 1 or 0
@@ -270,7 +270,7 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 if part.Name == "Body" then
                     transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(math.sin(time * 1.8) * 0.025, 0, math.sin(time * 2.1) * 0.035))
                 elseif part.Name == "Head" then
-                    local curiousTilt = math.sin(time * 0.85) > 0.72 and 0.12 or 0
+                    local curiousTilt = state.curious and 0.22 or math.sin(time * 0.85) > 0.72 and 0.12 or 0
                     local nod = petting and math.sin(time * 7) * 0.1 or math.sin(time * 2.3) * 0.035
                     transform = CFrame.new(0, bob, 0) * aroundPoint(offset.Position, CFrame.Angles(nod, 0, curiousTilt + math.sin(time * 1.1) * 0.035))
                 elseif string.find(part.Name, "Wing") then
