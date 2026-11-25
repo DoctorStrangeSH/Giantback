@@ -26,7 +26,7 @@ local function aroundPoint(point, rotation)
     return CFrame.new(point) * rotation * CFrame.new(-point)
 end
 
-function CompanionAnimation.animate(model, state, time, moving, resting, player, foxSniffUntil, mothAbilityUntil, pettingUntil)
+function CompanionAnimation.animate(model, state, time, moving, resting, player, foxSniffUntil, mothAbilityUntil, pettingUntil, searching)
     local pivot = model:GetPivot()
     local now = os.clock()
     local growthStage = math.clamp(math.floor(tonumber(model:GetAttribute("AppliedGrowthStage")) or 1), 1, 3)
@@ -43,7 +43,26 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
         if part.Parent then
             local transform = CFrame.new()
 
-            if state.id == "Fox" then
+            if searching and (part.Name == "Body" or part.Name == "Head" or part.Name == "Muzzle" or part.Name == "Paw" or part.Name == "Paw toe") then
+                local searchPulse = math.sin(time * 10)
+                if part.Name == "Body" then
+                    transform = CFrame.new(0, -0.045 + math.abs(searchPulse) * 0.025, 0)
+                        * aroundPoint(offset.Position, CFrame.Angles(math.rad(3), 0, 0))
+                elseif part.Name == "Head" or part.Name == "Muzzle" then
+                    transform = CFrame.new(0, -0.11 - math.abs(searchPulse) * 0.035, 0)
+                        * aroundPoint(offset.Position, CFrame.Angles(math.rad(9) + searchPulse * 0.035, 0, 0))
+                else
+                    local side = offset.Position.X >= rigOrigin.X and 1 or -1
+                    local dig = math.max(0, searchPulse) * 0.09
+                    transform = CFrame.new(0, dig, 0) * aroundPoint(offset.Position, CFrame.Angles(-dig * 1.4, 0, side * dig))
+                end
+            elseif searching and (part.Name == "Head" or part.Name == "Moth head" or part.Name == "Core"
+                or part.Name == "Body" or part.Name == "Shell" or part.Name == "Mushroom cap"
+                or part.Name == "Crest" or part.Name == "Water jewel") then
+                local searchPulse = math.sin(time * 7.5)
+                transform = CFrame.new(0, -0.035 + math.abs(searchPulse) * 0.045, 0)
+                    * aroundPoint(offset.Position, CFrame.Angles(math.rad(5) + searchPulse * 0.025, 0, searchPulse * 0.045))
+            elseif state.id == "Fox" then
                 if part.Name == "Body" and petting then
                     local affectionateDip = math.sin(time * 6.5) * 0.025
                     transform = CFrame.new(0, -0.09 + affectionateDip, 0.06)
