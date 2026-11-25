@@ -22,9 +22,9 @@ class CompanionGiftJournalTests(unittest.TestCase):
         self.assertIn("local savedGiftDiscoveries = type(data.companionGiftDiscoveries)", WORLD)
         self.assertIn("session.companionGiftDiscoveries[itemId] = {", WORLD)
         self.assertIn("savedGiftDiscoveries[itemId] = discovery", WORLD)
-        self.assertIn("player:SetAttribute("CompanionGiftFound_" .. itemId, true)", WORLD)
-        self.assertIn("player:SetAttribute("CompanionGiftBiome_" .. itemId, discovery.biome)", WORLD)
-        self.assertIn("player:SetAttribute("CompanionGiftPet_" .. itemId, discovery.companionId)", WORLD)
+        self.assertIn('player:SetAttribute("CompanionGiftFound_" .. itemId, true)', WORLD)
+        self.assertIn('player:SetAttribute("CompanionGiftBiome_" .. itemId, discovery.biome)', WORLD)
+        self.assertIn('player:SetAttribute("CompanionGiftPet_" .. itemId, discovery.companionId)', WORLD)
 
     def test_first_discovery_is_part_of_same_save_and_rolls_back_on_failure(self):
         self.assertIn("local previousDiscovery = session.companionGiftDiscoveries[reward.itemId]", WORLD)
