@@ -67,6 +67,8 @@ class CompanionBreedingTests(unittest.TestCase):
             "ГЕНЕТИЧЕСКАЯ ЛАБОРАТОРИЯ",
             "Создай неизвестного гибрида",
             "HybridIncubators",
+            "updateIncubatorButton",
+            "task.wait(1)",
             "BreedRecipe_",
             'event:FireServer("BreedCompanions", recipe.id)',
             'event:FireServer("HatchHybridEgg", egg.id)',
