@@ -1314,3 +1314,12 @@
 - [x] Add automated source contracts for the responsive diary and gift-card layout.
 - [ ] Run CI for the diary layout change and resolve any regressions.
 - [ ] Complete Roblox Studio visual acceptance for diary, collection, farm, building, backpack, and map tabs.
+
+
+## UI acceptance gate — mobile building placement (25.11.2026)
+
+- [x] Move placement controls into a responsive panel sized for compact and short landscape viewports.
+- [x] Keep placement controls above the responsive bottom navigation with explicit safe spacing.
+- [x] Update placement panel geometry only when the camera viewport changes, not every render frame.
+- [x] Add source-contract coverage for panel bounds, control availability, and closing the catalog before placement.
+- [ ] Run CI and verify touch placement, rotation, cancel, confirm, and move flows in Roblox Studio.
