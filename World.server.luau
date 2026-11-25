@@ -2185,6 +2185,10 @@ save = function(player)
             readyAt = math.max(0, math.floor(tonumber(session.foxSearchReadyAt) or 0)),
             searchCount = math.max(0, math.floor(tonumber(session.foxSearchCount) or 0)),
         }
+        local companionGiftSnapshot = {}
+        for _, companionId in COMPANION_IDS do
+            companionGiftSnapshot[companionId] = math.max(0, math.floor(tonumber(session.companionGiftReadyAt[companionId]) or 0))
+        end
         local dailyQuestSnapshot = normalizeDailyQuests(session.dailyQuests, player, session)
         local weeklyChallengeSnapshot = normalizeWeeklyChallenges(session.weeklyChallenges, player, session)
         local seasonalEventSnapshot = normalizeSeasonalEvent(session.seasonalEvent)
@@ -2245,6 +2249,12 @@ save = function(player)
                 savedFoxScout.readyAt = math.max(tonumber(savedFoxScout.readyAt) or 0, foxScoutSnapshot.readyAt)
                 savedFoxScout.searchCount = math.max(tonumber(savedFoxScout.searchCount) or 0, foxScoutSnapshot.searchCount)
                 old.foxScout = savedFoxScout
+
+                local savedCompanionGiftSearch = type(old.companionGiftSearch) == "table" and old.companionGiftSearch or {}
+                for companionId, readyAt in companionGiftSnapshot do
+                    savedCompanionGiftSearch[companionId] = math.max(tonumber(savedCompanionGiftSearch[companionId]) or 0, readyAt)
+                end
+                old.companionGiftSearch = savedCompanionGiftSearch
 
                 local savedCombatEncounters = type(old.completedCombatEncounters) == "table" and old.completedCombatEncounters or {}
                 for encounterId, completed in completedCombatSnapshot do
@@ -2321,6 +2331,7 @@ local function init(player)
         foxCacheActiveId = nil,
         foxSearchReadyAt = 0,
         foxSearchCount = 0,
+        companionGiftReadyAt = {},
         completedCombatEncounters = {},
         dailyQuests = nil,
         weeklyChallenges = nil,
@@ -2485,6 +2496,10 @@ local function init(player)
             end
             session.foxSearchReadyAt = math.max(0, math.floor(tonumber(savedFoxScout.readyAt) or 0))
             session.foxSearchCount = math.max(0, math.floor(tonumber(savedFoxScout.searchCount) or 0))
+            local savedCompanionGiftSearch = type(data.companionGiftSearch) == "table" and data.companionGiftSearch or {}
+            for _, companionId in COMPANION_IDS do
+                session.companionGiftReadyAt[companionId] = math.max(0, math.floor(tonumber(savedCompanionGiftSearch[companionId]) or 0))
+            end
 
             local savedCombatEncounters = type(data.completedCombatEncounters) == "table" and data.completedCombatEncounters or {}
             for encounterId, completed in savedCombatEncounters do
@@ -2785,6 +2800,142 @@ local function collectMoonBloom(player)
     awardCompanionXp(player, "Moth", 35)
 end
 
+
+local COMPANION_GIFT_COOLDOWN_SECONDS = 180
+local companionGiftRewardTables = {
+    Grove = {
+        {itemId = "SunPetal", min = 1, max = 2, weight = 38},
+        {itemId = "Wood", min = 1, max = 2, weight = 30},
+        {itemId = "CarrotSeed", min = 1, max = 2, weight = 20},
+        {itemId = "StrawberrySeed", min = 1, max = 1, weight = 10},
+        {itemId = "MoonSeed", min = 1, max = 1, weight = 2},
+    },
+    Dusk = {
+        {itemId = "MoonPetal", min = 1, max = 2, weight = 38},
+        {itemId = "StarShard", min = 1, max = 1, weight = 24},
+        {itemId = "Stone", min = 1, max = 2, weight = 24},
+        {itemId = "MoonSeed", min = 1, max = 1, weight = 12},
+        {itemId = "CrystalShard", min = 1, max = 1, weight = 2},
+    },
+    CrystalGrotto = {
+        {itemId = "CrystalShard", min = 1, max = 2, weight = 48},
+        {itemId = "CrystalSigil", min = 1, max = 1, weight = 24},
+        {itemId = "StarShard", min = 1, max = 2, weight = 20},
+        {itemId = "PrismSeed", min = 1, max = 1, weight = 7},
+        {itemId = "VoidGeode", min = 1, max = 1, weight = 1},
+    },
+}
+
+local function isPositionInsideBiome(playerPosition, biomeName)
+    local biome = workspace:FindFirstChild(biomeName)
+    if not biome then return false end
+    local minBounds = Vector3.new(math.huge, math.huge, math.huge)
+    local maxBounds = Vector3.new(-math.huge, -math.huge, -math.huge)
+    local foundPart = false
+    for _, descendant in biome:GetDescendants() do
+        if descendant:IsA("BasePart") then
+            foundPart = true
+            local half = descendant.Size * 0.5
+            local low = descendant.Position - half
+            local high = descendant.Position + half
+            minBounds = Vector3.new(math.min(minBounds.X, low.X), math.min(minBounds.Y, low.Y), math.min(minBounds.Z, low.Z))
+            maxBounds = Vector3.new(math.max(maxBounds.X, high.X), math.max(maxBounds.Y, high.Y), math.max(maxBounds.Z, high.Z))
+        end
+    end
+    if not foundPart then return false end
+    local margin = 12
+    return playerPosition.X >= minBounds.X - margin and playerPosition.X <= maxBounds.X + margin
+        and playerPosition.Y >= minBounds.Y - margin and playerPosition.Y <= maxBounds.Y + margin
+        and playerPosition.Z >= minBounds.Z - margin and playerPosition.Z <= maxBounds.Z + margin
+end
+
+local function getCompanionGiftBiome(position)
+    for _, biomeName in {"CrystalGrotto", "Dusk", "Grove"} do
+        if isPositionInsideBiome(position, biomeName) then return biomeName end
+    end
+    return nil
+end
+
+local function rollCompanionGift(biomeName, companionLevel, bondStage)
+    local rewards = companionGiftRewardTables[biomeName]
+    if not rewards then return nil end
+    local totalWeight = 0
+    for _, reward in rewards do totalWeight += reward.weight end
+    local rareBonus = math.clamp((companionLevel - 1) * 0.35 + bondStage * 0.5, 0, 3)
+    local adjustedTotal = totalWeight + rareBonus
+    local roll = math.random() * adjustedTotal
+    if roll > totalWeight then
+        local rareReward = rewards[#rewards]
+        return rareReward, math.random(rareReward.min, rareReward.max)
+    end
+    for _, reward in rewards do
+        roll -= reward.weight
+        if roll <= 0 then return reward, math.random(reward.min, reward.max) end
+    end
+    local fallback = rewards[1]
+    return fallback, math.random(fallback.min, fallback.max)
+end
+
+local function searchCompanionGift(player, companionId)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") or not session.online then
+        return tip(player, "Поиск подарков временно недоступен: профиль ещё загружается или не сохраняется.")
+    end
+    if type(companionId) ~= "string" or table.find(COMPANION_IDS, companionId) == nil
+        or player:GetAttribute(companionId) ~= true then
+        return
+    end
+    if player:GetAttribute("Companion") ~= companionId then
+        return tip(player, "Сначала позови питомца, который хочет исследовать находку.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local biomeName = getCompanionGiftBiome(root.Position)
+    if not biomeName then
+        return tip(player, "Питомец пока не видит подходящих следов. Попробуйте исследовать лес, сумеречный остров или хрустальный грот.")
+    end
+
+    local now = os.time()
+    local readyAt = tonumber(session.companionGiftReadyAt[companionId]) or 0
+    if readyAt > now then
+        return tip(player, "Питомцу нужно немного отдохнуть. Поиск снова будет доступен через " .. tostring(math.ceil((readyAt - now) / 60)) .. " мин.")
+    end
+
+    local level = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. companionId .. "_Level")) or 1), 1, COMPANION_MAX_LEVEL)
+    local bondStage = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. companionId .. "_BondStage")) or 0), 0, 4)
+    local reward, amount = rollCompanionGift(biomeName, level, bondStage)
+    if not reward or not table.find(inventoryKeys, reward.itemId) then return end
+
+    local previousAmount = math.max(0, math.floor(tonumber(session.inventory[reward.itemId]) or 0))
+    local previousReadyAt = readyAt
+    session.economyBusy = true
+    session.inventory[reward.itemId] = previousAmount + amount
+    session.companionGiftReadyAt[companionId] = now + COMPANION_GIFT_COOLDOWN_SECONDS
+    syncInventory(player)
+    local saved = save(player)
+    if not saved then
+        session.inventory[reward.itemId] = previousAmount
+        session.companionGiftReadyAt[companionId] = previousReadyAt
+        syncInventory(player)
+        session.economyBusy = false
+        return tip(player, "Находка не сохранилась. Предметы возвращены — попробуй ещё раз позже.")
+    end
+
+    session.economyBusy = false
+    local rewardNames = {
+        SunPetal = "солнечные лепестки", Wood = "дерево", CarrotSeed = "семена моркови",
+        StrawberrySeed = "семена клубники", MoonSeed = "лунное семя", MoonPetal = "лунные лепестки",
+        StarShard = "звёздный осколок", Stone = "камень", CrystalShard = "осколок кристалла",
+        CrystalSigil = "кристальная печать", PrismSeed = "призматическое семя", VoidGeode = "пустотный жеод",
+    }
+    tip(player, (pets[companionId] or "Питомец") .. " нашёл в биоме «" .. biomeName .. "»: "
+        .. (rewardNames[reward.itemId] or reward.itemId) .. " ×" .. tostring(amount) .. "!")
+    awardCompanionXp(player, companionId, 12)
+end
+
 local function startFoxSearch(player)
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
@@ -2988,6 +3139,11 @@ end
 
     if action == "CollectFoxCache" then
         collectFoxCache(player, payload)
+        return
+    end
+
+    if action == "SearchCompanionGift" then
+        searchCompanionGift(player, payload)
         return
     end
 
