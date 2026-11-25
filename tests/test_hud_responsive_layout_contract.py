@@ -1,5 +1,6 @@
 """Responsive HUD layout contracts for desktop, tablet, and mobile viewports."""
 from pathlib import Path
+import re
 import unittest
 
 
@@ -43,6 +44,30 @@ class HudResponsiveLayoutContractTests(unittest.TestCase):
         self.assertIn("Keep the icon above its caption on compact and narrow navigation bars", HUD)
         self.assertIn("iconRoot.Position = UDim2.new(0.5, -iconSize / 2, 0, 3)", HUD)
         self.assertNotIn("0.5, -iconSize / 2, 0.5, -iconSize / 2", HUD)
+
+
+    def test_every_pet_and_navigation_icon_has_a_native_pictogram(self):
+        catalog_start = HUD.index("local function renderPets()")
+        catalog_end = HUD.find("\\nlocal function ", catalog_start + 30)
+        pet_catalog = HUD[catalog_start:catalog_end]
+        icon_start = HUD.index("local function createPictogram")
+        icon_end = HUD.find("\\nlocal function ", icon_start + 30)
+        pictogram_factory = HUD[icon_start:icon_end]
+
+        pet_icons = set(re.findall(r'icon\\s*=\\s*"([^"]+)"', pet_catalog))
+        navigation_icons = set(re.findall(r'icon\\s*=\\s*"([^"]+)"', HUD[HUD.index("navDefinitions ="):]))
+        directly_used_icons = set(
+            re.findall(r'createPictogram\\([^\\n]+,\\s*"([^"]+)"\\s*\\)', HUD)
+        )
+        supported_icons = set(re.findall(r'kind\\s*==\\s*"([^"]+)"', pictogram_factory))
+
+        self.assertTrue(pet_icons, "Pet catalog must declare its pictograms")
+        self.assertTrue(navigation_icons, "Navigation must declare its pictograms")
+        self.assertFalse(pet_icons - supported_icons, f"Missing pet pictograms: {pet_icons - supported_icons}")
+        self.assertFalse(navigation_icons - supported_icons, f"Missing navigation pictograms: {navigation_icons - supported_icons}")
+        self.assertFalse(directly_used_icons - supported_icons, f"Missing directly used pictograms: {directly_used_icons - supported_icons}")
+        self.assertIn('part("FallbackBadge"', pictogram_factory)
+        self.assertIn('part("FallbackMark"', pictogram_factory)
 
     def test_layout_rebuilds_active_tab_when_crossing_breakpoint(self):
         self.assertIn("if lastCompactLayout ~= nil and lastCompactLayout ~= compact and refreshActiveTab then", HUD)
