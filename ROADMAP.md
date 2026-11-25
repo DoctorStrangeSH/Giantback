@@ -1174,3 +1174,15 @@
 - [x] Add regression tests for species-specific part bindings, mood/personality response, sleep state, and cosmetic-only ownership.
 - [x] CI: 630 tests passed; source asset validation, Roblox Place build, generated-place validation, and artifact upload succeeded (25.11.2026).
 - [ ] Roblox Studio: inspect all five hatchlings at idle, follow, petting, and sleep; verify no mesh clipping or excessive motion at mobile and desktop camera distances.
+
+
+## Companion attention cues (25.11.2026)
+
+- [x] Add a low-pressure idle attention scheduler for all equipped companions; it only runs for the local player's active companion.
+- [x] Pace attention requests by personality: playful companions ask more often, shy companions less often.
+- [x] Let higher bond stages gently shorten the wait without making attention mandatory.
+- [x] Reset the attention timer when the player is moving, avoiding repeated prompts during exploration.
+- [x] Show a short-lived species-aware visual cue above the companion; prevent overlapping duplicate bubbles.
+- [x] Keep the feature client-only and cosmetic: no rewards, penalties, inventory changes, or server requests.
+- [x] Add regression tests for local-only scheduling, personality/bond pacing, movement reset, temporary bubble lifecycle, and species glyphs.
+- [ ] Roblox Studio: verify bubble readability, head clearance, camera distance, and no overlap with sleep indicators at mobile and desktop resolutions.
