@@ -379,6 +379,23 @@ local function createPictogram(parent, name, kind, size, tint)
         part("Pedestal", 0.42, 0.38, 0.16, 0.52, palette.ink)
         part("Bowl", 0.12, 0.20, 0.76, 0.22, color, nil, true)
         part("Water", 0.26, 0.24, 0.48, 0.10, palette.water, nil, true)
+    elseif kind == "seed" then
+        part("SeedBody", 0.28, 0.28, 0.44, 0.58, color, -35, true)
+        part("SeedSprout", 0.46, 0.06, 0.12, 0.34, palette.forest)
+        part("SeedLeaf", 0.48, 0.08, 0.34, 0.20, palette.mint, 28, true)
+    elseif kind == "moon" then
+        part("MoonOuter", 0.18, 0.12, 0.66, 0.76, color, nil, true)
+        part("MoonCutout", 0.40, 0.02, 0.58, 0.68, palette.paper, nil, true)
+    elseif kind == "star" then
+        part("StarVertical", 0.42, 0.08, 0.16, 0.84, color, nil, true)
+        part("StarHorizontal", 0.08, 0.42, 0.84, 0.16, color, nil, true)
+        part("StarDiagonalA", 0.42, 0.10, 0.16, 0.80, color, 45, true)
+        part("StarDiagonalB", 0.42, 0.10, 0.16, 0.80, color, -45, true)
+    elseif kind == "chest" then
+        part("ChestLid", 0.12, 0.18, 0.76, 0.26, color)
+        part("ChestBody", 0.12, 0.44, 0.76, 0.44, palette.paperDark)
+        part("ChestBand", 0.42, 0.18, 0.16, 0.70, palette.gold)
+        part("ChestLock", 0.42, 0.48, 0.16, 0.20, palette.ink, nil, true)
     elseif kind == "lock" then
         part("Shackle", 0.26, 0.08, 0.48, 0.48, color, nil, true)
         part("LockBody", 0.16, 0.40, 0.68, 0.48, color)
