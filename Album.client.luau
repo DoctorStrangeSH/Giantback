@@ -794,6 +794,7 @@ local CompanionInteractions = require(storage:WaitForChild("CompanionInteraction
 local interactions = CompanionInteractions.new(player, event, names, palette)
 local playCompanionPettingBurst = interactions.playCompanionPettingBurst
 local attachWorldPetPrompt = interactions.attachWorldPetPrompt
+local showCompanionAttention = interactions.showCompanionAttention
 
 -- The moth stardust appearance is a local presentation system.
 local MothStardust = require(storage:WaitForChild("MothStardust"))
@@ -879,8 +880,9 @@ local function follow(dt)
             end
 
             local moving = humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.08
-            local resting, sleeping, sniff = companionActivity.update(owner, id, now, moving, owner == player)
+            local resting, sleeping, sniff, attention = companionActivity.update(owner, id, now, moving, owner == player)
             if sniff then foxSniffUntil = os.clock() + 2.2 end
+            if attention and owner == player then showCompanionAttention(model, id) end
             setSleepIndicator(model, sleeping)
 
             local state = animationStates[model]
