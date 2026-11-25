@@ -819,7 +819,8 @@ local placementViewportConnection = nil
 local placementParts = {}
 
 local function clearPlacementGhost()
-    for _, part in ipairs(placementParts) do
+    for _, entry in ipairs(placementParts) do
+        local part = entry.part
         if part and part.Parent then part:Destroy() end
     end
     table.clear(placementParts)
@@ -1024,7 +1025,7 @@ local function updatePlacementGhost()
     end
 
     local pointer = placementPointer or UserInputService:GetMouseLocation()
-    local ray = camera:ScreenPointToRay(pointer.X, pointer.Y)
+    local ray = camera:ViewportPointToRay(pointer.X, pointer.Y)
     local params = RaycastParams.new()
     params.FilterType = Enum.RaycastFilterType.Include
     params.FilterDescendantsInstances = {meadow}
@@ -1156,11 +1157,11 @@ local function beginIslandPlacement(decorationId, moveIndex)
     placementStatus.TextXAlignment = Enum.TextXAlignment.Center
     placementStatus.ZIndex = 46
 
-    local rotate = button(placementOverlay, "Rotate", "↻ ПОВОРОТ",
+    local rotate = button(placementOverlay, "Rotate", "ПОВОРОТ",
         UDim2.new(0.32, -8, 0, 42), UDim2.new(0, 8, 0, 54), palette.forestLight)
     local cancel = button(placementOverlay, "Cancel", "ОТМЕНА",
         UDim2.new(0.32, -8, 0, 42), UDim2.new(0.34, 0, 0, 54), palette.coral)
-    local confirm = button(placementOverlay, "Confirm", "ПОСТРОИТЬ",
+    local confirm = button(placementOverlay, "Confirm", moveIndex and "ПЕРЕМЕСТИТЬ" or "ПОСТРОИТЬ",
         UDim2.new(0.32, -8, 0, 42), UDim2.new(0.68, 0, 0, 54), palette.forest)
     for _, control in {rotate, cancel, confirm} do
         control.ZIndex = 46
@@ -2956,6 +2957,7 @@ end)
 
 local function openTab(tabName)
     if not panelTitles[tabName] or not renderers[tabName] then return end
+    if placementState then finishPlacement() end
     if activeTab == tabName and panel.Visible then
         closeActivePanel()
         return
