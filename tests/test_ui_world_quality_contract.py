@@ -32,7 +32,7 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('local compact = gui.AbsoluteSize.X < 620', HUD)
         self.assertIn('card(body, "Seed_" .. crop.id, compact and 138 or 82)', HUD)
         self.assertIn('compact and UDim2.new(0.5, -18, 0, 42)', HUD)
-        self.assertIn('card(body, "Plot" .. tostring(index), compact and 88 or 66)', HUD)
+        self.assertIn('card(body, "Plot" .. tostring(index), compact and 108 or 88)', HUD)
         self.assertIn('card(body, "DailyQuest_" .. tostring(index), compact and 112 or 78)', HUD)
         self.assertIn('compact and UDim2.new(1, -28, 0, 30)', HUD)
         self.assertIn('compact and "ВЫБРАТЬ МЕСТО" or "ПОСТРОИТЬ"', HUD)
@@ -99,6 +99,20 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('giftName.TextWrapped = true', HUD)
         self.assertIn('giftHint.TextWrapped = true', HUD)
         self.assertIn('giftHint.TextYAlignment = Enum.TextYAlignment.Top', HUD)
+
+    def test_farm_plot_cards_show_explicit_state_and_ready_harvest_highlight(self):
+        self.assertIn('local statusTitle = "РАСТЁТ"', HUD)
+        self.assertIn('statusTitle = "ЗАКРЫТА"', HUD)
+        self.assertIn('statusTitle = "СВОБОДНА"', HUD)
+        self.assertIn('statusTitle = "УРОЖАЙ ГОТОВ"', HUD)
+        self.assertIn('item.BackgroundColor3 = Color3.fromRGB(235, 242, 224)', HUD)
+        self.assertIn('label(item, "PlotStatus", statusTitle', HUD)
+        self.assertIn('state.TextWrapped = true', HUD)
+
+    def test_farm_upgrade_card_uses_full_width_mobile_action(self):
+        self.assertIn('card(body, "FarmUpgrade", compact and 142 or 82)', HUD)
+        self.assertIn('compact and UDim2.new(1, -24, 0, 42)', HUD)
+        self.assertIn('compact and UDim2.fromOffset(12, 92)', HUD)
 
     def test_companion_mutation_album_has_progress_discovery_states_and_visual_cards(self):
         self.assertIn('card(body, "CompanionMutationCodexHeader", 82)', HUD)
