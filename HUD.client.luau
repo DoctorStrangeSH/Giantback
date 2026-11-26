@@ -2206,7 +2206,7 @@ local function renderTools()
         compact and UDim2.new(1, -28, 0, 30) or UDim2.new(1, -156, 0, 46),
         UDim2.fromOffset(compact and 14 or 62, compact and 54 or 35), 11, palette.muted)
     swordStatus.TextWrapped = true
-    local swordActionSize = compact and UDim2.new(0.5, -18, 0, 28) or UDim2.fromOffset(102, 30)
+    local swordActionSize = compact and UDim2.new(0.5, -18, 0, 42) or UDim2.fromOffset(102, 30)
     local swordEquip = button(swordCard, "SwordEquip", swordEquipped and "В РУКАХ" or "ВЗЯТЬ",
         swordActionSize, compact and UDim2.fromOffset(12, 122) or UDim2.new(1, -114, 0, 8),
         swordEquipped and palette.gold or palette.forest)
