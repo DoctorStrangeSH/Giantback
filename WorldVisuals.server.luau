@@ -992,6 +992,35 @@ if mothNest and mothNest:IsA("BasePart") then
     end
 end
 
+-- Small, ground-level traces make the existing companion habitats feel inhabited.
+local function addHabitatTracks(parent, nest, kind)
+    if not nest or not nest:IsA("BasePart") then return end
+    local tracks = makeFolder(parent, kind .. "Tracks")
+    local center = nest.Position
+    if kind == "Fox" then
+        for step = 1, 5 do
+            local distance = 2.1 + step * 1.15
+            local side = (step % 2 == 0) and 0.62 or -0.62
+            local point = center + Vector3.new(side, -nest.Size.Y * 0.5 + 0.08, distance)
+            local print = orb(tracks, "Tiny paw print", point, Vector3.new(0.34, 0.07, 0.38), palette.barkLight, Enum.Material.SmoothPlastic, 0.18)
+            print.CFrame = CFrame.new(point) * CFrame.Angles(0, math.rad((step % 2 == 0) and 18 or -18), 0)
+            orb(tracks, "Paw toe", point + Vector3.new(-0.12, 0.015, -0.16), Vector3.new(0.11, 0.045, 0.12), palette.barkLight, Enum.Material.SmoothPlastic, 0.22)
+            orb(tracks, "Paw toe", point + Vector3.new(0.12, 0.015, -0.16), Vector3.new(0.11, 0.045, 0.12), palette.barkLight, Enum.Material.SmoothPlastic, 0.22)
+        end
+    elseif kind == "Moth" then
+        for step = 1, 7 do
+            local angle = step * 0.82
+            local radius = 1.6 + step * 0.36
+            local point = center + Vector3.new(math.cos(angle) * radius, 0.22 + (step % 2) * 0.18, math.sin(angle) * radius)
+            local dust = orb(tracks, "Moon dust mote", point, Vector3.new(0.14, 0.14, 0.14), palette.lilacLight, Enum.Material.Neon, 0.28 + step * 0.055)
+            addLight(dust, palette.lilacLight, 2.2, 0.08)
+        end
+    end
+end
+
+addHabitatTracks(habitatVisuals:FindFirstChild("FoxNestHabitat"), foxNest, "Fox")
+addHabitatTracks(habitatVisuals:FindFirstChild("MothRestingGrove"), mothNest, "Moth")
+
 local foxCacheVisuals = makeFolder(grove, "FoxCacheVisuals")
 local foxCacheAnchors = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local function addCacheTrail(parent, anchor)
