@@ -1323,3 +1323,13 @@
 - [x] Update placement panel geometry only when the camera viewport changes, not every render frame.
 - [x] Add source-contract coverage for panel bounds, control availability, and closing the catalog before placement.
 - [ ] Run CI and verify touch placement, rotation, cancel, confirm, and move flows in Roblox Studio.
+
+
+## UI acceptance gate — farm plot state and upgrade cards (26.11.2026)
+
+- [x] Give farm plots explicit text states: locked, free, growing, harvest ready.
+- [x] Highlight harvest-ready plot cards while retaining a readable text label.
+- [x] Increase compact plot-card height and wrap long state descriptions.
+- [x] Reflow farm-upgrade card and full-width mobile action button.
+- [x] Update source-contract tests for the new plot and upgrade geometry.
+- [ ] Confirm CI and inspect all four plot states in Roblox Studio at mobile/tablet/desktop sizes.
