@@ -47,6 +47,7 @@ class EquipmentInventoryLayoutTests(unittest.TestCase):
     def test_sword_actions_keep_existing_server_events_and_fit_mobile_card(self):
         self.assertIn('compact and 172 or 124', HUD)
         self.assertIn('compact and UDim2.fromOffset(12, 122)', HUD)
+        self.assertIn('local swordActionSize = compact and UDim2.new(0.5, -18, 0, 42)', HUD)
         self.assertIn('compact and UDim2.new(0.5, 6, 0, 122)', HUD)
         self.assertIn('event:FireServer("EquipTool", "Sword")', HUD)
         self.assertIn('event:FireServer("CraftSword")', HUD)
