@@ -1352,3 +1352,13 @@
 - [x] Keep category filtering client-side; inventory values and equipment actions remain server-authoritative.
 - [x] Add source-contract tests and Studio acceptance cases for every category.
 - [ ] Confirm CI and inspect category layout and all equipment states in Roblox Studio.
+
+
+## UI acceptance gate — responsive archipelago map (26.11.2026)
+
+- [x] Replace text-only world summary with a four-node archipelago overview: home, Sun Grove, Dusk Valley, Crystal Grotto.
+- [x] Use live replicated bridge/discovery state for route labels; do not invent current player coordinates.
+- [x] Use 2×2 node layout on compact screens and four columns on wider screens.
+- [x] Keep route repair requirements visible and retain explanatory region summaries.
+- [x] Add automated source-contract coverage and Studio visual acceptance cases.
+- [ ] Confirm CI and verify route state against actual in-world bridges in Roblox Studio.
