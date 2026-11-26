@@ -891,3 +891,13 @@ Reproduction steps / notes:
 - [ ] Confirm the original Nest anchors, companion encounter models, friendship prompts and discovery rewards remain unchanged.
 - [ ] Check that visual rebuild replaces GiantbackCompanionHabitats without duplicating decorations.
 - [ ] Test on low graphics quality and mobile; confirm no excessive bloom or frame-rate drop.
+
+
+## World exploration 3.6 — companion traces (26.11.2026)
+
+- [ ] Check Fox pawprints are visible from normal camera height but do not resemble a bright navigation path.
+- [ ] Check Moth dust motes are subtle, do not bloom excessively, and remain legible on low graphics quality.
+- [ ] Verify traces are placed around the existing nest and do not float, intersect walkways, or cross bridge entrances.
+- [ ] Confirm all trace parts are non-collidable, non-interactive and add no prompts or rewards.
+- [ ] Rebuild WorldVisuals twice and confirm no duplicate habitat tracks remain.
+- [ ] Check mobile frame rate and readability at normal and low graphics quality.
