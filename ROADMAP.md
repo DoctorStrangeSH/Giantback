@@ -1371,3 +1371,12 @@
 - [x] Use non-collidable decorative geometry and readable SurfaceGui labels.
 - [x] Add source-contract tests for sign destinations and existing fall recovery.
 - [ ] Verify physical placement, readability and collision in Roblox Studio.
+
+
+## World exploration — discoverable points of interest (26.11.2026)
+
+- [x] Add subtle golden stepping-stone clues around the three existing Fox cache anchors.
+- [x] Add small lilac/gold crystal landmarks framing the existing Crystal Grotto entrance.
+- [x] Preserve existing cache collection and entrance prompt logic; visual landmarks do not grant rewards or unlock content.
+- [x] Add source-contract coverage and Studio acceptance checklist.
+- [ ] Validate trail orientation, accessibility, visual quality and mobile readability in Roblox Studio.
