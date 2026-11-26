@@ -1333,3 +1333,13 @@
 - [x] Reflow farm-upgrade card and full-width mobile action button.
 - [x] Update source-contract tests for the new plot and upgrade geometry.
 - [ ] Confirm CI and inspect all four plot states in Roblox Studio at mobile/tablet/desktop sizes.
+
+
+## UI acceptance gate — farm and backpack mobile cards (26.11.2026)
+
+- [x] Add explicit text labels for locked/free/growing/harvest-ready farm plots.
+- [x] Highlight ready harvest plots and wrap plot state descriptions.
+- [x] Expand mobile farm-upgrade card and use a full-width action.
+- [x] Increase mobile axe/pickaxe and sword card heights and touch actions to 42 px.
+- [x] Update regression contracts for farm and backpack card geometry.
+- [ ] Confirm CI and inspect the farm and backpack in Roblox Studio at 320/375/414 px and desktop.
