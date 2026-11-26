@@ -39,7 +39,7 @@ class CompanionActivityModuleTests(unittest.TestCase):
         self.assertIn('["Застенчивый"] = {48, 66}', ACTIVITY)
         self.assertIn('activity.nextAttentionAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))', ACTIVITY)
         self.assertIn('if attention and owner == player then showCompanionAttention(model, id) end', CLIENT)
-        self.assertIn('return resting, sleeping, sniff, attention, curious', ACTIVITY)
+        self.assertIn('return resting, sleeping, sniff, attention, curious, playful', ACTIVITY)
 
 
     def test_all_equipped_species_get_short_personality_paced_curiosity_moments(self):
@@ -52,6 +52,21 @@ class CompanionActivityModuleTests(unittest.TestCase):
         self.assertIn('["Застенчивый"] = {23, 32}', ACTIVITY)
         self.assertIn('activity.nextExploreAt = now + math.random(18, 28)', ACTIVITY)
         self.assertIn('state.curious = curious', CLIENT)
+
+    def test_playful_idle_moments_are_personality_and_bond_paced_for_fox_and_moth(self):
+        self.assertIn('nextPlayfulAt = now + math.random(18, 32)', ACTIVITY)
+        self.assertIn('if isLocal and not moving and (id == "Fox" or id == "Moth")', ACTIVITY)
+        self.assertIn('local playfulWindows = {', ACTIVITY)
+        self.assertIn('["Озорной"] = {14, 24}', ACTIVITY)
+        self.assertIn('["Застенчивый"] = {38, 54}', ACTIVITY)
+        self.assertIn('activity.playfulUntil = now + 2.4', ACTIVITY)
+        self.assertIn('window[1] - bondStage * 1.5', ACTIVITY)
+        self.assertIn('return resting, sleeping, sniff, attention, curious, playful', ACTIVITY)
+        self.assertIn('state.playful = playful', CLIENT)
+
+    def test_playful_idle_timer_restarts_after_movement(self):
+        self.assertIn('activity.nextPlayfulAt = now + math.random(24, 40)', ACTIVITY)
+        self.assertIn('activity.playfulUntil = 0', ACTIVITY)
 
     def test_module_is_read_only_to_server_and_does_not_animate(self):
         for forbidden in ('FireServer(', 'InvokeServer(', 'DataStoreService', 'Instance.new(', 'RenderStepped:Connect', ':SetAttribute('):
