@@ -25,6 +25,7 @@ function CompanionActivity.new()
                 nextCuriosityAt = now + math.random(math.floor(minDelay), math.floor(maxDelay)),
                 nextAttentionAt = now + math.random(16, 26),
                 nextExploreAt = now + math.random(11, 18),
+                nextPlayfulAt = now + math.random(18, 32),
             }
             companionActivity[owner] = activity
         end
@@ -90,10 +91,29 @@ function CompanionActivity.new()
             activity.nextAttentionAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))
         end
 
+        local playful = false
+        if isLocal and not moving and (id == "Fox" or id == "Moth")
+            and now >= (activity.nextPlayfulAt or now + 24) then
+            local personality = owner:GetAttribute("Companion_" .. id .. "_Personality")
+            local playfulWindows = {
+                ["Любопытный"] = {24, 38},
+                ["Озорной"] = {14, 24},
+                ["Смелый"] = {28, 42},
+                ["Застенчивый"] = {38, 54},
+            }
+            local window = playfulWindows[personality] or {24, 38}
+            local bondStage = math.clamp(tonumber(owner:GetAttribute("Companion_" .. id .. "_BondStage")) or 0, 0, 4)
+            local minDelay = math.max(12, window[1] - bondStage * 1.5)
+            local maxDelay = math.max(minDelay + 2, window[2] - bondStage * 2)
+            activity.playfulUntil = now + 2.4
+            activity.nextPlayfulAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))
+        end
+        playful = isLocal and not moving and now < (activity.playfulUntil or 0)
+
         local idleSeconds = now - activity.idleSince
         local resting = not moving and idleSeconds >= 12
         local sleeping = not moving and idleSeconds >= 45
-        return resting, sleeping, sniff, attention, curious
+        return resting, sleeping, sniff, attention, curious, playful
     end
 
     local function forget(owner)
