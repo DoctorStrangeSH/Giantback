@@ -32,6 +32,7 @@ class CompanionAnimationModuleTests(unittest.TestCase):
         for marker in (
             'state.id == "Fox"',
             'state.id == "Moth"',
+            'local playful = state.playful == true and not moving and not state.isEncounter',
             'state.id == "CrystalWisp"',
             'local growthStage = math.clamp',
             'local prismSenseActive = state.id == "CrystalWisp"',
@@ -83,6 +84,15 @@ class CompanionAnimationModuleTests(unittest.TestCase):
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, ANIMATION)
+
+    def test_playful_state_changes_fox_hops_and_moth_wing_flourishes(self):
+        self.assertIn('elseif part.Name == "Body" and playful then', ANIMATION)
+        self.assertIn('local hop = math.max(0, math.sin(time * 10)) * 0.16', ANIMATION)
+        self.assertIn('(playful and 0.62 or sniffing and 0.48 or 0.3)', ANIMATION)
+        self.assertIn('mothAbility and 21 or playful and 15 or 11.5', ANIMATION)
+        self.assertIn('mothAbility and 0.76 or playful and 0.58 or 0.42', ANIMATION)
+        self.assertIn('elseif part.Name == "Moth head" and playful then', ANIMATION)
+        self.assertIn('state.playful = playful', CLIENT)
 
     def test_festival_pet_animations_remain_cosmetic_and_keep_single_render_loop(self):
         for forbidden in ("FireServer(", "InvokeServer(", "DataStoreService", "SetAttribute(", "RenderStepped:Connect"):
