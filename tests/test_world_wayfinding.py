@@ -43,6 +43,28 @@ class WorldWayfindingTests(unittest.TestCase):
         self.assertIn('grove:FindFirstChild(cacheId)', VISUALS)
         self.assertNotIn('ProximityPrompt', VISUALS[VISUALS.index("local function addCacheTrail"):VISUALS.index("local moonBloomVisuals")])
 
+    def test_fox_habitat_uses_existing_grove_nest_without_changing_encounter(self):
+        self.assertIn('local foxNest = grove:FindFirstChild("Nest")', VISUALS)
+        self.assertIn('makeFolder(habitatVisuals, "FoxNestHabitat")', VISUALS)
+        self.assertIn('"Fern shelter"', VISUALS)
+        self.assertIn('"Foxglove mushroom"', VISUALS)
+        self.assertIn('local mothNest = dusk:FindFirstChild("Nest")', VISUALS)
+
+    def test_moth_habitat_uses_moonlit_resting_visuals(self):
+        self.assertIn('makeFolder(habitatVisuals, "MothRestingGrove")', VISUALS)
+        self.assertIn('"Moonlit resting stone"', VISUALS)
+        self.assertIn('"Moon moth lantern flower"', VISUALS)
+        self.assertIn('"Moon moth petal"', VISUALS)
+
+    def test_companion_habitat_visuals_do_not_add_prompts_or_collisions(self):
+        start = VISUALS.index('local habitatVisuals = makeFolder(workspace, "GiantbackCompanionHabitats")')
+        end = VISUALS.index('local foxCacheVisuals = makeFolder(grove, "FoxCacheVisuals")', start)
+        habitat_code = VISUALS[start:end]
+        self.assertNotIn("ProximityPrompt", habitat_code)
+        self.assertNotIn("CanCollide = true", habitat_code)
+        self.assertIn('grove:FindFirstChild("Nest")', habitat_code)
+        self.assertIn('dusk:FindFirstChild("Nest")', habitat_code)
+
     def test_fall_recovery_returns_character_to_owners_home_without_resetting_inventory(self):
         self.assertIn('root.Position.Y < -80', WORLD)
         self.assertIn('local recovery = session.homeSpawn', WORLD)
