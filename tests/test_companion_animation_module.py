@@ -91,6 +91,8 @@ class CompanionAnimationModuleTests(unittest.TestCase):
         self.assertIn('(playful and 0.62 or sniffing and 0.48 or 0.3)', ANIMATION)
         self.assertIn('mothAbility and 21 or playful and 15 or 11.5', ANIMATION)
         self.assertIn('mothAbility and 0.76 or playful and 0.58 or 0.42', ANIMATION)
+        self.assertIn('if resting and not playful then', ANIMATION)
+        self.assertIn('if resting and not mothAbility and not playful then', ANIMATION)
         self.assertIn('elseif part.Name == "Moth head" and playful then', ANIMATION)
         self.assertIn('state.playful = playful', CLIENT)
 
