@@ -2096,6 +2096,8 @@ local function renderPets()
     end
 end
 
+local backpackCategory = backpackCategory or "Все"
+
 local function renderTools()
     local compact = gui.AbsoluteSize.X < 620
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
@@ -2105,7 +2107,27 @@ local function renderTools()
     local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
     local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
     addInfo("Твой рюкзак", "Здесь собраны ресурсы, находки и снаряжение. Инструменты можно взять в руки прямо из этого раздела.", 78)
+    local categories = {"Все", "Материалы", "Семена", "Находки", "Снаряжение"}
+    local filterCard = card(body, "BackpackCategories", compact and 96 or 52)
+    for index, category in ipairs(categories) do
+        local columns = compact and 3 or 5
+        local column = (index - 1) % columns
+        local row = math.floor((index - 1) / columns)
+        local filter = button(filterCard, "BackpackCategory_" .. tostring(index), category,
+            UDim2.new(1 / columns, -10, 0, 38),
+            UDim2.new(column / columns, 5, 0, 6 + row * 44),
+            backpackCategory == category and palette.gold or palette.forestLight)
+        filter.TextSize = compact and 10 or 11
+        filter.TextColor3 = backpackCategory == category and palette.ink or palette.white
+        filter.Activated:Connect(function()
+            backpackCategory = category
+            refreshActiveTab()
+        end)
+    end
+    if backpackCategory == "Все" or backpackCategory == "Материалы" then
     addInfo("Материалы", "Дерево: " .. tostring(wood) .. "   •   Камень: " .. tostring(stone) .. "   •   Железная руда: " .. tostring(ore) .. "   •   Слитки: " .. tostring(ingots), 72)
+    end
+    if backpackCategory == "Все" or backpackCategory == "Семена" then
     local seedSummary = {}
     local harvestSummary = {}
     for _, crop in cropCatalog do
@@ -2119,6 +2141,8 @@ local function renderTools()
         .. "   •   "
         .. (#harvestSummary > 0 and "Урожай: " .. table.concat(harvestSummary, ", ") or "Урожай не собран"),
         72)
+    end
+    if backpackCategory == "Все" or backpackCategory == "Находки" then
     local moonSeeds = tonumber(player:GetAttribute("Resource_MoonSeed")) or 0
     local starShards = tonumber(player:GetAttribute("Resource_StarShard")) or 0
     local sunPetals = tonumber(player:GetAttribute("Resource_SunPetal")) or 0
@@ -2129,6 +2153,8 @@ local function renderTools()
     addInfo("Праздничное яйцо", harvestEggs > 0 and ("В рюкзаке: " .. tostring(harvestEggs) .. " шт. Открой раздел «Экспедиции», чтобы вылупить нового питомца.") or "Яйцо можно получить за 50 очков Фестиваля урожая.", 54)
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
+    end
+    if backpackCategory == "Все" or backpackCategory == "Снаряжение" then
     local catalog = {
         {id = "Axe", name = "Топор путешественника", icon = "axe", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
         {id = "Pickaxe", name = "Кирка путешественника", icon = "pickaxe", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
@@ -2199,6 +2225,7 @@ local function renderTools()
             if not canCraftSword then showToast("Нужно 2 слитка и 6 дерева. Меч создаётся у своего верстака.") end
         end
     end)
+    end
     addInfo("Как добывать", "Добывай дерево, камень и железную руду. Переплавь руду в слитки и создай меч у верстака. На арене попробуй обычные удары и комбо.", 90)
 end
 
