@@ -1343,3 +1343,12 @@
 - [x] Increase mobile axe/pickaxe and sword card heights and touch actions to 42 px.
 - [x] Update regression contracts for farm and backpack card geometry.
 - [ ] Confirm CI and inspect the farm and backpack in Roblox Studio at 320/375/414 px and desktop.
+
+
+## UI acceptance gate — categorized backpack (26.11.2026)
+
+- [x] Add interactive filters for all, materials, seeds, discoveries, and equipment.
+- [x] Re-render the active backpack category after selection while retaining the selected category.
+- [x] Keep category filtering client-side; inventory values and equipment actions remain server-authoritative.
+- [x] Add source-contract tests and Studio acceptance cases for every category.
+- [ ] Confirm CI and inspect category layout and all equipment states in Roblox Studio.
