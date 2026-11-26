@@ -956,6 +956,21 @@ decorateIsland(dusk, true)
 -- highlight and local prompt reveal which one currently contains a find.
 local foxCacheVisuals = makeFolder(grove, "FoxCacheVisuals")
 local foxCacheAnchors = {"FoxCache01", "FoxCache02", "FoxCache03"}
+local function addCacheTrail(parent, anchor)
+    if not anchor:IsA("BasePart") then return end
+    local direction = Vector3.new(anchor.CFrame.LookVector.X, 0, anchor.CFrame.LookVector.Z)
+    if direction.Magnitude < 0.01 then direction = Vector3.new(0, 0, -1) end
+    direction = direction.Unit
+    local side = Vector3.new(-direction.Z, 0, direction.X)
+    for step = 1, 3 do
+        local distance = 2.8 + step * 2.1
+        local center = anchor.Position + direction * distance + Vector3.new(0, -0.35, 0)
+        for lane = -1, 1, 2 do
+            local pebble = orb(parent, "Quiet cache trail", center + side * lane * (0.55 + step * 0.08), Vector3.new(0.42, 0.12, 0.28), palette.gold, Enum.Material.Neon, 0.42 + step * 0.08)
+            pebble.CanQuery = false
+        end
+    end
+end
 for index, cacheId in foxCacheAnchors do
     local anchor = grove:FindFirstChild(cacheId)
     if anchor then
@@ -967,6 +982,7 @@ for index, cacheId in foxCacheAnchors do
         orb(visual, "Leaf cover", anchor.Position + Vector3.new(0.48, 0.52, 0.22), Vector3.new(1.65, 0.28, 0.95), palette.leafLight, Enum.Material.Grass)
         orb(visual, "Stone cover", anchor.Position + Vector3.new(-0.62, 0.32, -0.28), Vector3.new(0.92, 0.58, 0.84), palette.stone, Enum.Material.Rock)
         orb(visual, "Buried glimmer", anchor.Position + Vector3.new(0, 0.62, 0), Vector3.new(0.16, 0.16, 0.16), palette.gold, Enum.Material.Neon, 0.78)
+        addCacheTrail(visual, anchor)
     end
 end
 
@@ -2776,6 +2792,19 @@ entranceGlow.Color = palette.lilacLight
 entranceGlow.Range = 14
 entranceGlow.Brightness = 0.8
 entranceGlow.Parent = grottoEntrance
+
+-- Subtle crystal landmarks frame the existing interactive entrance; the server prompt remains authoritative.
+local entranceLandmarks = makeFolder(dusk, "CrystalGrottoEntranceLandmarks")
+for side = -1, 1, 2 do
+    local base = grottoEntrance.Position + Vector3.new(side * 4.2, -2.1, 0)
+    for shard = 1, 3 do
+        local angle = (shard - 1) * math.pi / 3 + (side == -1 and 0.2 or -0.2)
+        local height = 1.1 + shard * 0.42
+        local crystal = orb(entranceLandmarks, "Entrance crystal", base + Vector3.new(math.cos(angle) * 0.65, height, math.sin(angle) * 0.65), Vector3.new(0.48, 1.5 + shard * 0.18, 0.48), shard == 2 and palette.gold or palette.lilacLight, Enum.Material.Neon, 0.12)
+        crystal.CFrame = CFrame.new(crystal.Position) * CFrame.Angles(math.rad(8 * side), 0, math.rad(12 * side))
+        addLight(crystal, palette.lilacLight, 5, 0.22)
+    end
+end
 
 -- Rootvault is its own combat region; players do not need to stand in the Grove arena.
 local rootvaultRegion = makePart(
