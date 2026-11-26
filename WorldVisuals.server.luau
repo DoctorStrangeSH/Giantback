@@ -239,6 +239,56 @@ end
 
 local details = makeFolder(workspace, "GiantbackWorldDetails")
 
+-- Small physical wayfinding signs sit at existing bridge landings.
+-- They are decorative, non-collidable, and rebuilt only inside this generated details folder.
+local function addWayfindingSign(name, position, title, subtitle, accent)
+    local sign = Instance.new("Model")
+    sign.Name = name
+    sign.Parent = details
+    local post = makePart(sign, "SignPost", Vector3.new(0.45, 4.2, 0.45),
+        CFrame.new(position + Vector3.new(0, 2.1, 0)), palette.bark, Enum.Material.Wood)
+    local board = makePart(sign, "SignBoard", Vector3.new(7.2, 2.2, 0.42),
+        CFrame.new(position + Vector3.new(0, 4.6, 0)), palette.cream, Enum.Material.WoodPlanks)
+    board.CanQuery = false
+    local trim = makePart(sign, "SignTrim", Vector3.new(7.35, 0.16, 0.5),
+        CFrame.new(position + Vector3.new(0, 5.72, 0)), accent, Enum.Material.Wood)
+    trim.CanQuery = false
+    local surface = Instance.new("SurfaceGui")
+    surface.Name = "WayfindingLabel"
+    surface.Face = Enum.NormalId.Front
+    surface.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+    surface.PixelsPerStud = 42
+    surface.Parent = board
+    local heading = Instance.new("TextLabel")
+    heading.Name = "Destination"
+    heading.BackgroundTransparency = 1
+    heading.Size = UDim2.new(1, -16, 0.58, 0)
+    heading.Position = UDim2.fromOffset(8, 4)
+    heading.Font = Enum.Font.GothamBlack
+    heading.Text = title
+    heading.TextColor3 = palette.ink
+    heading.TextScaled = true
+    heading.TextWrapped = true
+    heading.Parent = surface
+    local caption = Instance.new("TextLabel")
+    caption.Name = "Direction"
+    caption.BackgroundTransparency = 1
+    caption.Size = UDim2.new(1, -16, 0.32, 0)
+    caption.Position = UDim2.new(0, 8, 0.62, 0)
+    caption.Font = Enum.Font.GothamBold
+    caption.Text = subtitle
+    caption.TextColor3 = accent
+    caption.TextScaled = true
+    caption.TextWrapped = true
+    caption.Parent = surface
+    return sign
+end
+
+addWayfindingSign("GroveWayfindingSign", Vector3.new(0, 12.2, -108),
+    "СОЛНЕЧНАЯ РОЩА", "↑ К общему острову", palette.moss)
+addWayfindingSign("DuskWayfindingSign", Vector3.new(46, 12.2, -149),
+    "СУМЕРЕЧНАЯ ДОЛИНА", "← Через лунный мост", palette.lilac)
+
 -- Give the homeIslandTemplate a recognisable silhouette and a lived-in home.
 local homeDetails = makeFolder(homeIslandTemplate, "HandcraftedDetails")
 local shellColors = {
