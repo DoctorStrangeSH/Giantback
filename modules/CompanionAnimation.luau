@@ -35,6 +35,7 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
     local prismSenseActive = state.id == "CrystalWisp" and state.isLocal
         and workspace:GetServerTimeNow() < (tonumber(player:GetAttribute("PrismSenseUntil")) or 0)
     local petting = not state.isEncounter and now < (pettingUntil[state.id] or 0)
+    local playful = state.playful == true and not moving and not state.isEncounter
     local body = model:FindFirstChild("Body")
     local bodyOffset = body and state.offsets[body]
     local rigOrigin = bodyOffset and bodyOffset.Position or Vector3.zero
@@ -67,6 +68,10 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                     local affectionateDip = math.sin(time * 6.5) * 0.025
                     transform = CFrame.new(0, -0.09 + affectionateDip, 0.06)
                         * aroundPoint(offset.Position, CFrame.Angles(math.rad(-4), 0, 0))
+                elseif part.Name == "Body" and playful then
+                    local hop = math.max(0, math.sin(time * 10)) * 0.16
+                    transform = CFrame.new(0, hop, 0)
+                        * aroundPoint(offset.Position, CFrame.Angles(math.rad(-5) * math.sin(time * 10), 0, 0))
                 elseif part.Name == "Body" and resting then
                     transform = CFrame.new(0, math.sin(time * 1.8) * 0.035, 0)
                 elseif part.Name == "Muzzle" and sniffing then
@@ -74,7 +79,8 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 elseif part.Name == "Tail" or part.Name == "Tail tip" then
                     local swaySpeed = sniffing and 9 or 4.2
                     local growthSway = ({[1] = 0.82, [2] = 1, [3] = 1.22})[growthStage]
-                    local swayStrength = (sniffing and 0.48 or 0.3) * growthSway
+                    local swayStrength = (playful and 0.62 or sniffing and 0.48 or 0.3) * growthSway
+                    if playful then swaySpeed = 9.5 end
                     if resting then
                         swaySpeed = 1.6
                         swayStrength = 0.12
@@ -109,8 +115,8 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 if part.Name == "Wing" or part.Name == "Wing lower" or part.Name == "Wing tip"
                     or part.Name == "Wing lower tip" or part.Name == "Wing jewel" or part.Name == "Wing spot" then
                     local growthFlap = ({[1] = 0.88, [2] = 1, [3] = 1.16})[growthStage]
-                    local flapSpeed = (mothAbility and 21 or 11.5) * growthFlap
-                    local flapStrength = (mothAbility and 0.76 or 0.42) * growthFlap
+                    local flapSpeed = (mothAbility and 21 or playful and 15 or 11.5) * growthFlap
+                    local flapStrength = (mothAbility and 0.76 or playful and 0.58 or 0.42) * growthFlap
                     if resting and not mothAbility then
                         flapSpeed = 3.2
                         flapStrength = 0.13
@@ -126,6 +132,9 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                 elseif part.Name == "Moth head" and petting then
                     local affectionateNod = math.sin(time * 7) * 0.055
                     transform = aroundPoint(offset.Position, CFrame.Angles(math.rad(5) + affectionateNod, 0, 0))
+                elseif part.Name == "Moth head" and playful then
+                    local curiousTilt = math.sin(time * 8) * 0.12
+                    transform = aroundPoint(offset.Position, CFrame.Angles(math.rad(-4), 0, curiousTilt))
                 elseif part.Name == "Antenna" or part.Name == "Antenna tip" then
                     local twitchSpeed = mothAbility and 7 or resting and 1.1 or 2.8
                     local twitchStrength = mothAbility and 0.14 or resting and 0.025 or 0.07
