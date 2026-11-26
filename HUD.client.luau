@@ -2236,7 +2236,7 @@ local function renderWorld()
     local homeBridgeBuilt = player:GetAttribute("Bridge_HomeToGrove") == true
     local crystalDiscovered = player:GetAttribute("CrystalGrottoDiscovered") == true
 
-    addInfo("КАРТА АРХИПЕЛАГА", "Исследуй острова по порядку. Открытые маршруты отмечены отдельно от земель, которые ещё предстоит найти.", compact and 76 or 66)
+    addInfo("КАРТА АРХИПЕЛАГА", "Все острова остаются на своих местах. Исследуй острова по порядку: открытые маршруты отмечены отдельно от земель, которые ещё предстоит найти.", compact and 76 or 66)
 
     local mapCard = card(body, "ArchipelagoMap", compact and 244 or 190)
     mapCard.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
@@ -2245,9 +2245,9 @@ local function renderWorld()
 
     local nodes = {
         {id = "Home", title = "Домашний остров", icon = "house", state = "ТВОЙ ДОМ", detail = "Дом, ферма и личные постройки", color = palette.forest},
-        {id = "Grove", title = "Солнечная роща", icon = "tree-deciduous", state = homeBridgeBuilt and "МОСТ ОТКРЫТ" or "НУЖЕН МОСТ", detail = homeBridgeBuilt and "Путь из дома восстановлен" or "Для ремонта: дерево ×5 · камень ×3", color = homeBridgeBuilt and palette.forestLight or palette.muted},
-        {id = "Dusk", title = "Сумеречная долина", icon = "moon-star", state = bridgeForest and "МОСТ ОТКРЫТ" or "ЗАКРЫТА", detail = bridgeForest and "Путь из Солнечной рощи открыт" or "Сначала исследуй Солнечную рощу", color = bridgeForest and palette.lilac or palette.muted},
-        {id = "Crystal", title = "Кристальная пещера", icon = "gem", state = crystalDiscovered and "НАЙДЕНА" or "НЕ ОБНАРУЖЕНА", detail = crystalDiscovered and "Вход найден в Сумеречной долине" or "Ищи древний проход в долине", color = crystalDiscovered and palette.water or palette.muted},
+        {id = "Grove", title = "Солнечная роща", icon = "tree", state = homeBridgeBuilt and "МОСТ ОТКРЫТ" or "НУЖЕН МОСТ", detail = homeBridgeBuilt and "Путь из дома восстановлен" or "Для ремонта: дерево ×5 · камень ×3", color = homeBridgeBuilt and palette.forestLight or palette.muted},
+        {id = "Dusk", title = "Сумеречная долина", icon = "moon", state = bridgeForest and "МОСТ ОТКРЫТ" or "ЗАКРЫТА", detail = bridgeForest and "Путь из Солнечной рощи открыт" or "Сначала исследуй Солнечную рощу", color = bridgeForest and palette.lilac or palette.muted},
+        {id = "Crystal", title = "Кристальная пещера", icon = "crystal", state = crystalDiscovered and "НАЙДЕНА" or "НЕ ОБНАРУЖЕНА", detail = crystalDiscovered and "Вход найден в Сумеречной долине" or "Ищи древний проход в долине", color = crystalDiscovered and palette.water or palette.muted},
     }
     local columns = compact and 2 or 4
     local nodeWidth = 1 / columns
