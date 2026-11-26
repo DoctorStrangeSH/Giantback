@@ -2230,16 +2230,53 @@ local function renderTools()
 end
 
 local function renderWorld()
-    addInfo("Твой архипелаг", "Восемь домашних островов соединены мостами с общей Солнечной рощей. Все острова остаются на своих местах.", 84)
+    local compact = gui.AbsoluteSize.X < 620
     local bridgeHome = workspace:FindFirstChild("BridgeToGrove")
     local bridgeForest = workspace:FindFirstChild("BridgeToDusk")
-    addInfo("Домашний остров", "Твой отдельный дом и ферма. Соседи могут прийти в гости, но не могут менять твои вещи.", 68)
     local homeBridgeBuilt = player:GetAttribute("Bridge_HomeToGrove") == true
-    addInfo("Солнечная роща", bridgeHome and (homeBridgeBuilt and "Твой мост восстановлен. Можно идти в общий лес." or "Твой мост пока ждёт ремонта: нужно дерево ×5 и камень ×3.") or "Мосты пока не построены.", 68)
-    addInfo("Лунная роща", bridgeForest and "От Солнечной рощи ведёт отдельный постоянный мост к волшебному острову." or "Мост пока закрыт.", 68)
-    addInfo("Скоро новые земли", "Каменный кряж, древние руины и кристальная пещера станут следующими большими открытиями.", 78)
-end
+    local crystalDiscovered = player:GetAttribute("CrystalGrottoDiscovered") == true
 
+    addInfo("КАРТА АРХИПЕЛАГА", "Исследуй острова по порядку. Открытые маршруты отмечены отдельно от земель, которые ещё предстоит найти.", compact and 76 or 66)
+
+    local mapCard = card(body, "ArchipelagoMap", compact and 244 or 190)
+    mapCard.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
+    label(mapCard, "MapTitle", "ТВОЙ МАРШРУТ", UDim2.new(1, -24, 0, 20),
+        UDim2.fromOffset(12, 8), 11, palette.forest, Enum.Font.GothamBlack)
+
+    local nodes = {
+        {id = "Home", title = "Домашний остров", icon = "house", state = "ТВОЙ ДОМ", detail = "Дом, ферма и личные постройки", color = palette.forest},
+        {id = "Grove", title = "Солнечная роща", icon = "tree-deciduous", state = homeBridgeBuilt and "МОСТ ОТКРЫТ" or "НУЖЕН МОСТ", detail = homeBridgeBuilt and "Путь из дома восстановлен" or "Для ремонта: дерево ×5 · камень ×3", color = homeBridgeBuilt and palette.forestLight or palette.muted},
+        {id = "Dusk", title = "Сумеречная долина", icon = "moon-star", state = bridgeForest and "МОСТ ОТКРЫТ" or "ЗАКРЫТА", detail = bridgeForest and "Путь из Солнечной рощи открыт" or "Сначала исследуй Солнечную рощу", color = bridgeForest and palette.lilac or palette.muted},
+        {id = "Crystal", title = "Кристальная пещера", icon = "gem", state = crystalDiscovered and "НАЙДЕНА" or "НЕ ОБНАРУЖЕНА", detail = crystalDiscovered and "Вход найден в Сумеречной долине" or "Ищи древний проход в долине", color = crystalDiscovered and palette.water or palette.muted},
+    }
+    local columns = compact and 2 or 4
+    local nodeWidth = 1 / columns
+    for index, node in ipairs(nodes) do
+        local column = (index - 1) % columns
+        local row = math.floor((index - 1) / columns)
+        local nodeCard = card(mapCard, "MapNode_" .. node.id,
+            compact and 86 or 122)
+        nodeCard.Size = UDim2.new(nodeWidth, -8, 0, compact and 86 or 122)
+        nodeCard.Position = UDim2.new(column / columns, 4, 0, compact and (34 + row * 94) or 34)
+        nodeCard.BackgroundColor3 = palette.white
+        createPictogram(nodeCard, "MapIcon", node.icon, compact and 24 or 30, node.color)
+            .Position = UDim2.fromOffset(8, compact and 8 or 10)
+        local title = label(nodeCard, "MapNodeTitle", node.title,
+            UDim2.new(1, -16, 0, compact and 26 or 34),
+            UDim2.fromOffset(8, compact and 34 or 46), compact and 9 or 11, palette.ink, Enum.Font.GothamBold)
+        title.TextWrapped = true
+        local state = label(nodeCard, "MapNodeState", node.state,
+            UDim2.new(1, -16, 0, 16), UDim2.fromOffset(8, compact and 62 or 82),
+            compact and 8 or 9, node.color, Enum.Font.GothamBlack)
+        state.TextWrapped = true
+    end
+
+    addInfo("Домашний остров", "Твой отдельный дом и ферма. Соседи могут прийти в гости, но не могут менять твои вещи.", 68)
+    addInfo("Солнечная роща", bridgeHome and (homeBridgeBuilt and "Твой мост восстановлен. Можно идти в общий лес." or "Твой мост ждёт ремонта: нужно дерево ×5 и камень ×3.") or "Мосты пока не построены.", 68)
+    addInfo("Сумеречная долина", bridgeForest and "От Солнечной рощи ведёт отдельный постоянный мост к волшебному острову." or "Путь пока закрыт.", 68)
+    addInfo("Кристальная пещера", crystalDiscovered and "Вход обнаружен. Продолжай исследование и собирай древние реликвии." or "Скрытый вход откроется после исследования Сумеречной долины.", 68)
+    addInfo("Следующие земли", "Каменный кряж и древние руины пока не открыты. Они появятся в следующих главах исследования.", 72)
+end
 local expeditionTracks = {
     {
         id = "Grove", title = "СОЛНЕЧНАЯ РОЩА", subtitle = "Следопытство и первые тайники",
