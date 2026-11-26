@@ -1390,3 +1390,12 @@
 - [x] Keep habitat decorations non-interactive and non-collidable.
 - [x] Add regression tests and Studio playtest criteria.
 - [ ] Validate composition and performance in Roblox Studio.
+
+
+## World exploration — companion traces (26.11.2026)
+
+- [x] Add small alternating pawprints beside the existing Fox habitat.
+- [x] Add a restrained curved trail of lilac moon-dust motes around the Moth resting grove.
+- [x] Keep both trace sets decorative, non-interactive and grouped under the replaceable habitat folder.
+- [x] Add source-contract tests and Studio acceptance cases.
+- [ ] Validate ground placement, visibility and mobile performance in Roblox Studio.
