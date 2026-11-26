@@ -76,8 +76,8 @@ class MothLunarGlowContractTests(unittest.TestCase):
     def test_local_moth_ability_has_faster_wings_and_a_brighter_pulsing_glow(self):
         self.assertIn("isLocal = isLocal == true", ANIMATION)
         self.assertIn("state.isLocal and now < mothAbilityUntil", ANIMATION)
-        self.assertIn("mothAbility and 21 or 11.5", ANIMATION)
-        self.assertIn("mothAbility and 0.76 or 0.42", ANIMATION)
+        self.assertIn("mothAbility and 21 or playful and 15 or 11.5", ANIMATION)
+        self.assertIn("mothAbility and 0.76 or playful and 0.58 or 0.42", ANIMATION)
         self.assertIn("light.Brightness = pulse", ANIMATION)
         self.assertIn("light.Range = mothAbility and 14 or 9", ANIMATION)
 
