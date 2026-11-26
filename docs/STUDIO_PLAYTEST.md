@@ -870,3 +870,14 @@ Reproduction steps / notes:
 - [ ] Убедиться, что повторный запуск визуального слоя не создаёт дубликаты.
 - [ ] Уронить персонажа ниже Y=-80: он должен вернуться на собственный HomeSpawn, скорость обнулена, инвентарь сохранён.
 - [ ] Проверить восстановление при отсутствии личного острова: используется публичный SpawnLocation рощи.
+
+
+## World exploration 3.4 — cache trails and grotto landmarks (26.11.2026)
+
+- [ ] Check all three Fox cache trails in Studio; each should subtly lead toward its existing cache anchor without looking like a continuous glowing road.
+- [ ] Verify trail placement follows the anchor orientation and does not cross water, bridge gaps, or inaccessible terrain.
+- [ ] Confirm trail particles/parts are decorative only and do not collide with or obstruct players.
+- [ ] Check crystal clusters frame the existing Crystal Grotto entrance without covering the prompt or blocking the doorway.
+- [ ] Verify the existing server-side entrance prompt remains the only interaction; landmarks add no duplicate prompts or rewards.
+- [ ] Confirm visual rebuild removes/recreates named landmark folders without duplicates.
+- [ ] Review readability on low graphics quality and mobile devices; reduce glow if it blooms excessively.
