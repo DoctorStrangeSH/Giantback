@@ -2236,7 +2236,7 @@ local function renderWorld()
     local homeBridgeBuilt = player:GetAttribute("Bridge_HomeToGrove") == true
     local crystalDiscovered = player:GetAttribute("CrystalGrottoDiscovered") == true
 
-    addInfo("КАРТА АРХИПЕЛАГА", "Восемь домашних островов остаются на своих местах и соединены мостами с общей Солнечной рощей. Исследуй острова по порядку: открытые маршруты отмечены отдельно от земель, которые ещё предстоит найти.", compact and 76 or 66)
+    addInfo("КАРТА АРХИПЕЛАГА", "Все острова остаются на своих местах. Восемь домашних островов соединены мостами с общей Солнечной рощей. Исследуй острова по порядку: открытые маршруты отмечены отдельно от земель, которые ещё предстоит найти.", compact and 76 or 66)
 
     local mapCard = card(body, "ArchipelagoMap", compact and 244 or 190)
     mapCard.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
