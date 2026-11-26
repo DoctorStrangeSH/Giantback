@@ -24,6 +24,25 @@ class WorldWayfindingTests(unittest.TestCase):
         self.assertIn('caption.TextWrapped = true', VISUALS)
         self.assertIn('part.CanCollide = false', VISUALS)
 
+    def test_existing_fox_cache_anchors_receive_subtle_directional_trails(self):
+        self.assertIn('local foxCacheAnchors = {"FoxCache01", "FoxCache02", "FoxCache03"}', VISUALS)
+        self.assertIn("local function addCacheTrail(parent, anchor)", VISUALS)
+        self.assertIn('"Quiet cache trail"', VISUALS)
+        self.assertIn("direction = direction.Unit", VISUALS)
+        self.assertIn("addCacheTrail(visual, anchor)", VISUALS)
+        self.assertIn("0.42 + step * 0.08", VISUALS)
+
+    def test_crystal_grotto_entrance_has_non_interactive_visual_landmarks(self):
+        self.assertIn('makeFolder(dusk, "CrystalGrottoEntranceLandmarks")', VISUALS)
+        self.assertIn('"Entrance crystal"', VISUALS)
+        self.assertIn("grottoEntrance.Position", VISUALS)
+        self.assertIn('placeTrialPrompt(grottoEntrance, "Запечатанная кристальная пещера", "Исследовать")', VISUALS)
+        self.assertIn("addLight(crystal, palette.lilacLight, 5, 0.22)", VISUALS)
+
+    def test_cache_trails_reuse_existing_cache_anchors_without_new_prompts(self):
+        self.assertIn('grove:FindFirstChild(cacheId)', VISUALS)
+        self.assertNotIn('ProximityPrompt', VISUALS[VISUALS.index("local function addCacheTrail"):VISUALS.index("local moonBloomVisuals")])
+
     def test_fall_recovery_returns_character_to_owners_home_without_resetting_inventory(self):
         self.assertIn('root.Position.Y < -80', WORLD)
         self.assertIn('local recovery = session.homeSpawn', WORLD)
