@@ -954,6 +954,44 @@ decorateIsland(dusk, true)
 
 -- Camouflaged caches are always part of the forest; only the owner's Fox Scout
 -- highlight and local prompt reveal which one currently contains a find.
+-- Natural companion habitats dress the existing encounter nests without changing their prompts or spawn logic.
+local habitatVisuals = makeFolder(workspace, "GiantbackCompanionHabitats")
+local foxNest = grove:FindFirstChild("Nest")
+if foxNest and foxNest:IsA("BasePart") then
+    local habitat = makeFolder(habitatVisuals, "FoxNestHabitat")
+    local center = foxNest.Position
+    for index = 1, 5 do
+        local angle = (index - 1) * math.pi * 2 / 5
+        local radius = 3.2 + (index % 2) * 0.35
+        local leaf = orb(habitat, "Fern shelter", center + Vector3.new(math.cos(angle) * radius, 0.15, math.sin(angle) * radius), Vector3.new(1.25, 0.3, 0.72), index % 2 == 0 and palette.leafLight or palette.moss, Enum.Material.Grass, 0.08)
+        leaf.CFrame = CFrame.new(leaf.Position) * CFrame.Angles(math.rad(-18), -angle, math.rad((index % 2 == 0 and 1 or -1) * 16))
+    end
+    for index = 1, 3 do
+        local angle = index * math.pi * 2 / 3
+        local mushroom = orb(habitat, "Foxglove mushroom", center + Vector3.new(math.cos(angle) * 4.1, 0.38, math.sin(angle) * 4.1), Vector3.new(0.34, 0.7, 0.34), palette.cream, Enum.Material.SmoothPlastic)
+        addLight(mushroom, palette.gold, 4, 0.12)
+        orb(habitat, "Mushroom cap", mushroom.Position + Vector3.new(0, 0.35, 0), Vector3.new(0.72, 0.28, 0.72), palette.coral, Enum.Material.SmoothPlastic)
+    end
+end
+
+local mothNest = dusk:FindFirstChild("Nest")
+if mothNest and mothNest:IsA("BasePart") then
+    local habitat = makeFolder(habitatVisuals, "MothRestingGrove")
+    local center = mothNest.Position
+    local perch = orb(habitat, "Moonlit resting stone", center + Vector3.new(0, 0.16, 0), Vector3.new(4.8, 0.38, 3.8), palette.lilac, Enum.Material.Slate, 0.12)
+    addLight(perch, palette.lilacLight, 7, 0.18)
+    for index = 1, 4 do
+        local angle = (index - 1) * math.pi / 2
+        local radius = 3.25
+        local crystal = orb(habitat, "Moon moth lantern flower", center + Vector3.new(math.cos(angle) * radius, 0.58, math.sin(angle) * radius), Vector3.new(0.38, 0.9, 0.38), palette.lilacLight, Enum.Material.Neon, 0.16)
+        addLight(crystal, palette.lilacLight, 4.5, 0.16)
+    end
+    for index = 1, 3 do
+        local angle = (index - 1) * math.pi * 2 / 3
+        orb(habitat, "Moon moth petal", center + Vector3.new(math.cos(angle) * 2.15, 0.48, math.sin(angle) * 2.15), Vector3.new(0.9, 0.16, 0.42), palette.moon, Enum.Material.SmoothPlastic, 0.18)
+    end
+end
+
 local foxCacheVisuals = makeFolder(grove, "FoxCacheVisuals")
 local foxCacheAnchors = {"FoxCache01", "FoxCache02", "FoxCache03"}
 local function addCacheTrail(parent, anchor)
