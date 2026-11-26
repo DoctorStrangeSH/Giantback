@@ -15,6 +15,17 @@ class EquipmentInventoryLayoutTests(unittest.TestCase):
         self.assertIn('addInfo("Семена и урожай"', HUD)
         self.assertIn('addInfo("Редкие находки"', HUD)
 
+    def test_backpack_category_filters_are_interactive_and_keep_selection(self):
+        self.assertIn('local backpackCategory = backpackCategory or "Все"', HUD)
+        self.assertIn('local categories = {"Все", "Материалы", "Семена", "Находки", "Снаряжение"}', HUD)
+        self.assertIn('card(body, "BackpackCategories", compact and 96 or 52)', HUD)
+        self.assertIn('backpackCategory = category', HUD)
+        self.assertIn('refreshActiveTab()', HUD)
+        self.assertIn('backpackCategory == "Все" or backpackCategory == "Материалы"', HUD)
+        self.assertIn('backpackCategory == "Все" or backpackCategory == "Семена"', HUD)
+        self.assertIn('backpackCategory == "Все" or backpackCategory == "Находки"', HUD)
+        self.assertIn('backpackCategory == "Все" or backpackCategory == "Снаряжение"', HUD)
+
     def test_backpack_summaries_use_live_player_resource_attributes(self):
         for attribute in (
             "Resource_Wood", "Resource_Stone", "Resource_IronOre", "Resource_IronIngot",
