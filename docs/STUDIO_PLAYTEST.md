@@ -901,3 +901,15 @@ Reproduction steps / notes:
 - [ ] Confirm all trace parts are non-collidable, non-interactive and add no prompts or rewards.
 - [ ] Rebuild WorldVisuals twice and confirm no duplicate habitat tracks remain.
 - [ ] Check mobile frame rate and readability at normal and low graphics quality.
+
+
+## Companion personality 3.7 — playful idle moments (26.11.2026)
+
+- [ ] Equip Fox and remain idle: verify occasional short playful hops and tail swishes, not continuous bouncing.
+- [ ] Equip Moth and remain idle: verify a brief faster wing flutter and head tilt.
+- [ ] Compare all four personalities: Mischievous should play more often than Shy; Curious and Brave should fall between them.
+- [ ] Increase bond stage and verify playful moments become slightly more frequent without becoming constant.
+- [ ] Walk/run during a playful moment: it should stop immediately and restart its cooldown.
+- [ ] Confirm wild encounters and other players' companions do not run the local owner's playful scheduler.
+- [ ] Check no extra RenderStepped loops, remotes, rewards, or server attributes were introduced.
+- [ ] Check mobile frame rate and ensure playful motion does not conflict with petting, search, moth ability, or sleep.
