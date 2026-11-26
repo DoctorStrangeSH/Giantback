@@ -39,6 +39,8 @@ function CompanionActivity.new()
             activity.nextCuriosityAt = now + math.random(9, 16)
             activity.nextAttentionAt = now + math.random(24, 38)
             activity.nextExploreAt = now + math.random(18, 28)
+            activity.nextPlayfulAt = now + math.random(24, 40)
+            activity.playfulUntil = 0
         elseif isLocal and id == "Fox" and now >= (activity.nextCuriosityAt or now + 10) then
             sniff = true
             local personality = owner:GetAttribute("Companion_Fox_Personality")
