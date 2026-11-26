@@ -881,3 +881,13 @@ Reproduction steps / notes:
 - [ ] Verify the existing server-side entrance prompt remains the only interaction; landmarks add no duplicate prompts or rewards.
 - [ ] Confirm visual rebuild removes/recreates named landmark folders without duplicates.
 - [ ] Review readability on low graphics quality and mobile devices; reduce glow if it blooms excessively.
+
+
+## World exploration 3.5 — companion habitats (26.11.2026)
+
+- [ ] Inspect the Fox nest in Grove: fern shelter and mushrooms frame the existing encounter without hiding the Fox or its prompt.
+- [ ] Inspect the Moth resting grove in Dusk: moonlit stone and small lantern flowers are readable but not overly bright.
+- [ ] Confirm all habitat decoration is non-collidable and does not obstruct player movement or bridge approaches.
+- [ ] Confirm the original Nest anchors, companion encounter models, friendship prompts and discovery rewards remain unchanged.
+- [ ] Check that visual rebuild replaces GiantbackCompanionHabitats without duplicating decorations.
+- [ ] Test on low graphics quality and mobile; confirm no excessive bloom or frame-rate drop.
