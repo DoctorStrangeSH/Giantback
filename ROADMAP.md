@@ -1380,3 +1380,13 @@
 - [x] Preserve existing cache collection and entrance prompt logic; visual landmarks do not grant rewards or unlock content.
 - [x] Add source-contract coverage and Studio acceptance checklist.
 - [ ] Validate trail orientation, accessibility, visual quality and mobile readability in Roblox Studio.
+
+
+## World exploration — companion habitats (26.11.2026)
+
+- [x] Add a natural fern/mushroom shelter around the existing Grove Fox nest.
+- [x] Add a restrained moonlit resting stone and small lantern flowers around the existing Dusk Moth nest.
+- [x] Reuse existing Nest anchors; do not change companion spawn, prompt, friendship, or reward logic.
+- [x] Keep habitat decorations non-interactive and non-collidable.
+- [x] Add regression tests and Studio playtest criteria.
+- [ ] Validate composition and performance in Roblox Studio.
