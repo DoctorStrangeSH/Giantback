@@ -81,7 +81,7 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                     local growthSway = ({[1] = 0.82, [2] = 1, [3] = 1.22})[growthStage]
                     local swayStrength = (playful and 0.62 or sniffing and 0.48 or 0.3) * growthSway
                     if playful then swaySpeed = 9.5 end
-                    if resting then
+                    if resting and not playful then
                         swaySpeed = 1.6
                         swayStrength = 0.12
                     end
@@ -117,7 +117,7 @@ function CompanionAnimation.animate(model, state, time, moving, resting, player,
                     local growthFlap = ({[1] = 0.88, [2] = 1, [3] = 1.16})[growthStage]
                     local flapSpeed = (mothAbility and 21 or playful and 15 or 11.5) * growthFlap
                     local flapStrength = (mothAbility and 0.76 or playful and 0.58 or 0.42) * growthFlap
-                    if resting and not mothAbility then
+                    if resting and not mothAbility and not playful then
                         flapSpeed = 3.2
                         flapStrength = 0.13
                     end
