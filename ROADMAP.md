@@ -1399,3 +1399,13 @@
 - [x] Keep both trace sets decorative, non-interactive and grouped under the replaceable habitat folder.
 - [x] Add source-contract tests and Studio acceptance cases.
 - [ ] Validate ground placement, visibility and mobile performance in Roblox Studio.
+
+
+## Companion personality — playful idle moments (26.11.2026)
+
+- [x] Add a local-only, cooldown-limited playful activity state for equipped Fox and Moth.
+- [x] Pace activity frequency by saved personality and bond stage.
+- [x] Reset the playful timer on movement to avoid interrupting travel.
+- [x] Add a brief Fox hop/tail flourish and Moth wing flutter/head tilt using the existing animation loop.
+- [x] Add regression coverage for activity scheduling, state handoff, and cosmetic-only animation.
+- [ ] Verify timing, visual quality, and interaction priority in Roblox Studio.
