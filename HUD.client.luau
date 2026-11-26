@@ -2137,7 +2137,7 @@ local function renderTools()
         local level = tonumber(player:GetAttribute("Tool_" .. definition.id .. "Level")) or 1
         local owned = player:GetAttribute("Tool_" .. definition.id .. "Owned") == true
         local equipped = player:GetAttribute("Tool_Equipped") == definition.id
-        local item = card(body, "Tool_" .. definition.id, compact and 132 or 106)
+        local item = card(body, "Tool_" .. definition.id, compact and 160 or 106)
         createPictogram(item, "ToolIcon", definition.icon, 38, palette.gold).Position =
             UDim2.fromOffset(13, compact and 12 or 26)
         local nameLabel = label(item, "Name", definition.name,
@@ -2148,8 +2148,8 @@ local function renderTools()
             compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, -156, 0, 25),
             UDim2.fromOffset(compact and 14 or 62, compact and 58 or 33), 11, palette.muted)
         detailsLabel.TextWrapped = true
-        local actionSize = compact and UDim2.new(0.5, -18, 0, 28) or UDim2.fromOffset(102, 30)
-        local equipPosition = compact and UDim2.fromOffset(12, 94) or UDim2.new(1, -114, 0, 8)
+        local actionSize = compact and UDim2.new(0.5, -18, 0, 42) or UDim2.fromOffset(102, 30)
+        local equipPosition = compact and UDim2.fromOffset(12, 110) or UDim2.new(1, -114, 0, 8)
         local equip = button(item, "Equip", equipped and "В РУКАХ" or "ВЗЯТЬ", actionSize, equipPosition, equipped and palette.gold or palette.forest)
         equip.TextSize = 10
         equip.Activated:Connect(function()
@@ -2157,7 +2157,7 @@ local function renderTools()
         end)
         local upgradeText = level >= 2 and "МАКС. УРОВЕНЬ" or "УЛУЧШИТЬ"
         local upgrade = button(item, "Upgrade", upgradeText, actionSize,
-            compact and UDim2.new(0.5, 6, 0, 94) or UDim2.new(1, -114, 0, 52), level >= 2 and palette.muted or palette.coral)
+            compact and UDim2.new(0.5, 6, 0, 110) or UDim2.new(1, -114, 0, 52), level >= 2 and palette.muted or palette.coral)
         upgrade.TextSize = 10
         upgrade.Activated:Connect(function()
             if level < 2 then
@@ -2168,7 +2168,7 @@ local function renderTools()
     end
     local swordOwned = player:GetAttribute("Tool_SwordOwned") == true
     local swordEquipped = player:GetAttribute("Tool_Equipped") == "Sword"
-    local swordCard = card(body, "Tool_Sword", compact and 148 or 124)
+    local swordCard = card(body, "Tool_Sword", compact and 172 or 124)
     createPictogram(swordCard, "SwordIcon", "sword", 38, palette.gold).Position =
         UDim2.fromOffset(13, compact and 12 or 26)
     local swordName = label(swordCard, "SwordName", "Меч странника",
@@ -2182,7 +2182,7 @@ local function renderTools()
     swordStatus.TextWrapped = true
     local swordActionSize = compact and UDim2.new(0.5, -18, 0, 28) or UDim2.fromOffset(102, 30)
     local swordEquip = button(swordCard, "SwordEquip", swordEquipped and "В РУКАХ" or "ВЗЯТЬ",
-        swordActionSize, compact and UDim2.fromOffset(12, 108) or UDim2.new(1, -114, 0, 8),
+        swordActionSize, compact and UDim2.fromOffset(12, 122) or UDim2.new(1, -114, 0, 8),
         swordEquipped and palette.gold or palette.forest)
     swordEquip.TextSize = 10
     swordEquip.Activated:Connect(function()
@@ -2190,7 +2190,7 @@ local function renderTools()
     end)
     local canCraftSword = not swordOwned and ingots >= 2 and wood >= 6
     local swordCraft = button(swordCard, "SwordCraft", swordOwned and "СОЗДАН" or "СОЗДАТЬ",
-        swordActionSize, compact and UDim2.new(0.5, 6, 0, 108) or UDim2.new(1, -114, 0, 52),
+        swordActionSize, compact and UDim2.new(0.5, 6, 0, 122) or UDim2.new(1, -114, 0, 52),
         canCraftSword and palette.coral or palette.muted)
     swordCraft.TextSize = 10
     swordCraft.Activated:Connect(function()
