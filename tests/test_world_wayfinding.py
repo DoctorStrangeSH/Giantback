@@ -65,6 +65,25 @@ class WorldWayfindingTests(unittest.TestCase):
         self.assertIn('grove:FindFirstChild("Nest")', habitat_code)
         self.assertIn('dusk:FindFirstChild("Nest")', habitat_code)
 
+    def test_fox_habitat_has_small_ground_level_pawprints(self):
+        self.assertIn('addHabitatTracks(habitatVisuals:FindFirstChild("FoxNestHabitat"), foxNest, "Fox")', VISUALS)
+        self.assertIn('"Tiny paw print"', VISUALS)
+        self.assertIn('"Paw toe"', VISUALS)
+        self.assertIn("local function addHabitatTracks(parent, nest, kind)", VISUALS)
+
+    def test_moth_habitat_has_soft_moon_dust_trail(self):
+        self.assertIn('addHabitatTracks(habitatVisuals:FindFirstChild("MothRestingGrove"), mothNest, "Moth")', VISUALS)
+        self.assertIn('"Moon dust mote"', VISUALS)
+        self.assertIn("palette.lilacLight", VISUALS)
+
+    def test_habitat_traces_are_visual_only_and_rebuilt_with_habitat_folder(self):
+        start = VISUALS.index("local function addHabitatTracks(parent, nest, kind)")
+        end = VISUALS.index('local foxCacheVisuals = makeFolder(grove, "FoxCacheVisuals")', start)
+        trace_code = VISUALS[start:end]
+        self.assertNotIn("ProximityPrompt", trace_code)
+        self.assertNotIn("CanCollide = true", trace_code)
+        self.assertIn('makeFolder(parent, kind .. "Tracks")', trace_code)
+
     def test_fall_recovery_returns_character_to_owners_home_without_resetting_inventory(self):
         self.assertIn('root.Position.Y < -80', WORLD)
         self.assertIn('local recovery = session.homeSpawn', WORLD)
