@@ -1362,3 +1362,12 @@
 - [x] Keep route repair requirements visible and retain explanatory region summaries.
 - [x] Add automated source-contract coverage and Studio visual acceptance cases.
 - [ ] Confirm CI and verify route state against actual in-world bridges in Roblox Studio.
+
+
+## World navigation — bridge wayfinding (26.11.2026)
+
+- [x] Add two compact physical destination signs at the existing Grove and Dusk bridge landings.
+- [x] Keep signs inside the generated GiantbackWorldDetails folder so visual rebuild replaces, rather than duplicates, them.
+- [x] Use non-collidable decorative geometry and readable SurfaceGui labels.
+- [x] Add source-contract tests for sign destinations and existing fall recovery.
+- [ ] Verify physical placement, readability and collision in Roblox Studio.
