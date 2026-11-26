@@ -28,6 +28,19 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('local width = math.max(240, math.min(340, viewport.X - 24))', HUD)
         self.assertIn('updatePlayOverlayLayout()', HUD)
 
+    def test_archipelago_map_shows_progressive_routes_from_live_world_state(self):
+        self.assertIn('local function renderWorld()', HUD)
+        self.assertIn('card(body, "ArchipelagoMap", compact and 244 or 190)', HUD)
+        self.assertIn('local columns = compact and 2 or 4', HUD)
+        self.assertIn('id = "Home", title = "Домашний остров"', HUD)
+        self.assertIn('id = "Grove", title = "Солнечная роща"', HUD)
+        self.assertIn('id = "Dusk", title = "Сумеречная долина"', HUD)
+        self.assertIn('id = "Crystal", title = "Кристальная пещера"', HUD)
+        self.assertIn('player:GetAttribute("Bridge_HomeToGrove") == true', HUD)
+        self.assertIn('player:GetAttribute("CrystalGrottoDiscovered") == true', HUD)
+        self.assertIn('workspace:FindFirstChild("BridgeToDusk")', HUD)
+        self.assertIn('Для ремонта: дерево ×5 · камень ×3', HUD)
+
     def test_farm_and_daily_quest_cards_reflow_on_compact_screens(self):
         self.assertIn('local compact = gui.AbsoluteSize.X < 620', HUD)
         self.assertIn('card(body, "Seed_" .. crop.id, compact and 138 or 82)', HUD)
