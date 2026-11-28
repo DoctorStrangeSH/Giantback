@@ -19,7 +19,7 @@ class CompanionActivityModuleTests(unittest.TestCase):
         self.assertIn('idleSeconds >= 12', ACTIVITY)
         self.assertIn('idleSeconds >= 45', ACTIVITY)
         self.assertIn('isLocal and id == "Fox"', ACTIVITY)
-        self.assertIn('local resting, sleeping, sniff, attention, curious, playful = companionActivity.update(owner, id, now, moving, owner == player)', CLIENT)
+        self.assertIn('local resting, sleeping, sniff, attention, curious, playful, worldInterest = companionActivity.update(owner, id, now, moving, owner == player, model:GetPivot().Position)', CLIENT)
         self.assertIn('if sniff then foxSniffUntil = os.clock() + 2.2 end', CLIENT)
         self.assertIn('setSleepIndicator(model, sleeping)', CLIENT)
 
