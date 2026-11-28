@@ -1,3 +1,15 @@
+## Автоматический baseline — Companion world awareness 3.8 (28.11.2026)
+
+**HEAD:** `b22fda51113c2403db57318f3767204a019d7b58`
+
+- GitHub Actions build-and-validate: **2/2 PASS**.
+- 696 Python gameplay/world contract tests: **PASS**.
+- Проверка исходной библиотеки ассетов: **PASS**.
+- Сборка Roblox Place: **PASS**.
+- Проверка структуры Place и встроенных скриптов: **PASS**.
+- [Запуск GitHub Actions](https://github.com/DoctorStrangeSH/Giantback/actions/runs/46125698702).
+- Поведение Fox у DecorativeTree и Moth у FlowerBed добавлено локально; ручная проверка в Roblox Studio остаётся обязательной.
+
 ## Последний автоматический baseline — уголок питомцев (24.11.2026)
 
 **HEAD:** `88cdeb8b083aabcdb2997cce86d6af723024b945`
