@@ -1409,3 +1409,14 @@
 - [x] Add a brief Fox hop/tail flourish and Moth wing flutter/head tilt using the existing animation loop.
 - [x] Add regression coverage for activity scheduling, state handoff, and cosmetic-only animation.
 - [ ] Verify timing, visual quality, and interaction priority in Roblox Studio.
+
+
+## Companion world awareness 3.8 — garden reactions (28.11.2026)
+
+- [x] Reuse existing owner-island decoration models; do not create duplicate props or new prompts.
+- [x] Let the equipped Fox notice nearby DecorativeTree models and perform a short curious sniff/tail reaction.
+- [x] Let the equipped Moth notice nearby FlowerBed models and perform a gentle flower-hover wing/head reaction.
+- [x] Check proximity on a throttled local timer, not every rendered frame.
+- [x] Keep the behavior cosmetic and local; no remote events, rewards, inventory changes, or DataStore writes.
+- [x] Add source-contract tests for target filtering, scan throttling, and animation handoff.
+- [ ] Verify in Roblox Studio near/far, multiple decorations, movement interruption, and mobile performance.
