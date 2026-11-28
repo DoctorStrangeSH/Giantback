@@ -112,10 +112,40 @@ function CompanionActivity.new()
         end
         playful = isLocal and not moving and now < (activity.playfulUntil or 0)
 
+        local worldInterest = nil
+        if isLocal and not moving and (id == "Fox" or id == "Moth")
+            and now >= (activity.nextWorldCheckAt or 0) then
+            activity.nextWorldCheckAt = now + 0.4
+            local islands = workspace:FindFirstChild("PlayerIslands")
+            local island = islands and islands:FindFirstChild("HomeIsland_" .. tostring(owner.UserId))
+            local city = island and island:FindFirstChild("PersonalCity")
+            local wantedDecoration = id == "Fox" and "DecorativeTree" or "FlowerBed"
+            local nearestDistance = 8
+            local nearestPosition = nil
+            if city then
+                for _, decoration in city:GetChildren() do
+                    if decoration:IsA("Model") and decoration:GetAttribute("DecorationId") == wantedDecoration then
+                        local distance = (decoration:GetPivot().Position - companionPosition).Magnitude
+                        if distance < nearestDistance then
+                            nearestDistance = distance
+                            nearestPosition = decoration:GetPivot().Position
+                        end
+                    end
+                end
+            end
+            if nearestPosition then
+                activity.worldInterestUntil = now + 0.7
+                activity.worldInterestPosition = nearestPosition
+            end
+        end
+        if isLocal and not moving and now < (activity.worldInterestUntil or 0) then
+            worldInterest = id == "Fox" and "Tree" or "Flowers"
+        end
+
         local idleSeconds = now - activity.idleSince
         local resting = not moving and idleSeconds >= 12
         local sleeping = not moving and idleSeconds >= 45
-        return resting, sleeping, sniff, attention, curious, playful
+        return resting, sleeping, sniff, attention, curious, playful, worldInterest
     end
 
     local function forget(owner)
