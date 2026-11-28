@@ -913,3 +913,14 @@ Reproduction steps / notes:
 - [ ] Confirm wild encounters and other players' companions do not run the local owner's playful scheduler.
 - [ ] Check no extra RenderStepped loops, remotes, rewards, or server attributes were introduced.
 - [ ] Check mobile frame rate and ensure playful motion does not conflict with petting, search, moth ability, or sleep.
+
+
+## Companion world awareness 3.8 — garden reactions (28.11.2026)
+
+- [ ] Equip Fox, approach a placed DecorativeTree on the owner's island, and stop within 8 studs: verify a brief curious sniff and tail response.
+- [ ] Walk away or start moving: verify the tree reaction ends without affecting follower movement.
+- [ ] Equip Moth, approach a placed FlowerBed: verify a gentle faster wing flutter and head tilt; no reward should be granted.
+- [ ] Place multiple trees/flower beds: verify the nearest matching decoration is used and no duplicate props or prompts appear.
+- [ ] Remove or move a decoration while the pet is nearby: verify the reaction safely expires.
+- [ ] Test with a guest nearby: only the local owner's equipped companion should react to the owner's own decorations.
+- [ ] Check 30/60 FPS and mobile; confirm proximity scanning is throttled and no extra RenderStepped loop is created.
