@@ -39,7 +39,7 @@ class CompanionActivityModuleTests(unittest.TestCase):
         self.assertIn('["Застенчивый"] = {48, 66}', ACTIVITY)
         self.assertIn('activity.nextAttentionAt = now + math.random(math.floor(minDelay), math.floor(maxDelay))', ACTIVITY)
         self.assertIn('if attention and owner == player then showCompanionAttention(model, id) end', CLIENT)
-        self.assertIn('return resting, sleeping, sniff, attention, curious, playful', ACTIVITY)
+        self.assertIn('return resting, sleeping, sniff, attention, curious, playful, worldInterest', ACTIVITY)
 
 
     def test_all_equipped_species_get_short_personality_paced_curiosity_moments(self):
@@ -67,6 +67,14 @@ class CompanionActivityModuleTests(unittest.TestCase):
     def test_playful_idle_timer_restarts_after_movement(self):
         self.assertIn('activity.nextPlayfulAt = now + math.random(24, 40)', ACTIVITY)
         self.assertIn('activity.playfulUntil = 0', ACTIVITY)
+
+    def test_equipped_fox_and_moth_notice_owner_island_decorations_nearby(self):
+        self.assertIn('local wantedDecoration = id == "Fox" and "DecorativeTree" or "FlowerBed"', ACTIVITY)
+        self.assertIn('decoration:GetAttribute("DecorationId") == wantedDecoration', ACTIVITY)
+        self.assertIn('nearestDistance = 8', ACTIVITY)
+        self.assertIn('activity.nextWorldCheckAt = now + 0.4', ACTIVITY)
+        self.assertIn('worldInterest = id == "Fox" and "Tree" or "Flowers"', ACTIVITY)
+        self.assertIn('state.worldInterest = worldInterest', CLIENT)
 
     def test_module_is_read_only_to_server_and_does_not_animate(self):
         for forbidden in ('FireServer(', 'InvokeServer(', 'DataStoreService', 'Instance.new(', 'RenderStepped:Connect', ':SetAttribute('):
