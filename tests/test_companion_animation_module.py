@@ -95,6 +95,9 @@ class CompanionAnimationModuleTests(unittest.TestCase):
         self.assertIn('if resting and not mothAbility and not playful then', ANIMATION)
         self.assertIn('elseif part.Name == "Moth head" and playful then', ANIMATION)
         self.assertIn('state.playful = playful', CLIENT)
+        self.assertIn('elseif part.Name == "Body" and state.worldInterest == "Tree" then', ANIMATION)
+        self.assertIn('state.worldInterest == "Flowers" and 16', ANIMATION)
+        self.assertIn('elseif part.Name == "Moth head" and state.worldInterest == "Flowers" then', ANIMATION)
 
     def test_festival_pet_animations_remain_cosmetic_and_keep_single_render_loop(self):
         for forbidden in ("FireServer(", "InvokeServer(", "DataStoreService", "SetAttribute(", "RenderStepped:Connect"):
