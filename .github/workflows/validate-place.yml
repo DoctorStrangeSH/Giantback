@@ -372,7 +372,7 @@ jobs:
               "MothAbilityBurstLocal",
               "LunarSpark",
               "local function playMothAbilityBurst",
-              "mothAbility and 21 or playful and 15 or 11.5",
+              "mothAbility and 21 or playful and 15 or state.worldInterest == \\"Flowers\\" and 16 or 11.5",
               "light.Range = mothAbility and 14 or 9",
               "Chest bib",
               "Cheek fluff",
