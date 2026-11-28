@@ -98,8 +98,8 @@ class FoxScoutContractTests(unittest.TestCase):
 
     def test_fox_plays_a_short_sniff_animation_when_a_cache_is_revealed(self):
         self.assertIn("foxSniffUntil", ALBUM)
-        self.assertIn('part.Name == "Muzzle" and sniffing', ANIMATION)
-        self.assertIn("sniffing and 9 or 4.2", ANIMATION)
+        self.assertIn('part.Name == "Muzzle" and (sniffing or state.worldInterest == "Tree")', ANIMATION)
+        self.assertIn('(sniffing or state.worldInterest == "Tree") and 7.2 or 4.2', ANIMATION)
         self.assertIn("sniffing and 0.16 or petting and 0.11 or 0.055", ANIMATION)
 
 

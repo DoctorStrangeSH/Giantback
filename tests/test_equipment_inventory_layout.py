@@ -15,6 +15,17 @@ class EquipmentInventoryLayoutTests(unittest.TestCase):
         self.assertIn('addInfo("Семена и урожай"', HUD)
         self.assertIn('addInfo("Редкие находки"', HUD)
 
+    def test_backpack_category_filters_are_interactive_and_keep_selection(self):
+        self.assertIn('local backpackCategory = backpackCategory or "Все"', HUD)
+        self.assertIn('local categories = {"Все", "Материалы", "Семена", "Находки", "Снаряжение"}', HUD)
+        self.assertIn('card(body, "BackpackCategories", compact and 96 or 52)', HUD)
+        self.assertIn('backpackCategory = category', HUD)
+        self.assertIn('refreshActiveTab()', HUD)
+        self.assertIn('backpackCategory == "Все" or backpackCategory == "Материалы"', HUD)
+        self.assertIn('backpackCategory == "Все" or backpackCategory == "Семена"', HUD)
+        self.assertIn('backpackCategory == "Все" or backpackCategory == "Находки"', HUD)
+        self.assertIn('backpackCategory == "Все" or backpackCategory == "Снаряжение"', HUD)
+
     def test_backpack_summaries_use_live_player_resource_attributes(self):
         for attribute in (
             "Resource_Wood", "Resource_Stone", "Resource_IronOre", "Resource_IronIngot",
@@ -26,17 +37,18 @@ class EquipmentInventoryLayoutTests(unittest.TestCase):
 
     def test_tool_cards_reflow_actions_below_details_on_mobile(self):
         self.assertIn('local compact = gui.AbsoluteSize.X < 620', HUD)
-        self.assertIn('compact and 132 or 106', HUD)
-        self.assertIn('local actionSize = compact and UDim2.new(0.5, -18, 0, 28)', HUD)
-        self.assertIn('compact and UDim2.fromOffset(12, 94)', HUD)
-        self.assertIn('compact and UDim2.new(0.5, 6, 0, 94)', HUD)
+        self.assertIn('compact and 160 or 106', HUD)
+        self.assertIn('local actionSize = compact and UDim2.new(0.5, -18, 0, 42)', HUD)
+        self.assertIn('compact and UDim2.fromOffset(12, 110)', HUD)
+        self.assertIn('compact and UDim2.new(0.5, 6, 0, 110)', HUD)
         self.assertIn('nameLabel.TextWrapped = true', HUD)
         self.assertIn('detailsLabel.TextWrapped = true', HUD)
 
     def test_sword_actions_keep_existing_server_events_and_fit_mobile_card(self):
-        self.assertIn('compact and 148 or 124', HUD)
-        self.assertIn('compact and UDim2.fromOffset(12, 108)', HUD)
-        self.assertIn('compact and UDim2.new(0.5, 6, 0, 108)', HUD)
+        self.assertIn('compact and 172 or 124', HUD)
+        self.assertIn('compact and UDim2.fromOffset(12, 122)', HUD)
+        self.assertIn('local swordActionSize = compact and UDim2.new(0.5, -18, 0, 42)', HUD)
+        self.assertIn('compact and UDim2.new(0.5, 6, 0, 122)', HUD)
         self.assertIn('event:FireServer("EquipTool", "Sword")', HUD)
         self.assertIn('event:FireServer("CraftSword")', HUD)
         self.assertIn('event:FireServer("EquipTool", definition.id)', HUD)

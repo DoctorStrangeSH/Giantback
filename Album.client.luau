@@ -52,6 +52,8 @@ local foxCachePrompts = {}
 local foxCacheHighlights = {}
 local foxSniffUntil = 0
 local pettingUntil = {Fox = 0, Moth = 0, CrystalWisp = 0, HarvestSprite = 0, BrambleBun = 0, MossTurtle = 0, Glowcap = 0, Dewdrop = 0, Starling = 0}
+local companionSearchUntil = 0
+local pendingGiftDiscovery = nil
 local pendingPetBurst = {}
 local lastFoxCacheSpot = ""
 local foxScentTrailFolder = nil
@@ -743,7 +745,7 @@ end
 
 local function animateModelParts(model, state, time, moving, resting)
     CompanionAnimation.animate(model, state, time, moving, resting,
-        player, foxSniffUntil, mothAbilityUntil, pettingUntil)
+        player, foxSniffUntil, mothAbilityUntil, pettingUntil, state.searching == true)
 end
 
 -- Sleep glyphs are client-only; the activity module owns idle thresholds.
@@ -791,9 +793,34 @@ end)
 
 -- World pet prompts and friendship particles share one client presentation module.
 local CompanionInteractions = require(storage:WaitForChild("CompanionInteractions"))
-local interactions = CompanionInteractions.new(player, event, names, palette)
+local interactions = CompanionInteractions.new(player, event, names, palette, function(companionId)
+    if player:GetAttribute("Companion") == companionId then
+        companionSearchUntil = os.clock() + 3.8
+    end
+end)
 local playCompanionPettingBurst = interactions.playCompanionPettingBurst
+local playCompanionGiftDiscovery = interactions.playCompanionGiftDiscovery
+
+local function showPendingGiftDiscovery()
+    if not pendingGiftDiscovery then return end
+    local model = models[player]
+    if not model or model.Name ~= pendingGiftDiscovery.companionId then return end
+    playCompanionGiftDiscovery(model, pendingGiftDiscovery.companionId, pendingGiftDiscovery.rarity)
+    pendingGiftDiscovery = nil
+end
+
+player:GetAttributeChangedSignal("CompanionGiftSearchSerial"):Connect(function()
+    local result = player:GetAttribute("CompanionGiftSearchResult")
+    if type(result) ~= "string" then return end
+    local itemId, amount, rarity = string.match(result, "^([^|]+)|(%d+)|([^|]+)$")
+    if not itemId or not amount then return end
+    local companionId = player:GetAttribute("Companion")
+    if not names[companionId] then return end
+    pendingGiftDiscovery = {companionId = companionId, rarity = rarity or "common"}
+    showPendingGiftDiscovery()
+end)
 local attachWorldPetPrompt = interactions.attachWorldPetPrompt
+local showCompanionAttention = interactions.showCompanionAttention
 
 -- The moth stardust appearance is a local presentation system.
 local MothStardust = require(storage:WaitForChild("MothStardust"))
@@ -859,6 +886,7 @@ local function follow(dt)
                 captureAnimation(model, id, false, owner == player)
                 if owner == player then
                     attachWorldPetPrompt(model, id)
+                    showPendingGiftDiscovery()
                     if id == "Moth" then
                         attachMothStardust(model)
                     end
@@ -879,12 +907,20 @@ local function follow(dt)
             end
 
             local moving = humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.08
-            local resting, sleeping, sniff = companionActivity.update(owner, id, now, moving, owner == player)
+            local resting, sleeping, sniff, attention, curious, playful, worldInterest = companionActivity.update(owner, id, now, moving, owner == player, model:GetPivot().Position)
             if sniff then foxSniffUntil = os.clock() + 2.2 end
+            if attention and owner == player then showCompanionAttention(model, id) end
             setSleepIndicator(model, sleeping)
 
             local state = animationStates[model]
             if state then
+                state.sleeping = sleeping
+                state.curious = curious
+                state.playful = playful
+                state.worldInterest = worldInterest
+                state.searching = owner == player and os.clock() < companionSearchUntil
+                state.mood = owner:GetAttribute("Companion_" .. id .. "_Mood") or "Спокойствие"
+                state.personality = owner:GetAttribute("Companion_" .. id .. "_Personality") or "Любопытный"
                 animateModelParts(model, state, phase, moving, resting)
             end
         end

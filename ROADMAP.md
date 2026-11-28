@@ -1096,3 +1096,327 @@
 - [ ] Новые Blender-рендеры и проверка вида сзади/сбоку.
 - [ ] Авторские крупные пряди шерсти и более мягкие переходы лап/бёдер.
 - [ ] Roblox Studio import, rig/animation и mobile readability — не пройдены.
+
+## UI hardening — короткие экраны и модальные окна (25.11.2026)
+
+- [x] Убрать жёсткий минимальный размер модального окна, который мог выходить за границы короткого viewport в landscape.
+- [x] Ограничить ширину и высоту панели фактически доступным размером экрана; сохранить прокрутку содержимого.
+- [x] Добавить source-contract проверки на отсутствие прежних переполняющих минимумов.
+- [ ] Roblox Studio: проверить 320×200, 320×568, 375×667, 768×1024 и 1920×1080; убедиться, что крестик и содержимое доступны, панель не обрезается и навигация корректно перекрывается затемнением.
+
+## UI hardening — мобильная навигация (25.11.2026)
+
+- [x] Исправить вертикальное наложение пиктограммы и подписи в узкой нижней навигации: значок закреплён над подписью.
+- [x] Добавить source-contract тест на отсутствие центрирования значка поверх подписи.
+- [ ] Roblox Studio: проверить читаемость шести пунктов и удобство касания на ширине 320/375/414 px и на планшете.
+
+## UI hardening — контроль полноты пиктограмм (25.11.2026)
+
+- [x] Сверить фактические иконки питомцев, нижней навигации и прямые вызовы с ветками нативного рендерера.
+- [x] Добавить регрессионный тест: каждый используемый вид пиктограммы обязан иметь собственную отрисовку; неизвестный тип обязан показывать заметный fallback, а не пустой слот.
+- [x] CI: полный набор из 615 тестов пройден; проверка библиотеки ассетов и сборка Roblox Place завершились успешно (25.11.2026).
+- [ ] Визуально проверить пиктограммы в Roblox Studio на мобильном и desktop.
+
+
+## Pet collection — hero preview pass (25.11.2026)
+
+- [x] Show approved 3D Fox and Lunar Moth models directly in their collection cards, using the same import/runtime/animation approval gates as the live companion.
+- [x] Keep native pictogram fallbacks for every companion without an approved hero model; never show an empty preview slot.
+- [x] Reflow compact cards to reserve a clear hero-art area without colliding with descriptions, progression, or touch actions.
+- [x] Add regression contracts for approval gates, visible fallbacks, compact spacing, and unchanged server-authoritative pet actions.
+- [x] CI: 619 tests passed; asset validation, Roblox Place build, generated-place validation, and artifact upload all succeeded (25.11.2026).
+- [ ] Roblox Studio: verify 3D preview framing, lighting, and readability on 320/375/414 px mobile widths and desktop.
+- [ ] Extend approved 3D preview coverage to the remaining collection after each model passes visual, rig, and runtime acceptance.
+
+
+## Pet collection — 3D preview framing (25.11.2026)
+
+- [x] Calculate preview camera distance from model width, height, depth, field of view, and viewport aspect ratio.
+- [x] Add framing margin so wide wing silhouettes and tall models are less likely to be clipped in collection thumbnails.
+- [x] Keep the preview camera aimed at the model bounds center instead of a fixed vertical offset.
+- [x] Add regression contract for horizontal/vertical camera fitting.
+- [ ] Roblox Studio: visually inspect Fox and Lunar Moth framing, model orientation, and lighting at mobile and desktop sizes.
+
+
+## Pet collection — rarity identity pass (25.11.2026)
+
+- [x] Give all nine collection entries explicit rarity metadata instead of embedding rarity words into role descriptions.
+- [x] Add consistent rarity palettes for Common, Rare, Epic, Legendary, and Seasonal companions.
+- [x] Show a compact rarity badge and matching card accent without overlapping the companion name on narrow screens.
+- [x] Let a discovered mutation's rarity override the base species badge so rare forms are immediately recognizable.
+- [x] Give Legendary companions a stronger gold outline and a distinct badge finish.
+- [x] Add regression tests for complete rarity metadata, badge visibility, mobile title spacing, mutation override, and Legendary styling.
+- [x] CI: 623 tests passed; source asset validation, Roblox Place build, generated-place validation, and artifact upload succeeded (25.11.2026).
+- [ ] Roblox Studio: inspect badge readability, card contrast, and text wrapping on 320/375/414 px mobile widths and desktop.
+
+
+## Companion profile screen (25.11.2026)
+
+- [x] Add a dedicated pet profile view opened from every collection card, with a clear return-to-collection action.
+- [x] Show the approved 3D companion preview when the pet is owned; retain a native portrait/locked fallback otherwise.
+- [x] Present species identity, role, base or mutation rarity, mood/personality, growth stage, level/XP, friendship, bond rank, mutation, and talent in readable sections.
+- [x] Keep call/equip, feed, play, and pet actions in the profile, reusing the existing server-authoritative RemoteEvent commands and eligibility checks.
+- [x] Expand collection cards to fit the profile entry button without colliding with the existing care actions.
+- [x] Add regression coverage for profile navigation, content sections, mobile/desktop sizing, and all four care actions.
+- [x] CI: 627 tests passed; source asset validation, Roblox Place build, generated-place validation, and artifact upload succeeded (25.11.2026).
+- [ ] Roblox Studio: inspect profile readability, hero preview framing, and touch target spacing at 320/375/414 px and desktop.
+
+
+## Companion personality animation pass (25.11.2026)
+
+- [x] Add species-specific idle, movement, affection, and deep-rest motion for BrambleBun, MossTurtle, Glowcap, Dewdrop, and Starling using their actual model part names.
+- [x] Give BrambleBun curious head dips and personality-scaled ear twitches.
+- [x] Give MossTurtle slow shell breathing, head peeks, tail motion, and alternating foot paddles.
+- [x] Give Glowcap a gentle cap wobble and mood-reactive bioluminescent core.
+- [x] Give Dewdrop fin/tail swimming motion, affectionate head nods, and a pulsing water jewel.
+- [x] Give Starling individual wing flaps, curious head tilts, crest motion, and a breathing star halo.
+- [x] Feed each owner's server-replicated mood, personality, and deep-sleep state into the existing single client animation loop.
+- [x] Add regression tests for species-specific part bindings, mood/personality response, sleep state, and cosmetic-only ownership.
+- [x] CI: 630 tests passed; source asset validation, Roblox Place build, generated-place validation, and artifact upload succeeded (25.11.2026).
+- [ ] Roblox Studio: inspect all five hatchlings at idle, follow, petting, and sleep; verify no mesh clipping or excessive motion at mobile and desktop camera distances.
+
+
+## Companion attention cues (25.11.2026)
+
+- [x] Add a low-pressure idle attention scheduler for all equipped companions; it only runs for the local player's active companion.
+- [x] Pace attention requests by personality: playful companions ask more often, shy companions less often.
+- [x] Let higher bond stages gently shorten the wait without making attention mandatory.
+- [x] Reset the attention timer when the player is moving, avoiding repeated prompts during exploration.
+- [x] Show a short-lived species-aware visual cue above the companion; prevent overlapping duplicate bubbles.
+- [x] Keep the feature client-only and cosmetic: no rewards, penalties, inventory changes, or server requests.
+- [x] Add regression tests for local-only scheduling, personality/bond pacing, movement reset, temporary bubble lifecycle, and species glyphs.
+- [ ] Roblox Studio: verify bubble readability, head clearance, camera distance, and no overlap with sleep indicators at mobile and desktop resolutions.
+
+
+## Autonomous companion curiosity (25.11.2026)
+
+- [x] Extend idle curiosity moments from Fox-only sniffing to every equipped companion.
+- [x] Pace curiosity by personality and bond stage; playful/curious personalities react sooner, shy personalities take longer.
+- [x] Reset curiosity timing while the player is moving so exploration is never interrupted by repeated idle behaviors.
+- [x] Hold each curiosity animation for a short readable interval instead of a single rendered frame.
+- [x] Add distinct curiosity reactions to BrambleBun, MossTurtle, Glowcap, Dewdrop, and Starling using their existing model parts.
+- [x] Preserve existing Fox scent investigation and all current sleep/rest/attention behavior.
+- [x] Add regression tests for scheduler timing, movement reset, client-only ownership, and all five species animation reactions.
+- [ ] Roblox Studio: observe idle curiosity frequency and animation readability for all five species at mobile and desktop camera distances.
+- [ ] Next: implement server-authoritative companion gift searches with cooldowns, biome-aware reward tables, and duplicate/ownership/range validation.
+
+
+## Server-authoritative companion gift searches (25.11.2026)
+
+- [x] Add a dedicated "Искать подарок" interaction to the equipped companion, separate from petting.
+- [x] Validate companion ownership and equipped state on the server; reject requests outside supported exploration biomes.
+- [x] Add biome-specific reward tables for Grove, Dusk, and Crystal Grotto using only existing inventory item IDs.
+- [x] Persist independent per-companion search cooldowns (180 seconds) across sessions.
+- [x] Scale the rare-find roll slightly with companion level and bond stage without allowing client-controlled reward values.
+- [x] Save inventory and cooldown together; roll both back if persistence fails.
+- [x] Grant companion XP only after the reward has been saved successfully.
+- [x] Add regression tests for remote routing, ownership/equip validation, biome gating, reward pools, cooldown persistence, rollback, and prompt wiring.
+- [ ] Roblox Studio: verify the second ProximityPrompt is readable on touch/gamepad/keyboard and does not collide with the petting prompt.
+- [ ] Roblox Studio: test biome boundaries and reward feedback in Grove, Dusk, and Crystal Grotto.
+
+
+
+ 
+## Persistent companion treasure journal (25.11.2026)
+
+- [x] Record each unique item discovered through companion gift searches separately from inventory quantity.
+- [x] Save the first-discovery biome and companion alongside the profile; validate item, biome, and companion IDs on load.
+- [x] Save discoveries in the same transaction as the inventory reward and cooldown; roll all three back on save failure.
+- [x] Replicate first-discovery flags and provenance to the client only after successful persistence.
+- [x] Add a 12-item treasure codex to the existing expedition journal, grouped by Grove, Dusk, and Crystal Grotto.
+- [x] Keep unknown entries hidden until first discovery and preserve the original discoverer/biome on repeat drops.
+- [x] Add dedicated pictograms for treasure chest, seed, moon, and star instead of generic fallback marks.
+- [x] Add regression tests for catalog coverage, persistence, rollback, provenance, journal rendering, and pictograms.
+- [ ] Roblox Studio: verify new-profile, first-discovery, repeat-drop, save-failure, and rejoin flows; inspect journal layout at 320/375/414 px and desktop.
+
+
+
+## Hybrid breeding and incubation (25.11.2026)
+
+- [x] Add a server-owned breeding recipe module with three unique parent combinations and distinct hybrid results.
+- [x] Require both parents, level 3+ (level 4 for the legendary pair), friendship 400+ (500 for the legendary pair), and recipe-specific materials.
+- [x] Support up to three simultaneous incubations with server-generated egg IDs and real-time hatch timestamps.
+- [x] Persist incubation queues and discovered hybrid codex entries with allowlist normalization.
+- [x] Make material consumption, egg creation, hatching, and discovery persistence transactional with rollback on save failure.
+- [x] Add a responsive breeding laboratory to the companion collection with ingredient counts, parent requirements, incubator timers, hatch actions, and a hybrid discovery codex.
+- [x] Add regression coverage for recipes, eligibility, costs, rollback, persistence, incubation, hatch validation, and UI wiring.
+- [ ] Roblox Studio: test missing/unowned parents, low levels/bond, missing materials, full incubators, duplicate pair attempts, save failure, offline incubation, rejoin, and hatch completion.
+- [ ] Art integration: create approved, unique hybrid rigs and wire discovered hybrids into the active companion collection/follower system. Current milestone records discoveries in the research codex; it does not yet create a followable companion model.
+
+## Genetic research and inherited companion traits (25.11.2026)
+
+- [x] Add three cross-species experiments: Fox + Moth, Fox + Crystal Wisp, and Moth + Crystal Wisp.
+- [x] Require ownership of both parents, the active host companion, friendship 300+ for each parent, and recipe-specific rare materials.
+- [x] Keep recipe IDs, costs, parent species, and reward effects on the server; never trust client-supplied values.
+- [x] Persist inherited traits in the existing companion profile and normalize unknown saved values safely.
+- [x] Consume materials and save the trait atomically; restore all materials and prior trait on save failure.
+- [x] Give each inherited trait a distinct visual treatment and a biome-specific +1 companion-gift bonus.
+- [x] Add profile experiment cards with live parent friendship, ingredient counts, and disabled states until requirements are met.
+- [x] Add contract coverage for recipes, ownership, active host, friendship, atomic costs, persistence, rewards, UI gating, and visuals.
+- [x] Limit each host companion to one inherited-trait path; show alternative paths as unavailable after a choice is made.
+- [ ] Roblox Studio: test each pairing, unowned parent, insufficient friendship/materials, repeat attempts, save failure, rejoin persistence, and gift bonus in the matching biome.
+
+## Secret companion evolutions (25.11.2026)
+
+- [x] Add three unique secret forms for the original Fox, Moth, and Crystal Wisp companions.
+- [x] Require maximum companion level, a high friendship bond, and species-specific rare materials.
+- [x] Keep evolution selection and resource costs server-authoritative; never accept a form or price from the client.
+- [x] Persist evolution IDs inside the existing companion profile and validate saved IDs against the allowlist.
+- [x] Spend materials and save the evolved form as one transaction; roll back both on persistence failure.
+- [x] Show each secret recipe and live resource counts in the companion profile; enable the action only when all requirements are met.
+- [x] Add distinct legendary visual treatments that override the cosmetic mutation tint without changing the companion rig.
+- [x] Add a success event and refresh the profile after the server confirms persistence.
+- [x] Add regression coverage for recipes, eligibility, server validation, persistence, rollback, UI gating, and visuals.
+- [ ] Roblox Studio: test all three recipes, insufficient materials, unowned/not-equipped pets, repeated activation, save failure, and rejoin persistence; inspect effects at mobile and desktop sizes.
+
+## Companion gift-search animation and discovery feedback (25.11.2026)
+
+- [x] Add a short, readable searching pose to the existing procedural companion animation system.
+- [x] Trigger a local search-start sparkle when the player activates the companion search prompt.
+- [x] Emit a server-confirmed result signal only after the reward and cooldown have been saved successfully.
+- [x] Classify common, rare, and epic discoveries on the server; never accept rarity or item values from the client.
+- [x] Add species-aware discovery bursts with stronger color and particle count for rare/epic finds.
+- [x] Handle the case where the result arrives before the local companion model is spawned.
+- [x] Add regression coverage for animation state wiring, result signal, and discovery effects.
+- [ ] Roblox Studio: check all species search poses and reward bursts in motion; verify no clipping with prompt/sleep/attention indicators.
+
+
+## UI acceptance gate — scope freeze (25.11.2026)
+
+- [x] Verify the current UI branch and its latest GitHub Actions result before continuing.
+- [x] Confirm the latest PR #54 head has successful `build-and-validate` checks; the branch description records 661/661 automated tests plus asset validation, Roblox Place build, embedded-script validation, and artifact upload.
+- [x] Record that automated source contracts and Place generation do not constitute visual acceptance in Roblox Studio.
+- [ ] Freeze all new gameplay/system work until the UI acceptance gate is complete. Existing companion breeding, genetic research, secret evolution, and gift-journal work remain deferred from further expansion; do not add more systems in this phase.
+- [ ] Roblox Studio visual pass: verify the six-tab navigation, top resource bar, objective panel, modal open/close/scroll behavior, all nine pet cards, rarity badges, profile navigation, 3D preview/fallback states, and action feedback.
+- [ ] Resolution matrix: 320×568, 375×667, 414×896, 568×320 landscape, 768×1024, and 1920×1080. Check safe insets, text wrapping, clipping, overlap, scroll reachability, and touch target sizes.
+- [ ] Companion acceptance: inspect all nine species at idle/follow/affection/rest; verify prompt placement and animation readability. Confirm Fox/Moth 3D previews only appear when their production approval flags are set.
+- [ ] Performance pass on a real mobile device: inspect ViewportFrame clone cleanup, tab switching, UI rebuilds, frame stability, and memory growth.
+- [ ] Capture Studio screenshots and Output results; mark each checklist item PASS/FAIL/BLOCKED before closing UI/UX 2.x.
+- [ ] Only after all UI items pass, resume deferred gameplay systems and move to the next roadmap milestone.
+
+**Current verified state:** PR #54 is open as Draft; its latest head is `4658f93e`. GitHub Actions `build-and-validate` completed successfully on 25.11.2026. Roblox Studio visual acceptance is still NOT DONE. PR #52 remains a separate open PR and is not treated as accepted until its own CI and Studio checks are reviewed.
+
+
+## UI acceptance gate — mobile contract correction (25.11.2026)
+
+- [x] Fix the multiline refresh assertion in `tests/test_companion_mobile_card_layout.py`: use a whitespace-tolerant regex instead of a double-escaped newline literal.
+- [x] CI on HEAD `ee8940cdb61e3729fd5b0d90baaf4a40fe868d25`: 672/672 Python tests passed.
+- [x] Asset validation passed: 6 original OBJ/MTL source pairs and asset manifest.
+- [x] Roblox Place build and structural validation passed: 88 named instances, 18 scripts.
+- [x] `Giantback-visual-build` artifact uploaded successfully (run 45637088353; artifact 15033440925).
+- [ ] Roblox Studio visual acceptance remains pending; automated contracts do not prove actual layout, readability, or runtime behavior.
+
+
+## UI acceptance gate — diary mobile layout (25.11.2026)
+
+- [x] Reflow expedition step cards on compact screens: taller card, wrapped title and hint, top-aligned hint.
+- [x] Reflow companion gift discovery cards on compact screens: wrapped item name and source/biome hint.
+- [x] Add automated source contracts for the responsive diary and gift-card layout.
+- [ ] Run CI for the diary layout change and resolve any regressions.
+- [ ] Complete Roblox Studio visual acceptance for diary, collection, farm, building, backpack, and map tabs.
+
+
+## UI acceptance gate — mobile building placement (25.11.2026)
+
+- [x] Move placement controls into a responsive panel sized for compact and short landscape viewports.
+- [x] Keep placement controls above the responsive bottom navigation with explicit safe spacing.
+- [x] Update placement panel geometry only when the camera viewport changes, not every render frame.
+- [x] Add source-contract coverage for panel bounds, control availability, and closing the catalog before placement.
+- [ ] Run CI and verify touch placement, rotation, cancel, confirm, and move flows in Roblox Studio.
+
+
+## UI acceptance gate — farm plot state and upgrade cards (26.11.2026)
+
+- [x] Give farm plots explicit text states: locked, free, growing, harvest ready.
+- [x] Highlight harvest-ready plot cards while retaining a readable text label.
+- [x] Increase compact plot-card height and wrap long state descriptions.
+- [x] Reflow farm-upgrade card and full-width mobile action button.
+- [x] Update source-contract tests for the new plot and upgrade geometry.
+- [ ] Confirm CI and inspect all four plot states in Roblox Studio at mobile/tablet/desktop sizes.
+
+
+## UI acceptance gate — farm and backpack mobile cards (26.11.2026)
+
+- [x] Add explicit text labels for locked/free/growing/harvest-ready farm plots.
+- [x] Highlight ready harvest plots and wrap plot state descriptions.
+- [x] Expand mobile farm-upgrade card and use a full-width action.
+- [x] Increase mobile axe/pickaxe and sword card heights and touch actions to 42 px.
+- [x] Update regression contracts for farm and backpack card geometry.
+- [ ] Confirm CI and inspect the farm and backpack in Roblox Studio at 320/375/414 px and desktop.
+
+
+## UI acceptance gate — categorized backpack (26.11.2026)
+
+- [x] Add interactive filters for all, materials, seeds, discoveries, and equipment.
+- [x] Re-render the active backpack category after selection while retaining the selected category.
+- [x] Keep category filtering client-side; inventory values and equipment actions remain server-authoritative.
+- [x] Add source-contract tests and Studio acceptance cases for every category.
+- [ ] Confirm CI and inspect category layout and all equipment states in Roblox Studio.
+
+
+## UI acceptance gate — responsive archipelago map (26.11.2026)
+
+- [x] Replace text-only world summary with a four-node archipelago overview: home, Sun Grove, Dusk Valley, Crystal Grotto.
+- [x] Use live replicated bridge/discovery state for route labels; do not invent current player coordinates.
+- [x] Use 2×2 node layout on compact screens and four columns on wider screens.
+- [x] Keep route repair requirements visible and retain explanatory region summaries.
+- [x] Add automated source-contract coverage and Studio visual acceptance cases.
+- [ ] Confirm CI and verify route state against actual in-world bridges in Roblox Studio.
+
+
+## World navigation — bridge wayfinding (26.11.2026)
+
+- [x] Add two compact physical destination signs at the existing Grove and Dusk bridge landings.
+- [x] Keep signs inside the generated GiantbackWorldDetails folder so visual rebuild replaces, rather than duplicates, them.
+- [x] Use non-collidable decorative geometry and readable SurfaceGui labels.
+- [x] Add source-contract tests for sign destinations and existing fall recovery.
+- [ ] Verify physical placement, readability and collision in Roblox Studio.
+
+
+## World exploration — discoverable points of interest (26.11.2026)
+
+- [x] Add subtle golden stepping-stone clues around the three existing Fox cache anchors.
+- [x] Add small lilac/gold crystal landmarks framing the existing Crystal Grotto entrance.
+- [x] Preserve existing cache collection and entrance prompt logic; visual landmarks do not grant rewards or unlock content.
+- [x] Add source-contract coverage and Studio acceptance checklist.
+- [ ] Validate trail orientation, accessibility, visual quality and mobile readability in Roblox Studio.
+
+
+## World exploration — companion habitats (26.11.2026)
+
+- [x] Add a natural fern/mushroom shelter around the existing Grove Fox nest.
+- [x] Add a restrained moonlit resting stone and small lantern flowers around the existing Dusk Moth nest.
+- [x] Reuse existing Nest anchors; do not change companion spawn, prompt, friendship, or reward logic.
+- [x] Keep habitat decorations non-interactive and non-collidable.
+- [x] Add regression tests and Studio playtest criteria.
+- [ ] Validate composition and performance in Roblox Studio.
+
+
+## World exploration — companion traces (26.11.2026)
+
+- [x] Add small alternating pawprints beside the existing Fox habitat.
+- [x] Add a restrained curved trail of lilac moon-dust motes around the Moth resting grove.
+- [x] Keep both trace sets decorative, non-interactive and grouped under the replaceable habitat folder.
+- [x] Add source-contract tests and Studio acceptance cases.
+- [ ] Validate ground placement, visibility and mobile performance in Roblox Studio.
+
+
+## Companion personality — playful idle moments (26.11.2026)
+
+- [x] Add a local-only, cooldown-limited playful activity state for equipped Fox and Moth.
+- [x] Pace activity frequency by saved personality and bond stage.
+- [x] Reset the playful timer on movement to avoid interrupting travel.
+- [x] Add a brief Fox hop/tail flourish and Moth wing flutter/head tilt using the existing animation loop.
+- [x] Add regression coverage for activity scheduling, state handoff, and cosmetic-only animation.
+- [ ] Verify timing, visual quality, and interaction priority in Roblox Studio.
+
+
+## Companion world awareness 3.8 — garden reactions (28.11.2026)
+
+- [x] Reuse existing owner-island decoration models; do not create duplicate props or new prompts.
+- [x] Let the equipped Fox notice nearby DecorativeTree models and perform a short curious sniff/tail reaction.
+- [x] Let the equipped Moth notice nearby FlowerBed models and perform a gentle flower-hover wing/head reaction.
+- [x] Check proximity on a throttled local timer, not every rendered frame.
+- [x] Keep the behavior cosmetic and local; no remote events, rewards, inventory changes, or DataStore writes.
+- [x] Add source-contract tests for target filtering, scan throttling, and animation handoff.
+- [ ] Verify in Roblox Studio near/far, multiple decorations, movement interruption, and mobile performance.

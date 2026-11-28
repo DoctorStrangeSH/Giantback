@@ -16,8 +16,8 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('local compact = viewport.X < 620', HUD)
         self.assertIn('local narrow = viewport.X < 480', HUD)
         self.assertIn('local shortScreen = viewport.Y < 440', HUD)
-        self.assertIn('local panelWidth = math.max(240, math.min(560, viewport.X - 16))', HUD)
-        self.assertIn('local panelHeight = math.max(210, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))', HUD)
+        self.assertIn('local panelWidth = math.max(1, math.min(560, viewport.X - 16))', HUD)
+        self.assertIn('local panelHeight = math.max(1, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))', HUD)
         self.assertIn('panel.Size = UDim2.fromOffset(panelWidth, panelHeight)', HUD)
         self.assertIn('nav.Size = UDim2.new(1, compact and -16 or -32, 0, compact and (shortScreen and 48 or 56) or 72)', HUD)
         self.assertIn('titleLabel.Visible = true', HUD)
@@ -28,20 +28,53 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertIn('local width = math.max(240, math.min(340, viewport.X - 24))', HUD)
         self.assertIn('updatePlayOverlayLayout()', HUD)
 
+    def test_archipelago_map_shows_progressive_routes_from_live_world_state(self):
+        self.assertIn('local function renderWorld()', HUD)
+        self.assertIn('card(body, "ArchipelagoMap", compact and 244 or 190)', HUD)
+        self.assertIn('local columns = compact and 2 or 4', HUD)
+        self.assertIn('id = "Home", title = "Домашний остров"', HUD)
+        self.assertIn('id = "Grove", title = "Солнечная роща"', HUD)
+        self.assertIn('id = "Dusk", title = "Сумеречная долина"', HUD)
+        self.assertIn('id = "Crystal", title = "Кристальная пещера"', HUD)
+        self.assertIn('player:GetAttribute("Bridge_HomeToGrove") == true', HUD)
+        self.assertIn('player:GetAttribute("CrystalGrottoDiscovered") == true', HUD)
+        self.assertIn('workspace:FindFirstChild("BridgeToDusk")', HUD)
+        self.assertIn('Для ремонта: дерево ×5 · камень ×3', HUD)
+
     def test_farm_and_daily_quest_cards_reflow_on_compact_screens(self):
         self.assertIn('local compact = gui.AbsoluteSize.X < 620', HUD)
-        self.assertIn('card(body, "Seed_" .. crop.id, compact and 122 or 82)', HUD)
-        self.assertIn('compact and UDim2.new(0.5, -18, 0, 34)', HUD)
-        self.assertIn('card(body, "Plot" .. tostring(index), compact and 88 or 66)', HUD)
+        self.assertIn('card(body, "Seed_" .. crop.id, compact and 138 or 82)', HUD)
+        self.assertIn('compact and UDim2.new(0.5, -18, 0, 42)', HUD)
+        self.assertIn('card(body, "Plot" .. tostring(index), compact and 108 or 88)', HUD)
         self.assertIn('card(body, "DailyQuest_" .. tostring(index), compact and 112 or 78)', HUD)
         self.assertIn('compact and UDim2.new(1, -28, 0, 30)', HUD)
         self.assertIn('compact and "ВЫБРАТЬ МЕСТО" or "ПОСТРОИТЬ"', HUD)
 
+    def test_build_placement_controls_reflow_above_navigation_on_short_mobile_screens(self):
+        self.assertIn("local function updatePlacementOverlayLayout()", HUD)
+        self.assertIn("local navHeight = compact and (shortScreen and 48 or 56) or 72", HUD)
+        self.assertIn("local panelHeight = shortScreen and 96 or 112", HUD)
+        self.assertIn("placementOverlay.Position = UDim2.new(0.5, 0, 1, -(navHeight + bottomGap))", HUD)
+        self.assertIn("placementButtons.Rotate = rotate", HUD)
+        self.assertIn("placementButtons.Cancel = cancel", HUD)
+        self.assertIn("updatePlacementOverlayLayout()", HUD)
+        self.assertIn('camera:GetPropertyChangedSignal("ViewportSize"):Connect(updatePlacementOverlayLayout)', HUD)
+        self.assertIn("Коснись свободного места на лужайке", HUD)
+        self.assertIn('closeActivePanel()\n    placementOverlay = Instance.new("Frame")', HUD)
+
+    def test_placement_cleanup_uses_actual_parts_and_navigation_exits_mode(self):
+        self.assertIn("local part = entry.part", HUD)
+        self.assertIn("if part and part.Parent then part:Destroy() end", HUD)
+        self.assertIn("table.clear(placementParts)", HUD)
+        self.assertIn("if placementState then finishPlacement() end", HUD)
+        self.assertIn("camera:ViewportPointToRay(pointer.X, pointer.Y)", HUD)
+        self.assertIn('moveIndex and "ПЕРЕМЕСТИТЬ" or "ПОСТРОИТЬ"', HUD)
+
     def test_pet_actions_have_touch_friendly_compact_targets(self):
-        self.assertIn('card(body, pet.id .. "Card", compact and 330 or 214)', HUD)
+        self.assertIn('card(body, pet.id .. "Card", compact and 394 or 254)', HUD)
         self.assertIn('local actionSize = compact and UDim2.new(0.5, -18, 0, 36)', HUD)
-        self.assertIn('compact and UDim2.fromOffset(12, 284)', HUD)
-        self.assertIn('compact and UDim2.new(0.5, 6, 0, 284)', HUD)
+        self.assertIn('compact and UDim2.fromOffset(12, 300)', HUD)
+        self.assertIn('compact and UDim2.new(0.5, 6, 0, 300)', HUD)
 
     def test_weekly_challenges_reflow_and_use_their_real_index(self):
         self.assertIn('card(body, "WeeklyChallenge_" .. tostring(index), compact and 112 or 72)', HUD)
@@ -68,6 +101,31 @@ class UIWorldQualityContracts(unittest.TestCase):
         self.assertNotIn('glyph = "О"', HUD)
         self.assertNotIn('icon = "Л"', HUD)
         self.assertNotIn('definition.glyph', HUD)
+
+
+    def test_expedition_and_gift_journal_cards_expand_for_mobile_text(self):
+        self.assertIn('card(body, track.id .. "Step" .. tostring(index), compactDiary and 88 or 58)', HUD)
+        self.assertIn('stepTitle.TextWrapped = true', HUD)
+        self.assertIn('stepHint.TextWrapped = true', HUD)
+        self.assertIn('stepHint.TextYAlignment = Enum.TextYAlignment.Top', HUD)
+        self.assertIn('card(body, "GiftDiscovery_" .. gift.id, compactGift and 82 or 64)', HUD)
+        self.assertIn('giftName.TextWrapped = true', HUD)
+        self.assertIn('giftHint.TextWrapped = true', HUD)
+        self.assertIn('giftHint.TextYAlignment = Enum.TextYAlignment.Top', HUD)
+
+    def test_farm_plot_cards_show_explicit_state_and_ready_harvest_highlight(self):
+        self.assertIn('local statusTitle = "РАСТЁТ"', HUD)
+        self.assertIn('statusTitle = "ЗАКРЫТА"', HUD)
+        self.assertIn('statusTitle = "СВОБОДНА"', HUD)
+        self.assertIn('statusTitle = "УРОЖАЙ ГОТОВ"', HUD)
+        self.assertIn('item.BackgroundColor3 = Color3.fromRGB(235, 242, 224)', HUD)
+        self.assertIn('label(item, "PlotStatus", statusTitle', HUD)
+        self.assertIn('state.TextWrapped = true', HUD)
+
+    def test_farm_upgrade_card_uses_full_width_mobile_action(self):
+        self.assertIn('card(body, "FarmUpgrade", compact and 142 or 82)', HUD)
+        self.assertIn('compact and UDim2.new(1, -24, 0, 42)', HUD)
+        self.assertIn('compact and UDim2.fromOffset(12, 92)', HUD)
 
     def test_companion_mutation_album_has_progress_discovery_states_and_visual_cards(self):
         self.assertIn('card(body, "CompanionMutationCodexHeader", 82)', HUD)

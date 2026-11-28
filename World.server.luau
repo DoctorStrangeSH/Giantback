@@ -6,6 +6,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
+local CompanionBreeding = require(Storage:WaitForChild("CompanionBreeding"))
 local storeName = RunService:IsStudio() and "GiantbackAlbum_Studio_v1" or "GiantbackAlbum_v1"
 local storeOk, storeResult = pcall(function()
     return DataStoreService:GetDataStore(storeName)
@@ -34,6 +35,9 @@ end
 local pets = {Fox = "Лисёнок-корешок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк", HarvestSprite = "Тыквик", BrambleBun = "Колючка", MossTurtle = "Мохопанцирь", Glowcap = "Светошляп", Dewdrop = "Росинка", Starling = "Звёздокрыл"}
 local progress = {"Fox", "Moth", "CrystalWisp", "Seed", "MoonBloom", "MoonGateTrace", "MoonGateOpen", "MoonRelic", "CrystalGrottoDiscovered", "CrystalHeart", "CrystalRunes", "CrystalCache", "CrystalEchoDiscovered", "PrismSeedFound", "Discovered_StarPrism", "Discovered_MoonGlass", "Discovered_VoidGeode", "CrystalRelicSetRewardClaimed", "CompanionCodexRewardClaimed", "Flower", "Timber", "Lantern", "Lit", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
 local inventoryKeys = {"SunPetal", "MoonPetal", "CarrotSeed", "Carrot", "StrawberrySeed", "Strawberry", "PumpkinSeed", "Pumpkin", "CabbageSeed", "Cabbage", "Wood", "Stone", "IronOre", "IronIngot", "MoonSeed", "StarShard", "RootvaultKey", "RootvaultEssence", "RootvaultSigil", "CrystalShard", "CrystalSigil", "PrismSeed", "HarvestEgg", "StarPrism", "MoonGlass", "VoidGeode"}
+local COMPANION_GIFT_ITEM_IDS = {"SunPetal", "Wood", "CarrotSeed", "StrawberrySeed", "MoonSeed", "MoonPetal", "StarShard", "Stone", "CrystalShard", "CrystalSigil", "PrismSeed", "VoidGeode"}
+local companionGiftItemSet = {}
+for _, itemId in COMPANION_GIFT_ITEM_IDS do companionGiftItemSet[itemId] = true end
 local toolIds = {Axe = true, Pickaxe = true, Sword = true}
 local swordRecipe = {IronIngot = 2, Wood = 6}
 local combatRewardDefinitions = {
@@ -327,6 +331,25 @@ local function syncInventory(player)
     player:SetAttribute("Smelter_Pending", session and session.smeltingAmount or 0)
 end
 
+local function syncCompanionBreeding(player)
+    local session = sessions[player]
+    if not session then return end
+    local eggs = CompanionBreeding.normalizeEggs(session.companionEggs, os.time())
+    session.companionEggs = eggs
+    local discoveries = CompanionBreeding.normalizeDiscoveries(session.companionHybridDiscoveries)
+    session.companionHybridDiscoveries = discoveries
+    player:SetAttribute("CompanionBreeding_EggCount", #eggs)
+    for index = 1, CompanionBreeding.MAX_ACTIVE_EGGS do
+        local egg = eggs[index]
+        player:SetAttribute("CompanionBreeding_Egg" .. index .. "_Id", egg and egg.id or "")
+        player:SetAttribute("CompanionBreeding_Egg" .. index .. "_Recipe", egg and egg.recipeId or "")
+        player:SetAttribute("CompanionBreeding_Egg" .. index .. "_HatchAt", egg and egg.hatchAt or 0)
+    end
+    for recipeId in CompanionBreeding.RECIPES do
+        player:SetAttribute("CompanionBreeding_Discovered_" .. recipeId, discoveries[recipeId] == true)
+    end
+end
+
 local save
 
 local addDailyQuestProgress
@@ -556,6 +579,57 @@ end
 
 local COMPANION_IDS = {"Fox", "Moth", "CrystalWisp", "HarvestSprite", "BrambleBun", "MossTurtle", "Glowcap", "Dewdrop", "Starling"}
 local COMPANION_MAX_LEVEL = 5
+local companionEvolutionDefinitions = {
+    Fox = {
+        id = "VerdantGuardian", name = "Страж древней рощи", rarity = "Секретная",
+        requirements = {level = 5, bond = 900, items = {SunPetal = 15, MoonSeed = 2, RootvaultEssence = 1}},
+    },
+    Moth = {
+        id = "LunarOracle", name = "Оракул лунного света", rarity = "Секретная",
+        requirements = {level = 5, bond = 900, items = {MoonPetal = 15, StarShard = 8, MoonSeed = 3}},
+    },
+    CrystalWisp = {
+        id = "PrismSovereign", name = "Владыка призмы", rarity = "Секретная",
+        requirements = {level = 5, bond = 900, items = {CrystalShard = 20, CrystalSigil = 3, VoidGeode = 1}},
+    },
+}
+local function normalizeCompanionEvolutions(raw)
+    raw = type(raw) == "table" and raw or {}
+    local result = {}
+    for companionId, definition in companionEvolutionDefinitions do
+        result[companionId] = raw[companionId] == definition.id and definition.id or nil
+    end
+    return result
+end
+
+-- Cross-species resonance creates a persistent inherited trait on the active parent.
+-- The client may request a recipe ID only; all parents, costs and effects are allowlisted here.
+local companionLineageRecipes = {
+    LunarScent = {
+        id = "LunarScent", name = "Лунный нюх", host = "Fox", partner = "Moth",
+        description = "Лисёнок чувствует сумеречные тайники. Находки в Сумеречной долине +1.",
+        biome = "Dusk", items = {SunPetal = 8, MoonPetal = 8, StarShard = 3},
+    },
+    PrismNose = {
+        id = "PrismNose", name = "Призматический нюх", host = "Fox", partner = "CrystalWisp",
+        description = "Лисёнок замечает кристальные жилы. Находки в Кристальном гроте +1.",
+        biome = "CrystalGrotto", items = {SunPetal = 8, CrystalShard = 8, RootvaultEssence = 1},
+    },
+    PrismDust = {
+        id = "PrismDust", name = "Призматическая пыльца", host = "Moth", partner = "CrystalWisp",
+        description = "Моль усиливает кристальные находки. Находки в Кристальном гроте +1.",
+        biome = "CrystalGrotto", items = {MoonPetal = 8, CrystalShard = 8, MoonSeed = 3},
+    },
+}
+local function normalizeCompanionLineages(raw)
+    raw = type(raw) == "table" and raw or {}
+    local result = {}
+    for _, companionId in COMPANION_IDS do result[companionId] = nil end
+    for recipeId, recipe in companionLineageRecipes do
+        if raw[recipe.host] == recipeId then result[recipe.host] = recipeId end
+    end
+    return result
+end
 
 local function companionXpToNext(level)
     return 100 + math.max(0, level - 1) * 75
@@ -773,6 +847,18 @@ local function syncCompanionProgress(player)
         player:SetAttribute("Companion_" .. id .. "_MutationName", mutationDefinition and mutationDefinition.name or "")
         player:SetAttribute("Companion_" .. id .. "_MutationRarity", mutationDefinition and mutationDefinition.rarity or "")
         player:SetAttribute("Companion_" .. id .. "_MutationBiome", mutationDefinition and mutationDefinition.biome or "")
+        local lineageId = session.companionLineages[id]
+        local lineageDefinition = lineageId and companionLineageRecipes[lineageId]
+        player:SetAttribute("Companion_" .. id .. "_Lineage", lineageId or "")
+        player:SetAttribute("Companion_" .. id .. "_LineageName", lineageDefinition and lineageDefinition.name or "")
+        player:SetAttribute("Companion_" .. id .. "_LineageDescription", lineageDefinition and lineageDefinition.description or "")
+        local evolutionDefinition = companionEvolutionDefinitions[id]
+        local evolutionId = session.companionEvolutions[id]
+        player:SetAttribute("Companion_" .. id .. "_Evolution", evolutionId or "")
+        player:SetAttribute("Companion_" .. id .. "_EvolutionName",
+            evolutionId and evolutionDefinition and evolutionDefinition.name or "")
+        player:SetAttribute("Companion_" .. id .. "_EvolutionRarity",
+            evolutionId and evolutionDefinition and evolutionDefinition.rarity or "")
         local progressData = session.companionProgress[id]
         player:SetAttribute("Companion_" .. id .. "_Level", progressData.level)
         player:SetAttribute("Companion_" .. id .. "_XP", progressData.xp)
@@ -795,6 +881,221 @@ local function syncCompanionProgress(player)
         player:SetAttribute("Companion_" .. id .. "_Mood", mood)
         player:SetAttribute("Companion_" .. id .. "_Personality", session.companionPersonalities[id])
     end
+end
+
+local function evolveCompanion(player, companionId)
+    local session = sessions[player]
+    local definition = companionEvolutionDefinitions[companionId]
+    if not definition or not session or not player:GetAttribute("Ready")
+        or player:GetAttribute(companionId) ~= true then return end
+    if not session.online then
+        return tip(player, "Эволюция временно недоступна: профиль не сохраняется.")
+    end
+    if player:GetAttribute("Companion") ~= companionId then
+        return tip(player, "Сначала позови питомца, которого хочешь преобразить.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+    if session.companionEvolutions[companionId] == definition.id then
+        return tip(player, "Этот питомец уже открыл свою секретную форму.")
+    end
+
+    local progressData = session.companionProgress[companionId]
+    local requirements = definition.requirements
+    if progressData.level < requirements.level or progressData.bond < requirements.bond then
+        return tip(player, "Для эволюции нужен уровень " .. tostring(requirements.level)
+            .. " и дружба " .. tostring(requirements.bond) .. ".")
+    end
+    for itemId, amount in requirements.items do
+        if (session.inventory[itemId] or 0) < amount then
+            return tip(player, "Не хватает ресурсов для секретной формы: "
+                .. tostring(amount) .. " × " .. itemId .. ".")
+        end
+    end
+
+    local previousEvolution = session.companionEvolutions[companionId]
+    local previousAmounts = {}
+    session.economyBusy = true
+    for itemId, amount in requirements.items do
+        previousAmounts[itemId] = session.inventory[itemId]
+        session.inventory[itemId] -= amount
+    end
+    session.companionEvolutions[companionId] = definition.id
+    syncInventory(player)
+    syncCompanionProgress(player)
+    if not save(player) then
+        session.companionEvolutions[companionId] = previousEvolution
+        for itemId, amount in previousAmounts do session.inventory[itemId] = amount end
+        syncInventory(player)
+        syncCompanionProgress(player)
+        session.economyBusy = false
+        return tip(player, "Эволюция не сохранилась. Все ресурсы возвращены — попробуй ещё раз.")
+    end
+    session.economyBusy = false
+    event:FireClient(player, "CompanionEvolved", {
+        companionId = companionId,
+        evolutionId = definition.id,
+        name = definition.name,
+    })
+    tip(player, "Невероятно! " .. pets[companionId] .. " открыл новую форму: " .. definition.name .. "!")
+end
+
+local function breedCompanions(player, recipeId)
+    local session = sessions[player]
+    local recipe = CompanionBreeding.getRecipe(recipeId)
+    if not session or not recipe or not player:GetAttribute("Ready") then return end
+    if not session.online then return tip(player, "Лаборатория недоступна: сохранение профиля не работает.") end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+    if #session.companionEggs >= CompanionBreeding.MAX_ACTIVE_EGGS then
+        return tip(player, "Все три инкубатора заняты. Сначала дождись вылупления.")
+    end
+    if session.companionHybridDiscoveries[recipe.id] then
+        return tip(player, "Этот гибрид уже открыт в генетическом журнале.")
+    end
+    for _, egg in session.companionEggs do
+        if egg.recipeId == recipe.id then
+            return tip(player, "Яйцо этой пары уже находится в инкубаторе.")
+        end
+    end
+    for _, parentId in recipe.parents do
+        if player:GetAttribute(parentId) ~= true then
+            return tip(player, "Для этой пары нужны оба питомца: " .. (pets[parentId] or parentId) .. ".")
+        end
+        local progressData = session.companionProgress[parentId]
+        if not progressData or progressData.level < recipe.level then
+            return tip(player, "Обоим родителям нужен уровень не ниже " .. tostring(recipe.level) .. ".")
+        end
+        if not progressData or progressData.bond < recipe.bond then
+            return tip(player, "Дружба каждого родителя должна быть не ниже " .. tostring(recipe.bond) .. ".")
+        end
+    end
+    for itemId, amount in recipe.items do
+        if (session.inventory[itemId] or 0) < amount then
+            return tip(player, "Не хватает материала: " .. itemId .. " ×" .. tostring(amount) .. ".")
+        end
+    end
+
+    local previousAmounts = {}
+    local previousEggs = table.clone(session.companionEggs)
+    local now = os.time()
+    local egg = {
+        id = HttpService:GenerateGUID(false),
+        recipeId = recipe.id,
+        createdAt = now,
+        hatchAt = now + recipe.incubationSeconds,
+    }
+    session.economyBusy = true
+    for itemId, amount in recipe.items do
+        previousAmounts[itemId] = session.inventory[itemId]
+        session.inventory[itemId] -= amount
+    end
+    table.insert(session.companionEggs, egg)
+    syncInventory(player)
+    syncCompanionBreeding(player)
+    if not save(player) then
+        session.companionEggs = previousEggs
+        for itemId, amount in previousAmounts do session.inventory[itemId] = amount end
+        syncInventory(player)
+        syncCompanionBreeding(player)
+        session.economyBusy = false
+        return tip(player, "Яйцо не сохранилось. Материалы возвращены.")
+    end
+    session.economyBusy = false
+    event:FireClient(player, "CompanionEggCreated", {
+        eggId = egg.id,
+        recipeId = recipe.id,
+        name = recipe.name,
+        hatchAt = egg.hatchAt,
+    })
+    tip(player, "Получено яйцо гибрида «" .. recipe.name .. "»! Инкубация: " .. tostring(recipe.incubationSeconds) .. " сек.")
+end
+
+local function hatchHybridEgg(player, eggId)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") or type(eggId) ~= "string" then return end
+    if not session.online then return tip(player, "Вылупление недоступно: сохранение профиля не работает.") end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+    local eggIndex, selectedEgg
+    for index, egg in session.companionEggs do
+        if egg.id == eggId then eggIndex, selectedEgg = index, egg break end
+    end
+    if not selectedEgg then return end
+    if os.time() < selectedEgg.hatchAt then
+        return tip(player, "Яйцо ещё развивается. Осталось примерно " .. tostring(math.ceil((selectedEgg.hatchAt - os.time()) / 60)) .. " мин.")
+    end
+    local result = CompanionBreeding.getResult(selectedEgg)
+    if not result or session.companionHybridDiscoveries[result.id] then return end
+
+    local previousEgg = selectedEgg
+    session.economyBusy = true
+    table.remove(session.companionEggs, eggIndex)
+    session.companionHybridDiscoveries[result.id] = true
+    syncCompanionBreeding(player)
+    if not save(player) then
+        table.insert(session.companionEggs, math.min(eggIndex, #session.companionEggs + 1), previousEgg)
+        session.companionHybridDiscoveries[result.id] = nil
+        syncCompanionBreeding(player)
+        session.economyBusy = false
+        return tip(player, "Вылупление не сохранилось. Яйцо возвращено в инкубатор.")
+    end
+    session.economyBusy = false
+    event:FireClient(player, "CompanionHybridDiscovered", result)
+    tip(player, "Открыт новый гибрид: " .. result.name .. "! Запись добавлена в генетический журнал.")
+end
+
+local function discoverCompanionLineage(player, recipeId)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") or not session.online then
+        return tip(player, "Исследовательская станция ждёт загрузки профиля.")
+    end
+    local recipe = type(recipeId) == "string" and companionLineageRecipes[recipeId] or nil
+    if not recipe then return end
+    if player:GetAttribute(recipe.host) ~= true or player:GetAttribute(recipe.partner) ~= true then
+        return tip(player, "Для опыта нужны оба питомца из рецепта.")
+    end
+    if player:GetAttribute("Companion") ~= recipe.host then
+        return tip(player, "Позови питомца, который будет принимать новый признак.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+    if session.companionLineages[recipe.host] then
+        return tip(player, "У этого питомца уже выбран наследственный признак. Для каждого питомца доступен только один путь наследия.")
+    end
+    local hostBond = session.companionProgress[recipe.host].bond
+    local partnerBond = session.companionProgress[recipe.partner].bond
+    if hostBond < 300 or partnerBond < 300 then
+        return tip(player, "Обоим питомцам нужна дружба не ниже 300.")
+    end
+    for itemId, amount in recipe.items do
+        if (session.inventory[itemId] or 0) < amount then
+            return tip(player, "Не хватает материала для опыта: " .. itemId .. " ×" .. tostring(amount) .. ".")
+        end
+    end
+
+    local previousLineage = session.companionLineages[recipe.host]
+    local previousAmounts = {}
+    session.economyBusy = true
+    for itemId, amount in recipe.items do
+        previousAmounts[itemId] = session.inventory[itemId]
+        session.inventory[itemId] -= amount
+    end
+    session.companionLineages[recipe.host] = recipe.id
+    syncInventory(player)
+    syncCompanionProgress(player)
+    if not save(player) then
+        session.companionLineages[recipe.host] = previousLineage
+        for itemId, amount in previousAmounts do session.inventory[itemId] = amount end
+        syncInventory(player)
+        syncCompanionProgress(player)
+        session.economyBusy = false
+        return tip(player, "Опыт не сохранился. Все материалы возвращены.")
+    end
+    session.economyBusy = false
+    event:FireClient(player, "CompanionLineageDiscovered", {
+        companionId = recipe.host,
+        partnerId = recipe.partner,
+        lineageId = recipe.id,
+        name = recipe.name,
+    })
+    tip(player, "Открыт наследственный признак: " .. recipe.name .. "!")
 end
 
 local function awardCompanionXp(player, companionId, amount)
@@ -2185,6 +2486,20 @@ save = function(player)
             readyAt = math.max(0, math.floor(tonumber(session.foxSearchReadyAt) or 0)),
             searchCount = math.max(0, math.floor(tonumber(session.foxSearchCount) or 0)),
         }
+        local companionGiftSnapshot = {}
+        for itemId, discovery in session.companionGiftDiscoveries do
+            if companionGiftItemSet[itemId] and type(discovery) == "table"
+                and (discovery.biome == "Grove" or discovery.biome == "Dusk" or discovery.biome == "CrystalGrotto")
+                and table.find(COMPANION_IDS, discovery.companionId) then
+                companionGiftSnapshot[itemId] = {
+                    biome = discovery.biome,
+                    companionId = discovery.companionId,
+                }
+            end
+        end
+        for _, companionId in COMPANION_IDS do
+            companionGiftSnapshot[companionId] = math.max(0, math.floor(tonumber(session.companionGiftReadyAt[companionId]) or 0))
+        end
         local dailyQuestSnapshot = normalizeDailyQuests(session.dailyQuests, player, session)
         local weeklyChallengeSnapshot = normalizeWeeklyChallenges(session.weeklyChallenges, player, session)
         local seasonalEventSnapshot = normalizeSeasonalEvent(session.seasonalEvent)
@@ -2196,6 +2511,12 @@ save = function(player)
         end
 
         local companionProgressSnapshot = normalizeCompanionProgress(session.companionProgress)
+        local companionEvolutionSnapshot = normalizeCompanionEvolutions(session.companionEvolutions)
+        local companionLineageSnapshot = normalizeCompanionLineages(session.companionLineages)
+        local companionBreedingSnapshot = {
+            eggs = CompanionBreeding.normalizeEggs(session.companionEggs, os.time()),
+            discoveries = CompanionBreeding.normalizeDiscoveries(session.companionHybridDiscoveries),
+        }
 
         local ok, err = pcall(function()
             store:UpdateAsync(tostring(player.UserId), function(old)
@@ -2246,6 +2567,18 @@ save = function(player)
                 savedFoxScout.searchCount = math.max(tonumber(savedFoxScout.searchCount) or 0, foxScoutSnapshot.searchCount)
                 old.foxScout = savedFoxScout
 
+                local savedCompanionGiftSearch = type(old.companionGiftSearch) == "table" and old.companionGiftSearch or {}
+                for companionId, readyAt in companionGiftSnapshot do
+                    savedCompanionGiftSearch[companionId] = math.max(tonumber(savedCompanionGiftSearch[companionId]) or 0, readyAt)
+                end
+                old.companionGiftSearch = savedCompanionGiftSearch
+
+                local savedGiftDiscoveries = type(old.companionGiftDiscoveries) == "table" and old.companionGiftDiscoveries or {}
+                for itemId, discovery in companionGiftSnapshot do
+                    savedGiftDiscoveries[itemId] = discovery
+                end
+                old.companionGiftDiscoveries = savedGiftDiscoveries
+
                 local savedCombatEncounters = type(old.completedCombatEncounters) == "table" and old.completedCombatEncounters or {}
                 for encounterId, completed in completedCombatSnapshot do
                     if completed then savedCombatEncounters[encounterId] = true end
@@ -2260,9 +2593,12 @@ save = function(player)
                     local savedCompanion = companionProgressSnapshot[companionId]
                     savedCompanion.personality = session.companionPersonalities[companionId]
                     savedCompanion.mutation = session.companionMutations[companionId]
+                    savedCompanion.evolution = companionEvolutionSnapshot[companionId]
+                    savedCompanion.lineage = companionLineageSnapshot[companionId]
                     savedCompanions[companionId] = savedCompanion
                 end
                 old.companions = savedCompanions
+                old.companionBreeding = companionBreedingSnapshot
 
                 -- Schema v5 moves the old city payload into the permanent island record.
                 -- Schema v6 adds persistent companion scouting and the MoonSeed inventory item.
@@ -2321,6 +2657,8 @@ local function init(player)
         foxCacheActiveId = nil,
         foxSearchReadyAt = 0,
         foxSearchCount = 0,
+        companionGiftReadyAt = {},
+        companionGiftDiscoveries = {},
         completedCombatEncounters = {},
         dailyQuests = nil,
         weeklyChallenges = nil,
@@ -2329,6 +2667,10 @@ local function init(player)
         companionMood = {Fox = companionMoodDefaults.Fox, Moth = companionMoodDefaults.Moth, CrystalWisp = companionMoodDefaults.CrystalWisp, HarvestSprite = companionMoodDefaults.HarvestSprite},
         companionPersonalities = normalizeCompanionPersonalities(nil, player.UserId),
         companionMutations = normalizeCompanionMutations(nil),
+        companionEvolutions = normalizeCompanionEvolutions(nil),
+        companionLineages = normalizeCompanionLineages(nil),
+        companionEggs = {},
+        companionHybridDiscoveries = {},
         companionDiscoveryBiomes = {},
         companionFeedReadyAt = {},
         companionPetReadyAt = {},
@@ -2338,6 +2680,11 @@ local function init(player)
         selectedCropId = defaultCropId,
         farmActionBusy = {},
     }
+    for _, itemId in COMPANION_GIFT_ITEM_IDS do
+        player:SetAttribute("CompanionGiftFound_" .. itemId, false)
+        player:SetAttribute("CompanionGiftBiome_" .. itemId, "")
+        player:SetAttribute("CompanionGiftPet_" .. itemId, "")
+    end
     for _, key in inventoryKeys do session.inventory[key] = 0 end
     session.inventory.CarrotSeed = 3
     session.inventory.StrawberrySeed = 2
@@ -2417,6 +2764,21 @@ local function init(player)
         session.online = ok
         if ok and type(data) == "table" then
             for _, key in progress do player:SetAttribute(key, data[key] == true) end
+            local savedGiftDiscoveries = type(data.companionGiftDiscoveries) == "table" and data.companionGiftDiscoveries or {}
+            for _, itemId in COMPANION_GIFT_ITEM_IDS do
+                local discovery = savedGiftDiscoveries[itemId]
+                if type(discovery) == "table"
+                    and (discovery.biome == "Grove" or discovery.biome == "Dusk" or discovery.biome == "CrystalGrotto")
+                    and table.find(COMPANION_IDS, discovery.companionId) then
+                    session.companionGiftDiscoveries[itemId] = {
+                        biome = discovery.biome,
+                        companionId = discovery.companionId,
+                    }
+                    player:SetAttribute("CompanionGiftFound_" .. itemId, true)
+                    player:SetAttribute("CompanionGiftBiome_" .. itemId, discovery.biome)
+                    player:SetAttribute("CompanionGiftPet_" .. itemId, discovery.companionId)
+                end
+            end
             local savedInventory = type(data.inventory) == "table" and data.inventory or {}
             for _, key in inventoryKeys do
                 local savedAmount = savedInventory[key]
@@ -2485,6 +2847,10 @@ local function init(player)
             end
             session.foxSearchReadyAt = math.max(0, math.floor(tonumber(savedFoxScout.readyAt) or 0))
             session.foxSearchCount = math.max(0, math.floor(tonumber(savedFoxScout.searchCount) or 0))
+            local savedCompanionGiftSearch = type(data.companionGiftSearch) == "table" and data.companionGiftSearch or {}
+            for _, companionId in COMPANION_IDS do
+                session.companionGiftReadyAt[companionId] = math.max(0, math.floor(tonumber(savedCompanionGiftSearch[companionId]) or 0))
+            end
 
             local savedCombatEncounters = type(data.completedCombatEncounters) == "table" and data.completedCombatEncounters or {}
             for encounterId, completed in savedCombatEncounters do
@@ -2510,6 +2876,21 @@ local function init(player)
                 savedMutations[id] = saved.mutation
             end
             session.companionMutations = normalizeCompanionMutations(savedMutations)
+            local savedEvolutions = {}
+            for _, id in COMPANION_IDS do
+                local saved = type(savedCompanions[id]) == "table" and savedCompanions[id] or {}
+                savedEvolutions[id] = saved.evolution
+            end
+            session.companionEvolutions = normalizeCompanionEvolutions(savedEvolutions)
+            local savedLineages = {}
+            for _, id in COMPANION_IDS do
+                local saved = type(savedCompanions[id]) == "table" and savedCompanions[id] or {}
+                savedLineages[id] = saved.lineage
+            end
+            session.companionLineages = normalizeCompanionLineages(savedLineages)
+            local savedBreeding = type(data.companionBreeding) == "table" and data.companionBreeding or {}
+            session.companionEggs = CompanionBreeding.normalizeEggs(savedBreeding.eggs, os.time())
+            session.companionHybridDiscoveries = CompanionBreeding.normalizeDiscoveries(savedBreeding.discoveries)
         end
         if not ok then player:SetAttribute("OfflineAlbum", true) end
     else
@@ -2530,6 +2911,7 @@ local function init(player)
     syncBridge(player)
     syncFoxScout(player)
     syncCompanionProgress(player)
+    syncCompanionBreeding(player)
     if not allocateHomeIsland(player, session) then
         -- The profile can be loaded before island capacity is known. Do not leave
         -- attribute listeners attached when the player is rejected from this server.
@@ -2785,6 +3167,160 @@ local function collectMoonBloom(player)
     awardCompanionXp(player, "Moth", 35)
 end
 
+
+local COMPANION_GIFT_COOLDOWN_SECONDS = 180
+local companionGiftRewardTables = {
+    Grove = {
+        {itemId = "SunPetal", min = 1, max = 2, weight = 38},
+        {itemId = "Wood", min = 1, max = 2, weight = 30},
+        {itemId = "CarrotSeed", min = 1, max = 2, weight = 20},
+        {itemId = "StrawberrySeed", min = 1, max = 1, weight = 10},
+        {itemId = "MoonSeed", min = 1, max = 1, weight = 2},
+    },
+    Dusk = {
+        {itemId = "MoonPetal", min = 1, max = 2, weight = 38},
+        {itemId = "StarShard", min = 1, max = 1, weight = 24},
+        {itemId = "Stone", min = 1, max = 2, weight = 24},
+        {itemId = "MoonSeed", min = 1, max = 1, weight = 12},
+        {itemId = "CrystalShard", min = 1, max = 1, weight = 2},
+    },
+    CrystalGrotto = {
+        {itemId = "CrystalShard", min = 1, max = 2, weight = 48},
+        {itemId = "CrystalSigil", min = 1, max = 1, weight = 24},
+        {itemId = "StarShard", min = 1, max = 2, weight = 20},
+        {itemId = "PrismSeed", min = 1, max = 1, weight = 7},
+        {itemId = "VoidGeode", min = 1, max = 1, weight = 1},
+    },
+}
+
+local function isPositionInsideBiome(playerPosition, biomeName)
+    local biome = workspace:FindFirstChild(biomeName)
+    if not biome then return false end
+    local minBounds = Vector3.new(math.huge, math.huge, math.huge)
+    local maxBounds = Vector3.new(-math.huge, -math.huge, -math.huge)
+    local foundPart = false
+    for _, descendant in biome:GetDescendants() do
+        if descendant:IsA("BasePart") then
+            foundPart = true
+            local half = descendant.Size * 0.5
+            local low = descendant.Position - half
+            local high = descendant.Position + half
+            minBounds = Vector3.new(math.min(minBounds.X, low.X), math.min(minBounds.Y, low.Y), math.min(minBounds.Z, low.Z))
+            maxBounds = Vector3.new(math.max(maxBounds.X, high.X), math.max(maxBounds.Y, high.Y), math.max(maxBounds.Z, high.Z))
+        end
+    end
+    if not foundPart then return false end
+    local margin = 12
+    return playerPosition.X >= minBounds.X - margin and playerPosition.X <= maxBounds.X + margin
+        and playerPosition.Y >= minBounds.Y - margin and playerPosition.Y <= maxBounds.Y + margin
+        and playerPosition.Z >= minBounds.Z - margin and playerPosition.Z <= maxBounds.Z + margin
+end
+
+local function getCompanionGiftBiome(position)
+    for _, biomeName in {"CrystalGrotto", "Dusk", "Grove"} do
+        if isPositionInsideBiome(position, biomeName) then return biomeName end
+    end
+    return nil
+end
+
+local function rollCompanionGift(biomeName, companionLevel, bondStage)
+    local rewards = companionGiftRewardTables[biomeName]
+    if not rewards then return nil end
+    local totalWeight = 0
+    for _, reward in rewards do totalWeight += reward.weight end
+    local rareBonus = math.clamp((companionLevel - 1) * 0.35 + bondStage * 0.5, 0, 3)
+    local adjustedTotal = totalWeight + rareBonus
+    local roll = math.random() * adjustedTotal
+    if roll > totalWeight then
+        local rareReward = rewards[#rewards]
+        return rareReward, math.random(rareReward.min, rareReward.max)
+    end
+    for _, reward in rewards do
+        roll -= reward.weight
+        if roll <= 0 then return reward, math.random(reward.min, reward.max) end
+    end
+    local fallback = rewards[1]
+    return fallback, math.random(fallback.min, fallback.max)
+end
+
+local function searchCompanionGift(player, companionId)
+    local session = sessions[player]
+    if not session or not player:GetAttribute("Ready") or not session.online then
+        return tip(player, "Поиск подарков временно недоступен: профиль ещё загружается или не сохраняется.")
+    end
+    if type(companionId) ~= "string" or table.find(COMPANION_IDS, companionId) == nil
+        or player:GetAttribute(companionId) ~= true then
+        return
+    end
+    if player:GetAttribute("Companion") ~= companionId then
+        return tip(player, "Сначала позови питомца, который хочет исследовать находку.")
+    end
+    if session.economyBusy then return tip(player, "Подожди завершения текущей операции.") end
+
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local biomeName = getCompanionGiftBiome(root.Position)
+    if not biomeName then
+        return tip(player, "Питомец пока не видит подходящих следов. Попробуйте исследовать лес, сумеречный остров или хрустальный грот.")
+    end
+
+    local now = os.time()
+    local readyAt = tonumber(session.companionGiftReadyAt[companionId]) or 0
+    if readyAt > now then
+        return tip(player, "Питомцу нужно немного отдохнуть. Поиск снова будет доступен через " .. tostring(math.ceil((readyAt - now) / 60)) .. " мин.")
+    end
+
+    local level = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. companionId .. "_Level")) or 1), 1, COMPANION_MAX_LEVEL)
+    local bondStage = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. companionId .. "_BondStage")) or 0), 0, 4)
+    local reward, amount = rollCompanionGift(biomeName, level, bondStage)
+    if not reward or not table.find(inventoryKeys, reward.itemId) then return end
+    local lineageId = session.companionLineages[companionId]
+    local lineage = lineageId and companionLineageRecipes[lineageId]
+    if lineage and lineage.biome == biomeName then amount += 1 end
+
+    local previousAmount = math.max(0, math.floor(tonumber(session.inventory[reward.itemId]) or 0))
+    local previousReadyAt = readyAt
+    local previousDiscovery = session.companionGiftDiscoveries[reward.itemId]
+    local isFirstDiscovery = previousDiscovery == nil
+    session.economyBusy = true
+    session.inventory[reward.itemId] = previousAmount + amount
+    session.companionGiftReadyAt[companionId] = now + COMPANION_GIFT_COOLDOWN_SECONDS
+    if isFirstDiscovery then
+        session.companionGiftDiscoveries[reward.itemId] = {biome = biomeName, companionId = companionId}
+    end
+    syncInventory(player)
+    local saved = save(player)
+    if not saved then
+        session.inventory[reward.itemId] = previousAmount
+        session.companionGiftReadyAt[companionId] = previousReadyAt
+        session.companionGiftDiscoveries[reward.itemId] = previousDiscovery
+        syncInventory(player)
+        session.economyBusy = false
+        return tip(player, "Находка не сохранилась. Предметы возвращены — попробуй ещё раз позже.")
+    end
+    if isFirstDiscovery then
+        player:SetAttribute("CompanionGiftFound_" .. reward.itemId, true)
+        player:SetAttribute("CompanionGiftBiome_" .. reward.itemId, biomeName)
+        player:SetAttribute("CompanionGiftPet_" .. reward.itemId, companionId)
+    end
+
+    session.economyBusy = false
+    local rarity = reward.weight <= 2 and "epic" or reward.weight <= 7 and "rare" or "common"
+    player:SetAttribute("CompanionGiftSearchResult", reward.itemId .. "|" .. tostring(amount) .. "|" .. rarity)
+    player:SetAttribute("CompanionGiftSearchSerial", (tonumber(player:GetAttribute("CompanionGiftSearchSerial")) or 0) + 1)
+    local rewardNames = {
+        SunPetal = "солнечные лепестки", Wood = "дерево", CarrotSeed = "семена моркови",
+        StrawberrySeed = "семена клубники", MoonSeed = "лунное семя", MoonPetal = "лунные лепестки",
+        StarShard = "звёздный осколок", Stone = "камень", CrystalShard = "осколок кристалла",
+        CrystalSigil = "кристальная печать", PrismSeed = "призматическое семя", VoidGeode = "пустотный жеод",
+    }
+    tip(player, (pets[companionId] or "Питомец") .. " нашёл в биоме «" .. biomeName .. "»: "
+        .. (rewardNames[reward.itemId] or reward.itemId) .. " ×" .. tostring(amount)
+        .. (isFirstDiscovery and " • Новая запись в дневнике!" or "!"))
+    awardCompanionXp(player, companionId, 12)
+end
+
 local function startFoxSearch(player)
     local session = sessions[player]
     if not session or not player:GetAttribute("Ready") then return end
@@ -2988,6 +3524,31 @@ end
 
     if action == "CollectFoxCache" then
         collectFoxCache(player, payload)
+        return
+    end
+
+    if action == "SearchCompanionGift" then
+        searchCompanionGift(player, payload)
+        return
+    end
+
+    if action == "EvolveCompanion" then
+        evolveCompanion(player, payload)
+        return
+    end
+
+    if action == "DiscoverCompanionLineage" then
+        discoverCompanionLineage(player, payload)
+        return
+    end
+
+    if action == "BreedCompanions" then
+        breedCompanions(player, payload)
+        return
+    end
+
+    if action == "HatchHybridEgg" then
+        hatchHybridEgg(player, payload)
         return
     end
 

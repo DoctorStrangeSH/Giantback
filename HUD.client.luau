@@ -227,10 +227,16 @@ local function createApprovedCompanionPreview(parent, companionId, objectName, s
     local camera = Instance.new("Camera")
     camera.Name = "PreviewCamera"
     camera.FieldOfView = 34
-    camera.CFrame = CFrame.lookAt(
-        focus + Vector3.new(extent * 0.82, extent * 0.32, extent * 2.15),
-        focus + Vector3.new(0, boundsSize.Y * 0.06, 0)
-    )
+    local aspectRatio = viewport.AbsoluteSize.X / math.max(viewport.AbsoluteSize.Y, 1)
+    if aspectRatio <= 0 then aspectRatio = 1 end
+    local halfFovTangent = math.tan(math.rad(camera.FieldOfView * 0.5))
+    local framingMargin = extent * 0.12
+    local verticalDistance = (boundsSize.Y * 0.5 + framingMargin) / halfFovTangent
+    local horizontalDistance = (boundsSize.X * 0.5 + framingMargin) / (halfFovTangent * aspectRatio)
+    local depthDistance = boundsSize.Z * 0.5 + framingMargin
+    local cameraDistance = math.max(verticalDistance, horizontalDistance, depthDistance, 1) * 1.08
+    local viewDirection = Vector3.new(0.28, 0.12, 1).Unit
+    camera.CFrame = CFrame.lookAt(focus + viewDirection * cameraDistance, focus)
     camera.Parent = viewport
     viewport.CurrentCamera = camera
     return true
@@ -373,6 +379,23 @@ local function createPictogram(parent, name, kind, size, tint)
         part("Pedestal", 0.42, 0.38, 0.16, 0.52, palette.ink)
         part("Bowl", 0.12, 0.20, 0.76, 0.22, color, nil, true)
         part("Water", 0.26, 0.24, 0.48, 0.10, palette.water, nil, true)
+    elseif kind == "seed" then
+        part("SeedBody", 0.28, 0.28, 0.44, 0.58, color, -35, true)
+        part("SeedSprout", 0.46, 0.06, 0.12, 0.34, palette.forest)
+        part("SeedLeaf", 0.48, 0.08, 0.34, 0.20, palette.mint, 28, true)
+    elseif kind == "moon" then
+        part("MoonOuter", 0.18, 0.12, 0.66, 0.76, color, nil, true)
+        part("MoonCutout", 0.40, 0.02, 0.58, 0.68, palette.paper, nil, true)
+    elseif kind == "star" then
+        part("StarVertical", 0.42, 0.08, 0.16, 0.84, color, nil, true)
+        part("StarHorizontal", 0.08, 0.42, 0.84, 0.16, color, nil, true)
+        part("StarDiagonalA", 0.42, 0.10, 0.16, 0.80, color, 45, true)
+        part("StarDiagonalB", 0.42, 0.10, 0.16, 0.80, color, -45, true)
+    elseif kind == "chest" then
+        part("ChestLid", 0.12, 0.18, 0.76, 0.26, color)
+        part("ChestBody", 0.12, 0.44, 0.76, 0.44, palette.paperDark)
+        part("ChestBand", 0.42, 0.18, 0.16, 0.70, palette.gold)
+        part("ChestLock", 0.42, 0.48, 0.16, 0.20, palette.ink, nil, true)
     elseif kind == "lock" then
         part("Shackle", 0.26, 0.08, 0.48, 0.48, color, nil, true)
         part("LockBody", 0.16, 0.40, 0.68, 0.48, color)
@@ -604,8 +627,8 @@ local function updateResponsiveLayout()
             local iconSize = narrow and 18 or compact and 20 or 24
             if iconRoot then
                 iconRoot.Size = UDim2.fromOffset(iconSize, iconSize)
-                iconRoot.Position = narrow and UDim2.new(0.5, -iconSize / 2, 0.5, -iconSize / 2)
-                    or UDim2.new(0.5, -iconSize / 2, 0, 4)
+                -- Keep the icon above its caption on compact and narrow navigation bars.
+                iconRoot.Position = UDim2.new(0.5, -iconSize / 2, 0, 3)
             end
             if titleLabel then
                 titleLabel.Visible = true
@@ -617,8 +640,9 @@ local function updateResponsiveLayout()
         end
     end
 
-    local panelWidth = math.max(240, math.min(560, viewport.X - 16))
-    local panelHeight = math.max(210, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))
+    -- Never let the modal extend beyond the actual viewport, including short landscape screens.
+    local panelWidth = math.max(1, math.min(560, viewport.X - 16))
+    local panelHeight = math.max(1, math.min(560, viewport.Y - (shortScreen and 64 or compact and 112 or 160)))
     panel.Size = UDim2.fromOffset(panelWidth, panelHeight)
     panelTitle.TextSize = compact and 16 or 20
     panelSubtitle.TextSize = compact and 10 or 12
@@ -715,20 +739,27 @@ local function addSeedChoice(crop, selectedCrop)
     local offer = seedShopOffers[crop.id]
     local selected = selectedCrop == crop.id
     local compact = gui.AbsoluteSize.X < 620
-    local item = card(body, "Seed_" .. crop.id, compact and 122 or 82)
+    local item = card(body, "Seed_" .. crop.id, compact and 138 or 82)
     item.BackgroundColor3 = selected and Color3.fromRGB(235, 241, 218) or palette.paper
     createPictogram(item, "CropIcon", crop.icon, 38, crop.color).Position = UDim2.fromOffset(12, compact and 10 or 21)
     label(item, "Name", crop.name,
         compact and UDim2.new(1, -68, 0, 24) or UDim2.new(1, -174, 0, 22),
         UDim2.fromOffset(60, 8), 15, palette.ink, Enum.Font.GothamBold)
     label(item, "Details", crop.grow .. "  •  семян: " .. tostring(seeds),
-        compact and UDim2.new(1, -68, 0, 22) or UDim2.new(1, -174, 0, 38),
+        compact and UDim2.new(1, -68, 0, 40) or UDim2.new(1, -174, 0, 38),
         UDim2.fromOffset(60, 33), 10, palette.muted)
-    local chooseSize = compact and UDim2.new(0.5, -18, 0, 34) or UDim2.fromOffset(102, 29)
-    local choosePosition = compact and UDim2.fromOffset(12, 78) or UDim2.new(1, -112, 0, 7)
+    local chooseSize = compact and UDim2.new(0.5, -18, 0, 42) or UDim2.fromOffset(102, 29)
+    local choosePosition = compact and UDim2.fromOffset(12, 86) or UDim2.new(1, -112, 0, 7)
     local choose = button(item, "Choose", selected and "ВЫБРАНО" or "ВЫБРАТЬ",
         chooseSize, choosePosition, selected and palette.gold or palette.forest)
-    choose.TextSize = 10
+    choose.TextSize = 11
+    choose.Active = seeds > 0 and not selected
+    choose.AutoButtonColor = choose.Active
+    if seeds < 1 then
+        choose.Text = "НЕТ СЕМЯН"
+        choose.BackgroundColor3 = palette.paperDark
+        choose.TextColor3 = palette.ink
+    end
     choose.Activated:Connect(function()
         if seeds < 1 then
             showToast("Семян нет. Купи набор ниже, а затем выбери культуру.")
@@ -737,12 +768,15 @@ local function addSeedChoice(crop, selectedCrop)
         event:FireServer("SelectCrop", crop.id)
     end)
     local buy = button(item, "BuySeeds", "КУПИТЬ ×" .. tostring(offer.amount) .. " · " .. tostring(offer.cost) .. " мон.",
-        compact and UDim2.new(0.5, -18, 0, 34) or UDim2.fromOffset(102, 29),
-        compact and UDim2.new(0.5, 6, 0, 78) or UDim2.new(1, -112, 0, 44),
+        compact and UDim2.new(0.5, -18, 0, 42) or UDim2.fromOffset(102, 29),
+        compact and UDim2.new(0.5, 6, 0, 86) or UDim2.new(1, -112, 0, 44),
         coins >= offer.cost and palette.gold or palette.paperDark)
     buy.TextColor3 = coins >= offer.cost and palette.ink or palette.muted
-    buy.TextSize = 8
+    buy.TextSize = compact and 10 or 9
+    buy.Active = coins >= offer.cost
+    buy.AutoButtonColor = buy.Active
     buy.Activated:Connect(function()
+        if coins < offer.cost then return end
         event:FireServer("BuySeeds", crop.id)
     end)
 end
@@ -753,12 +787,20 @@ local function addPlot(plotId, index)
     local readyAt = tonumber(player:GetAttribute("Farm_" .. plotId .. "_ReadyAt")) or 0
     local crop = cropById[cropId]
     local stateText
+    local statusTitle = "РАСТЁТ"
+    local statusColor = palette.forestLight
     if not unlocked then
+        statusTitle = "ЗАКРЫТА"
+        statusColor = palette.muted
         stateText = "Закрыта — откроется после улучшения фермы"
     elseif cropId == "" then
+        statusTitle = "СВОБОДНА"
+        statusColor = palette.water
         local selected = cropById[player:GetAttribute("Farm_SelectedCrop") or "Carrot"]
         stateText = "Свободна — выбрано: " .. (selected and selected.name or "морковь")
     elseif readyAt <= os.time() then
+        statusTitle = "УРОЖАЙ ГОТОВ"
+        statusColor = palette.forest
         stateText = (crop and crop.name or "Растение") .. ": урожай готов! Подойди и собери"
     else
         local remaining = math.max(0, readyAt - os.time())
@@ -767,7 +809,10 @@ local function addPlot(plotId, index)
         stateText = string.format("%s растёт — осталось %02d:%02d", crop and crop.name or "Растение", minutes, seconds)
     end
     local compact = gui.AbsoluteSize.X < 620
-    local item = card(body, "Plot" .. tostring(index), compact and 88 or 66)
+    local item = card(body, "Plot" .. tostring(index), compact and 108 or 88)
+    if unlocked and cropId ~= "" and readyAt <= os.time() then
+        item.BackgroundColor3 = Color3.fromRGB(235, 242, 224)
+    end
     createPictogram(item, "PlotIcon", not unlocked and "lock" or (crop and crop.icon or "farm"), 34, palette.forest)
         .Position = UDim2.fromOffset(14, compact and 26 or 16)
     label(item, "Title", "Грядка " .. tostring(index),
@@ -775,6 +820,9 @@ local function addPlot(plotId, index)
     local state = label(item, "State", stateText,
         UDim2.new(1, -72, 0, compact and 46 or 30), UDim2.fromOffset(60, 31), compact and 11 or 12, palette.muted)
     state.TextYAlignment = Enum.TextYAlignment.Top
+    state.TextWrapped = true
+    label(item, "PlotStatus", statusTitle, UDim2.new(1, -72, 0, 18),
+        UDim2.fromOffset(60, compact and 82 or 64), 10, statusColor, Enum.Font.GothamBlack)
 end
 
 local showToast
@@ -791,10 +839,12 @@ local placementTarget = nil
 local placementValid = false
 local placementPointer = nil
 local placementConnection = nil
+local placementViewportConnection = nil
 local placementParts = {}
 
 local function clearPlacementGhost()
-    for _, part in ipairs(placementParts) do
+    for _, entry in ipairs(placementParts) do
+        local part = entry.part
         if part and part.Parent then part:Destroy() end
     end
     table.clear(placementParts)
@@ -939,6 +989,7 @@ end
 
 local function finishPlacement()
     if placementConnection then placementConnection:Disconnect(); placementConnection = nil end
+    if placementViewportConnection then placementViewportConnection:Disconnect(); placementViewportConnection = nil end
     if placementOverlay then placementOverlay:Destroy(); placementOverlay = nil end
     clearPlacementGhost()
     placementState = nil
@@ -998,7 +1049,7 @@ local function updatePlacementGhost()
     end
 
     local pointer = placementPointer or UserInputService:GetMouseLocation()
-    local ray = camera:ScreenPointToRay(pointer.X, pointer.Y)
+    local ray = camera:ViewportPointToRay(pointer.X, pointer.Y)
     local params = RaycastParams.new()
     params.FilterType = Enum.RaycastFilterType.Include
     params.FilterDescendantsInstances = {meadow}
@@ -1071,6 +1122,38 @@ local function updatePlacementGhost()
     placementButtons.Confirm.BackgroundColor3 = placementValid and palette.forest or palette.muted
 end
 
+local function updatePlacementOverlayLayout()
+    if not placementOverlay or not placementOverlay.Parent then return end
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+    local viewport = camera.ViewportSize
+    local compact = viewport.X < 620
+    local narrow = viewport.X < 400
+    local shortScreen = viewport.Y < 440
+    local navHeight = compact and (shortScreen and 48 or 56) or 72
+    local bottomGap = shortScreen and 24 or compact and 24 or 16
+    local panelHeight = shortScreen and 96 or 112
+    placementOverlay.Size = UDim2.new(1, -16, 0, panelHeight)
+    placementOverlay.Position = UDim2.new(0.5, 0, 1, -(navHeight + bottomGap))
+    placementStatus.Size = UDim2.new(1, -20, 0, shortScreen and 30 or 24)
+    placementStatus.Position = UDim2.fromOffset(10, 5)
+    placementStatus.TextSize = narrow and 9 or compact and 10 or 12
+    local controlsTop = shortScreen and 42 or 54
+    local controlsHeight = shortScreen and 42 or 42
+    local sideInset = narrow and 6 or 8
+    local gap = narrow and 4 or 8
+    local buttonWidth = (1 / 3)
+    for _, key in {"Rotate", "Cancel", "Confirm"} do
+        local control = placementButtons[key]
+        if control then
+            control.Size = UDim2.new(buttonWidth, -(sideInset + gap), 0, controlsHeight)
+            control.Position = UDim2.new((key == "Rotate" and 0) or (key == "Cancel" and 1 / 3 or 2 / 3),
+                key == "Rotate" and sideInset or (key == "Cancel" and gap / 2 or gap), 0, controlsTop)
+            control.TextSize = narrow and 9 or compact and 10 or 11
+        end
+    end
+end
+
 local function beginIslandPlacement(decorationId, moveIndex)
     if decorationId ~= "Path" and decorationId ~= "FlowerBed" and decorationId ~= "Cottage" and decorationId ~= "Warehouse" and decorationId ~= "Greenhouse" and decorationId ~= "GardenLamp" and decorationId ~= "Fence" and decorationId ~= "WhiteFence" and decorationId ~= "StoneFence" and decorationId ~= "HedgeFence" and decorationId ~= "Bench" and decorationId ~= "DecorativeTree" and decorationId ~= "WoodenPath" and decorationId ~= "GardenArch" and decorationId ~= "BirdBath" then return end
     finishPlacement()
@@ -1085,7 +1168,7 @@ local function beginIslandPlacement(decorationId, moveIndex)
     placementOverlay.Name = "BuildPlacementControls"
     placementOverlay.AnchorPoint = Vector2.new(0.5, 1)
     placementOverlay.Position = UDim2.new(0.5, 0, 1, -88)
-    placementOverlay.Size = UDim2.new(1, -24, 0, 112)
+    placementOverlay.Size = UDim2.new(1, -16, 0, 112)
     placementOverlay.BackgroundColor3 = palette.ink
     placementOverlay.BorderSizePixel = 0
     placementOverlay.ZIndex = 45
@@ -1098,17 +1181,20 @@ local function beginIslandPlacement(decorationId, moveIndex)
     placementStatus.TextXAlignment = Enum.TextXAlignment.Center
     placementStatus.ZIndex = 46
 
-    local rotate = button(placementOverlay, "Rotate", "↻ ПОВОРОТ",
+    local rotate = button(placementOverlay, "Rotate", "ПОВОРОТ",
         UDim2.new(0.32, -8, 0, 42), UDim2.new(0, 8, 0, 54), palette.forestLight)
     local cancel = button(placementOverlay, "Cancel", "ОТМЕНА",
         UDim2.new(0.32, -8, 0, 42), UDim2.new(0.34, 0, 0, 54), palette.coral)
-    local confirm = button(placementOverlay, "Confirm", "ПОСТРОИТЬ",
+    local confirm = button(placementOverlay, "Confirm", moveIndex and "ПЕРЕМЕСТИТЬ" or "ПОСТРОИТЬ",
         UDim2.new(0.32, -8, 0, 42), UDim2.new(0.68, 0, 0, 54), palette.forest)
     for _, control in {rotate, cancel, confirm} do
         control.ZIndex = 46
         control.TextSize = 11
     end
+    placementButtons.Rotate = rotate
+    placementButtons.Cancel = cancel
     placementButtons.Confirm = confirm
+    updatePlacementOverlayLayout()
     confirm.Active = false
     confirm.AutoButtonColor = false
     confirm.BackgroundColor3 = palette.muted
@@ -1132,6 +1218,10 @@ local function beginIslandPlacement(decorationId, moveIndex)
 
     if placementConnection then placementConnection:Disconnect() end
     placementConnection = RunService.RenderStepped:Connect(updatePlacementGhost)
+    local camera = workspace.CurrentCamera
+    if camera then
+        placementViewportConnection = camera:GetPropertyChangedSignal("ViewportSize"):Connect(updatePlacementOverlayLayout)
+    end
 end
 
 UserInputService.InputBegan:Connect(function(input, processed)
@@ -1153,6 +1243,8 @@ UserInputService.InputChanged:Connect(function(input, processed)
         placementPointer = Vector2.new(input.Position.X, input.Position.Y)
     end
 end)
+
+local buildingCategory = "Все"
 
 local function renderCity()
     local cityLevel = tonumber(player:GetAttribute("City_Level")) or 1
@@ -1265,24 +1357,47 @@ local function renderCity()
         end
     end
     addInfo("Управление постройками", "Перемещай предметы без повторной оплаты или разбирай их. При разборе возвращается половина материалов.", 68)
+    local buildingCategories = {
+        Path = "Дорожки", WoodenPath = "Дорожки",
+        Cottage = "Здания", Warehouse = "Здания", Greenhouse = "Здания",
+        Fence = "Ограды", WhiteFence = "Ограды", StoneFence = "Ограды", HedgeFence = "Ограды",
+        FlowerBed = "Сад", GardenLamp = "Сад", Bench = "Сад", DecorativeTree = "Сад", GardenArch = "Сад", BirdBath = "Сад",
+    }
+    local filters = {"Все", "Здания", "Дорожки", "Ограды", "Сад"}
+    local filterCard = card(body, "BuildingCategoryFilters", compact and 108 or 54)
+    for index, category in ipairs(filters) do
+        local columns = compact and 3 or 5
+        local column = (index - 1) % columns
+        local row = math.floor((index - 1) / columns)
+        local filter = button(filterCard, "BuildingCategory_" .. tostring(index), category,
+            UDim2.new(1 / columns, -10, 0, 42), UDim2.new(column / columns, 5, 0, 6 + row * 48),
+            buildingCategory == category and palette.gold or palette.forestLight)
+        filter.TextSize = 12
+        filter.TextColor3 = buildingCategory == category and palette.ink or palette.white
+        filter.Activated:Connect(function()
+            buildingCategory = category
+            refreshActiveTab()
+        end)
+    end
     for _, definition in catalog do
-        local item = card(body, "Build_" .. definition.id, compact and 116 or 86)
+        if buildingCategory ~= "Все" and buildingCategories[definition.id] ~= buildingCategory then continue end
+        local item = card(body, "Build_" .. definition.id, compact and 150 or 86)
         createPictogram(item, "BuildIcon", definition.icon, 38, palette.forestLight).Position =
             UDim2.fromOffset(12, compact and 8 or 20)
         local title = label(item, "Title", definition.title,
-            compact and UDim2.new(1, -68, 0, 22) or UDim2.new(1, -150, 0, 22),
+            compact and UDim2.new(1, -68, 0, 38) or UDim2.new(1, -150, 0, 22),
             UDim2.fromOffset(60, 8), 13, palette.ink, Enum.Font.GothamBold)
         title.TextWrapped = true
         local description = label(item, "Description", definition.description,
-            compact and UDim2.new(1, -28, 0, 32) or UDim2.new(1, -150, 0, 38),
-            UDim2.fromOffset(compact and 14 or 60, compact and 34 or 34), 10, palette.muted)
+            compact and UDim2.new(1, -28, 0, 44) or UDim2.new(1, -150, 0, 38),
+            UDim2.fromOffset(compact and 14 or 60, compact and 50 or 34), 10, palette.muted)
         description.TextWrapped = true
         description.TextYAlignment = Enum.TextYAlignment.Top
         local action = button(item, "Place", compact and "ВЫБРАТЬ МЕСТО" or "ПОСТРОИТЬ",
-            compact and UDim2.new(1, -24, 0, 28) or UDim2.fromOffset(124, 32),
-            compact and UDim2.fromOffset(12, 78) or UDim2.new(1, -136, 0, 26),
+            compact and UDim2.new(1, -24, 0, 42) or UDim2.fromOffset(124, 32),
+            compact and UDim2.fromOffset(12, 100) or UDim2.new(1, -136, 0, 26),
             palette.forest)
-        action.TextSize = compact and 9 or 10
+        action.TextSize = compact and 11 or 10
         local greenhouseBuilt = player:GetAttribute("Greenhouse_Built") == true
         local greenhouseLocked = definition.id == "Greenhouse" and farmLevel < 3
         if definition.id == "Greenhouse" and greenhouseBuilt then
@@ -1295,6 +1410,18 @@ local function renderCity()
             action.Active = false
             action.AutoButtonColor = false
             action.BackgroundColor3 = palette.paperDark
+        elseif decorationCount >= 16 then
+            action.Text = "НЕТ СВОБОДНЫХ МЕСТ"
+            action.Active = false
+            action.AutoButtonColor = false
+            action.BackgroundColor3 = palette.paperDark
+            action.TextColor3 = palette.ink
+        elseif wood < placementCosts[definition.id].Wood or stone < placementCosts[definition.id].Stone then
+            action.Text = "НЕ ХВАТАЕТ МАТЕРИАЛОВ"
+            action.Active = false
+            action.AutoButtonColor = false
+            action.BackgroundColor3 = palette.paperDark
+            action.TextColor3 = palette.ink
         else
             action.Activated:Connect(function()
                 beginIslandPlacement(definition.id)
@@ -1307,15 +1434,17 @@ local function addFarmUpgrade(farmLevel)
     local coins = tonumber(player:GetAttribute("Coins")) or 0
     local nextLevel = farmLevel + 1
     local cost = farmUpgradeCosts[nextLevel]
-    local item = card(body, "FarmUpgrade", 82)
+    local compact = gui.AbsoluteSize.X < 620
+    local item = card(body, "FarmUpgrade", compact and 142 or 82)
     local title = farmLevel >= 3 and "Ферма • максимальный уровень" or ("Улучшение фермы → уровень " .. tostring(nextLevel))
-    label(item, "Name", title, UDim2.new(1, -142, 0, 24), UDim2.fromOffset(12, 8), 14, palette.ink, Enum.Font.GothamBold)
+    label(item, "Name", title, compact and UDim2.new(1, -24, 0, 36) or UDim2.new(1, -142, 0, 24), UDim2.fromOffset(12, 8), 14, palette.ink, Enum.Font.GothamBold)
     local description = farmLevel == 1 and "Откроет две дополнительные грядки" or "Откроет последнюю грядку"
     label(item, "Details", farmLevel >= 3 and "Все четыре грядки доступны" or description,
-        UDim2.new(1, -142, 0, 30), UDim2.fromOffset(12, 36), 10, palette.muted)
+        compact and UDim2.new(1, -24, 0, 38) or UDim2.new(1, -142, 0, 30), UDim2.fromOffset(12, compact and 46 or 36), 10, palette.muted)
     local action = button(item, "UpgradeFarm",
         farmLevel >= 3 and "МАКС." or (tostring(cost) .. " МОН."),
-        UDim2.fromOffset(112, 38), UDim2.new(1, -122, 0.5, -19),
+        compact and UDim2.new(1, -24, 0, 42) or UDim2.fromOffset(112, 38),
+        compact and UDim2.fromOffset(12, 92) or UDim2.new(1, -122, 0.5, -19),
         farmLevel >= 3 and palette.paperDark or (coins >= cost and palette.gold or palette.paperDark))
     if farmLevel >= 3 or coins < cost then
         action.TextColor3 = palette.muted
@@ -1355,34 +1484,460 @@ local function renderFarm()
     else
         addInfo("Теплица • открывается на 3 уровне", "Улучши ферму до максимального уровня, чтобы построить стеклянную теплицу.", 68)
     end
+    addInfo("Твои грядки", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
+    for index = 1, 4 do
+        addPlot(string.format("Plot%02d", index), index)
+    end
     addInfo("1. Развитие фермы", "Улучшай ферму за монеты, чтобы открывать новые грядки. Сейчас доступно: " .. tostring(farmLevel == 1 and 1 or (farmLevel == 2 and 3 or 4)) .. " из 4.", 68)
     addFarmUpgrade(farmLevel)
     addInfo("2. Семена и магазин", "Монеты: " .. tostring(tonumber(player:GetAttribute("Coins")) or 0) .. ". Выбери культуру для посадки или купи набор семян. Покупка сохраняется в рюкзаке.", 76)
     addInfo("3. Цены на рынке", table.concat(marketPriceSummary, "   •   ") .. ". Подойди к стойке «РЫНОК» на своём острове и продай собранный урожай. Семена и материалы рынок не покупает.", 92)
     for _, crop in cropCatalog do addSeedChoice(crop, selectedCrop) end
-    addInfo("4. Посади и собери", "Подойди к свободной грядке и выбери «Посадить». Когда урожай созреет, возвращайся за ним. Растения растут, даже если ты вышел из игры.", 86)
-    for index = 1, 4 do
-        addPlot(string.format("Plot%02d", index), index)
-    end
+
 end
+
+local companionProfileSelected = nil
 
 local function renderPets()
     local pets = {
-        {id = "Fox", name = "Лисёнок", role = "Разведчик", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "fox"},
-        {id = "Moth", name = "Лунная моль", role = "Хранитель света", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "moth"},
-        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "crystal"},
-        {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "pumpkin"},
-        {id = "BrambleBun", name = "Колючка", role = "Редкий • Лесной ёжик", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "paw"},
-        {id = "MossTurtle", name = "Мохопанцирь", role = "Редкий • Тихий хранитель", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "turtle"},
-        {id = "Glowcap", name = "Светошляп", role = "Эпический • Грибной огонёк", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "mushroom"},
-        {id = "Dewdrop", name = "Росинка", role = "Эпический • Капля ручья", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "droplet"},
-        {id = "Starling", name = "Звёздокрыл", role = "Легендарный • Ночной совёнок", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "owl"},
+        {id = "Fox", name = "Лисёнок", role = "Разведчик", rarity = "Обычный", description = "Находит тайники и древние следы скрытых проходов.", location = "Ищи его в Солнечной роще.", icon = "fox"},
+        {id = "Moth", name = "Лунная моль", role = "Хранитель света", rarity = "Редкий", description = "Пробуждает цветы и открывает древние лунные руны.", location = "Ищи её в Лунной роще.", icon = "moth"},
+        {id = "CrystalWisp", name = "Кристальный светляк", role = "Проводник пещеры", rarity = "Эпический", description = "Призменное чутьё помогает находить скрытые кристальные жилы.", location = "Ищи его в кристальной пещере у тренировочной поляны.", icon = "crystal"},
+        {id = "HarvestSprite", name = "Тыквик", role = "Спутник урожая", rarity = "Сезонный", description = "Редкий праздничный дух с тёплым светом и осенней магией.", location = "Получи его за 100 очков Фестиваля урожая.", icon = "pumpkin"},
+        {id = "BrambleBun", name = "Колючка", role = "Лесной ёжик", rarity = "Редкий", description = "Собирает упавшие жёлуди и любит исследовать кусты.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "paw"},
+        {id = "MossTurtle", name = "Мохопанцирь", role = "Тихий хранитель", rarity = "Редкий", description = "Маленькая черепаха с живым мхом на панцире.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "turtle"},
+        {id = "Glowcap", name = "Светошляп", role = "Грибной огонёк", rarity = "Эпический", description = "Освещает путь мягким светом своей шляпки.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "mushroom"},
+        {id = "Dewdrop", name = "Росинка", role = "Капля ручья", rarity = "Эпический", description = "Игривый водный малыш с сияющей каплей на лбу.", location = "Вылупляется из призового яйца Фестиваля урожая.", icon = "droplet"},
+        {id = "Starling", name = "Звёздокрыл", role = "Ночной совёнок", rarity = "Легендарный", description = "Самый редкий питомец яйца, хранит крошечный звёздный свет.", location = "Редчайшая находка призового яйца Фестиваля урожая.", icon = "owl"},
     }
     local compact = gui.AbsoluteSize.X < 620
+    local rarityStyles = {
+        ["Обычный"] = {color = Color3.fromRGB(137, 158, 132), tint = Color3.fromRGB(231, 239, 222), text = Color3.fromRGB(66, 91, 69)},
+        ["Редкий"] = {color = Color3.fromRGB(86, 158, 205), tint = Color3.fromRGB(222, 239, 249), text = Color3.fromRGB(43, 103, 143)},
+        ["Эпический"] = {color = Color3.fromRGB(151, 112, 204), tint = Color3.fromRGB(239, 228, 250), text = Color3.fromRGB(99, 67, 145)},
+        ["Легендарный"] = {color = Color3.fromRGB(218, 157, 55), tint = Color3.fromRGB(255, 239, 194), text = Color3.fromRGB(132, 83, 22)},
+        ["Сезонный"] = {color = Color3.fromRGB(207, 119, 75), tint = Color3.fromRGB(255, 231, 207), text = Color3.fromRGB(139, 74, 42)},
+    }
+
+    if not companionProfileSelected then
+        local breedingRecipes = {
+            {id = "LunarFox", name = "Лунолис", rarity = "Эпический", parents = {"Fox", "Moth"}, level = 3, bond = 400, duration = 90,
+                items = {{"SunPetal", 10, "Солнечные лепестки"}, {"MoonPetal", 10, "Лунные лепестки"}, {"MoonSeed", 2, "Лунные семена"}},
+                traits = "Лунное зрение · Лесной нюх"},
+            {id = "PrismFox", name = "Призмолис", rarity = "Эпический", parents = {"Fox", "CrystalWisp"}, level = 3, bond = 400, duration = 120,
+                items = {{"SunPetal", 10, "Солнечные лепестки"}, {"CrystalShard", 10, "Кристальные осколки"}, {"RootvaultEssence", 1, "Эссенция Корневой чащи"}},
+                traits = "Призматический слух · Следопыт жил"},
+            {id = "Starwing", name = "Звёздокрыл", rarity = "Легендарный", parents = {"Moth", "CrystalWisp"}, level = 4, bond = 500, duration = 180,
+                items = {{"MoonPetal", 12, "Лунные лепестки"}, {"CrystalShard", 12, "Кристальные осколки"}, {"StarShard", 5, "Звёздные осколки"}},
+                traits = "Звёздная пыльца · Эхо кристалла"},
+        }
+        local parentNames = {Fox = "Лисёнок", Moth = "Лунная моль", CrystalWisp = "Кристальный светляк"}
+        local activeEggs = {}
+        for index = 1, 3 do
+            local eggId = player:GetAttribute("CompanionBreeding_Egg" .. index .. "_Id")
+            local recipeId = player:GetAttribute("CompanionBreeding_Egg" .. index .. "_Recipe")
+            if type(eggId) == "string" and eggId ~= "" and type(recipeId) == "string" and recipeId ~= "" then
+                activeEggs[recipeId] = {
+                    id = eggId,
+                    hatchAt = math.max(0, tonumber(player:GetAttribute("CompanionBreeding_Egg" .. index .. "_HatchAt")) or 0),
+                }
+            end
+        end
+        local lab = card(body, "CompanionBreedingLab", compact and 124 or 112)
+        lab.BackgroundColor3 = Color3.fromRGB(232, 239, 224)
+        label(lab, "BreedingEyebrow", "ГЕНЕТИЧЕСКАЯ ЛАБОРАТОРИЯ",
+            UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 8), 10, palette.forest, Enum.Font.GothamBlack)
+        label(lab, "BreedingTitle", "Создай неизвестного гибрида",
+            UDim2.new(1, -24, 0, 25), UDim2.fromOffset(12, 27), compact and 15 or 17, palette.ink, Enum.Font.GothamBlack)
+        label(lab, "BreedingSummary", "Подружи родителей, собери редкие материалы и выведи яйцо. До 3 инкубаторов одновременно.",
+            UDim2.new(1, -24, 0, compact and 42 or 34), UDim2.fromOffset(12, 56), 10, palette.muted)
+
+        local activeCount = math.clamp(math.floor(tonumber(player:GetAttribute("CompanionBreeding_EggCount")) or 0), 0, 3)
+        local incubator = card(body, "HybridIncubators", activeCount == 0 and (compact and 76 or 68) or 42 + activeCount * 38)
+        incubator.BackgroundColor3 = Color3.fromRGB(241, 234, 250)
+        label(incubator, "IncubatorTitle", "ИНКУБАТОРЫ  " .. tostring(activeCount) .. "/3",
+            UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 8), 10, palette.ink, Enum.Font.GothamBlack)
+        if activeCount == 0 then
+            label(incubator, "IncubatorEmpty", "Пока пусто. Выбери пару ниже, чтобы начать первое скрещивание.",
+                UDim2.new(1, -24, 0, 30), UDim2.fromOffset(12, 30), 10, palette.muted)
+        else
+            local eggRow = 0
+            for _, recipe in breedingRecipes do
+                local egg = activeEggs[recipe.id]
+                if egg then
+                    eggRow += 1
+                    local hatchButton = button(incubator, "Hatch_" .. recipe.id, "",
+                        UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 28 + (eggRow - 1) * 36), palette.muted)
+                    hatchButton.TextSize = 9
+                    local function updateIncubatorButton()
+                        local remaining = math.max(0, egg.hatchAt - os.time())
+                        hatchButton.Text = remaining > 0
+                            and (recipe.name .. " · " .. tostring(math.ceil(remaining)) .. " сек.")
+                            or ("ВЫЛУПИТЬ · " .. recipe.name)
+                        hatchButton.Active = remaining <= 0
+                        hatchButton.AutoButtonColor = remaining <= 0
+                        hatchButton.BackgroundColor3 = remaining <= 0 and palette.forest or palette.muted
+                    end
+                    task.spawn(function()
+                        while hatchButton.Parent do
+                            updateIncubatorButton()
+                            task.wait(1)
+                        end
+                    end)
+                    hatchButton.Activated:Connect(function()
+                        if os.time() >= egg.hatchAt then
+                            event:FireServer("HatchHybridEgg", egg.id)
+                        else
+                            showToast("Яйцо ещё развивается. Загляни в инкубатор чуть позже.")
+                        end
+                    end)
+                end
+            end
+        end
+
+        for _, recipe in breedingRecipes do
+            local ownedParents, parentsReady = true, true
+            local parentLabels = {}
+            for _, parentId in recipe.parents do
+                local owned = player:GetAttribute(parentId) == true
+                local level = math.max(1, math.floor(tonumber(player:GetAttribute("Companion_" .. parentId .. "_Level")) or 1))
+                local bond = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. parentId .. "_Bond")) or 0))
+                ownedParents = ownedParents and owned
+                parentsReady = parentsReady and owned and level >= recipe.level and bond >= recipe.bond
+                table.insert(parentLabels, parentNames[parentId] or parentId)
+            end
+            local ingredientsReady = true
+            local ingredientLines = {}
+            for _, requirement in recipe.items do
+                local amount = math.max(0, math.floor(tonumber(player:GetAttribute("Resource_" .. requirement[1])) or 0))
+                if amount < requirement[2] then ingredientsReady = false end
+                table.insert(ingredientLines, requirement[3] .. " " .. tostring(amount) .. "/" .. tostring(requirement[2]))
+            end
+            local discovered = player:GetAttribute("CompanionBreeding_Discovered_" .. recipe.id) == true
+            local egg = activeEggs[recipe.id]
+            local canStart = parentsReady and ingredientsReady and not discovered and not egg and activeCount < 3
+            local recipeCard = card(body, "BreedRecipe_" .. recipe.id, compact and 202 or 178)
+            local style = rarityStyles[recipe.rarity] or rarityStyles["Эпический"]
+            recipeCard.BackgroundColor3 = discovered and Color3.fromRGB(232, 241, 225) or style.tint:Lerp(palette.paper, 0.45)
+            local title = label(recipeCard, "HybridName", recipe.name .. " · " .. recipe.rarity,
+                UDim2.new(1, -24, 0, 22), UDim2.fromOffset(12, 8), 13, palette.ink, Enum.Font.GothamBlack)
+            title.TextTruncate = Enum.TextTruncate.AtEnd
+            label(recipeCard, "HybridParents", "Родители: " .. table.concat(parentLabels, " + "),
+                UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 33), 10, palette.muted)
+            label(recipeCard, "HybridRequirements", "Уровень " .. tostring(recipe.level) .. " · Дружба " .. tostring(recipe.bond) .. " у каждого",
+                UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 53), 10, palette.muted)
+            label(recipeCard, "HybridIngredients", table.concat(ingredientLines, "  ·  "),
+                UDim2.new(1, -24, 0, compact and 38 or 34), UDim2.fromOffset(12, 74), 9, palette.ink)
+            label(recipeCard, "HybridTraits", "Наследие: " .. recipe.traits,
+                UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, compact and 116 or 110), 9, palette.forest)
+            local buttonText = discovered and "ГИБРИД ОТКРЫТ"
+                or egg and "УЖЕ В ИНКУБАТОРЕ"
+                or not ownedParents and "СНАЧАЛА НАЙДИ ОБОИХ"
+                or not parentsReady and "ПОВЫСЬ УРОВЕНЬ И ДРУЖБУ"
+                or not ingredientsReady and "НЕ ХВАТАЕТ МАТЕРИАЛОВ"
+                or activeCount >= 3 and "НЕТ СВОБОДНОГО ИНКУБАТОРА"
+                or ("СКРЕСТИТЬ · " .. tostring(recipe.duration) .. " СЕК.")
+            local breedButton = button(recipeCard, "Breed_" .. recipe.id, buttonText,
+                UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, compact and 154 or 142),
+                canStart and palette.forest or palette.muted)
+            breedButton.TextSize = 9
+            breedButton.Active = canStart
+            breedButton.AutoButtonColor = canStart
+            breedButton.BackgroundTransparency = canStart and 0 or 0.38
+            breedButton.Activated:Connect(function()
+                if canStart then event:FireServer("BreedCompanions", recipe.id) end
+            end)
+        end
+
+        local discoveries = {}
+        for _, recipe in breedingRecipes do
+            if player:GetAttribute("CompanionBreeding_Discovered_" .. recipe.id) == true then
+                table.insert(discoveries, recipe.name .. " (" .. recipe.rarity .. ")")
+            end
+        end
+        local codex = card(body, "HybridDiscoveryCodex", compact and 72 or 64)
+        codex.BackgroundColor3 = Color3.fromRGB(250, 242, 222)
+        label(codex, "HybridCodexTitle", "ЖУРНАЛ ГИБРИДОВ · " .. tostring(#discoveries) .. "/3",
+            UDim2.new(1, -24, 0, 18), UDim2.fromOffset(12, 8), 10, palette.ink, Enum.Font.GothamBlack)
+        label(codex, "HybridCodexEntries", #discoveries > 0 and table.concat(discoveries, "  ·  ")
+            or "Неизвестные силуэты ждут открытия. Все результаты сохраняются в коллекции исследований.",
+            UDim2.new(1, -24, 0, compact and 36 or 28), UDim2.fromOffset(12, 30), 10, palette.muted)
+    end
+
+    if companionProfileSelected then
+        local selectedPet
+        for _, candidate in pets do
+            if candidate.id == companionProfileSelected then selectedPet = candidate break end
+        end
+        if not selectedPet then
+            companionProfileSelected = nil
+        else
+            local compactProfile = gui.AbsoluteSize.X < 620
+            local owned = player:GetAttribute(selectedPet.id) == true
+            local equipped = player:GetAttribute("Companion") == selectedPet.id
+            local level = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. selectedPet.id .. "_Level")) or 1), 1, 5)
+            local xp = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. selectedPet.id .. "_XP")) or 0))
+            local xpToNext = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. selectedPet.id .. "_XPToNext")) or 0))
+            local bond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. selectedPet.id .. "_Bond")) or 0), 0, 1000)
+            local bondRank = player:GetAttribute("Companion_" .. selectedPet.id .. "_BondRank") or "Знакомство"
+            local mutationName = player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationName")
+            local mutationRarity = player:GetAttribute("Companion_" .. selectedPet.id .. "_MutationRarity")
+            local evolutionName = player:GetAttribute("Companion_" .. selectedPet.id .. "_EvolutionName")
+            local evolutionRarity = player:GetAttribute("Companion_" .. selectedPet.id .. "_EvolutionRarity")
+            local lineageName = player:GetAttribute("Companion_" .. selectedPet.id .. "_LineageName")
+            local lineageDescription = player:GetAttribute("Companion_" .. selectedPet.id .. "_LineageDescription")
+            local evolutionId = player:GetAttribute("Companion_" .. selectedPet.id .. "_Evolution")
+            local displayRarity = owned and type(evolutionRarity) == "string" and evolutionRarity ~= ""
+                and evolutionRarity or owned and type(mutationRarity) == "string" and mutationRarity ~= ""
+                and mutationRarity or selectedPet.rarity
+            local rarityStyle = rarityStyles[displayRarity] or rarityStyles["Обычный"]
+
+            local back = button(body, "BackToPetCollection", "←  ВСЕ ПИТОМЦЫ",
+                UDim2.new(1, 0, 0, 38), UDim2.new(), palette.forestLight)
+            back.TextXAlignment = Enum.TextXAlignment.Left
+            back.TextSize = 12
+            back.Activated:Connect(function()
+                companionProfileSelected = nil
+                refreshActiveTab()
+            end)
+
+            local hero = card(body, "CompanionProfileHero", compactProfile and 188 or 222)
+            hero.BackgroundColor3 = rarityStyle.tint:Lerp(palette.paper, 0.55)
+            local heroStroke = hero:FindFirstChildOfClass("UIStroke")
+            if heroStroke then
+                heroStroke.Color = rarityStyle.color
+                heroStroke.Thickness = displayRarity == "Легендарный" and 2.2 or 1.5
+            end
+            local previewSize = compactProfile and 132 or 164
+            local hasPreview = owned and createApprovedCompanionPreview(
+                hero, selectedPet.id, "CompanionProfilePreview",
+                UDim2.fromOffset(previewSize, previewSize), UDim2.fromOffset(12, compactProfile and 28 or 30)
+            )
+            if not hasPreview then
+                local portrait = Instance.new("Frame")
+                portrait.Name = "CompanionProfilePortrait"
+                portrait.Size = UDim2.fromOffset(previewSize, previewSize)
+                portrait.Position = UDim2.fromOffset(12, compactProfile and 28 or 30)
+                portrait.BackgroundColor3 = owned and rarityStyle.tint or palette.paperDark
+                portrait.BorderSizePixel = 0
+                portrait.Parent = hero
+                corner(portrait, 22)
+                stroke(portrait, rarityStyle.color, 0.22, 1.5)
+                createPictogram(portrait, "ProfilePetIcon", owned and selectedPet.icon or "lock",
+                    compactProfile and 72 or 88, owned and rarityStyle.color or palette.muted).Position =
+                    UDim2.new(0.5, compactProfile and -36 or -44, 0.5, compactProfile and -36 or -44)
+            end
+
+            local textX = compactProfile and 156 or 192
+            local title = label(hero, "ProfileName", selectedPet.name,
+                UDim2.new(1, -textX - 12, 0, compactProfile and 40 or 48),
+                UDim2.fromOffset(textX, compactProfile and 34 or 38),
+                compactProfile and 16 or 20, palette.ink, Enum.Font.GothamBlack)
+            title.TextYAlignment = Enum.TextYAlignment.Top
+            local role = label(hero, "ProfileRole", selectedPet.role,
+                UDim2.new(1, -textX - 12, 0, 34), UDim2.fromOffset(textX, compactProfile and 78 or 91),
+                11, palette.muted, Enum.Font.GothamBold)
+            role.TextYAlignment = Enum.TextYAlignment.Top
+            local rarityBadge = Instance.new("Frame")
+            rarityBadge.Name = "ProfileRarityBadge"
+            rarityBadge.Size = UDim2.fromOffset(compactProfile and 94 or 112, 25)
+            rarityBadge.Position = UDim2.fromOffset(textX, compactProfile and 120 or 139)
+            rarityBadge.BackgroundColor3 = rarityStyle.tint
+            rarityBadge.BorderSizePixel = 0
+            rarityBadge.Parent = hero
+            corner(rarityBadge, 9)
+            stroke(rarityBadge, rarityStyle.color, 0.12, 1.2)
+            if displayRarity == "Легендарный" then
+                gradient(rarityBadge, Color3.fromRGB(255, 246, 213), Color3.fromRGB(246, 207, 126))
+            end
+            local rarityLabel = label(rarityBadge, "ProfileRarity", string.upper(displayRarity),
+                UDim2.new(1, -8, 1, 0), UDim2.fromOffset(4, 0), 9, rarityStyle.text, Enum.Font.GothamBlack)
+            rarityLabel.TextXAlignment = Enum.TextXAlignment.Center
+            rarityLabel.TextYAlignment = Enum.TextYAlignment.Center
+            local state = label(hero, "ProfileState", not owned and "ЕЩЁ НЕ НАЙДЕН" or equipped and "ТВОЙ СПУТНИК" or "В ТВОЕЙ КОЛЛЕКЦИИ",
+                UDim2.new(1, -textX - 12, 0, 18), UDim2.fromOffset(textX, compactProfile and 151 or 174),
+                8, owned and palette.forest or palette.muted, Enum.Font.GothamBlack)
+
+            addInfo("ЗНАКОМСТВО", owned and selectedPet.description or selectedPet.location, 66)
+            addInfo("ХАРАКТЕР И НАСТРОЕНИЕ",
+                owned and ((selectedPet.id == "Fox" and "Любопытный исследователь" or selectedPet.id == "Moth" and "Нежная хранительница света" or selectedPet.id == "HarvestSprite" and "Добрый хранитель урожая" or selectedPet.id == "BrambleBun" and "Осторожный собиратель" or selectedPet.id == "MossTurtle" and "Спокойный защитник" or selectedPet.id == "Glowcap" and "Светлый мечтатель" or selectedPet.id == "Dewdrop" and "Весёлый непоседа" or selectedPet.id == "Starling" and "Звёздный наблюдатель" or "Кристальный проводник")
+                    .. " · " .. tostring(player:GetAttribute("Companion_" .. selectedPet.id .. "_Mood") or "Спокойствие")
+                    or "Познакомься с питомцем, чтобы узнать его характер.", 58)
+            addInfo("РОСТ И ДРУЖБА",
+                owned and ((level >= 5 and "Взрослый" or level >= 3 and "Подросток" or "Малыш")
+                    .. " · Уровень " .. tostring(level) .. (level >= 5 and " (максимум)" or " · " .. tostring(xp) .. "/" .. tostring(xpToNext) .. " XP")
+                    .. " · Дружба " .. tostring(bond) .. "/1000 · " .. tostring(bondRank))
+                    or "Уровень, взросление и дружба откроются после знакомства.", 68)
+            local mutationText = owned and type(evolutionName) == "string" and evolutionName ~= ""
+                and (evolutionName .. " · Секретная эволюция")
+                or owned and type(mutationName) == "string" and mutationName ~= ""
+                and (mutationName .. " · " .. tostring(mutationRarity or "Необычный"))
+                or "Особая форма пока не открыта"
+            addInfo("ОСОБАЯ ФОРМА", mutationText, 54)
+            local talentText = selectedPet.id == "Fox" and (level >= 5 and "Острый нюх: поиск каждые 60 сек." or level >= 3 and "Чуткий нюх: поиск каждые 90 сек." or "Следопыт: ищет тайники в роще.")
+                or selectedPet.id == "Moth" and (level >= 5 and "Лунная аура: радиус лечения +4." or level >= 3 and "Лунная аура: радиус лечения +2." or "Лунная аура развивается вместе с дружбой.")
+                or selectedPet.id == "HarvestSprite" and "Осенний огонёк: уникальный сезонный спутник."
+                or (selectedPet.id == "BrambleBun" or selectedPet.id == "MossTurtle" or selectedPet.id == "Glowcap" or selectedPet.id == "Dewdrop" or selectedPet.id == "Starling") and "Фестивальный спутник: развивай дружбу и открывай характер."
+                or "Призменное чутьё: помогает находить скрытые кристальные жилы."
+            addInfo("ТАЛАНТ", owned and talentText or "Талант откроется после знакомства.", 54)
+
+            addInfo("НАСЛЕДСТВЕННЫЙ ПРИЗНАК",
+                owned and type(lineageName) == "string" and lineageName ~= ""
+                    and (lineageName .. " · " .. tostring(lineageDescription or "Новый генетический признак"))
+                    or "Пока не обнаружен. Экспериментируй с другими видами питомцев.", 62)
+
+            local lineageRecipes = {
+                LunarScent = {host = "Fox", partner = "Moth", name = "Лунный нюх", items = {{"SunPetal", 8, "Солнечные лепестки"}, {"MoonPetal", 8, "Лунные лепестки"}, {"StarShard", 3, "Звёздные осколки"}}},
+                PrismNose = {host = "Fox", partner = "CrystalWisp", name = "Призматический нюх", items = {{"SunPetal", 8, "Солнечные лепестки"}, {"CrystalShard", 8, "Кристальные осколки"}, {"RootvaultEssence", 1, "Эссенция Корневой чащи"}}},
+                PrismDust = {host = "Moth", partner = "CrystalWisp", name = "Призматическая пыльца", items = {{"MoonPetal", 8, "Лунные лепестки"}, {"CrystalShard", 8, "Кристальные осколки"}, {"MoonSeed", 3, "Лунные семена"}}},
+            }
+            for recipeId, recipe in lineageRecipes do
+                if recipe.host == selectedPet.id then
+                    local discovered = player:GetAttribute("Companion_" .. selectedPet.id .. "_Lineage") == recipeId
+                    local hasOtherLineage = type(lineageName) == "string" and lineageName ~= "" and not discovered
+                    local partnerOwned = player:GetAttribute(recipe.partner) == true
+                    local partnerBond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. recipe.partner .. "_Bond")) or 0), 0, 1000)
+                    local hostBond = bond
+                    local enoughResources = true
+                    local ingredientLines = {}
+                    for _, requirement in recipe.items do
+                        local amount = math.max(0, math.floor(tonumber(player:GetAttribute("Resource_" .. requirement[1])) or 0))
+                        if amount < requirement[2] then enoughResources = false end
+                        table.insert(ingredientLines, requirement[3] .. " " .. tostring(amount) .. "/" .. tostring(requirement[2]))
+                    end
+                    local canDiscover = owned and equipped and partnerOwned and hostBond >= 300 and partnerBond >= 300
+                        and enoughResources and not discovered and not hasOtherLineage
+                    local lineageCard = card(body, "LineageResearch_" .. recipeId, compactProfile and 142 or 132)
+                    lineageCard.BackgroundColor3 = discovered and Color3.fromRGB(232, 241, 225) or Color3.fromRGB(231, 239, 246)
+                    label(lineageCard, "LineageTitle", discovered and ("✦ " .. recipe.name) or "ГЕНЕТИЧЕСКИЙ ЭКСПЕРИМЕНТ",
+                        UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 8), 12, palette.ink, Enum.Font.GothamBlack)
+                    label(lineageCard, "LineagePair", "Пара: " .. selectedPet.name .. " + "
+                        .. (recipe.partner == "Moth" and "Лунная моль" or "Кристальный светляк"),
+                        UDim2.new(1, -20, 0, 18), UDim2.fromOffset(12, 32), 10, palette.muted)
+                    label(lineageCard, "LineageBond", "Дружба: " .. tostring(hostBond) .. "/300 · партнёр: "
+                        .. tostring(partnerBond) .. "/300",
+                        UDim2.new(1, -20, 0, 18), UDim2.fromOffset(12, 52), 10, palette.muted)
+                    label(lineageCard, "LineageIngredients", table.concat(ingredientLines, "  ·  "),
+                        UDim2.new(1, -20, 0, 30), UDim2.fromOffset(12, 72), 9, palette.ink)
+                    local researchButton = button(lineageCard, "DiscoverLineage_" .. recipeId,
+                        discovered and "ПРИЗНАК ОТКРЫТ"
+                            or hasOtherLineage and "ДРУГОЙ ПУТЬ УЖЕ ВЫБРАН"
+                            or "ПРОВЕСТИ ЭКСПЕРИМЕНТ",
+                        UDim2.new(1, -24, 0, 32), UDim2.fromOffset(12, 98), palette.water)
+                    researchButton.TextSize = 10
+                    researchButton.Active = canDiscover
+                    researchButton.AutoButtonColor = canDiscover
+                    researchButton.BackgroundTransparency = canDiscover and 0 or 0.42
+                    researchButton.Activated:Connect(function()
+                        if canDiscover then event:FireServer("DiscoverCompanionLineage", recipeId) end
+                    end)
+                end
+            end
+
+            local evolutionRecipes = {
+                Fox = {name = "Страж древней рощи", items = {{"SunPetal", 15, "Солнечные лепестки"}, {"MoonSeed", 2, "Лунные семена"}, {"RootvaultEssence", 1, "Эссенция Корневой чащи"}}},
+                Moth = {name = "Оракул лунного света", items = {{"MoonPetal", 15, "Лунные лепестки"}, {"StarShard", 8, "Звёздные осколки"}, {"MoonSeed", 3, "Лунные семена"}}},
+                CrystalWisp = {name = "Владыка призмы", items = {{"CrystalShard", 20, "Кристальные осколки"}, {"CrystalSigil", 3, "Кристальные печати"}, {"VoidGeode", 1, "Пустотные жеоды"}}},
+            }
+            local evolutionRecipe = evolutionRecipes[selectedPet.id]
+            if evolutionRecipe then
+                local evolutionUnlocked = type(evolutionName) == "string" and evolutionName ~= ""
+                local resourceLines = {}
+                local enoughResources = true
+                for _, requirement in evolutionRecipe.items do
+                    local amount = math.max(0, math.floor(tonumber(player:GetAttribute("Resource_" .. requirement[1])) or 0))
+                    if amount < requirement[2] then enoughResources = false end
+                    table.insert(resourceLines, requirement[3] .. " " .. tostring(amount) .. "/" .. tostring(requirement[2]))
+                end
+                local evolutionReady = owned and equipped and level >= 5 and bond >= 900 and enoughResources and not evolutionUnlocked
+                local evolutionCard = card(body, "CompanionSecretEvolution", compactProfile and 146 or 136)
+                evolutionCard.BackgroundColor3 = evolutionUnlocked and Color3.fromRGB(235, 242, 224) or Color3.fromRGB(241, 235, 250)
+                label(evolutionCard, "EvolutionTitle", evolutionUnlocked and ("✦ " .. evolutionRecipe.name) or "СЕКРЕТНАЯ ЭВОЛЮЦИЯ",
+                    UDim2.new(1, -20, 0, 22), UDim2.fromOffset(12, 8), 12, palette.ink, Enum.Font.GothamBlack)
+                local evolutionStatus = evolutionUnlocked and "Эта форма уже пробуждена."
+                    or ("Уровень " .. tostring(level) .. "/5 · Дружба " .. tostring(bond) .. "/900")
+                label(evolutionCard, "EvolutionStatus", evolutionStatus,
+                    UDim2.new(1, -20, 0, 18), UDim2.fromOffset(12, 32), 10, palette.muted)
+                label(evolutionCard, "EvolutionRecipe", table.concat(resourceLines, "  ·  "),
+                    UDim2.new(1, -20, 0, 30), UDim2.fromOffset(12, 52), 9, palette.ink)
+                local evolveButton = button(evolutionCard, "EvolveCompanion", evolutionUnlocked and "СЕКРЕТНАЯ ФОРМА ОТКРЫТА" or "ПРОБУДИТЬ ФОРМУ",
+                    UDim2.new(1, -24, 0, 34), UDim2.fromOffset(12, 94), palette.lilac)
+                evolveButton.TextSize = 10
+                evolveButton.Active = evolutionReady
+                evolveButton.AutoButtonColor = evolutionReady
+                evolveButton.BackgroundTransparency = evolutionReady and 0 or 0.42
+                evolveButton.Activated:Connect(function()
+                    if evolutionReady then event:FireServer("EvolveCompanion", selectedPet.id) end
+                end)
+            end
+
+            local actionCard = card(body, "CompanionProfileActions", compactProfile and 96 or 86)
+            local actionWidth = UDim2.new(0.5, -18, 0, 34)
+            local function profileAction(name, caption, color, position, enabled, callback)
+                local actionButton = button(actionCard, name, caption, actionWidth, position, color)
+                actionButton.TextSize = 10
+                actionButton.Active = enabled
+                actionButton.AutoButtonColor = enabled
+                actionButton.BackgroundTransparency = enabled and 0 or 0.4
+                actionButton.Activated:Connect(callback)
+            end
+            profileAction("CallCompanion", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН",
+                equipped and palette.gold or palette.forest, UDim2.fromOffset(10, 8), owned,
+                function() if owned then event:FireServer(selectedPet.id) end end)
+            local foodCount = (tonumber(player:GetAttribute("Resource_Pumpkin")) or 0)
+                + (tonumber(player:GetAttribute("Resource_Strawberry")) or 0)
+                + (tonumber(player:GetAttribute("Resource_Cabbage")) or 0)
+                + (tonumber(player:GetAttribute("Resource_Carrot")) or 0)
+            profileAction("FeedCompanion", "УГОСТИТЬ", palette.forestLight,
+                UDim2.new(0.5, 8, 0, 8), owned and equipped and foodCount > 0,
+                function() if owned and equipped and foodCount > 0 then event:FireServer("FeedCompanion", selectedPet.id) end end)
+            profileAction("PlayWithCompanion", "ИГРАТЬ", palette.gold,
+                UDim2.fromOffset(10, 48), owned and equipped,
+                function() if owned and equipped then event:FireServer("StartCompanionPlay", selectedPet.id) end end)
+            profileAction("PetCompanion", "ПОГЛАДИТЬ", palette.lilac,
+                UDim2.new(0.5, 8, 0, 48), owned and equipped,
+                function() if owned and equipped then event:FireServer("PetCompanion", selectedPet.id) end end)
+        end
+        return
+    end
+
     for _, pet in pets do
         local owned = player:GetAttribute(pet.id) == true
         local equipped = player:GetAttribute("Companion") == pet.id
-        local item = card(body, pet.id .. "Card", compact and 330 or 214)
+        local item = card(body, pet.id .. "Card", compact and 394 or 254)
+        local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
+        local displayRarity = owned and type(mutationRarity) == "string" and mutationRarity ~= ""
+            and mutationRarity or pet.rarity
+        local rarityStyle = rarityStyles[displayRarity] or rarityStyles["Обычный"]
+        item.BackgroundColor3 = rarityStyle.tint:Lerp(palette.paper, 0.72)
+        local rarityBorder = item:FindFirstChildOfClass("UIStroke") or stroke(item, rarityStyle.color, 0.32, 1.35)
+        rarityBorder.Color = rarityStyle.color
+        rarityBorder.Transparency = displayRarity == "Легендарный" and 0.08 or 0.32
+        rarityBorder.Thickness = displayRarity == "Легендарный" and 2 or 1.35
+        local rarityRail = Instance.new("Frame")
+        rarityRail.Name = "RarityAccent"
+        rarityRail.Size = UDim2.new(0, 5, 1, -22)
+        rarityRail.Position = UDim2.fromOffset(0, 11)
+        rarityRail.BackgroundColor3 = rarityStyle.color
+        rarityRail.BorderSizePixel = 0
+        rarityRail.Parent = item
+        corner(rarityRail, 5)
+        local rarityBadge = Instance.new("Frame")
+        rarityBadge.Name = "RarityBadge"
+        rarityBadge.Size = UDim2.fromOffset(82, 23)
+        rarityBadge.Position = UDim2.new(1, -92, 0, 12)
+        rarityBadge.BackgroundColor3 = rarityStyle.tint
+        rarityBadge.BorderSizePixel = 0
+        rarityBadge.Parent = item
+        corner(rarityBadge, 9)
+        stroke(rarityBadge, rarityStyle.color, 0.18, 1)
+        if displayRarity == "Легендарный" then
+            gradient(rarityBadge, Color3.fromRGB(255, 246, 213), Color3.fromRGB(246, 207, 126))
+        end
+        local rarityText = label(rarityBadge, "RarityText", string.upper(displayRarity),
+            UDim2.new(1, -8, 1, 0), UDim2.fromOffset(4, 0), 9, rarityStyle.text, Enum.Font.GothamBold)
+        rarityText.TextXAlignment = Enum.TextXAlignment.Center
+        rarityText.TextYAlignment = Enum.TextYAlignment.Center
         local iconPlate = Instance.new("Frame")
         iconPlate.Name = "IconPlate"
         iconPlate.Size = UDim2.fromOffset(58, 58)
@@ -1407,15 +1962,19 @@ local function renderPets()
             or pet.id == "Starling" and Color3.fromRGB(100, 126, 184)
             or palette.forestLight
         createPictogram(iconPlate, "PetPictogram", pet.icon, 42, petTint).Position = UDim2.fromOffset(8, 8)
+        local hasHeroPreview = createApprovedCompanionPreview(
+            item, pet.id, "PetHeroPreview", UDim2.fromOffset(76, 76), UDim2.fromOffset(10, 10)
+        )
+        iconPlate.Visible = not hasHeroPreview
         local nameLabel = label(item, "Name", pet.name .. " • " .. pet.role,
-            compact and UDim2.new(1, -96, 0, 58) or UDim2.new(1, -210, 0, 24),
-            UDim2.fromOffset(76, 8), 14, palette.ink, Enum.Font.GothamBold)
+            compact and UDim2.new(1, hasHeroPreview and -188 or -168, 0, 58) or UDim2.new(1, hasHeroPreview and -230 or -210, 0, 24),
+            UDim2.fromOffset(hasHeroPreview and 96 or 76, 8), 14, palette.ink, Enum.Font.GothamBold)
         nameLabel.TextWrapped = true
         nameLabel.TextYAlignment = Enum.TextYAlignment.Center
         local desc = owned and pet.description or pet.location
         local descriptionLabel = label(item, "Description", desc,
-            compact and UDim2.new(1, -28, 0, 32) or UDim2.new(1, -210, 0, 25),
-            UDim2.fromOffset(compact and 14 or 76, compact and 78 or 33),
+            compact and UDim2.new(1, -28, 0, 32) or UDim2.new(1, hasHeroPreview and -230 or -210, 0, 25),
+            UDim2.fromOffset(compact and 14 or (hasHeroPreview and 96 or 76), compact and 92 or 33),
             compact and 11 or 11, palette.muted)
         descriptionLabel.TextWrapped = true
         descriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -1423,20 +1982,19 @@ local function renderPets()
         local moodLine = pet.id == "Fox" and "Любопытный исследователь" or pet.id == "Moth" and "Нежная хранительница света" or pet.id == "HarvestSprite" and "Добрый хранитель урожая" or pet.id == "BrambleBun" and "Осторожный собиратель" or pet.id == "MossTurtle" and "Спокойный защитник" or pet.id == "Glowcap" and "Светлый мечтатель" or pet.id == "Dewdrop" and "Весёлый непоседа" or pet.id == "Starling" and "Звёздный наблюдатель" or "Кристальный проводник"
         local moodText = mood == "Довольство" and "Довольство" or mood == "Радость" and "Радость" or mood
         local moodLabel = label(item, "Mood", owned and (moodLine .. " · " .. moodText) or "Характер откроется при знакомстве",
-            compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, -220, 0, 18),
-            UDim2.fromOffset(compact and 14 or 76, compact and 114 or 60), 10, palette.forest, Enum.Font.GothamBold)
+            compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, hasHeroPreview and -240 or -220, 0, 18),
+            UDim2.fromOffset(compact and 14 or (hasHeroPreview and 96 or 76), compact and 130 or 60), 10, palette.forest, Enum.Font.GothamBold)
         moodLabel.TextWrapped = true
         local bond = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_Bond")) or 0), 0, 1000)
         local bondRank = player:GetAttribute("Companion_" .. pet.id .. "_BondRank") or "Знакомство"
         label(item, "Friendship", owned and ("Дружба " .. tostring(bond) .. "/1000 · " .. bondRank) or "Сначала найди питомца",
-            compact and UDim2.new(1, -28, 0, 18) or UDim2.new(1, -220, 0, 18),
-            UDim2.fromOffset(compact and 14 or 76, compact and 138 or 84), 10, palette.forest, Enum.Font.GothamBold)
+            compact and UDim2.new(1, -28, 0, 18) or UDim2.new(1, hasHeroPreview and -240 or -220, 0, 18),
+            UDim2.fromOffset(compact and 14 or (hasHeroPreview and 96 or 76), compact and 154 or 84), 10, palette.forest, Enum.Font.GothamBold)
 
         local companionLevel = math.clamp(math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_Level")) or 1), 1, 5)
         local companionXP = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_XP")) or 0))
         local companionXPToNext = math.max(0, math.floor(tonumber(player:GetAttribute("Companion_" .. pet.id .. "_XPToNext")) or 0))
         local mutationName = player:GetAttribute("Companion_" .. pet.id .. "_MutationName")
-        local mutationRarity = player:GetAttribute("Companion_" .. pet.id .. "_MutationRarity")
         local growthStage = companionLevel >= 5 and "ВЗРОСЛЫЙ"
             or companionLevel >= 3 and "ПОДРОСТОК" or "МАЛЫШ"
         local levelText = companionLevel >= 5 and "УР. 5 · МАКСИМУМ"
@@ -1445,7 +2003,7 @@ local function renderPets()
             and (" · Особая форма: " .. mutationName .. " (" .. tostring(mutationRarity or "Необычный") .. ")") or ""
         local progressionLabel = label(item, "Progression", owned and (growthStage .. " · " .. levelText .. mutationText) or "Уровень и мутация откроются при знакомстве",
             UDim2.new(1, -28, 0, compact and 34 or 20),
-            UDim2.fromOffset(16, compact and 162 or 151), compact and 10 or 11, palette.ink, Enum.Font.GothamBold)
+            UDim2.fromOffset(16, compact and 178 or 151), compact and 10 or 11, palette.ink, Enum.Font.GothamBold)
         progressionLabel.TextWrapped = true
         progressionLabel.TextYAlignment = Enum.TextYAlignment.Top
         local foxTalent = companionLevel >= 5 and "Острый нюх: поиск каждые 60 сек."
@@ -1468,12 +2026,12 @@ local function renderPets()
         local isFestivalHatchling = pet.id == "BrambleBun" or pet.id == "MossTurtle" or pet.id == "Glowcap" or pet.id == "Dewdrop" or pet.id == "Starling"
         local talentLabel = label(item, "Talent", owned and (pet.id == "Fox" and foxTalent or pet.id == "Moth" and mothTalent or pet.id == "HarvestSprite" and harvestTalent or isFestivalHatchling and festivalTalent or wispTalent) or "Найди питомца, чтобы открыть талант",
             UDim2.new(1, -28, 0, compact and 34 or 20),
-            UDim2.fromOffset(16, compact and 202 or 179), 10, palette.forest)
+            UDim2.fromOffset(16, compact and 218 or 179), 10, palette.forest)
         talentLabel.TextWrapped = true
         talentLabel.TextYAlignment = Enum.TextYAlignment.Top
 
         local actionSize = compact and UDim2.new(0.5, -18, 0, 36) or UDim2.fromOffset(108, 32)
-        local actionPosition = compact and UDim2.fromOffset(12, 242) or UDim2.new(1, -120, 0, 8)
+        local actionPosition = compact and UDim2.fromOffset(12, 258) or UDim2.new(1, -120, 0, 8)
         local action = button(item, "Action", owned and (equipped and "РЯДОМ" or "ПОЗВАТЬ") or "НЕ НАЙДЕН", actionSize, actionPosition, equipped and palette.gold or palette.forest)
         action.TextSize = 10
         action.Activated:Connect(function()
@@ -1490,7 +2048,7 @@ local function renderPets()
             + (tonumber(player:GetAttribute("Resource_Carrot")) or 0)
         local feedText = not owned and "НЕТ ПИТОМЦА" or not equipped and "СНАЧАЛА ПОЗОВИ" or foodCount <= 0 and "НЕТ УРОЖАЯ" or "УГОСТИТЬ"
         local feed = button(item, "Feed", feedText, actionSize,
-            compact and UDim2.new(0.5, 6, 0, 242) or UDim2.new(1, -120, 0, 46), palette.forestLight)
+            compact and UDim2.new(0.5, 6, 0, 258) or UDim2.new(1, -120, 0, 46), palette.forestLight)
         feed.TextSize = 9
         feed.Active = owned and equipped and foodCount > 0
         feed.AutoButtonColor = feed.Active
@@ -1502,7 +2060,7 @@ local function renderPets()
         end)
 
         local play = button(item, "Play", owned and (equipped and "ИГРАТЬ" or "ПОЗОВИ") or "НЕТ ПИТОМЦА",
-            actionSize, compact and UDim2.fromOffset(12, 284) or UDim2.new(1, -120, 0, 84), palette.gold)
+            actionSize, compact and UDim2.fromOffset(12, 300) or UDim2.new(1, -120, 0, 84), palette.gold)
         play.TextColor3 = palette.ink
         play.TextSize = 10
         play.Active = owned and equipped
@@ -1514,8 +2072,17 @@ local function renderPets()
             end
         end)
 
+        local detailsButton = button(item, "OpenProfile", "ПОДРОБНЕЕ О ПИТОМЦЕ",
+            compact and UDim2.new(1, -24, 0, 30) or UDim2.new(1, -32, 0, 30),
+            compact and UDim2.fromOffset(12, 350) or UDim2.fromOffset(16, 214), palette.forest)
+        detailsButton.TextSize = 10
+        detailsButton.Activated:Connect(function()
+            companionProfileSelected = pet.id
+            refreshActiveTab()
+        end)
+
         local petButton = button(item, "Pet", owned and (equipped and "ПОГЛАДИТЬ" or "ПОЗОВИ") or "НЕТ ПИТОМЦА",
-            actionSize, compact and UDim2.new(0.5, 6, 0, 284) or UDim2.new(1, -120, 0, 122), palette.lilac)
+            actionSize, compact and UDim2.new(0.5, 6, 0, 300) or UDim2.new(1, -120, 0, 122), palette.lilac)
         petButton.TextColor3 = palette.ink
         petButton.TextSize = 9
         petButton.Active = owned and equipped
@@ -1529,6 +2096,8 @@ local function renderPets()
     end
 end
 
+local backpackCategory = backpackCategory or "Все"
+
 local function renderTools()
     local compact = gui.AbsoluteSize.X < 620
     local wood = tonumber(player:GetAttribute("Resource_Wood")) or 0
@@ -1538,7 +2107,27 @@ local function renderTools()
     local smeltReadyAt = tonumber(player:GetAttribute("Smelter_ReadyAt")) or 0
     local smeltPending = tonumber(player:GetAttribute("Smelter_Pending")) or 0
     addInfo("Твой рюкзак", "Здесь собраны ресурсы, находки и снаряжение. Инструменты можно взять в руки прямо из этого раздела.", 78)
+    local categories = {"Все", "Материалы", "Семена", "Находки", "Снаряжение"}
+    local filterCard = card(body, "BackpackCategories", compact and 96 or 52)
+    for index, category in ipairs(categories) do
+        local columns = compact and 3 or 5
+        local column = (index - 1) % columns
+        local row = math.floor((index - 1) / columns)
+        local filter = button(filterCard, "BackpackCategory_" .. tostring(index), category,
+            UDim2.new(1 / columns, -10, 0, 38),
+            UDim2.new(column / columns, 5, 0, 6 + row * 44),
+            backpackCategory == category and palette.gold or palette.forestLight)
+        filter.TextSize = compact and 10 or 11
+        filter.TextColor3 = backpackCategory == category and palette.ink or palette.white
+        filter.Activated:Connect(function()
+            backpackCategory = category
+            refreshActiveTab()
+        end)
+    end
+    if backpackCategory == "Все" or backpackCategory == "Материалы" then
     addInfo("Материалы", "Дерево: " .. tostring(wood) .. "   •   Камень: " .. tostring(stone) .. "   •   Железная руда: " .. tostring(ore) .. "   •   Слитки: " .. tostring(ingots), 72)
+    end
+    if backpackCategory == "Все" or backpackCategory == "Семена" then
     local seedSummary = {}
     local harvestSummary = {}
     for _, crop in cropCatalog do
@@ -1552,6 +2141,8 @@ local function renderTools()
         .. "   •   "
         .. (#harvestSummary > 0 and "Урожай: " .. table.concat(harvestSummary, ", ") or "Урожай не собран"),
         72)
+    end
+    if backpackCategory == "Все" or backpackCategory == "Находки" then
     local moonSeeds = tonumber(player:GetAttribute("Resource_MoonSeed")) or 0
     local starShards = tonumber(player:GetAttribute("Resource_StarShard")) or 0
     local sunPetals = tonumber(player:GetAttribute("Resource_SunPetal")) or 0
@@ -1562,6 +2153,8 @@ local function renderTools()
     addInfo("Праздничное яйцо", harvestEggs > 0 and ("В рюкзаке: " .. tostring(harvestEggs) .. " шт. Открой раздел «Экспедиции», чтобы вылупить нового питомца.") or "Яйцо можно получить за 50 очков Фестиваля урожая.", 54)
     local smeltStatus = smeltPending > 0 and (smeltReadyAt > os.time() and ("Плавится · " .. tostring(math.max(1, smeltReadyAt - os.time())) .. " сек.") or "Готово к сбору у плавильни") or "Рецепт: 3 железной руды + 2 дерева · 60 сек."
     addInfo("Плавильня на острове", smeltStatus, 58)
+    end
+    if backpackCategory == "Все" or backpackCategory == "Снаряжение" then
     local catalog = {
         {id = "Axe", name = "Топор путешественника", icon = "axe", purpose = "Рубит деревья", cost = "8 дерева · 6 камня"},
         {id = "Pickaxe", name = "Кирка путешественника", icon = "pickaxe", purpose = "Добывает камень", cost = "6 дерева · 8 камня"},
@@ -1570,7 +2163,7 @@ local function renderTools()
         local level = tonumber(player:GetAttribute("Tool_" .. definition.id .. "Level")) or 1
         local owned = player:GetAttribute("Tool_" .. definition.id .. "Owned") == true
         local equipped = player:GetAttribute("Tool_Equipped") == definition.id
-        local item = card(body, "Tool_" .. definition.id, compact and 132 or 106)
+        local item = card(body, "Tool_" .. definition.id, compact and 160 or 106)
         createPictogram(item, "ToolIcon", definition.icon, 38, palette.gold).Position =
             UDim2.fromOffset(13, compact and 12 or 26)
         local nameLabel = label(item, "Name", definition.name,
@@ -1581,8 +2174,8 @@ local function renderTools()
             compact and UDim2.new(1, -28, 0, 22) or UDim2.new(1, -156, 0, 25),
             UDim2.fromOffset(compact and 14 or 62, compact and 58 or 33), 11, palette.muted)
         detailsLabel.TextWrapped = true
-        local actionSize = compact and UDim2.new(0.5, -18, 0, 28) or UDim2.fromOffset(102, 30)
-        local equipPosition = compact and UDim2.fromOffset(12, 94) or UDim2.new(1, -114, 0, 8)
+        local actionSize = compact and UDim2.new(0.5, -18, 0, 42) or UDim2.fromOffset(102, 30)
+        local equipPosition = compact and UDim2.fromOffset(12, 110) or UDim2.new(1, -114, 0, 8)
         local equip = button(item, "Equip", equipped and "В РУКАХ" or "ВЗЯТЬ", actionSize, equipPosition, equipped and palette.gold or palette.forest)
         equip.TextSize = 10
         equip.Activated:Connect(function()
@@ -1590,7 +2183,7 @@ local function renderTools()
         end)
         local upgradeText = level >= 2 and "МАКС. УРОВЕНЬ" or "УЛУЧШИТЬ"
         local upgrade = button(item, "Upgrade", upgradeText, actionSize,
-            compact and UDim2.new(0.5, 6, 0, 94) or UDim2.new(1, -114, 0, 52), level >= 2 and palette.muted or palette.coral)
+            compact and UDim2.new(0.5, 6, 0, 110) or UDim2.new(1, -114, 0, 52), level >= 2 and palette.muted or palette.coral)
         upgrade.TextSize = 10
         upgrade.Activated:Connect(function()
             if level < 2 then
@@ -1601,7 +2194,7 @@ local function renderTools()
     end
     local swordOwned = player:GetAttribute("Tool_SwordOwned") == true
     local swordEquipped = player:GetAttribute("Tool_Equipped") == "Sword"
-    local swordCard = card(body, "Tool_Sword", compact and 148 or 124)
+    local swordCard = card(body, "Tool_Sword", compact and 172 or 124)
     createPictogram(swordCard, "SwordIcon", "sword", 38, palette.gold).Position =
         UDim2.fromOffset(13, compact and 12 or 26)
     local swordName = label(swordCard, "SwordName", "Меч странника",
@@ -1613,9 +2206,9 @@ local function renderTools()
         compact and UDim2.new(1, -28, 0, 30) or UDim2.new(1, -156, 0, 46),
         UDim2.fromOffset(compact and 14 or 62, compact and 54 or 35), 11, palette.muted)
     swordStatus.TextWrapped = true
-    local swordActionSize = compact and UDim2.new(0.5, -18, 0, 28) or UDim2.fromOffset(102, 30)
+    local swordActionSize = compact and UDim2.new(0.5, -18, 0, 42) or UDim2.fromOffset(102, 30)
     local swordEquip = button(swordCard, "SwordEquip", swordEquipped and "В РУКАХ" or "ВЗЯТЬ",
-        swordActionSize, compact and UDim2.fromOffset(12, 108) or UDim2.new(1, -114, 0, 8),
+        swordActionSize, compact and UDim2.fromOffset(12, 122) or UDim2.new(1, -114, 0, 8),
         swordEquipped and palette.gold or palette.forest)
     swordEquip.TextSize = 10
     swordEquip.Activated:Connect(function()
@@ -1623,7 +2216,7 @@ local function renderTools()
     end)
     local canCraftSword = not swordOwned and ingots >= 2 and wood >= 6
     local swordCraft = button(swordCard, "SwordCraft", swordOwned and "СОЗДАН" or "СОЗДАТЬ",
-        swordActionSize, compact and UDim2.new(0.5, 6, 0, 108) or UDim2.new(1, -114, 0, 52),
+        swordActionSize, compact and UDim2.new(0.5, 6, 0, 122) or UDim2.new(1, -114, 0, 52),
         canCraftSword and palette.coral or palette.muted)
     swordCraft.TextSize = 10
     swordCraft.Activated:Connect(function()
@@ -1632,20 +2225,58 @@ local function renderTools()
             if not canCraftSword then showToast("Нужно 2 слитка и 6 дерева. Меч создаётся у своего верстака.") end
         end
     end)
+    end
     addInfo("Как добывать", "Добывай дерево, камень и железную руду. Переплавь руду в слитки и создай меч у верстака. На арене попробуй обычные удары и комбо.", 90)
 end
 
 local function renderWorld()
-    addInfo("Твой архипелаг", "Восемь домашних островов соединены мостами с общей Солнечной рощей. Все острова остаются на своих местах.", 84)
+    local compact = gui.AbsoluteSize.X < 620
     local bridgeHome = workspace:FindFirstChild("BridgeToGrove")
     local bridgeForest = workspace:FindFirstChild("BridgeToDusk")
-    addInfo("Домашний остров", "Твой отдельный дом и ферма. Соседи могут прийти в гости, но не могут менять твои вещи.", 68)
     local homeBridgeBuilt = player:GetAttribute("Bridge_HomeToGrove") == true
-    addInfo("Солнечная роща", bridgeHome and (homeBridgeBuilt and "Твой мост восстановлен. Можно идти в общий лес." or "Твой мост пока ждёт ремонта: нужно дерево ×5 и камень ×3.") or "Мосты пока не построены.", 68)
-    addInfo("Лунная роща", bridgeForest and "От Солнечной рощи ведёт отдельный постоянный мост к волшебному острову." or "Мост пока закрыт.", 68)
-    addInfo("Скоро новые земли", "Каменный кряж, древние руины и кристальная пещера станут следующими большими открытиями.", 78)
-end
+    local crystalDiscovered = player:GetAttribute("CrystalGrottoDiscovered") == true
 
+    addInfo("КАРТА АРХИПЕЛАГА", "Все острова остаются на своих местах. Восемь домашних островов соединены мостами с общей Солнечной рощей. Исследуй острова по порядку: открытые маршруты отмечены отдельно от земель, которые ещё предстоит найти.", compact and 76 or 66)
+
+    local mapCard = card(body, "ArchipelagoMap", compact and 244 or 190)
+    mapCard.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
+    label(mapCard, "MapTitle", "ТВОЙ МАРШРУТ", UDim2.new(1, -24, 0, 20),
+        UDim2.fromOffset(12, 8), 11, palette.forest, Enum.Font.GothamBlack)
+
+    local nodes = {
+        {id = "Home", title = "Домашний остров", icon = "house", state = "ТВОЙ ДОМ", detail = "Дом, ферма и личные постройки", color = palette.forest},
+        {id = "Grove", title = "Солнечная роща", icon = "tree", state = homeBridgeBuilt and "МОСТ ОТКРЫТ" or "НУЖЕН МОСТ", detail = homeBridgeBuilt and "Путь из дома восстановлен" or "Для ремонта: дерево ×5 · камень ×3", color = homeBridgeBuilt and palette.forestLight or palette.muted},
+        {id = "Dusk", title = "Сумеречная долина", icon = "moon", state = bridgeForest and "МОСТ ОТКРЫТ" or "ЗАКРЫТА", detail = bridgeForest and "Путь из Солнечной рощи открыт" or "Сначала исследуй Солнечную рощу", color = bridgeForest and palette.lilac or palette.muted},
+        {id = "Crystal", title = "Кристальная пещера", icon = "crystal", state = crystalDiscovered and "НАЙДЕНА" or "НЕ ОБНАРУЖЕНА", detail = crystalDiscovered and "Вход найден в Сумеречной долине" or "Ищи древний проход в долине", color = crystalDiscovered and palette.water or palette.muted},
+    }
+    local columns = compact and 2 or 4
+    local nodeWidth = 1 / columns
+    for index, node in ipairs(nodes) do
+        local column = (index - 1) % columns
+        local row = math.floor((index - 1) / columns)
+        local nodeCard = card(mapCard, "MapNode_" .. node.id,
+            compact and 86 or 122)
+        nodeCard.Size = UDim2.new(nodeWidth, -8, 0, compact and 86 or 122)
+        nodeCard.Position = UDim2.new(column / columns, 4, 0, compact and (34 + row * 94) or 34)
+        nodeCard.BackgroundColor3 = palette.white
+        createPictogram(nodeCard, "MapIcon", node.icon, compact and 24 or 30, node.color)
+            .Position = UDim2.fromOffset(8, compact and 8 or 10)
+        local title = label(nodeCard, "MapNodeTitle", node.title,
+            UDim2.new(1, -16, 0, compact and 26 or 34),
+            UDim2.fromOffset(8, compact and 34 or 46), compact and 9 or 11, palette.ink, Enum.Font.GothamBold)
+        title.TextWrapped = true
+        local state = label(nodeCard, "MapNodeState", node.state,
+            UDim2.new(1, -16, 0, 16), UDim2.fromOffset(8, compact and 62 or 82),
+            compact and 8 or 9, node.color, Enum.Font.GothamBlack)
+        state.TextWrapped = true
+    end
+
+    addInfo("Домашний остров", "Твой отдельный дом и ферма. Соседи могут прийти в гости, но не могут менять твои вещи.", 68)
+    addInfo("Солнечная роща", bridgeHome and (homeBridgeBuilt and "Твой мост восстановлен. Можно идти в общий лес." or "Твой мост ждёт ремонта: нужно дерево ×5 и камень ×3.") or "Мосты пока не построены.", 68)
+    addInfo("Сумеречная долина", bridgeForest and "От Солнечной рощи ведёт отдельный постоянный мост к волшебному острову." or "Путь пока закрыт.", 68)
+    addInfo("Кристальная пещера", crystalDiscovered and "Вход обнаружен. Продолжай исследование и собирай древние реликвии." or "Скрытый вход откроется после исследования Сумеречной долины.", 68)
+    addInfo("Следующие земли", "Каменный кряж и древние руины пока не открыты. Они появятся в следующих главах исследования.", 72)
+end
 local expeditionTracks = {
     {
         id = "Grove", title = "СОЛНЕЧНАЯ РОЩА", subtitle = "Следопытство и первые тайники",
@@ -1962,21 +2593,31 @@ local function renderExpeditions()
             end
         end
 
-        local header = card(body, track.id .. "Expedition", 70)
+        local compactDiary = gui.AbsoluteSize.X < 620
+        local header = card(body, track.id .. "Expedition", compactDiary and 82 or 70)
         header.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
-        createPictogram(header, "TrackIcon", track.icon, 34, track.color).Position = UDim2.fromOffset(16, 18)
-        label(header, "Title", track.title, UDim2.new(1, -130, 0, 22), UDim2.fromOffset(60, 10), 13, palette.ink, Enum.Font.GothamBlack)
-        label(header, "Subtitle", track.subtitle, UDim2.new(1, -130, 0, 18), UDim2.fromOffset(60, 34), 10, palette.muted)
+        createPictogram(header, "TrackIcon", track.icon, compactDiary and 30 or 34, track.color).Position = UDim2.fromOffset(14, compactDiary and 24 or 18)
+        local trackTitle = label(header, "Title", track.title, UDim2.new(1, -116, 0, compactDiary and 34 or 22), UDim2.fromOffset(54, compactDiary and 6 or 10), compactDiary and 11 or 13, palette.ink, Enum.Font.GothamBlack)
+        trackTitle.TextWrapped = true
+        local trackSubtitle = label(header, "Subtitle", track.subtitle, UDim2.new(1, -116, 0, compactDiary and 28 or 18), UDim2.fromOffset(54, compactDiary and 43 or 34), compactDiary and 9 or 10, palette.muted)
+        trackSubtitle.TextWrapped = true
         local count = label(header, "Count", tostring(completed) .. "/" .. tostring(#track.steps), UDim2.fromOffset(52, 28), UDim2.new(1, -62, 0.5, -14), 14, track.color, Enum.Font.GothamBlack)
         count.TextXAlignment = Enum.TextXAlignment.Center
 
         for index, step in track.steps do
             local done = isExpeditionStepComplete(step)
-            local item = card(body, track.id .. "Step" .. tostring(index), 58)
+            local item = card(body, track.id .. "Step" .. tostring(index), compactDiary and 88 or 58)
             item.BackgroundColor3 = done and Color3.fromRGB(235, 242, 224) or palette.paper
-            label(item, "State", done and "✓" or tostring(index), UDim2.fromOffset(30, 34), UDim2.fromOffset(12, 12), 18, done and palette.forestLight or palette.muted, Enum.Font.GothamBlack)
-            label(item, "Title", step.title, UDim2.new(1, -62, 0, 22), UDim2.fromOffset(48, 6), 13, palette.ink, Enum.Font.GothamBold)
-            label(item, "Hint", done and "Открытие записано в дневник." or step.hint, UDim2.new(1, -62, 0, 23), UDim2.fromOffset(48, 29), 10, palette.muted)
+            label(item, "State", done and "✓" or tostring(index), UDim2.fromOffset(30, 34), UDim2.fromOffset(12, compactDiary and 10 or 12), 18, done and palette.forestLight or palette.muted, Enum.Font.GothamBlack)
+            local stepTitle = label(item, "Title", step.title,
+                UDim2.new(1, -62, 0, compactDiary and 34 or 22), UDim2.fromOffset(48, 6),
+                compactDiary and 12 or 13, palette.ink, Enum.Font.GothamBold)
+            stepTitle.TextWrapped = true
+            local stepHint = label(item, "Hint", done and "Открытие записано в дневник." or step.hint,
+                UDim2.new(1, -62, 0, compactDiary and 38 or 23),
+                UDim2.fromOffset(48, compactDiary and 44 or 29), compactDiary and 9 or 10, palette.muted)
+            stepHint.TextWrapped = true
+            stepHint.TextYAlignment = Enum.TextYAlignment.Top
         end
     end
     addInfo("ПРОГРЕСС ИССЛЕДОВАНИЯ", "Открыто " .. tostring(totalCompleted) .. " из " .. tostring(totalSteps) .. " записей. Новые экспедиции появятся вместе с неизведанными землями.", 66)
@@ -2023,6 +2664,87 @@ local function renderExpeditions()
             event:FireServer("ClaimCrystalRelicSet")
         end
     end)
+
+    -- Companion gift discoveries are a separate, persistent collection.
+    local giftEntries = {
+        {id = "SunPetal", name = "Солнечный лепесток", biome = "Grove", biomeName = "Солнечная роща", icon = "leaf", color = palette.gold},
+        {id = "Wood", name = "Сухая веточка", biome = "Grove", biomeName = "Солнечная роща", icon = "wood", color = palette.coral},
+        {id = "CarrotSeed", name = "Семена моркови", biome = "Grove", biomeName = "Солнечная роща", icon = "seed", color = palette.forestLight},
+        {id = "StrawberrySeed", name = "Семена клубники", biome = "Grove", biomeName = "Солнечная роща", icon = "berry", color = palette.coral},
+        {id = "MoonSeed", name = "Лунное семя", biome = "Grove", biomeName = "Солнечная роща", icon = "moon", color = palette.lilac},
+        {id = "MoonPetal", name = "Лунный лепесток", biome = "Dusk", biomeName = "Сумеречная долина", icon = "leaf", color = palette.lilac},
+        {id = "StarShard", name = "Звёздный осколок", biome = "Dusk", biomeName = "Сумеречная долина", icon = "star", color = palette.gold},
+        {id = "Stone", name = "Гладкий камешек", biome = "Dusk", biomeName = "Сумеречная долина", icon = "stone", color = palette.muted},
+        {id = "CrystalShard", name = "Кристальный осколок", biome = "Dusk", biomeName = "Сумеречная долина", icon = "crystal", color = palette.water},
+        {id = "CrystalSigil", name = "Кристальная печать", biome = "CrystalGrotto", biomeName = "Кристальный грот", icon = "crystal", color = palette.water},
+        {id = "PrismSeed", name = "Призматическое семя", biome = "CrystalGrotto", biomeName = "Кристальный грот", icon = "seed", color = palette.lilac},
+        {id = "VoidGeode", name = "Пустотная жеода", biome = "CrystalGrotto", biomeName = "Кристальный грот", icon = "crystal", color = palette.lilac},
+    }
+    local foundGiftCount = 0
+    for _, gift in giftEntries do
+        if player:GetAttribute("CompanionGiftFound_" .. gift.id) == true then foundGiftCount += 1 end
+    end
+    addInfo("КОЛЛЕКЦИЯ НАХОДОК ПИТОМЦЕВ",
+        "Питомцы приносят разные сокровища из исследованных земель. Впервые найденный предмет навсегда записывается сюда.",
+        76)
+    local giftHeader = card(body, "CompanionGiftCollectionHeader", 72)
+    giftHeader.BackgroundColor3 = Color3.fromRGB(232, 239, 218)
+    createPictogram(giftHeader, "GiftCollectionIcon", "chest", 34, palette.gold).Position = UDim2.fromOffset(14, 18)
+    label(giftHeader, "GiftCollectionTitle", "СОКРОВИЩА ДРУЗЕЙ",
+        UDim2.new(1, -128, 0, 22), UDim2.fromOffset(58, 10), 12, palette.ink, Enum.Font.GothamBlack)
+    label(giftHeader, "GiftCollectionHint", "Уникальные находки из трёх биомов",
+        UDim2.new(1, -128, 0, 18), UDim2.fromOffset(58, 34), 10, palette.muted)
+    local giftCount = label(giftHeader, "GiftCollectionCount",
+        tostring(foundGiftCount) .. "/" .. tostring(#giftEntries),
+        UDim2.fromOffset(54, 28), UDim2.new(1, -62, 0.5, -14), 14, palette.forest, Enum.Font.GothamBlack)
+    giftCount.TextXAlignment = Enum.TextXAlignment.Center
+
+    local giftGroups = {
+        {id = "Grove", title = "СОЛНЕЧНАЯ РОЩА"},
+        {id = "Dusk", title = "СУМЕРЕЧНАЯ ДОЛИНА"},
+        {id = "CrystalGrotto", title = "КРИСТАЛЬНЫЙ ГРОТ"},
+    }
+    for _, group in giftGroups do
+        local groupCount = 0
+        for _, gift in giftEntries do
+            if gift.biome == group.id and player:GetAttribute("CompanionGiftFound_" .. gift.id) == true then
+                groupCount += 1
+            end
+        end
+        local groupHeader = card(body, "GiftGroup_" .. group.id, 36)
+        groupHeader.BackgroundColor3 = palette.paperDark
+        label(groupHeader, "GroupTitle", group.title,
+            UDim2.new(1, -70, 1, 0), UDim2.fromOffset(12, 0), 10, palette.ink, Enum.Font.GothamBlack)
+        label(groupHeader, "GroupCount", tostring(groupCount) .. "/"
+            .. tostring((group.id == "Grove" and 5) or (group.id == "Dusk" and 4) or 3),
+            UDim2.fromOffset(48, 36), UDim2.new(1, -56, 0, 0), 11, palette.forest, Enum.Font.GothamBlack)
+        for _, gift in giftEntries do
+            if gift.biome == group.id then
+                local found = player:GetAttribute("CompanionGiftFound_" .. gift.id) == true
+                local compactGift = gui.AbsoluteSize.X < 620
+                local item = card(body, "GiftDiscovery_" .. gift.id, compactGift and 82 or 64)
+                item.BackgroundColor3 = found and Color3.fromRGB(235, 242, 224) or palette.paper
+                createPictogram(item, "GiftIcon", found and gift.icon or "lock", 28,
+                    found and gift.color or palette.muted).Position = UDim2.fromOffset(13, compactGift and 26 or 18)
+                local giftName = label(item, "GiftName", found and gift.name or "Неизвестная находка",
+                    UDim2.new(1, -58, 0, compactGift and 30 or 20), UDim2.fromOffset(52, 7),
+                    compactGift and 11 or 12, palette.ink, Enum.Font.GothamBold)
+                giftName.TextWrapped = true
+                local foundPetId = player:GetAttribute("CompanionGiftPet_" .. gift.id)
+                local foundPetName = foundPetId and pets[foundPetId] or nil
+                local foundBiome = player:GetAttribute("CompanionGiftBiome_" .. gift.id)
+                local hint = found and ("Нашёл: " .. (foundPetName or "питомец")
+                    .. " • " .. ((foundBiome == "Grove" and "Солнечная роща")
+                        or (foundBiome == "Dusk" and "Сумеречная долина") or "Кристальный грот"))
+                    or ("Исследуй биом: " .. gift.biomeName)
+                local giftHint = label(item, "GiftHint", hint,
+                    UDim2.new(1, -58, 0, compactGift and 38 or 22),
+                    UDim2.fromOffset(52, compactGift and 40 or 31), compactGift and 9 or 9, palette.muted)
+                giftHint.TextWrapped = true
+                giftHint.TextYAlignment = Enum.TextYAlignment.Top
+            end
+        end
+    end
 
     -- The pet mutation codex reads only server-replicated, saved companion discoveries.
     -- A companion has one permanently rolled mutation, not sixteen collectible copies.
@@ -2363,6 +3085,7 @@ end)
 
 local function openTab(tabName)
     if not panelTitles[tabName] or not renderers[tabName] then return end
+    if placementState then finishPlacement() end
     if activeTab == tabName and panel.Visible then
         closeActivePanel()
         return
@@ -2684,7 +3407,23 @@ local function finishCompanionPlay(payload)
 end
 
 event.OnClientEvent:Connect(function(message, payload)
-    if message == "CompanionPlayStarted" then
+    if message == "CompanionEggCreated" and type(payload) == "table" then
+        showToast("Яйцо гибрида «" .. tostring(payload.name or "Неизвестный гибрид") .. "» отправлено в инкубатор!")
+        refresh()
+        return
+    elseif message == "CompanionHybridDiscovered" and type(payload) == "table" then
+        showToast("✦ Новый гибрид открыт: " .. tostring(payload.name or "Неизвестный гибрид") .. "!")
+        refresh()
+        return
+    elseif message == "CompanionLineageDiscovered" and type(payload) == "table" then
+        showToast("✦ Новый генетический признак: " .. tostring(payload.name or "Неизвестный признак") .. "!")
+        refresh()
+        return
+    elseif message == "CompanionEvolved" and type(payload) == "table" then
+        showToast("✦ Новая форма открыта: " .. tostring(payload.name or "Секретная эволюция") .. "!")
+        refresh()
+        return
+    elseif message == "CompanionPlayStarted" then
         beginCompanionPlay(payload)
         return
     elseif message == "CompanionPlayFinished" then

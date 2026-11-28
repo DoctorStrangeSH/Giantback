@@ -239,6 +239,56 @@ end
 
 local details = makeFolder(workspace, "GiantbackWorldDetails")
 
+-- Small physical wayfinding signs sit at existing bridge landings.
+-- They are decorative, non-collidable, and rebuilt only inside this generated details folder.
+local function addWayfindingSign(name, position, title, subtitle, accent)
+    local sign = Instance.new("Model")
+    sign.Name = name
+    sign.Parent = details
+    local post = makePart(sign, "SignPost", Vector3.new(0.45, 4.2, 0.45),
+        CFrame.new(position + Vector3.new(0, 2.1, 0)), palette.bark, Enum.Material.Wood)
+    local board = makePart(sign, "SignBoard", Vector3.new(7.2, 2.2, 0.42),
+        CFrame.new(position + Vector3.new(0, 4.6, 0)), palette.cream, Enum.Material.WoodPlanks)
+    board.CanQuery = false
+    local trim = makePart(sign, "SignTrim", Vector3.new(7.35, 0.16, 0.5),
+        CFrame.new(position + Vector3.new(0, 5.72, 0)), accent, Enum.Material.Wood)
+    trim.CanQuery = false
+    local surface = Instance.new("SurfaceGui")
+    surface.Name = "WayfindingLabel"
+    surface.Face = Enum.NormalId.Front
+    surface.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+    surface.PixelsPerStud = 42
+    surface.Parent = board
+    local heading = Instance.new("TextLabel")
+    heading.Name = "Destination"
+    heading.BackgroundTransparency = 1
+    heading.Size = UDim2.new(1, -16, 0.58, 0)
+    heading.Position = UDim2.fromOffset(8, 4)
+    heading.Font = Enum.Font.GothamBlack
+    heading.Text = title
+    heading.TextColor3 = palette.ink
+    heading.TextScaled = true
+    heading.TextWrapped = true
+    heading.Parent = surface
+    local caption = Instance.new("TextLabel")
+    caption.Name = "Direction"
+    caption.BackgroundTransparency = 1
+    caption.Size = UDim2.new(1, -16, 0.32, 0)
+    caption.Position = UDim2.new(0, 8, 0.62, 0)
+    caption.Font = Enum.Font.GothamBold
+    caption.Text = subtitle
+    caption.TextColor3 = accent
+    caption.TextScaled = true
+    caption.TextWrapped = true
+    caption.Parent = surface
+    return sign
+end
+
+addWayfindingSign("GroveWayfindingSign", Vector3.new(0, 12.2, -108),
+    "СОЛНЕЧНАЯ РОЩА", "↑ К общему острову", palette.moss)
+addWayfindingSign("DuskWayfindingSign", Vector3.new(46, 12.2, -149),
+    "СУМЕРЕЧНАЯ ДОЛИНА", "← Через лунный мост", palette.lilac)
+
 -- Give the homeIslandTemplate a recognisable silhouette and a lived-in home.
 local homeDetails = makeFolder(homeIslandTemplate, "HandcraftedDetails")
 local shellColors = {
@@ -904,8 +954,90 @@ decorateIsland(dusk, true)
 
 -- Camouflaged caches are always part of the forest; only the owner's Fox Scout
 -- highlight and local prompt reveal which one currently contains a find.
+-- Natural companion habitats dress the existing encounter nests without changing their prompts or spawn logic.
+local habitatVisuals = makeFolder(workspace, "GiantbackCompanionHabitats")
+local foxNest = grove:FindFirstChild("Nest")
+if foxNest and foxNest:IsA("BasePart") then
+    local habitat = makeFolder(habitatVisuals, "FoxNestHabitat")
+    local center = foxNest.Position
+    for index = 1, 5 do
+        local angle = (index - 1) * math.pi * 2 / 5
+        local radius = 3.2 + (index % 2) * 0.35
+        local leaf = orb(habitat, "Fern shelter", center + Vector3.new(math.cos(angle) * radius, 0.15, math.sin(angle) * radius), Vector3.new(1.25, 0.3, 0.72), index % 2 == 0 and palette.leafLight or palette.moss, Enum.Material.Grass, 0.08)
+        leaf.CFrame = CFrame.new(leaf.Position) * CFrame.Angles(math.rad(-18), -angle, math.rad((index % 2 == 0 and 1 or -1) * 16))
+    end
+    for index = 1, 3 do
+        local angle = index * math.pi * 2 / 3
+        local mushroom = orb(habitat, "Foxglove mushroom", center + Vector3.new(math.cos(angle) * 4.1, 0.38, math.sin(angle) * 4.1), Vector3.new(0.34, 0.7, 0.34), palette.cream, Enum.Material.SmoothPlastic)
+        addLight(mushroom, palette.gold, 4, 0.12)
+        orb(habitat, "Mushroom cap", mushroom.Position + Vector3.new(0, 0.35, 0), Vector3.new(0.72, 0.28, 0.72), palette.coral, Enum.Material.SmoothPlastic)
+    end
+end
+
+local mothNest = dusk:FindFirstChild("Nest")
+if mothNest and mothNest:IsA("BasePart") then
+    local habitat = makeFolder(habitatVisuals, "MothRestingGrove")
+    local center = mothNest.Position
+    local perch = orb(habitat, "Moonlit resting stone", center + Vector3.new(0, 0.16, 0), Vector3.new(4.8, 0.38, 3.8), palette.lilac, Enum.Material.Slate, 0.12)
+    addLight(perch, palette.lilacLight, 7, 0.18)
+    for index = 1, 4 do
+        local angle = (index - 1) * math.pi / 2
+        local radius = 3.25
+        local crystal = orb(habitat, "Moon moth lantern flower", center + Vector3.new(math.cos(angle) * radius, 0.58, math.sin(angle) * radius), Vector3.new(0.38, 0.9, 0.38), palette.lilacLight, Enum.Material.Neon, 0.16)
+        addLight(crystal, palette.lilacLight, 4.5, 0.16)
+    end
+    for index = 1, 3 do
+        local angle = (index - 1) * math.pi * 2 / 3
+        orb(habitat, "Moon moth petal", center + Vector3.new(math.cos(angle) * 2.15, 0.48, math.sin(angle) * 2.15), Vector3.new(0.9, 0.16, 0.42), palette.moon, Enum.Material.SmoothPlastic, 0.18)
+    end
+end
+
+-- Small, ground-level traces make the existing companion habitats feel inhabited.
+local function addHabitatTracks(parent, nest, kind)
+    if not nest or not nest:IsA("BasePart") then return end
+    local tracks = makeFolder(parent, kind .. "Tracks")
+    local center = nest.Position
+    if kind == "Fox" then
+        for step = 1, 5 do
+            local distance = 2.1 + step * 1.15
+            local side = (step % 2 == 0) and 0.62 or -0.62
+            local point = center + Vector3.new(side, -nest.Size.Y * 0.5 + 0.08, distance)
+            local print = orb(tracks, "Tiny paw print", point, Vector3.new(0.34, 0.07, 0.38), palette.barkLight, Enum.Material.SmoothPlastic, 0.18)
+            print.CFrame = CFrame.new(point) * CFrame.Angles(0, math.rad((step % 2 == 0) and 18 or -18), 0)
+            orb(tracks, "Paw toe", point + Vector3.new(-0.12, 0.015, -0.16), Vector3.new(0.11, 0.045, 0.12), palette.barkLight, Enum.Material.SmoothPlastic, 0.22)
+            orb(tracks, "Paw toe", point + Vector3.new(0.12, 0.015, -0.16), Vector3.new(0.11, 0.045, 0.12), palette.barkLight, Enum.Material.SmoothPlastic, 0.22)
+        end
+    elseif kind == "Moth" then
+        for step = 1, 7 do
+            local angle = step * 0.82
+            local radius = 1.6 + step * 0.36
+            local point = center + Vector3.new(math.cos(angle) * radius, 0.22 + (step % 2) * 0.18, math.sin(angle) * radius)
+            local dust = orb(tracks, "Moon dust mote", point, Vector3.new(0.14, 0.14, 0.14), palette.lilacLight, Enum.Material.Neon, 0.28 + step * 0.055)
+            addLight(dust, palette.lilacLight, 2.2, 0.08)
+        end
+    end
+end
+
+addHabitatTracks(habitatVisuals:FindFirstChild("FoxNestHabitat"), foxNest, "Fox")
+addHabitatTracks(habitatVisuals:FindFirstChild("MothRestingGrove"), mothNest, "Moth")
+
 local foxCacheVisuals = makeFolder(grove, "FoxCacheVisuals")
 local foxCacheAnchors = {"FoxCache01", "FoxCache02", "FoxCache03"}
+local function addCacheTrail(parent, anchor)
+    if not anchor:IsA("BasePart") then return end
+    local direction = Vector3.new(anchor.CFrame.LookVector.X, 0, anchor.CFrame.LookVector.Z)
+    if direction.Magnitude < 0.01 then direction = Vector3.new(0, 0, -1) end
+    direction = direction.Unit
+    local side = Vector3.new(-direction.Z, 0, direction.X)
+    for step = 1, 3 do
+        local distance = 2.8 + step * 2.1
+        local center = anchor.Position + direction * distance + Vector3.new(0, -0.35, 0)
+        for lane = -1, 1, 2 do
+            local pebble = orb(parent, "Quiet cache trail", center + side * lane * (0.55 + step * 0.08), Vector3.new(0.42, 0.12, 0.28), palette.gold, Enum.Material.Neon, 0.42 + step * 0.08)
+            pebble.CanQuery = false
+        end
+    end
+end
 for index, cacheId in foxCacheAnchors do
     local anchor = grove:FindFirstChild(cacheId)
     if anchor then
@@ -917,6 +1049,7 @@ for index, cacheId in foxCacheAnchors do
         orb(visual, "Leaf cover", anchor.Position + Vector3.new(0.48, 0.52, 0.22), Vector3.new(1.65, 0.28, 0.95), palette.leafLight, Enum.Material.Grass)
         orb(visual, "Stone cover", anchor.Position + Vector3.new(-0.62, 0.32, -0.28), Vector3.new(0.92, 0.58, 0.84), palette.stone, Enum.Material.Rock)
         orb(visual, "Buried glimmer", anchor.Position + Vector3.new(0, 0.62, 0), Vector3.new(0.16, 0.16, 0.16), palette.gold, Enum.Material.Neon, 0.78)
+        addCacheTrail(visual, anchor)
     end
 end
 
@@ -2726,6 +2859,19 @@ entranceGlow.Color = palette.lilacLight
 entranceGlow.Range = 14
 entranceGlow.Brightness = 0.8
 entranceGlow.Parent = grottoEntrance
+
+-- Subtle crystal landmarks frame the existing interactive entrance; the server prompt remains authoritative.
+local entranceLandmarks = makeFolder(dusk, "CrystalGrottoEntranceLandmarks")
+for side = -1, 1, 2 do
+    local base = grottoEntrance.Position + Vector3.new(side * 4.2, -2.1, 0)
+    for shard = 1, 3 do
+        local angle = (shard - 1) * math.pi / 3 + (side == -1 and 0.2 or -0.2)
+        local height = 1.1 + shard * 0.42
+        local crystal = orb(entranceLandmarks, "Entrance crystal", base + Vector3.new(math.cos(angle) * 0.65, height, math.sin(angle) * 0.65), Vector3.new(0.48, 1.5 + shard * 0.18, 0.48), shard == 2 and palette.gold or palette.lilacLight, Enum.Material.Neon, 0.12)
+        crystal.CFrame = CFrame.new(crystal.Position) * CFrame.Angles(math.rad(8 * side), 0, math.rad(12 * side))
+        addLight(crystal, palette.lilacLight, 5, 0.22)
+    end
+end
 
 -- Rootvault is its own combat region; players do not need to stand in the Grove arena.
 local rootvaultRegion = makePart(
