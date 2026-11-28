@@ -907,7 +907,7 @@ local function follow(dt)
             end
 
             local moving = humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.08
-            local resting, sleeping, sniff, attention, curious, playful = companionActivity.update(owner, id, now, moving, owner == player)
+            local resting, sleeping, sniff, attention, curious, playful = companionActivity.update(owner, id, now, moving, owner == player, model:GetPivot().Position)
             if sniff then foxSniffUntil = os.clock() + 2.2 end
             if attention and owner == player then showCompanionAttention(model, id) end
             setSleepIndicator(model, sleeping)
@@ -917,6 +917,7 @@ local function follow(dt)
                 state.sleeping = sleeping
                 state.curious = curious
                 state.playful = playful
+                state.worldInterest = worldInterest
                 state.searching = owner == player and os.clock() < companionSearchUntil
                 state.mood = owner:GetAttribute("Companion_" .. id .. "_Mood") or "Спокойствие"
                 state.personality = owner:GetAttribute("Companion_" .. id .. "_Personality") or "Любопытный"
